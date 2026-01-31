@@ -1,3 +1,118 @@
+# Scruffs-N-Chyrrs
+
+Scruffs-N-Chyrrs is a modern web application built using the Laravel 12 framework. This project follows standard Laravel conventions and integrates cutting-edge frontend tools like Tailwind CSS 4 and Vite 7.
+
+## Tech Stack
+
+- **Backend:** PHP 8.2+ with [Laravel 12](https://laravel.com/docs/12.x)
+- **Frontend:** [Tailwind CSS 4](https://tailwindcss.com/) & [Vite 7](https://vitejs.dev/)
+- **Database:** MySQL (default) / SQLite (testing)
+- **Testing:** [Pest PHP 3](https://pestphp.com/) & PHPUnit
+- **Development Tools:** Laravel Boost, Laravel Pail, Laravel Pint
+
+## Prerequisites
+
+Ensure you have the following installed on your local environment:
+
+- PHP 8.2 or higher
+- Composer
+- Node.js & NPM
+- A database engine (MySQL/MariaDB)
+
+## Getting Started
+
+### 1. Pre-Installation
+
+1. Go to the XAMPP folder.
+2. Go to the PHP folder inside the XAMPP folder.
+3. Open the php.ini file.
+4. Press ctrl + F and search ";extension=zip".
+5. Remove the ";" to change the text to "extension=zip".
+6. Save the file.
+
+### 2. Installation
+
+The project includes a built-in setup script to automate the initial configuration. Run the following command in your terminal:
+
+```bash
+composer run setup
+```
+
+This script will:
+
+- Install PHP dependencies via Composer.
+- Create a `.env` file from `.env.example`.
+- Generate the application encryption key.
+- Run database migrations.
+- Install NPM dependencies.
+- Build frontend assets.
+
+### 3. Configuration
+
+Open the `.env` file and configure your database credentials:
+
+```dotenv
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=scruffsnchyrrs
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+## Development Workflow
+
+### Running the Application
+
+To start the local development server along with the Vite dev server and queue listener, run:
+
+```bash
+composer run dev
+```
+
+This command uses `concurrently` to execute:
+
+- `php artisan serve` (Web server)
+- `php artisan queue:listen` (Background jobs)
+- `npm run dev` (Frontend hot-reloading)
+
+### Testing
+
+We use Pest for testing. To run the test suite:
+
+```bash
+composer run test
+```
+
+### Code Quality
+
+To maintain code style consistency, use Laravel Pint:
+
+```bash
+./vendor/bin/pint
+```
+
+## Project Structure
+
+- `app/`: Core logic (Models, Controllers, Providers).
+- `resources/js/` & `resources/css/`: Frontend source files.
+- `routes/`: Application route definitions.
+- `database/`: Migrations, factories, and seeders.
+- `tests/`: Feature and Unit tests (Pest).
+
+## Contributing
+
+1. Clone the repository.
+2. Create a new feature branch (`git checkout -b feature/amazing-feature`).
+3. Ensure tests pass before committing.
+4. Open a Pull Request.
+
+## License
+
+The Scruffs-N-Chyrrs project is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Laravel Framework
+
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">
