@@ -26,7 +26,7 @@ Ensure you have the following installed on your local environment:
 1. Go to the XAMPP folder.
 2. Go to the PHP folder inside the XAMPP folder.
 3. Open the php.ini file.
-4. Press ctrl + F and search ";extension=zip".
+4. Press CTRL + F and search ";extension=zip".
 5. Remove the ";" to change the text to "extension=zip".
 6. Save the file.
 
