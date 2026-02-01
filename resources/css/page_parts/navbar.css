@@ -48,12 +48,22 @@
 }
 
 /* INTERACTION */
-
-.nav_list li.active a {
-    border-bottom: 2px solid #682C7A; 
-}
-
 .nav_list li a:hover {
     color: #a15fb5;
     transition: 0.2s;
+}
+
+.nav_list li {
+    position: relative;
+}
+
+.nav_list li.active a::after {
+    content: "★";
+    font-size: 14px;
+    color: #682c7a;
+
+    position: absolute;
+    bottom: -13px;
+    left: 50%;
+    transform: translateX(-50%);
 }

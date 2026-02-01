@@ -6,7 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scruffs&Chyrrs</title>
 
-    @vite(['resources/css/home.css', 'resources/css/page_parts/navbar.css', 'resources/css/page_parts/footer.css'])
+    <link rel="stylesheet" href="{{ asset('css/home.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/page_parts/navbar.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/page_parts/footer.css') }}">
 
 </head>
 
