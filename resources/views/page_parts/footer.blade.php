@@ -44,6 +44,6 @@
         </div>
 
         <div class="footer_bottomhalf">
-            <p>Scruffs&Chyrrs</p>
+            <p>Scruffs&Chyrrs™</p>
         </div>
     </footer>

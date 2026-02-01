@@ -17,3 +17,4 @@ Route::get('/contacts', function () {
 Route::get('/aboutus', function () {
     return view('customer.aboutus');
 })->name('aboutus');
+

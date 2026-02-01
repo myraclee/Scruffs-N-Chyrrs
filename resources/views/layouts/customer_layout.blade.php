@@ -6,10 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scruffs&Chyrrs</title>
 
-    <link rel="stylesheet" href="{{ asset('css/home.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/page_parts/navbar.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/page_parts/footer.css') }}">
-
+    @vite(['resources/css/universal.css', 'resources/css/page_parts/navbar.css', 'resources/css/page_parts/footer.css'])
+    @yield('page_css')
 </head>
 
 <body>
@@ -17,6 +15,7 @@
         <!-- NAVBAR -->
         @include('page_parts.navbar')
 
+        <!-- MAIN CONTENT -->
         <div class="main_content">
             @yield('content')
         </div>
