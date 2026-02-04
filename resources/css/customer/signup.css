@@ -1,0 +1,104 @@
+.main_content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    margin-top: 45px;
+    margin-bottom: 50px;
+}
+
+h1{
+    font-family: SuperDream;
+    font-size: 40px;
+    color: #682C7A;
+
+    margin-bottom: 25px;
+}
+
+/* FORM */
+
+.signup_firstname_container, 
+.signup_lastname_container, 
+.signup_email_container, 
+.signup_contact_container, 
+.signup_password_container,
+.signup_confirmpassword_container{
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+label{
+    font-family: Coolvetica;
+    size: 30px;
+    color: #682C7A;
+}
+
+input{
+    width: 300px;
+    height: 35px;
+    border-radius: 30px;
+    outline: #682C7A;
+    border: none;
+
+    box-shadow: 0 0 10px 1px rgba(0,0,0,0.12);
+
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+input::placeholder{
+    color: #645868;
+}
+
+form{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* TERMS AND CONDITIONS */
+.tnc{
+    margin-top: 20px;
+    margin-bottom: 20px;
+    width: 400px;
+
+    text-align: center;
+    font-family: Coolvetica;
+    font-size: 14px;
+    color:#682C7A;
+}
+
+/* BUTTON */
+
+button{
+    height: 40px;
+    width: 150px;
+    
+    border: none;
+    border-radius: 30px;
+    box-shadow: 0 0 10px 1px rgba(0,0,0,0.12);
+
+    background-color: #682C7A;
+    color: #FFF0DA;
+    font-family: Coolvetica;
+    font-size: 17px;
+}
+
+button:hover{
+    background-color: #451c52;
+    transition: 0.2s;
+}
+
+/* ALREADY HAVE AN ACCOUNT? */
+
+.existingaccount{
+    margin-top: 20px;
+
+    text-align: center;
+    font-family: Coolvetica;
+    font-size: 14px;
+    color:#682C7A;
+}

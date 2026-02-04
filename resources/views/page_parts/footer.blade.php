@@ -11,10 +11,25 @@
 
         <div class="footer_nav">
             <ul class="footer_nav_list">
-                <li><a href="#">Home</a></li>
-                <li><a href="#">Products</a></li>
-                <li><a href="#">About Us</a></li>
-                <li><a href="#">Contacts</a></li>
+                <li class="{{ request()->routeIs('home') ? 'active' : '' }}">
+                    <a href="{{ route('home') }}">Home</a>
+                </li>
+
+                <li class="{{ request()->routeIs('products') ? 'active' : '' }}">
+                    <a href="{{ route('products') }}">Products</a>
+                </li>
+
+                <li class="{{ request()->routeIs('aboutus') ? 'active' : '' }}">
+                    <a href="{{ route('aboutus') }}">About Us</a>
+                </li>
+
+                <li class="{{ request()->routeIs('contacts') ? 'active' : '' }}">
+                    <a href="{{ route('contacts') }}">Contacts</a>
+                </li>
+                
+                <li class="{{ request()->routeIs('login') ? 'active' : '' }}">
+                    <a href="{{ route('login') }}">Accounts</a>
+                </li>
             </ul>
         </div>
 

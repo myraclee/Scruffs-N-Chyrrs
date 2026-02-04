@@ -18,3 +18,10 @@ Route::get('/aboutus', function () {
     return view('customer.aboutus');
 })->name('aboutus');
 
+Route::get('/signup', function () {
+    return view('customer.signup');
+})->name('signup');
+
+Route::get('/login', function () {
+    return view('customer.login_customer');
+})->name('login');
