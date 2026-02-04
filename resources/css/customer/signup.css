@@ -26,18 +26,17 @@ h1{
     display: flex;
     flex-direction: column;
     gap: 5px;
-    margin-bottom: 10px;
 }
 
 label{
     font-family: Coolvetica;
-    size: 30px;
+    size: 35px;
     color: #682C7A;
 }
 
 input{
-    width: 300px;
-    height: 35px;
+    width: 350px;
+    height: 50px;
     border-radius: 30px;
     outline: #682C7A;
     border: none;
@@ -59,7 +58,15 @@ form{
     align-items: center;
 }
 
+.row{
+    display: flex;
+    flex-direction: row;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
 /* TERMS AND CONDITIONS */
+
 .tnc{
     margin-top: 20px;
     margin-bottom: 20px;
@@ -79,7 +86,7 @@ button{
     
     border: none;
     border-radius: 30px;
-    box-shadow: 0 0 10px 1px rgba(0,0,0,0.12);
+    box-shadow: 0 0 7px 4px rgba(0,0,0,0.12);
 
     background-color: #682C7A;
     color: #FFF0DA;
@@ -101,4 +108,14 @@ button:hover{
     font-family: Coolvetica;
     font-size: 14px;
     color:#682C7A;
+}
+
+.existingaccount a{
+    text-decoration: none;
+    color: #359BF4;
+}
+
+.existingaccount a:hover{
+    color: #1e6eb3;
+    transition: 0.2s;
 }
