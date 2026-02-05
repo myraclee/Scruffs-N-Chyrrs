@@ -11,40 +11,57 @@
 @section('content')
     <h1>Sign Up</h1>
 
-    <form>
+    <form method="POST" action="{{ route('signup.store') }}">
+        @csrf
+
         <div class="row">
             <div class="signup_firstname_container">
-                <label for="firstname_signup">First Name</label>
-                <input type="text" name="firstname_signup" placeholder="ex. Juan" required>
+                <label for="first_name">First Name</label>
+                <input type="text" id="first_name" name="first_name" placeholder="ex. Juan" value="{{ old('first_name') }}" required>
+                @error('first_name')
+                    <span style="color: red; font-family: Coolvetica; font-size: 14px;">{{ $message }}</span>
+                @enderror
             </div>
 
             <div class="signup_lastname_container">
-                <label for="lastname_signup">Last Name</label>
-                <input type="text" name="lastname_signup" placeholder="ex. De la Cruz" required>
+                <label for="last_name">Last Name</label>
+                <input type="text" id="last_name" name="last_name" placeholder="ex. De la Cruz" value="{{ old('last_name') }}" required>
+                @error('last_name')
+                    <span style="color: red; font-family: Coolvetica; font-size: 14px;">{{ $message }}</span>
+                @enderror
             </div>
         </div>
 
         <div class="row">
             <div class="signup_email_container">
-                <label for="email_signup">Email</label>
-                <input type="email" name="email_signup" placeholder="email@address.com" required>
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="email@address.com" value="{{ old('email') }}" required>
+                @error('email')
+                    <span style="color: red; font-family: Coolvetica; font-size: 14px;">{{ $message }}</span>
+                @enderror
             </div>
 
             <div class="signup_contact_container">
-                <label for="contact_signup">Contact Number</label>
-                <input type="tel" name="contact_signup" placeholder="+63 (912)-345-6789" required>
+                <label for="contact_number">Contact Number</label>
+                <input type="tel" id="contact_number" name="contact_number" placeholder="+63 (912)-345-6789" value="{{ old('contact_number') }}" required>
+                @error('contact_number')
+                    <span style="color: red; font-family: Coolvetica; font-size: 14px;">{{ $message }}</span>
+                @enderror
             </div>
         </div>
 
         <div class="row">
             <div class="signup_password_container">
-                <label for="password_signup">Password</label>
-                <input type="password" name="password_signup" placeholder="Enter your password" required>
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                @error('password')
+                    <span style="color: red; font-family: Coolvetica; font-size: 14px;">{{ $message }}</span>
+                @enderror
             </div>
 
             <div class="signup_confirmpassword_container">
-                <label for="confirmpassword_signup">Confirm Password</label>
-                <input type="password" name="confirmpassword_signup" placeholder="Re-enter your password" required>
+                <label for="password_confirmation">Confirm Password</label>
+                <input type="password" id="password_confirmation" name="password_confirmation" placeholder="Re-enter your password" required>
             </div>
         </div>
 

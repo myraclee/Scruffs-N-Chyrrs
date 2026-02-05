@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -18,10 +19,8 @@ Route::get('/aboutus', function () {
     return view('customer.aboutus');
 })->name('aboutus');
 
-Route::get('/signup', function () {
-    return view('customer.signup');
-})->name('signup');
+// Authentication Routes
+Route::get('/signup', [AuthController::class, 'showSignup'])->name('signup');
+Route::post('/signup', [AuthController::class, 'register'])->name('signup.store');
 
-Route::get('/login', function () {
-    return view('customer.login_customer');
-})->name('login');
+Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
