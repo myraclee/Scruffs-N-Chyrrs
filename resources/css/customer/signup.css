@@ -30,7 +30,7 @@ h1{
 
 label{
     font-family: Coolvetica;
-    size: 35px;
+    font-size: 20px;
     color: #682C7A;
 }
 
@@ -43,8 +43,8 @@ input{
 
     box-shadow: 0 0 10px 1px rgba(0,0,0,0.12);
 
-    padding-left: 10px;
-    padding-right: 10px;
+    padding-left: 20px;
+    padding-right: 20px;
 }
 
 input::placeholder{
@@ -65,7 +65,7 @@ form{
     margin-bottom: 30px;
 }
 
-/* TERMS AND CONDITIONS */
+/*TERMS AND CONDITIONS*/
 
 .tnc{
     margin-top: 20px;
@@ -74,8 +74,19 @@ form{
 
     text-align: center;
     font-family: Coolvetica;
-    font-size: 14px;
+    font-size: 16px;
     color:#682C7A;
+}
+
+.tnc_open{
+    text-decoration: none;
+    color: #359BF4;
+}
+
+.tnc_open:hover{
+    color: #0072d6;
+    transition: 0.2s;
+    text-decoration: underline;
 }
 
 /* BUTTON */
@@ -106,7 +117,7 @@ button:hover{
 
     text-align: center;
     font-family: Coolvetica;
-    font-size: 14px;
+    font-size: 16px;
     color:#682C7A;
 }
 
@@ -116,6 +127,7 @@ button:hover{
 }
 
 .existingaccount a:hover{
-    color: #1e6eb3;
+    color: #0072d6;
     transition: 0.2s;
+    text-decoration: underline;
 }

@@ -1,15 +1,22 @@
-import { Modal } from 'bootstrap';
+document.addEventListener("DOMContentLoaded", () => {
+    const openBtn = document.getElementById("openterms");
+    const modal = document.getElementById("tncModal");
+    const closeBtn = document.getElementById("closeTnc");
 
-document.addEventListener('DOMContentLoaded', () => {
-    const link = document.getElementById('openterms');
-    const modalElement = document.getElementById('termsModal');
+    if (!openBtn || !modal || !closeBtn) return;
 
-    if (!link || !modalElement) return;
-
-    const termsModal = new Modal(modalElement);
-
-    link.addEventListener('click', (e) => {
+    openBtn.addEventListener("click", (e) => {
         e.preventDefault();
-        termsModal.show();
+        modal.classList.add("active");
+    });
+
+    closeBtn.addEventListener("click", () => {
+        modal.classList.remove("active");
+    });
+
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) {
+            modal.classList.remove("active");
+        }
     });
 });

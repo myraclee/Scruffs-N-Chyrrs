@@ -24,5 +24,8 @@
 
     <!-- FOOTER -->
     @include('page_parts.footer')
+
+    {{-- JS --}}
+    @yield('page_js')
 </body>
 </html>

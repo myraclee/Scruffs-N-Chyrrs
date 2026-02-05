@@ -1,11 +1,11 @@
 @extends('layouts.customer_layout')
 
 @section('page_css')
-@vite(['resources/css/customer/signup.css'])
+@vite(['resources/css/customer/signup.css','resources/css/customer/popups/tnc.css'])
 @endsection
 
 @section('page_js')
-@vite(['resources/js/app.js','resources/js/terms-modal.js'])
+    @vite(['resources/js/tnc.js'])
 @endsection
 
 @section('content')
@@ -49,7 +49,7 @@
         </div>
 
         <div class="tnc">
-            <p>Please view Scruffs&Chyrrs' <a href="#" id="openterms">Terms and Conditions of Use</a> to proceed with the sign up.</p>
+            <p>Please view Scruffs&Chyrrs' <a href="#" class="tnc_open" id="openterms">Terms and Conditions of Use</a> to proceed with the sign up.</p>
         </div>
 
         <button type="submit">Submit</button>
@@ -60,31 +60,5 @@
             </p>
         </div>
     </form>
-
-    <div class="modal fade" id="termsModal" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-
-            <div class="modal-header">
-                <h5 class="modal-title">Terms and Conditions of Use</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-
-            <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
-                <p><strong>1. Acceptance of Terms</strong></p>
-                <p>By using Scruffs&Chyrrs, you agree to these terms.</p>
-
-                <p><strong>2. User Responsibility</strong></p>
-                <p>You are responsible for your account usage.</p>
-            </div>
-
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    Close
-                </button>
-            </div>
-
-        </div>
-    </div>
-</div>
+    @include('customer.popups.tnc')
 @endsection
