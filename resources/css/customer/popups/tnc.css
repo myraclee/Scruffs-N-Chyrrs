@@ -1,4 +1,4 @@
-.modal-overlay {
+.tnc_overlay {
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.6);
@@ -8,39 +8,88 @@
     z-index: 999;
 }
 
-.modal-overlay.active {
+.tnc_overlay.active {
     display: flex;
 }
 
-.modal-content {
-    background: #fff;
+.tnc_content {
+    background: #FFF7EC;
     width: 90%;
-    max-width: 600px;
+    max-width: 700px;
     padding: 25px;
-    border-radius: 12px;
+    border-radius: 15px;
     position: relative;
 }
 
-.modal-close {
+.tnc_close {
     position: absolute;
     top: 12px;
     right: 15px;
+
     border: none;
     background: none;
     font-size: 26px;
+    color: #682C7A;
+
     cursor: pointer;
 }
 
-.modal-body {
+.tnc_header{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.tnc_header > :first-child {
+    height: 130px;
+}
+
+.tnc_header > :nth-child(2){ 
+    margin-top: 20px;
+
+    font-family: SuperDream;
+    font-size: 40px;
+    color: #682C7A;
+}
+
+.tnc_header > :nth-child(3){ 
+    font-family: Coolvetica;
+    font-size: 17px;
+    color: #682C7A;
+    text-align: center;
+}
+
+.tnc_body {
     max-height: 60vh;
     overflow-y: auto;
 }
 
-.modal-overlay {
-    display: none;
-    /* other styles */
+.tnc_terms{
+    padding: 20px 20px 0px 10px;
 }
 
-.modal-overlay.active {
-    display: flex;
+.tnc_terms > h3{
+    font-family: Coolvetica;
+    font-size: 18px;
+    color: #682C7A;
+}
+
+.tnc_terms > p{
+    margin-left: 20px;
+
+    font-family: Coolvetica;
+    font-size: 15px;
+    color: #682C7A;
+
+    text-align: justify;
+}
+
+.tnc_terms > ul{
+    list-style-type: disc;
+    padding-left: 40px;   
+}
+
+li{
+    color: #682C7A;
+    font-family: Coolvetica;
 }

@@ -7,7 +7,7 @@
     margin-bottom: 50px;
 }
 
-h1{
+.header_signup{
     font-family: SuperDream;
     font-size: 40px;
     color: #682C7A;
@@ -34,21 +34,30 @@ label{
     color: #682C7A;
 }
 
-input{
+.signup_textbox{
     width: 350px;
     height: 50px;
     border-radius: 30px;
-    outline: #682C7A;
-    border: none;
+    border: 2px solid transparent;
 
     box-shadow: 0 0 10px 1px rgba(0,0,0,0.12);
 
     padding-left: 20px;
     padding-right: 20px;
+
+    font-size: 15px;
 }
 
-input::placeholder{
+.signup_textbox::placeholder{
     color: #645868;
+}
+
+.signup_textbox:focus{
+    border-color: #682C7A;
+    outline: none;
+    transition: 
+        box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        border-color 0.3s ease;
 }
 
 form{
@@ -70,12 +79,29 @@ form{
 .tnc{
     margin-top: 20px;
     margin-bottom: 20px;
-    width: 400px;
 
     text-align: center;
     font-family: Coolvetica;
     font-size: 16px;
     color:#682C7A;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 7px;
+}
+
+input[type="checkbox"]{
+    height: 15px;
+    width: 15px;
+
+    accent-color: #682C7A;
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out, accent-color 0.2s ease-in-out;
+}
+
+input[type="checkbox"]:checked {
+  transform: scale(1.1);
 }
 
 .tnc_open{
@@ -91,7 +117,7 @@ form{
 
 /* BUTTON */
 
-button{
+.signup_submit{
     height: 40px;
     width: 150px;
     
@@ -99,16 +125,26 @@ button{
     border-radius: 30px;
     box-shadow: 0 0 7px 4px rgba(0,0,0,0.12);
 
-    background-color: #682C7A;
+    background-color: #CBCBCB;
     color: #FFF0DA;
     font-family: Coolvetica;
     font-size: 17px;
+
+    cursor: not-allowed;
+    transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-button:hover{
-    background-color: #451c52;
-    transition: 0.2s;
+
+.signup_submit.active {
+    background-color: #682C7A;
+    cursor: pointer;
 }
+
+.signup_submit.active:hover {
+    background-color: #451c52;
+    transform: scale(1.05);
+}
+
 
 /* ALREADY HAVE AN ACCOUNT? */
 
