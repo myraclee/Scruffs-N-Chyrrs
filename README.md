@@ -192,6 +192,7 @@ The application uses a specific strategy for frontend assets that requires atten
 | **Format Code** | `./vendor/bin/pint` | Auto-fixes PHP code style. |
 | **Build Assets** | `npm run build` | Compiles assets for production. |
 | **Clear Cache** | `php artisan optimize:clear` | Flushes all Laravel caches. |
+| **Rebuild Database** | `php artisan migrate:fresh` | Rebuilds database from scratch. |
 
 ## Contributing To Scruffs-N-Chyrrs
 
