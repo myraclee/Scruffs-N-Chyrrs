@@ -65,6 +65,23 @@ DB_USERNAME=root
 DB_PASSWORD=
 ```
 
+#### Cloudflare Turnstile CAPTCHA Configuration
+
+The signup form uses **Cloudflare Turnstile** for CAPTCHA protection. You must configure the site key in your `.env` file:
+
+```dotenv
+CLOUDFLARE_TURNSTILE_SITEKEY=YOUR-SITE-KEY
+```
+
+To obtain your Cloudflare Turnstile site key:
+
+1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com/).
+2. Navigate to **Turnstile** in the left sidebar.
+3. Create a new site or use an existing one.
+4. Copy your **Site Key** and paste it into the `CLOUDFLARE_TURNSTILE_SITEKEY` variable in your `.env` file.
+
+> **Note:** Without this configuration, the signup form's CAPTCHA validation will not function, and form submissions will fail.
+
 ## Development Workflow
 
 ### Running the Application

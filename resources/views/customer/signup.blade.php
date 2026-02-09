@@ -6,6 +6,7 @@
 
 @section('page_js')
     @vite(['resources/js/tnc.js'])
+    <link rel="preconnect" href="https://challenges.cloudflare.com">
 @endsection
 
 @section('content')
@@ -65,6 +66,14 @@
             </div>
         </div>
 
+        <div
+        class="cf-turnstile"
+        data-sitekey="{{ env('CLOUDFLARE_TURNSTILE_SITEKEY') }}"
+        data-theme="light"
+        data-size="normal"
+        data-callback="onSuccess"
+        ></div>
+
         <div class="tnc">
             <input type="checkbox" id="tnc_checkbox">
             <p>By signing up, you agree to Scruffs&Chyrrs' <a href="#" class="tnc_open" id="openterms">Terms and Conditions of Use</a></p>
@@ -79,4 +88,9 @@
         </div>
     </form>
     @include('customer.popups.tnc')
+    <script
+        src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+        async
+        defer
+    ></script>
 @endsection
