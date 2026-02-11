@@ -1,0 +1,12 @@
+
+.code-input {
+    letter-spacing: 5px;
+    font-size: 1.8rem;
+    border: 3px solid #C6A4E3;
+    text-transform: uppercase;
+    width: 250px;
+}
+
+@media screen and (max-width: 768px) {
+    .code-input { width: 100%; max-width: 200px; }
+}

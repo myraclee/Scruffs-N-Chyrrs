@@ -19,6 +19,18 @@ Route::get('/aboutus', function () {
     return view('customer.aboutus');
 })->name('aboutus');
 
+Route::get('/password/reset', function () {
+    return view('customer.password_page.reset_password');
+})->name('reset-password');
+
+Route::get('/password/code', function () {
+    return view('customer.password_page.enter_code');
+})->name('enter-code');
+
+Route::get('/password/new', function () {
+    return view('customer.password_page.new_password');
+})->name('new-password');
+
 // Authentication Routes
 Route::get('/signup', [AuthController::class, 'showSignup'])->name('signup');
 Route::post('/signup', [AuthController::class, 'register'])->name('signup.store');

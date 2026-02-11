@@ -104,3 +104,28 @@
     color: #fff0da;
     transition: 0.1s;
 }
+
+.footer-wave {
+    width: 100%;
+    height: 150px; /* Default height */
+    background-image: url('/images/website_elements/footer_background.png');
+    background-repeat: no-repeat;
+    background-size: 100% 100%; /* FIX: Stretches image to fill completely */
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    padding-bottom: 15px;
+}
+
+.footer-wave p {
+    color: white;
+    font-size: 0.9rem;
+    font-family: 'Coolvetica', sans-serif;
+}
+
+/* MOBILE RESPONSIVENESS */
+@media screen and (max-width: 768px) {
+    .footer-wave {
+        height: 100px; /* Shrinks on phones */
+    }
+}
