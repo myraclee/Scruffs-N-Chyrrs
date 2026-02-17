@@ -27,5 +27,6 @@
 
     {{-- JS --}}
     @yield('page_js')
+    @vite('resources/js/customeraccount_options.js')
 </body>
 </html>

@@ -67,3 +67,84 @@
     left: 50%;
     transform: translateX(-50%);
 }
+
+a .person_icon {
+    fill: #682C7A;
+    transition: fill 0.2s ease;
+}
+
+a:hover .person_icon {
+    fill: #a15fb5;
+}
+
+
+/* NAVBAR POPUP*/
+.account_trigger {
+    position: relative;   /* MUST be relative for absolute child */
+    display: inline-block; /* make it block-like inside flex */
+}
+
+.account_popup {
+    position: absolute;
+    display: none;
+    z-index: 1;
+
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+
+    top: calc(100% + 5px);
+    right: 0;
+    margin-right: 145px;
+    width: 150px;
+    height: 100px;
+
+    background-color: #FFF7EC;
+    box-shadow: 5px 5px 15px rgba(165, 165, 165, 0.3);
+    border-radius: 15px;
+}
+
+.account_popup.show {
+    display: flex;
+}
+
+.account_popup a,
+.account_popup button {
+    padding: 8px 10px;
+    cursor: pointer;
+
+    text-decoration: none;
+    background: transparent;
+    border: none;
+
+    color: #682c7a;
+    font-family: Coolvetica;
+}
+
+.guest_login, .guest_signup{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+
+    padding-left: 10px;
+    padding-right: 10px;
+
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.guest_login:hover,
+.guest_signup:hover {
+    background: #f0e8d8;
+}
+
+.guest_login svg{
+    height: 30px;
+    width: 30px;
+}
+
+.guest_signup svg{
+    height: 25px;
+    width: 25px;
+}
