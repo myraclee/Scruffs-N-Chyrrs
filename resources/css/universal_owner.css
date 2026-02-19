@@ -1,0 +1,28 @@
+/* FONTS */
+@font-face {
+    font-family: SuperDream;
+    src: url(../fonts/SuperDream.ttf);
+}
+
+@font-face {
+    font-family: Coolvetica;
+    src: url(../fonts/Coolvetica.otf);
+}
+
+/* UNIVERSAL*/
+body {
+    background: #FFF7EC;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    min-height: 100vh;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+.upper_body {
+    flex: 1;
+}

@@ -27,8 +27,8 @@
                     <a href="{{ route('contacts') }}">Contacts</a>
                 </li>
                 
-                <li class="{{ request()->routeIs('login') ? 'active' : '' }}">
-                    <a href="{{ route('login') }}">Accounts</a>
+                <li>
+                    <a href="{{ route('owner.dashboard') }}">Accounts</a>
                 </li>
             </ul>
         </div>

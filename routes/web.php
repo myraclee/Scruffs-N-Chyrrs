@@ -61,3 +61,19 @@ Route::post('/login', [AuthController::class, 'login'])->name('login.store');
 Route::get('/account', [AuthController::class, 'account'])->middleware('auth')->name('account');
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 
+// OWNER
+Route::get('/owner/pages/dashboard', function () {
+    return view('owner.pages.dashboard');
+})->name('owner.dashboard');
+
+Route::get('/owner/pages/inventory', function () {
+    return view('owner.pages.inventory');
+})->name('owner.inventory');
+
+Route::get('/owner/pages/orders', function () {
+    return view('owner.pages.orders');
+})->name('owner.orders');
+
+Route::get('/owner/pages/content', function () {
+    return view('owner.pages.content');
+})->name('owner.content');

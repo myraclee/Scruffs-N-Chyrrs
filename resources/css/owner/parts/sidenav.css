@@ -1,0 +1,282 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* MOBILE TOGGLE */
+.menu-toggle {
+    display: none;
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    font-size: 24px;
+    background: #222;
+    color: #fff;
+    border: none;
+    padding: 6px 10px;
+    z-index: 1000;
+}
+
+/* SIDENAV */
+.sidenav {
+    width: 230px;
+    background: #FFF0DA;
+    color: 312E2E;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: fixed;
+    height: 100%;
+    transition: transform 0.3s ease;
+}
+
+.nav_top img{
+    width: 200px;
+    display: block;
+
+    margin: 0 auto;
+    margin-top: 25px;
+    margin-bottom: 25px;
+
+    filter: drop-shadow(2px 4px 5px rgba(0, 0, 0, 0.3));
+
+}
+
+.nav_block{
+    display: flex;
+    justify-content: center;
+}
+
+nav{
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.dashboard_nav, .inventory_nav, .orders_nav, .content_nav{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
+
+    height:40px;
+    width: 200px;
+
+    padding-left: 20px;
+    padding-right: 30px;
+
+    position: relative;
+}
+
+.dashboard_nav svg{
+    height: 25px;
+}
+
+.inventory_nav svg{
+    height: 25px;
+}
+
+.orders_nav svg{
+    height: 23px;
+}
+
+.content_nav svg{
+    height: 25px;
+    width: 25px;
+}
+
+.nav_link {
+    display: block;
+    color: #312E2E;
+    font-family: Coolvetica;
+    font-size: 18px;
+    text-decoration: none;
+
+    position: relative;
+}
+
+.dashboard_nav:hover,
+.inventory_nav:hover,
+.orders_nav:hover,
+.content_nav:hover{
+    background: #FFF7EC;
+    border-radius: 20px;
+}
+
+.dashboard_nav::after,
+.inventory_nav::after,
+.orders_nav::after,
+.content_nav::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: #DCBAE6;
+    border-radius: 20px;
+    z-index: -1;
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.dashboard_nav.active::after,
+.inventory_nav.active::after,
+.orders_nav.active::after,
+.content_nav.active::after {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* BOTTOM MENU */
+.user_section {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+
+    border-top: 1px solid #312E2E;
+    overflow: hidden;
+
+    transition: all 0.3s ease;
+}
+
+.bottom_menu > img {
+    height: 35px;
+}
+
+.bottom_menu{
+    display:flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 20px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.user_expand {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+
+    transition: transform 0.3s ease;
+}
+
+.user_name {
+    font-size: 15px;
+    font-family: Coolvetica;
+    color: #312E2E;
+}
+
+.user_email {
+    font-size: 11px;
+    font-family: Coolvetica;
+    color: #707070;
+}
+
+.arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color:#312E2E;
+    font-size: 20px;
+
+    transition: transform 0.25s ease;
+    cursor: pointer;
+
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.arrow:hover{
+    color: #682C7A;
+    transition: 0.3s ease;
+}
+
+/* BOTTOM MENU OPTIONS */
+.user_popup {
+    display: flex;
+    flex-direction: column;
+
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0;
+
+    transform: translateY(6px);
+    overflow: hidden;
+
+    transition: 
+        transform 0.35s ease,
+        opacity 0.35s ease,
+        margin-top 0.35s ease;
+}
+
+.sidenav_account, .sidenav_main, .sidenav_logout{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    
+    width: 100%;    
+    padding: 10px 15px;
+    box-sizing: border-box;
+    cursor: pointer;   
+}
+
+.sidenav_account:hover, .sidenav_main:hover, .sidenav_logout:hover{
+    background: #DCBAE6;
+    transition: background 0.3s ease;
+}
+
+.sidenav_account a, .sidenav_main a, .sidenav_logout a{
+    font-family: Coolvetica;
+    font-size: 16px;
+    color: #312E2E;
+    text-decoration: none;
+}
+
+/* ACTIVE STATE */
+.user_section.active .user_popup {
+    max-height: 220px;
+    opacity: 1;
+    transform: translateY(0);
+    margin-top: 12px;
+}
+
+.user_section.active .arrow {
+    transform: rotate(180deg);
+}
+
+/* CONTENT */
+.content {
+    margin-left: 240px;
+    padding: 30px;
+    width: 100%;
+}
+
+/* MEDIA QUERY */
+@media (max-width: 768px) {
+    .menu-toggle {
+        display: block;
+    }
+
+    .sidenav {
+        transform: translateX(-100%);
+    }
+
+    .sidenav.open {
+        transform: translateX(0);
+    }
+
+    .content {
+        margin-left: 0;
+        padding-top: 70px;
+    }
+}
