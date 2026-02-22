@@ -1,0 +1,194 @@
+/* ===== FONTS ===== */
+@font-face {
+    font-family: SuperDream;
+    src: url(../../fonts/SuperDream.ttf);
+}
+
+@font-face {
+    font-family: Coolvetica;
+    src: url(../../fonts/Coolvetica.otf);
+}
+
+/* ===== RESET ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+}
+
+/* ===== BODY ===== */
+body {
+    font-family: Coolvetica;
+    background-color: #FFF0DA;
+}
+
+/* ===== MAIN WRAPPER ===== */
+.main-wrapper {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ===== HEADER ===== */
+header {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    margin-top: 45px;
+}
+
+/* CENTERED LABEL NAME */
+.header-label {
+    position: absolute;
+    top: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 45px;
+    z-index: 2;
+}
+
+/* ===== NAVBAR ===== */
+.nav-pill {
+    background: #FFF7EC;
+    width: 90%;
+    max-width: 1000px;
+    height: 65px;
+    border-radius: 40px;
+    display: flex;
+    align-items: center;
+    padding: 0 25px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+.nav-logo {
+    height: 38px;
+}
+
+nav {
+    flex: 1;
+    margin-left: 20px;
+}
+
+nav a {
+    text-decoration: none;
+    margin: 0 12px;
+    color: #682C7A;
+    font-weight: 600;
+}
+
+.user-icon {
+    font-size: 18px;
+}
+
+/* ===== LOGIN SECTION ===== */
+.login-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-title {
+    font-family: SuperDream;
+    color: #682C7A;
+    margin-bottom: 25px;
+}
+
+/* ===== FORM ===== */
+.login-form {
+    width: 300px;
+    text-align: center;
+}
+
+.input-group {
+    text-align: left;
+    margin-bottom: 15px;
+}
+
+.input-group label {
+    font-size: 14px;
+    color: #682C7A;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 20px;
+    border: 1px solid #D6B7E5;
+    outline: none;
+    margin-top: 5px;
+}
+
+/* ===== LOGIN BUTTON ===== */
+.login-button {
+    margin-top: 15px;
+    width: 140px;
+    padding: 10px;
+    border-radius: 25px;
+    border: none;
+    background: #6B2E83;
+    color: #FFF0DA;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.login-button:hover {
+    opacity: 0.9;
+}
+
+/* ===== CUSTOMER EXTRA LINKS ===== */
+
+.forgot-link {
+    display: block;
+    font-size: 12px;
+    margin-top: 5px;
+    text-align: right;
+    text-decoration: none;
+    color: #6B2E83;
+}
+
+.forgot-link:hover {
+    text-decoration: underline;
+}
+
+.register-text {
+    margin-top: 18px;
+    font-size: 13px;
+    color: #682C7A;
+}
+
+.register-link {
+    text-decoration: none;
+    color: #6B2E83;
+    font-weight: 600;
+}
+
+.register-link:hover {
+    text-decoration: underline;
+}
+
+/* ===== FOOTER ===== */
+footer {
+    width: 100%;
+}
+
+.footer-wave {
+    background-image: url(../../photos/website_elements/footer_background.png);
+    background-repeat: repeat-x;
+    background-size: contain;
+    height: 120px;
+    width: 100%;
+}
+
+.footer-bar {
+    background: #C9A4DA;
+    text-align: center;
+    padding: 10px 0;
+    color: white;
+    font-size: 13px;
+}
