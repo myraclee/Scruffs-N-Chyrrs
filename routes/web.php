@@ -74,6 +74,6 @@ Route::get('/owner/pages/orders', function () {
     return view('owner.pages.orders');
 })->name('owner.orders');
 
-Route::get('/owner/pages/content', function () {
-    return view('owner.pages.content');
+Route::get('/owner/pages/content_management', function () {
+    return view('owner.pages.content_management');
 })->name('owner.content');

@@ -1,0 +1,131 @@
+.page_header{
+    font-family: SuperDream;
+    font-size: 50px;
+    color: #682C7A;
+
+    margin-bottom: 20px;
+}
+
+/* Button Pages */
+
+.content_pages{
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+}
+
+.content_option{
+    border: none;
+    outline: none;
+
+    width: 150px;
+    height: 35px;
+
+    background-color: #DCBAE6;
+    border-radius: 20px;
+
+    color: #682C7A;
+    font-family: Coolvetica;
+    font-size: 15px;
+
+    cursor: pointer;
+
+    margin-bottom: 20px;
+}
+
+/* Home Page */
+.content_homepage_images h2{
+    font-family: Coolvetica;
+    font-size: 30px;
+    color: #682C7A;
+
+    margin-bottom: 20px;
+}
+
+.home_images_uploads{
+    position: relative;
+    border: 2px solid black;
+    width: 300px;
+    height: 200px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.home_images_uploads img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.delete_home_images{
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+
+    border: none;
+    outline: none;
+
+    width: 45px;
+    height: 35px;
+    border-radius: 30px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    background-color: #FFF7EC;
+
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    transition: transform 0.4s ease, background-color 0.4s ease;
+}
+
+.delete_home_images svg {
+    fill: #C83333;
+    transition: fill 0.4s ease;
+}
+
+.delete_home_images:hover {
+    background-color: #C83333;
+}
+
+.delete_home_images:hover svg {
+    fill: #FFF7EC;
+}
+
+.home_add{
+    margin-top: 20px;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
+}
+
+.add_home_images{
+    border: none;
+    outline: none;
+
+    width: 130px;
+    height: 35px;
+
+    background-color: #682C7A;
+    border-radius: 30px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+
+    font-family: Coolvetica;
+    font-size: 15px;
+    color: #FFF0DA;
+
+    cursor: pointer;
+}
+
+.add_home_images:hover {
+    transform: scale(1.05);
+    transition: 0.2s ease;
+}
+
+.home_images_count{
+    font-family: Coolvetica;
+    font-size: 15px;
+    color: #682C7A;
+}

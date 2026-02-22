@@ -4,16 +4,16 @@
 
         <div class="nav_block">
         <nav>
-            <div class="dashboard_nav {{ request()->routeIs('owner.dashboard') ? 'active' : '' }}"">
+            <a href="{{ route('owner.dashboard') }}" class="dashboard_nav {{ request()->routeIs('owner.dashboard') ? 'active' : '' }}"">
                 <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" viewBox="0 0 24 24" id="Dashboard">
                 <path fill="#312E2E" d="M9.9 3H4.6C3.7 3 3 3.7 3 4.6v8.5c0 .9.7 1.6 1.6 1.6h5.3c.9 0 1.6-.7 1.6-1.6V4.6C11.5 3.7 10.8 3 9.9 3zM9.4 12.5H5.1V5.1h4.2V12.5zM9.9 15.7H4.6c-.9 0-1.6.7-1.6 1.6v2.1C3 20.3 3.7 21 4.6 21h5.3c.9 0 1.6-.7 1.6-1.6v-2.1C11.5 16.4 10.8 15.7 9.9 15.7zM9.4 18.9H5.1v-1.1h4.2V18.9zM19.4 9.4h-5.3c-.9 0-1.6.7-1.6 1.6v8.5c0 .9.7 1.6 1.6 1.6h5.3c.9 0 1.6-.7 1.6-1.6v-8.5C21 10.1 20.3 9.4 19.4 9.4zM18.9 18.9h-4.2v-7.4h4.2V18.9zM19.4 3h-5.3c-.9 0-1.6.7-1.6 1.6v2.1c0 .9.7 1.6 1.6 1.6h5.3c.9 0 1.6-.7 1.6-1.6V4.6C21 3.7 20.3 3 19.4 3zM18.9 6.2h-4.2V5.1h4.2V6.2z" class="color3b65f5 svgShape"></path>
                 </svg>
-                <a href="{{ route('owner.dashboard') }}" class="nav_link">
+                <span class="nav_link">
                     Dashboard
-                </a>
-            </div>
+                </span>
+            </a>
 
-            <div class="inventory_nav {{ request()->routeIs('owner.inventory') ? 'active' : '' }}"">
+            <a href="{{ route('owner.inventory') }}" class="inventory_nav {{ request()->routeIs('owner.inventory') ? 'active' : '' }}"">
                 <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 24 24" enable-background="new 0 0 24 24" id="box">
                 <g id="Layer_2" fill="#312E2E" class="color000000 svgShape">
                     <path d="M22.75,17.25c0-0.41113-0.25098-0.7793-0.6333-0.93066l-2.09229-0.82422c-0.46436-0.18359-0.83545-0.55469-1.01855-1.01855
@@ -46,26 +46,26 @@
                         c0.75513,0.43158,1.47247,0.91937,2.15332,1.45441L11.979,10.87402z" fill="#312E2E" class="color000000 svgShape"></path>
                 </g>
                 </svg>
-                <a href="{{ route('owner.inventory') }}" class="nav_link">
+                <span class="nav_link">
                     Inventory
-                </a>
-            </div>
+                </span>
+            </a>
 
-            <div class="orders_nav {{ request()->routeIs('owner.orders') ? 'active' : '' }}"">
+            <a href="{{ route('owner.orders') }}" class="orders_nav {{ request()->routeIs('owner.orders') ? 'active' : '' }}"">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="shoppingbag">
                 <path fill="#312E2E" d="M21.86 8.11A3 3 0 0 0 19.53 7H17V6A5 5 0 0 0 7 6v1H4.47a3 3 0 0 0-2.93 3.63l2.14 10A3 3 0 0 0 6.62 23h10.76a3 3 0 0 0 2.94-2.37l2.14-10a3 3 0 0 0-.6-2.52ZM9 6a3 3 0 0 1 6 0v1H9Zm9.36 14.21a1 1 0 0 1-1 .79H6.62a1 1 0 0 1-1-.79l-2.14-10a1 1 0 0 1 .2-.84A1 1 0 0 1 4.47 9H7v2a1 1 0 0 0 2 0V9h6v2a1 1 0 0 0 2 0V9h2.53a1 1 0 0 1 .77.37 1 1 0 0 1 .2.84Z" class="color231f20 svgShape"></path>
                 </svg>
-                <a href="{{ route('owner.orders') }}" class="nav_link">
+                <span class="nav_link">
                     Orders
-                </a>
-            </div>
+                </span>
+            </a>
 
-            <div class="content_nav {{ request()->routeIs('owner.content') ? 'active' : '' }}"">
+            <a href="{{ route('owner.content') }}" class="content_nav {{ request()->routeIs('owner.content') ? 'active' : '' }}"">
                 <svg xmlns="http://www.w3.org/2000/svg" height="25px" viewBox="0 -960 960 960" width="25px" fill="#312E2E"><path d="M130-189 81-546q-5-32 15.5-58t52.5-31l61 435 283-40h267q-8 21-24.5 35.5T695-187l-477 66q-33 5-58-15t-30-53Zm190-127q-33 0-56.5-23.5T240-396v-364q0-33 23.5-56.5T320-840h480q33 0 56.5 23.5T880-760v364q0 33-23.5 56.5T800-316H320Zm0-80h480v-364H320v364Zm0 0v-364 364ZM210-200Zm190-400h320v-80H400v80Zm0 120h200v-80H400v80Z"/></svg>
-                <a href="{{ route('owner.content') }}" class="nav_link">
+                <span class="nav_link">
                     Content
-                </a>
-            </div>
+                </span>
+            </a>
         </nav>
         </div>
     </div>
@@ -79,7 +79,7 @@
                 <p class="user_name">{{ Auth::user()->name ?? 'Celina Felizardo' }}</p>
                 <p class="user_email">{{ Auth::user()->email ?? 'email@gmail.com' }}</p>
             </div>
-            <span class="arrow" id="userToggle">⮟</span>
+            <span class="arrow" id="userToggle">⮝</span>
         </div>
         </div>
 

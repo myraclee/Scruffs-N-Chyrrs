@@ -73,6 +73,9 @@ nav{
     padding-right: 30px;
 
     position: relative;
+
+    text-decoration: none;
+    user-select: none;
 }
 
 .dashboard_nav svg{
