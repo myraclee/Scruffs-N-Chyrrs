@@ -24,6 +24,7 @@ class User extends Authenticatable
         'email',
         'contact_number',
         'password',
+        'user_type',
     ];
 
     /**
@@ -47,5 +48,13 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Check if the user is an owner.
+     */
+    public function isOwner(): bool
+    {
+        return $this->user_type === 'owner';
     }
 }

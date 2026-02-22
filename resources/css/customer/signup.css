@@ -7,40 +7,40 @@
     margin-bottom: 50px;
 }
 
-.header_signup{
+.header_signup {
     font-family: SuperDream;
     font-size: 40px;
-    color: #682C7A;
+    color: #682c7a;
 
     margin-bottom: 25px;
 }
 
 /* FORM */
 
-.signup_firstname_container, 
-.signup_lastname_container, 
-.signup_email_container, 
-.signup_contact_container, 
+.signup_firstname_container,
+.signup_lastname_container,
+.signup_email_container,
+.signup_contact_container,
 .signup_password_container,
-.signup_confirmpassword_container{
+.signup_confirmpassword_container {
     display: flex;
     flex-direction: column;
     gap: 5px;
 }
 
-label{
+label {
     font-family: Coolvetica;
     font-size: 20px;
-    color: #682C7A;
+    color: #682c7a;
 }
 
-.signup_textbox{
+.signup_textbox {
     width: 350px;
     height: 50px;
     border-radius: 30px;
     border: 2px solid transparent;
 
-    box-shadow: 0 0 10px 1px rgba(0,0,0,0.12);
+    box-shadow: 0 0 10px 1px rgba(0, 0, 0, 0.12);
 
     padding-left: 20px;
     padding-right: 20px;
@@ -48,26 +48,25 @@ label{
     font-size: 15px;
 }
 
-.signup_textbox::placeholder{
+.signup_textbox::placeholder {
     color: #645868;
 }
 
-.signup_textbox:focus{
-    border-color: #682C7A;
+.signup_textbox:focus {
+    border-color: #682c7a;
     outline: none;
-    transition: 
-        box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
         border-color 0.3s ease;
 }
 
-form{
+form {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
 }
 
-.row{
+.row {
     display: flex;
     flex-direction: row;
     gap: 30px;
@@ -76,14 +75,14 @@ form{
 
 /*TERMS AND CONDITIONS*/
 
-.tnc{
+.tnc {
     margin-top: 20px;
     margin-bottom: 20px;
 
     text-align: center;
     font-family: Coolvetica;
     font-size: 16px;
-    color:#682C7A;
+    color: #682c7a;
 
     display: flex;
     flex-direction: row;
@@ -91,25 +90,25 @@ form{
     gap: 7px;
 }
 
-input[type="checkbox"]{
+input[type='checkbox'] {
     height: 15px;
     width: 15px;
 
-    accent-color: #682C7A;
+    accent-color: #682c7a;
     cursor: pointer;
     transition: transform 0.2s ease-in-out, accent-color 0.2s ease-in-out;
 }
 
-input[type="checkbox"]:checked {
-  transform: scale(1.1);
+input[type='checkbox']:checked {
+    transform: scale(1.1);
 }
 
-.tnc_open{
+.tnc_open {
     text-decoration: none;
-    color: #359BF4;
+    color: #359bf4;
 }
 
-.tnc_open:hover{
+.tnc_open:hover {
     color: #0072d6;
     transition: 0.2s;
     text-decoration: underline;
@@ -117,16 +116,16 @@ input[type="checkbox"]:checked {
 
 /* BUTTON */
 
-.signup_submit{
+.signup_submit {
     height: 40px;
     width: 150px;
-    
+
     border: none;
     border-radius: 30px;
-    box-shadow: 0 0 7px 4px rgba(0,0,0,0.12);
+    box-shadow: 0 0 7px 4px rgba(0, 0, 0, 0.12);
 
-    background-color: #CBCBCB;
-    color: #FFF0DA;
+    background-color: #cbcbcb;
+    color: #fff0da;
     font-family: Coolvetica;
     font-size: 17px;
 
@@ -134,9 +133,8 @@ input[type="checkbox"]:checked {
     transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-
 .signup_submit.active {
-    background-color: #682C7A;
+    background-color: #682c7a;
     cursor: pointer;
 }
 
@@ -145,25 +143,80 @@ input[type="checkbox"]:checked {
     transform: scale(1.05);
 }
 
-
 /* ALREADY HAVE AN ACCOUNT? */
 
-.existingaccount{
+.existingaccount {
     margin-top: 20px;
 
     text-align: center;
     font-family: Coolvetica;
     font-size: 16px;
-    color:#682C7A;
+    color: #682c7a;
 }
 
-.existingaccount a{
+.existingaccount a {
     text-decoration: none;
-    color: #359BF4;
+    color: #359bf4;
 }
 
-.existingaccount a:hover{
+.existingaccount a:hover {
     color: #0072d6;
     transition: 0.2s;
     text-decoration: underline;
+}
+
+/* Signup Validation Styling */
+.signup_textbox {
+    transition: border-color 0.3s ease;
+}
+
+.validation_error {
+    font-size: 12px;
+    color: #d32f2f;
+    font-family: 'Coolvetica', sans-serif;
+    margin-top: 4px;
+}
+
+/* Password Validation Hints */
+.password_hints {
+    margin-top: 12px;
+    font-family: 'Coolvetica', sans-serif;
+    font-size: 12px;
+}
+
+.hint_label {
+    color: #666;
+    margin: 0 0 8px 0;
+    font-weight: 600;
+    display: block;
+}
+
+.hint_success {
+    color: #4caf50;
+    margin: 0;
+    font-weight: 600;
+}
+
+.hints_list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.hints_list li {
+    padding: 4px 0;
+    font-size: 12px;
+}
+
+.hint_met {
+    color: #4caf50;
+    font-weight: 500;
+}
+
+.hint_unmet {
+    color: #d32f2f;
+    font-weight: 500;
 }

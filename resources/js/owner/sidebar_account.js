@@ -4,8 +4,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const userToggle = document.getElementById('userToggle');
     const userPopup = document.getElementById('userPopup');
-    const section = document.getElementById('userSection'); // make sure your <div class="user_section"> has id="userSection"
+    const section = document.getElementById('userSection');
     const arrow = userToggle.querySelector('svg');
+    const logoutButton = document.getElementById('sidenavLogoutButton');
+    const logoutForm = document.getElementById('ownerLogoutForm');
 
     // menu toggle
     menuToggle.addEventListener('click', () => {
@@ -31,4 +33,13 @@ document.addEventListener('DOMContentLoaded', () => {
             arrow.style.transform = "rotate(0deg)";
         }
     });
+
+    // Handle logout button click
+    if (logoutButton && logoutForm) {
+        logoutButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            logoutForm.submit();
+        });
+    }
 });

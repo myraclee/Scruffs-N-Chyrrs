@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
     return view('customer.home');
@@ -38,42 +37,33 @@ Route::get('/password/new', function () {
 Route::get('/signup', [AuthController::class, 'showSignup'])->name('signup');
 Route::post('/signup', [AuthController::class, 'register'])->name('signup.store');
 
-// account route
-Route::get('/account', [AuthController::class, 'account'])
-    ->middleware('auth')
-    ->name('account');
-
-//Log Out Route 
-Route::post('/logout', [AuthController::class, 'logout'])
-    ->middleware('auth')
-    ->name('logout');
-
-// Pop Up
-// Signup
-Route::get('/signup', [AuthController::class, 'showSignup'])->name('signup');
-Route::post('/signup', [AuthController::class, 'register'])->name('signup.store');
-
-// Login
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.store');
 
-// Account & Logout
-Route::get('/account', [AuthController::class, 'account'])->middleware('auth')->name('account');
-Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
+Route::middleware('auth')->group(function () {
+    Route::get('/account', [AuthController::class, 'account'])->name('account');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::get('/account/edit', [AuthController::class, 'showEditProfile'])->name('edit-profile');
+    Route::post('/account/update', [AuthController::class, 'updateProfile'])->name('update-profile');
+    Route::get('/account/change-password', [AuthController::class, 'showChangePassword'])->name('change-password');
+    Route::post('/account/update-password', [AuthController::class, 'updatePassword'])->name('update-password');
+});
 
-// OWNER
-Route::get('/owner/pages/dashboard', function () {
-    return view('owner.pages.dashboard');
-})->name('owner.dashboard');
+// OWNER ROUTES
+Route::middleware(['auth', 'owner'])->group(function () {
+    Route::get('/owner/pages/dashboard', function () {
+        return view('owner.pages.dashboard');
+    })->name('owner.dashboard');
 
-Route::get('/owner/pages/inventory', function () {
-    return view('owner.pages.inventory');
-})->name('owner.inventory');
+    Route::get('/owner/pages/inventory', function () {
+        return view('owner.pages.inventory');
+    })->name('owner.inventory');
 
-Route::get('/owner/pages/orders', function () {
-    return view('owner.pages.orders');
-})->name('owner.orders');
+    Route::get('/owner/pages/orders', function () {
+        return view('owner.pages.orders');
+    })->name('owner.orders');
 
-Route::get('/owner/pages/content_management', function () {
-    return view('owner.pages.content_management');
-})->name('owner.content');
+    Route::get('/owner/pages/content_management', function () {
+        return view('owner.pages.content_management');
+    })->name('owner.content');
+});

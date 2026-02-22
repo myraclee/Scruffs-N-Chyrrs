@@ -58,7 +58,7 @@
 }
 
 .nav_list li.active a::after {
-    content: "★";
+    content: '★';
     font-size: 14px;
     color: #682c7a;
 
@@ -69,7 +69,7 @@
 }
 
 a .person_icon {
-    fill: #682C7A;
+    fill: #682c7a;
     transition: fill 0.2s ease;
 }
 
@@ -77,10 +77,9 @@ a:hover .person_icon {
     fill: #a15fb5;
 }
 
-
 /* NAVBAR POPUP*/
 .account_trigger {
-    position: relative;   /* MUST be relative for absolute child */
+    position: relative; /* MUST be relative for absolute child */
     display: inline-block; /* make it block-like inside flex */
 }
 
@@ -99,7 +98,7 @@ a:hover .person_icon {
     width: 150px;
     height: 100px;
 
-    background-color: #FFF7EC;
+    background-color: #fff7ec;
     box-shadow: 5px 5px 15px rgba(165, 165, 165, 0.3);
     border-radius: 15px;
 }
@@ -119,9 +118,19 @@ a:hover .person_icon {
 
     color: #682c7a;
     font-family: Coolvetica;
+    width: 100%;
+    display: block;
+    text-align: left;
+    transition: background 0.2s ease;
 }
 
-.guest_login, .guest_signup{
+.account_popup a:hover,
+.account_popup button:hover {
+    background: #f0e8d8;
+}
+
+.guest_login,
+.guest_signup {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -139,12 +148,28 @@ a:hover .person_icon {
     background: #f0e8d8;
 }
 
-.guest_login svg{
+.guest_login svg {
     height: 30px;
     width: 30px;
 }
 
-.guest_signup svg{
+.guest_signup svg {
     height: 25px;
     width: 25px;
+}
+
+.logout_btn {
+    background: transparent;
+    border: none;
+    color: #682c7a;
+    font-family: Coolvetica;
+    padding: 8px 10px;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+    transition: background 0.2s ease;
+}
+
+.logout_btn:hover {
+    background: #f0e8d8;
 }

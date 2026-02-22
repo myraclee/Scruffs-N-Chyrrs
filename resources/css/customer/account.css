@@ -1,0 +1,145 @@
+.account_container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.account_header {
+    font-family: 'SuperDream', sans-serif;
+    font-size: 3.5rem;
+    color: #6b3282;
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.account_info_section {
+    background: #fff7ec;
+    padding: 30px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.account_info_section h2 {
+    font-family: 'Coolvetica', sans-serif;
+    color: #6b3282;
+    margin-top: 0;
+    margin-bottom: 25px;
+    font-size: 1.5rem;
+}
+
+.info_grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.info_item {
+    padding: 15px;
+    background: #ffffff;
+    border-radius: 10px;
+    border-left: 4px solid #c6a4e3;
+}
+
+.info_item label {
+    display: block;
+    font-family: 'Coolvetica', sans-serif;
+    color: #6b3282;
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+
+.info_item p {
+    margin: 0;
+    font-family: 'Coolvetica', sans-serif;
+    color: #312e2e;
+    font-size: 1.05rem;
+}
+
+.alert {
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-family: 'Coolvetica', sans-serif;
+    font-size: 13px;
+}
+
+.alert_success {
+    background-color: #e8f5e9;
+    border: 2px solid #4caf50;
+    color: #2e7d32;
+}
+
+.alert_error {
+    background-color: #ffebee;
+    border: 2px solid #d32f2f;
+    color: #c62828;
+}
+
+.account_actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.action_btn {
+    padding: 12px 30px;
+    border: none;
+    border-radius: 50px;
+    font-family: 'Coolvetica', sans-serif;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.edit_btn,
+.change_password_btn {
+    background-color: #6b3282;
+    color: #fff0da;
+}
+
+.edit_btn:hover,
+.change_password_btn:hover {
+    background-color: #5a2a70;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(107, 50, 130, 0.3);
+}
+
+.logout_btn {
+    background-color: #c83333;
+    color: #ffffff;
+}
+
+.logout_btn:hover {
+    background-color: #a82a2a;
+    transform: translateY(-2px);
+}
+
+@media screen and (max-width: 768px) {
+    .account_container {
+        padding: 20px;
+    }
+
+    .account_header {
+        font-size: 2.5rem;
+        margin-bottom: 30px;
+    }
+
+    .account_info_section {
+        padding: 20px;
+    }
+
+    .info_grid {
+        grid-template-columns: 1fr;
+    }
+
+    .action_btn {
+        width: 100%;
+        padding: 12px 20px;
+    }
+}

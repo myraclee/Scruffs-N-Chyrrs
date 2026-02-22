@@ -1,10 +1,9 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
-
 <div class="account_popup" id="accountPopup">
     @auth
-        <a href="{{ route('home') }}">View Account</a>
-        <a href="#" id="logoutButton">Logout</a>
+        <button type="button" id="viewAccountButton" class="logout_btn">View Account</button>
+        <button type="button" id="logoutButton" class="logout_btn">Logout</button>
     @endauth
 
     @guest
@@ -25,3 +24,7 @@
     </div>
     @endguest
 </div>
+<!-- Hidden logout form -->
+<form id="logoutForm" action="{{ route('logout') }}" method="POST" style="display: none;">
+    @csrf
+</form>

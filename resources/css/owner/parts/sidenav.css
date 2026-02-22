@@ -27,8 +27,8 @@ body {
 /* SIDENAV */
 .sidenav {
     width: 230px;
-    background: #FFF0DA;
-    color: 312E2E;
+    background: #fff0da;
+    color: 3122eE;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -37,7 +37,7 @@ body {
     transition: transform 0.3s ease;
 }
 
-.nav_top img{
+.nav_top img {
     width: 200px;
     display: block;
 
@@ -46,27 +46,29 @@ body {
     margin-bottom: 25px;
 
     filter: drop-shadow(2px 4px 5px rgba(0, 0, 0, 0.3));
-
 }
 
-.nav_block{
+.nav_block {
     display: flex;
     justify-content: center;
 }
 
-nav{
+nav {
     display: flex;
     flex-direction: column;
     gap: 5px;
 }
 
-.dashboard_nav, .inventory_nav, .orders_nav, .content_nav{
+.dashboard_nav,
+.inventory_nav,
+.orders_nav,
+.content_nav {
     display: flex;
     flex-direction: row;
     align-items: center;
     gap: 20px;
 
-    height:40px;
+    height: 40px;
     width: 200px;
 
     padding-left: 20px;
@@ -78,26 +80,26 @@ nav{
     user-select: none;
 }
 
-.dashboard_nav svg{
+.dashboard_nav svg {
     height: 25px;
 }
 
-.inventory_nav svg{
+.inventory_nav svg {
     height: 25px;
 }
 
-.orders_nav svg{
+.orders_nav svg {
     height: 23px;
 }
 
-.content_nav svg{
+.content_nav svg {
     height: 25px;
     width: 25px;
 }
 
 .nav_link {
     display: block;
-    color: #312E2E;
+    color: #312e2e;
     font-family: Coolvetica;
     font-size: 18px;
     text-decoration: none;
@@ -108,8 +110,8 @@ nav{
 .dashboard_nav:hover,
 .inventory_nav:hover,
 .orders_nav:hover,
-.content_nav:hover{
-    background: #FFF7EC;
+.content_nav:hover {
+    background: #fff7ec;
     border-radius: 20px;
 }
 
@@ -117,10 +119,10 @@ nav{
 .inventory_nav::after,
 .orders_nav::after,
 .content_nav::after {
-    content: "";
+    content: '';
     position: absolute;
     inset: 0;
-    background: #DCBAE6;
+    background: #dcbae6;
     border-radius: 20px;
     z-index: -1;
     opacity: 0;
@@ -142,7 +144,7 @@ nav{
     display: flex;
     flex-direction: column;
 
-    border-top: 1px solid #312E2E;
+    border-top: 1px solid #312e2e;
     overflow: hidden;
 
     transition: all 0.3s ease;
@@ -152,8 +154,8 @@ nav{
     height: 35px;
 }
 
-.bottom_menu{
-    display:flex;
+.bottom_menu {
+    display: flex;
     flex-direction: row;
     justify-content: center;
     gap: 20px;
@@ -173,7 +175,7 @@ nav{
 .user_name {
     font-size: 15px;
     font-family: Coolvetica;
-    color: #312E2E;
+    color: #312e2e;
 }
 
 .user_email {
@@ -187,7 +189,7 @@ nav{
     align-items: center;
     justify-content: center;
 
-    color:#312E2E;
+    color: #312e2e;
     font-size: 20px;
 
     transition: transform 0.25s ease;
@@ -198,8 +200,8 @@ nav{
     user-select: none;
 }
 
-.arrow:hover{
-    color: #682C7A;
+.arrow:hover {
+    color: #682c7a;
     transition: 0.3s ease;
 }
 
@@ -215,34 +217,64 @@ nav{
     transform: translateY(6px);
     overflow: hidden;
 
-    transition: 
-        transform 0.35s ease,
-        opacity 0.35s ease,
-        margin-top 0.35s ease;
+    transition: transform 0.35s ease, opacity 0.35s ease, margin-top 0.35s ease;
 }
 
-.sidenav_account, .sidenav_main, .sidenav_logout{
+.sidenav_account,
+.sidenav_main,
+.sidenav_logout {
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    
-    width: 100%;    
+
+    width: 100%;
     padding: 10px 15px;
     box-sizing: border-box;
-    cursor: pointer;   
+    cursor: pointer;
 }
 
-.sidenav_account:hover, .sidenav_main:hover, .sidenav_logout:hover{
-    background: #DCBAE6;
+.sidenav_account:hover,
+.sidenav_main:hover,
+.sidenav_logout:hover {
+    background: #dcbae6;
     transition: background 0.3s ease;
 }
 
-.sidenav_account a, .sidenav_main a, .sidenav_logout a{
+.sidenav_account a,
+.sidenav_main a,
+.sidenav_logout a {
     font-family: Coolvetica;
     font-size: 16px;
-    color: #312E2E;
+    color: #312e2e;
     text-decoration: none;
+    width: 100%;
+    display: block;
+    transition: color 0.3s ease;
+}
+
+.sidenav_account a:hover,
+.sidenav_main a:hover,
+.sidenav_logout a:hover {
+    color: #682c7a;
+}
+
+.logout_link {
+    background: transparent;
+    border: none;
+    color: #312e2e;
+    font-family: Coolvetica;
+    font-size: 16px;
+    padding: 0;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    text-align: left;
+    width: 100%;
+}
+
+.logout_link:hover {
+    color: #682c7a;
 }
 
 /* ACTIVE STATE */
