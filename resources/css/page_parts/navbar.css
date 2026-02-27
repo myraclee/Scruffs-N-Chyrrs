@@ -79,8 +79,8 @@ a:hover .person_icon {
 
 /* NAVBAR POPUP*/
 .account_trigger {
-    position: relative; /* MUST be relative for absolute child */
-    display: inline-block; /* make it block-like inside flex */
+    position: relative;
+    display: inline-block;
 }
 
 .account_popup {
@@ -137,7 +137,7 @@ a:hover .person_icon {
     justify-content: space-between;
 
     padding-left: 10px;
-    padding-right: 10px;
+    padding-right: 15px;
 
     cursor: pointer;
     transition: background 0.2s ease;
@@ -149,13 +149,14 @@ a:hover .person_icon {
 }
 
 .guest_login svg {
-    height: 30px;
-    width: 30px;
+    padding-right: 4px;
+    height: 35px;
+    width: 35px;
 }
 
 .guest_signup svg {
-    height: 25px;
-    width: 25px;
+    height: 35px;
+    width: 35px;
 }
 
 .logout_btn {

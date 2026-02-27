@@ -50,7 +50,7 @@ Route::middleware('auth')->group(function () {
 });
 
 // OWNER ROUTES
-Route::middleware(['auth', 'owner'])->group(function () {
+// Route::middleware(['auth', 'owner'])->group(function () {
     Route::get('/owner/pages/dashboard', function () {
         return view('owner.pages.dashboard');
     })->name('owner.dashboard');
@@ -66,4 +66,4 @@ Route::middleware(['auth', 'owner'])->group(function () {
     Route::get('/owner/pages/content_management', function () {
         return view('owner.pages.content_management');
     })->name('owner.content');
-});
+// });

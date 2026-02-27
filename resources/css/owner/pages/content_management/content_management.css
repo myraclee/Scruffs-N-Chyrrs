@@ -1,0 +1,59 @@
+.page_header{
+    font-family: SuperDream;
+    font-size: 50px;
+    color: #682C7A;
+
+    margin-bottom: 20px;
+}
+
+/* Button Pages */
+
+.content_pages{
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+}
+
+.content_option{
+    border: none;
+    outline: none;
+
+    width: 150px;
+    height: 35px;
+
+    background-color: #DCBAE6;
+    border-radius: 20px;
+
+    color: #682C7A;
+    font-family: Coolvetica;
+    font-size: 15px;
+
+    cursor: pointer;
+
+    margin-bottom: 20px;
+}
+
+.content_option.active {
+    background: #682C7A;
+    color: #FFF7EC;
+}
+
+.content_section {
+    display: none;
+}
+
+.content_section.active {
+    display: block;
+}
+
+/* HR */
+hr{
+    margin-left: -100px;
+    margin-top: 30px;
+    margin-bottom: 30px;
+
+    border: 0;
+    border-top: 1px solid #682C7A;
+    height: 0;
+}
+
