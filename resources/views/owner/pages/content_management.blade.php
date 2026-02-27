@@ -57,7 +57,7 @@
                     <h2>Add Sample Products</h2>
                     <p class="add_sample_description">Display your product samples!</p>
                     <h3>Sample Title</h3>
-                    <input type="text" id="sampleNameInput" placeholder="Enter Product Name" maxlength="50"/>
+                    <input type="text" id="sampleNameInput" placeholder="Enter Product Name" maxlength="30"/>
                     <p class="sample_name_error" id="sampleNameError">Sample name is required.</p>
 
                     <h3 style="margin-top:15px;">Sample Images</h3>

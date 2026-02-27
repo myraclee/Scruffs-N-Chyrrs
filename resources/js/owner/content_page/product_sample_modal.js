@@ -91,7 +91,9 @@ document.addEventListener('DOMContentLoaded', () => {
             card.innerHTML = `
                 <div class="product_sample_container">
                     <img src="${sample.images[0].preview}">
-                    <h3>${sample.name}</h3>
+                    <div class="product_sample_container_name">
+                        <h3>${sample.name}</h3>
+                    </div>
                 </div>
                 <button class="edit_sample">Edit</button>
             `;
@@ -189,7 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const input = document.createElement('input');
         input.type = 'file';
-        input.accept = 'image/*';
+        input.accept = '.png,.jpg,.jpeg';
         input.hidden = true;
 
         slot.onclick = () => input.click();
