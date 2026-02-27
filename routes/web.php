@@ -4,19 +4,19 @@ use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('customer.home');
+    return view('customer.pages.home');
 })->name('home');
 
 Route::get('/products', function () {
-    return view('customer.products');
+    return view('customer.pages.products');
 })->name('products');
 
-Route::get('/contacts', function () {
-    return view('customer.contacts');
-})->name('contacts');
+Route::get('/faqs', function () {
+    return view('customer.pages.faqs');
+})->name('faqs');
 
 Route::get('/aboutus', function () {
-    return view('customer.aboutus');
+    return view('customer.pages.aboutus');
 })->name('aboutus');
 
 // PASSWORD RESETS

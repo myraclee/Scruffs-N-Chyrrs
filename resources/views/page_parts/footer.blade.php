@@ -23,8 +23,8 @@
                     <a href="{{ route('aboutus') }}">About Us</a>
                 </li>
 
-                <li class="{{ request()->routeIs('contacts') ? 'active' : '' }}">
-                    <a href="{{ route('contacts') }}">Contacts</a>
+                <li class="{{ request()->routeIs('faqs') ? 'active' : '' }}">
+                    <a href="{{ route('faqs') }}">FAQs</a>
                 </li>
                 
                 <li>

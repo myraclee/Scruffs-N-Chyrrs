@@ -38,6 +38,13 @@
     color: #FFF7EC;
 }
 
+.content_option:hover{
+    background-color: #4c1c5b;
+    color: #FFF7EC;
+    transform: scale(1.05);
+    transition: 0.3s ease;
+}
+
 .content_section {
     display: none;
 }
