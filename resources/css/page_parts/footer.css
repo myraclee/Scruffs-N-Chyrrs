@@ -1,14 +1,23 @@
 /* FOOTER */
-.footer_tophalf {
-    background-image: url('../../images/website_elements/footer_background.png');
-    height: 240px;
+
+.footer_wave svg {
+    height: 80px;
     width: 100%;
+    display: block;
+
+    margin-bottom: -3px;
+}
+
+.footer_tophalf {
+    height: 200px;
+    width: 100%;
+
+    background-color: #DCBAE6;
     background-repeat: repeat-x;
 
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-top: 40px;
 }
 
 .footer_location {

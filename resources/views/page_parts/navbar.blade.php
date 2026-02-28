@@ -1,4 +1,5 @@
-<div class="nav_container">
+<div class="nav_whole">
+    <div class="nav_container">
         <img src="{{ asset('images/brand_elements/label_name.png') }}" class="label_name">
         <div class="nav_horizontal">
             <img src="{{ asset('images/brand_elements/sea_bunny.png') }}">
@@ -27,3 +28,4 @@
              @include('page_parts.account_options')
         </div>
     </div>
+</div>

@@ -1,4 +1,9 @@
 /* NAVIGATION BAR */
+
+.nav_whole{
+    padding-top: 30px;
+}
+
 .nav_container {
     display: flex;
     position: relative;

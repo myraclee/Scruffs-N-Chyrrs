@@ -1,0 +1,130 @@
+.home_page_opening {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 50px 10%;
+    gap: 40px;
+}
+
+/* left side */
+.home_page_opening_left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 50px;
+}
+
+.home_page_opening_left h2{
+    font-family: SuperDream;
+    font-size: 50px;
+    color: #682C7A;
+
+    text-align: center;
+}
+
+.home_page_opening_left p{
+    font-family: Coolvetica;
+    font-size: 20px;
+    color: #682C7A;
+
+    text-align: center;
+}
+
+.home_page_opening_left button{
+    width: 160px;
+    height: 50px;
+
+    border: none;
+    background-color: #682C7A;
+    border-radius: 30px;
+
+    font-family: Coolvetica;
+    font-size: 20px;
+    color: #FFF7EC;
+}
+
+.home_page_opening_left button:hover{
+    background-color: #4c1c5b;
+    transform: scale(1.05);
+    transition: 0.3s ease;
+}
+
+/* right side */
+
+.home_page_opening_right {
+    flex: 2;
+    height: 400px;
+    border-radius: 20px;
+    overflow: hidden;
+
+    box-shadow: 10px 10px 10px rgba(165, 165, 165, 0.3);
+    background: gray;
+}
+
+/* scroll animation */
+.page_scoll_divider{
+    width: 100%;
+    overflow: hidden;
+    background: #FFF7EC;
+    padding: 10px 0;
+}
+
+.text_scroll {
+    display: flex;
+    width: max-content;
+    animation: scrollText 15s linear infinite;
+}
+
+.text_scroll span {
+    font-family: Coolvetica;
+    font-size: 20px;
+    color: #682C7A;
+
+    margin-right: 120px;
+    white-space: nowrap;
+}
+
+@keyframes scrollText {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-50%);
+    }
+}
+
+/* products */
+
+.home_page_product_samples_container{
+    background-color: #DCBAE6;
+    padding-top: 50px;
+    padding-bottom: 50px;
+}
+
+.home_page_product_samples_container h1{
+    font-family: SuperDream;
+    font-size: 40px;
+    color: #682C7A;
+
+    text-align: center;
+}
+
+/* footer */
+.footer_wave{
+    background-color: #DCBAE6 !important;
+}
+
+/* media query */
+@media (max-width: 900px) {
+    .home_page_opening {
+        flex-direction: column;
+    }
+
+    .home_page_opening_left,
+    .home_page_opening_right {
+        flex: none;
+        width: 100%;
+    }
+}

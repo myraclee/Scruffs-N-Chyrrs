@@ -1,7 +1,7 @@
 @extends('layouts.customer_layout')
 
 @section('page_css')
-@vite(['resources/css/customer/aboutus.css'])
+@vite(['resources/css/customer/pages/aboutus.css'])
 @endsection
 
 @section('content')
