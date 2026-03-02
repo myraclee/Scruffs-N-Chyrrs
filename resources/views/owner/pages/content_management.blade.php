@@ -108,6 +108,9 @@
         <input type="text" id="products_title_input" class="products_title_input" placeholder="Enter product name" />
         <span id="products_title_error" class="products_error_message"></span>
 
+        <label>Product Description</label>
+        <textarea id="products_description_input" class="products_description_input" placeholder="Enter product description (optional)" rows="3" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ddd; font-family: Arial, sans-serif;"></textarea>
+
         <label>Main Cover Image:</label>
         <div id="products_main_image_wrapper">
             <div id="products_main_add_box" class="products_add_box">+</div>
@@ -277,5 +280,5 @@
 @vite('resources/js/owner/content_page/main_content_page.js')
 @vite('resources/js/owner/content_page/edit_home_images_modal.js')
 @vite('resources/js/owner/content_page/product_sample_modal.js')
-@vite('resources/js/owner/content_page/products_page_content.js')
+@vite('resources/js/owner/content_page/products_page_content_refactored.js')
 @vite('resources/js/owner/content_page/order_template.js')

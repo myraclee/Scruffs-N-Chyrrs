@@ -1,6 +1,10 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\MaterialController;
+use App\Http\Controllers\Api\HomeImageController;
+use App\Http\Controllers\Api\ProductSampleController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -38,6 +42,7 @@ Route::get('/signup', [AuthController::class, 'showSignup'])->name('signup');
 Route::post('/signup', [AuthController::class, 'register'])->name('signup.store');
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+Route::get('/owner/login', [AuthController::class, 'showOwnerLogin'])->name('owner.login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.store');
 
 Route::middleware('auth')->group(function () {
@@ -49,8 +54,39 @@ Route::middleware('auth')->group(function () {
     Route::post('/account/update-password', [AuthController::class, 'updatePassword'])->name('update-password');
 });
 
+// API ROUTES - Products and Materials
+Route::prefix('api/products')->group(function () {
+    Route::get('/', [ProductController::class, 'index']);
+    Route::post('/', [ProductController::class, 'store']);
+    Route::get('{product}', [ProductController::class, 'show']);
+    Route::put('{product}', [ProductController::class, 'update']);
+    Route::delete('{product}', [ProductController::class, 'destroy']);
+});
+
+Route::prefix('api/materials')->group(function () {
+    Route::get('/', [MaterialController::class, 'index']);
+    Route::post('/', [MaterialController::class, 'store']);
+    Route::get('{material}', [MaterialController::class, 'show']);
+    Route::put('{material}', [MaterialController::class, 'update']);
+    Route::delete('{material}', [MaterialController::class, 'destroy']);
+});
+
+Route::prefix('api/home-images')->group(function () {
+    Route::get('/', [HomeImageController::class, 'index']);
+    Route::post('/', [HomeImageController::class, 'store']);
+    Route::delete('{homeImage}', [HomeImageController::class, 'destroy']);
+});
+
+Route::prefix('api/product-samples')->group(function () {
+    Route::get('/', [ProductSampleController::class, 'index']);
+    Route::post('/', [ProductSampleController::class, 'store']);
+    Route::get('{productSample}', [ProductSampleController::class, 'show']);
+    Route::put('{productSample}', [ProductSampleController::class, 'update']);
+    Route::delete('{productSample}', [ProductSampleController::class, 'destroy']);
+});
+
 // OWNER ROUTES
-// Route::middleware(['auth', 'owner'])->group(function () {
+Route::middleware(['auth', 'owner'])->group(function () {
     Route::get('/owner/pages/dashboard', function () {
         return view('owner.pages.dashboard');
     })->name('owner.dashboard');
@@ -66,4 +102,4 @@ Route::middleware('auth')->group(function () {
     Route::get('/owner/pages/content_management', function () {
         return view('owner.pages.content_management');
     })->name('owner.content');
-// });
+});

@@ -2,6 +2,7 @@
 
 @section('page_css')
 @vite(['resources/css/customer/pages/home.css'])
+@vite(['resources/css/customer/pages/home_images.css'])
 @endsection
 
 @section('content')
@@ -12,6 +13,11 @@
             <button>View Products</button>
         </div>
         <div class="home_page_opening_right">
+            <div class="home_images_slideshow">
+                <div class="home_images_empty_state">
+                    No images have been uploaded yet.
+                </div>
+            </div>
         </div>
     </div>
 
@@ -42,3 +48,8 @@
         </div>
     </div>
 @endsection
+
+@section('page_js')
+@vite('resources/js/customer/pages/home_product_samples.js')
+@vite('resources/js/customer/pages/home_images_slideshow.js')
+@show
