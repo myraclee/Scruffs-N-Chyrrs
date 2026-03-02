@@ -1,0 +1,258 @@
+/* FAQs Page Styles */
+
+/* ===== OPENING SECTION ===== */
+.faqs_opening {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 10%;
+    text-align: center;
+    gap: 20px;
+}
+
+.faqs_opening h1 {
+    font-family: SuperDream;
+    font-size: 50px;
+    color: #682c7a;
+    margin: 0;
+}
+
+.faqs_opening p {
+    font-family: Coolvetica;
+    font-size: 20px;
+    color: #682c7a;
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* ===== SCROLL DIVIDER ===== */
+.page_scoll_divider {
+    width: 100%;
+    overflow: hidden;
+    background: #fff7ec;
+    padding: 10px 0;
+}
+
+.text_scroll {
+    display: flex;
+    width: max-content;
+    animation: scrollText 15s linear infinite;
+}
+
+.text_scroll span {
+    font-family: Coolvetica;
+    font-size: 20px;
+    color: #682c7a;
+    margin-right: 100px;
+    white-space: nowrap;
+}
+
+@keyframes scrollText {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-50%);
+    }
+}
+
+/* ===== FAQS CONTAINER ===== */
+.faqs_container_section {
+    padding: 60px 10%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+}
+
+.faqs_accordion_wrapper {
+    max-width: 900px;
+    width: 100%;
+}
+
+.faqs_accordion_wrapper h2 {
+    font-family: SuperDream;
+    font-size: 35px;
+    color: #682c7a;
+    margin-bottom: 25px;
+    margin-top: 0;
+}
+
+/* ===== FAQ ITEM (ACCORDION) ===== */
+.faq_item {
+    margin-bottom: 12px;
+    background-color: #fff7ec;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.faq_item:hover {
+    box-shadow: 0 4px 12px rgba(104, 44, 122, 0.15);
+}
+
+.faq_item details {
+    cursor: pointer;
+}
+
+.faq_item details summary {
+    padding: 20px;
+    font-family: Coolvetica;
+    font-size: 18px;
+    font-weight: bold;
+    color: #682c7a;
+    background-color: #fff7ec;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+    transition: background-color 0.2s ease;
+}
+
+.faq_item details summary:hover {
+    background-color: #f5f0e8;
+}
+
+/* Custom expand/collapse arrow */
+.faq_item details summary::after {
+    content: '▼';
+    font-size: 12px;
+    color: #682c7a;
+    transition: transform 0.3s ease;
+    margin-left: 20px;
+}
+
+.faq_item details[open] summary::after {
+    transform: rotate(-180deg);
+}
+
+.faq_content {
+    padding: 20px;
+    padding-top: 0;
+    background-color: #fff7ec;
+    border-top: 1px solid #e8dfd7;
+    font-family: Coolvetica;
+    font-size: 16px;
+    color: #682c7a;
+    line-height: 1.8;
+}
+
+.faq_content p {
+    margin: 12px 0;
+}
+
+.faq_content ol,
+.faq_content ul {
+    margin: 12px 0;
+    padding-left: 25px;
+}
+
+.faq_content li {
+    margin-bottom: 10px;
+}
+
+.faq_content strong {
+    color: #4c1c5b;
+    font-weight: bold;
+}
+
+/* ===== CONTACT SECTION ===== */
+.faqs_contact_section {
+    background-color: #fff7ec;
+    padding: 30px;
+    border-radius: 8px;
+    text-align: center;
+    margin-top: 40px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.faqs_contact_section p {
+    font-family: Coolvetica;
+    font-size: 16px;
+    color: #682c7a;
+    margin: 12px 0;
+    line-height: 1.8;
+}
+
+.faqs_contact_section strong {
+    color: #4c1c5b;
+    font-weight: bold;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 900px) {
+    .faqs_opening {
+        padding: 40px 20px;
+    }
+
+    .faqs_opening h1 {
+        font-size: 40px;
+    }
+
+    .faqs_opening p {
+        font-size: 16px;
+    }
+
+    .faqs_container_section {
+        padding: 40px 20px;
+    }
+
+    .faqs_accordion_wrapper h2 {
+        font-size: 28px;
+    }
+
+    .faq_item details summary {
+        padding: 16px;
+        font-size: 16px;
+    }
+
+    .faq_content {
+        padding: 16px;
+        padding-top: 0;
+        font-size: 14px;
+    }
+
+    .faqs_contact_section {
+        padding: 20px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 600px) {
+    .faqs_opening {
+        padding: 30px 15px;
+    }
+
+    .faqs_opening h1 {
+        font-size: 32px;
+    }
+
+    .faqs_opening p {
+        font-size: 14px;
+    }
+
+    .faqs_container_section {
+        padding: 30px 15px;
+    }
+
+    .faqs_accordion_wrapper h2 {
+        font-size: 24px;
+        margin-bottom: 15px;
+    }
+
+    .faq_item {
+        margin-bottom: 10px;
+    }
+
+    .faq_item details summary {
+        padding: 14px;
+        font-size: 15px;
+    }
+
+    .faq_content {
+        padding: 14px;
+        font-size: 13px;
+    }
+}

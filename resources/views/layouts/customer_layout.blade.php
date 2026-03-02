@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Scruffs&Chyrrs</title>
 
     @vite(['resources/css/universal_customer.css', 'resources/css/page_parts/navbar.css', 'resources/css/page_parts/footer.css'])

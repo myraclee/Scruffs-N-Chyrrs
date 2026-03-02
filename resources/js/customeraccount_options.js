@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const logoutButton = document.getElementById('logoutButton');
     const logoutForm = document.getElementById('logoutForm');
     const viewAccountButton = document.getElementById('viewAccountButton');
+    const viewDashboardButton = document.getElementById('viewDashboardButton');
 
     if (!trigger || !popup) return;
 
@@ -18,6 +19,15 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('click', () => {
         popup.classList.remove('show');
     });
+
+    // Handle view dashboard button click
+    if (viewDashboardButton) {
+        viewDashboardButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            window.location.href = '/owner/pages/dashboard';
+        });
+    }
 
     // Handle view account button click
     if (viewAccountButton) {

@@ -10,7 +10,7 @@ import HomeImageAPI from '/resources/js/api/homeImageApi.js';
 let homeImages = [];
 let currentSlideIndex = 0;
 let autoplayInterval = null;
-const AUTOPLAY_DELAY = 4000; // 4 seconds
+const AUTOPLAY_DELAY = 2000; // 4 seconds
 
 // ================= INITIALIZATION =================
 document.addEventListener('DOMContentLoaded', async () => {

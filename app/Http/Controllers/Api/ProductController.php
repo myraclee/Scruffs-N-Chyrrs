@@ -121,6 +121,8 @@ class ProductController extends Controller
                 'name' => 'required|string|max:255',
                 'description' => 'nullable|string',
                 'cover_image' => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
+                'price_images' => 'nullable|array',
+                'price_images.*' => 'required|image|mimes:png,jpg,jpeg|max:5120',
             ]);
 
             if ($request->hasFile('cover_image')) {
@@ -132,7 +134,30 @@ class ProductController extends Controller
                 $validated['cover_image_path'] = $coverPath;
             }
 
-            $product->update($validated);
+            $product->update([
+                'name' => $validated['name'],
+                'description' => $validated['description'] ?? null,
+                'cover_image_path' => $validated['cover_image_path'] ?? $product->cover_image_path,
+            ]);
+
+            // Handle price images if provided
+            if ($request->hasFile('price_images')) {
+                // Delete old price images from storage and database
+                foreach ($product->priceImages as $priceImage) {
+                    Storage::disk('public')->delete($priceImage->image_path);
+                    $priceImage->delete();
+                }
+
+                // Store new price images
+                foreach ($request->file('price_images') as $index => $image) {
+                    $path = $image->store('products/prices', 'public');
+                    ProductPriceImage::create([
+                        'product_id' => $product->id,
+                        'image_path' => $path,
+                        'sort_order' => $index,
+                    ]);
+                }
+            }
 
             return response()->json([
                 'success' => true,

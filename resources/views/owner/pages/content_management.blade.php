@@ -109,7 +109,7 @@
         <span id="products_title_error" class="products_error_message"></span>
 
         <label>Product Description</label>
-        <textarea id="products_description_input" class="products_description_input" placeholder="Enter product description (optional)" rows="3" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ddd; font-family: Arial, sans-serif;"></textarea>
+        <textarea id="products_description_input" class="products_description_input" placeholder="Enter product description (optional)" rows="3" style="width: 100%; padding: 20px; padding-bottom: 30px; border-radius: 4px; border: 1px solid #ddd; font-family: Arial, sans-serif;"></textarea>
 
         <label>Main Cover Image:</label>
         <div id="products_main_image_wrapper">

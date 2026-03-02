@@ -2,6 +2,9 @@
 
 <div class="account_popup" id="accountPopup">
     @auth
+        @if(Auth::check() && Auth::user()->isOwner())
+            <button type="button" id="viewDashboardButton" class="logout_btn">View Dashboard</button>
+        @endif
         <button type="button" id="viewAccountButton" class="logout_btn">View Account</button>
         <button type="button" id="logoutButton" class="logout_btn">Logout</button>
     @endauth
