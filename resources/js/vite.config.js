@@ -15,7 +15,10 @@ export default defineConfig({
                 'resources/css/customer/password_page/new_password.css',
 
                 'resources/css/owner/inventory.css',
-                'resources/css/owner/inventory_forms.css',
+                'resources/js/owner/inventory.js',
+
+                'resources/css/owner/pages/content_management/order_template.css',
+                'resources/js/owner/content_page/order_template.js',
             ],
             refresh: true,
         }),

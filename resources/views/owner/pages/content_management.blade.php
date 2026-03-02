@@ -4,6 +4,7 @@
 @vite(['resources/css/owner/pages/content_management/content_management.css'])
 @vite(['resources/css/owner/pages/content_management/home_page_content.css'])
 @vite(['resources/css/owner/pages/content_management/products_page_content.css'])
+@vite(['resources/css/owner/pages/content_management/order_template.css'])
 @endsection
 
 @section('content')
@@ -148,9 +149,133 @@
     </div>
 </div>
     </section>
+
+    <section class="content_section" id="ordertemplate">
+        <h2 style="font-family: 'SuperDream', sans-serif; color: #682C7A; font-size: 40px; margin-bottom: 20px;">Order Template</h2>
+
+        <div id="template_list_container" class="template_list_container">
+            <div class="template_table_wrapper">
+                <table class="template_table">
+                    <thead>
+                        <tr>
+                            <th>Product Category</th>
+                            <th>Lamination Options</th>
+                            <th>Options Label</th>
+                            <th>Options Selection</th>
+                            <th>Discount Description</th>
+                            <th>Discount Rate</th>
+                            <th style="text-align: center;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Stickers</td>
+                            <td>Matte, Glossy, Glitter, Holo Rainbow, Holo Broken Glass</td>
+                            <td>Sticker Type</td>
+                            <td>Die-Cut, Kiss-Cut</td>
+                            <td>5 peso per sheet for 7 sheets and above</td>
+                            <td>- Php 5 / qty >= 7</td>
+                            <td class="action_cells">
+                                <button class="template_edit_btn" onclick="openTemplateModal(true)">Edit</button>
+                                <button class="template_delete_btn" onclick="openDeleteTemplateModal()">Delete</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            </div>
+
+        <button id="open_add_template_btn" class="primary_button" onclick="openTemplateModal(false)" style="margin-top: 20px;">Add New Template</button>
+
+        <div class="modal_overlay" id="templateModalOverlay">
+            <div class="template_modal" id="templateModal">
+                <h2 id="templateModalTitle" class="modal_title">Add New Template</h2>
+
+                <div class="template_scroll_area">
+                    <div class="input_group">
+                        <label>Product Category</label>
+                        <input type="text" id="tempCategory" class="text_input">
+                    </div>
+
+                    <div class="input_group">
+                        <label>1st Option Label</label>
+                        <input type="text" id="tempOpt1Label" class="text_input">
+                    </div>
+
+                    <div class="input_group">
+                        <div class="flex_label">
+                            <label>1st Option Selection</label>
+                            <label class="small_label">Price</label>
+                        </div>
+                        <div id="opt1List" class="option_list">
+                            </div>
+                        <div class="option_actions">
+                            <button class="add_opt_btn" onclick="addOptionRow('opt1List')">Add Option</button>
+                            <button class="clear_opt_btn" onclick="clearOptions('opt1List')">Clear Options</button>
+                        </div>
+                    </div>
+
+                    <div class="input_group">
+                        <label>2nd Option Label</label>
+                        <input type="text" id="tempOpt2Label" class="text_input">
+                    </div>
+
+                    <div class="input_group">
+                        <div class="flex_label">
+                            <label>2nd Option Selection</label>
+                            <label class="small_label">Price</label>
+                        </div>
+                        <div id="opt2List" class="option_list">
+                            </div>
+                        <div class="option_actions">
+                            <button class="add_opt_btn" onclick="addOptionRow('opt2List')">Add Option</button>
+                            <button class="clear_opt_btn" onclick="clearOptions('opt2List')">Clear Options</button>
+                        </div>
+                    </div>
+
+                    <div class="input_group">
+                        <label>Description</label>
+                        <input type="text" id="tempDesc" class="text_input">
+                    </div>
+
+                    <div class="input_group checkbox_group">
+                        <label>Discount <input type="checkbox" id="tempDiscountCheck" onchange="toggleDiscountFields()"></label>
+                    </div>
+
+                    <h4 class="sub_label">Discount Rate</h4>
+                    <div class="discount_fields" id="discountFields">
+                        <div class="input_group" style="text-align: center;">
+                            <label class="small_label">Discount</label>
+                            <input type="number" id="tempDiscountVal" class="number_input tiny_input">
+                        </div>
+                        <div class="input_group" style="text-align: center;">
+                            <label class="small_label">Per Quantity</label>
+                            <input type="number" id="tempDiscountQty" class="number_input tiny_input">
+                        </div>
+                    </div>
+
+                    <div class="modal_actions">
+                        <button class="cancel_btn" onclick="closeTemplateModals()">Cancel</button>
+                        <button class="save_btn" onclick="closeTemplateModals()">Save Changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal_overlay" id="deleteTemplateModalOverlay">
+            <div class="delete_confirm_box template_delete_box">
+                <p class="delete_msg">Do you wish to delete the<br>selected template?</p>
+                <button class="template_delete_btn_large" onclick="closeTemplateModals()">Delete Template</button>
+                <small class="delete_subtext">This process cannot be undone</small>
+            </div>
+        </div>
+
+    </section>
 @endsection
 
 @vite('resources/js/owner/content_page/main_content_page.js')
 @vite('resources/js/owner/content_page/edit_home_images_modal.js')
 @vite('resources/js/owner/content_page/product_sample_modal.js')
 @vite('resources/js/owner/content_page/products_page_content.js')
+@vite('resources/js/owner/content_page/order_template.js')

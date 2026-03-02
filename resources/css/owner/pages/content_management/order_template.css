@@ -1,0 +1,47 @@
+/* Order Template Tables */
+.template_list_container { display: flex; flex-direction: column; gap: 30px; margin-bottom: 20px; }
+.template_table_wrapper { background: transparent; width: 100%; overflow-x: auto; }
+
+.template_table { width: 100%; border-collapse: collapse; font-family: 'Coolvetica', sans-serif; min-width: 900px; }
+.template_table th { background: #682C7A; color: #FFF; padding: 15px; font-size: 16px; font-weight: normal; text-align: left; }
+.template_table th:first-child { border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
+.template_table th:last-child { border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
+
+.template_table td { padding: 15px; border-bottom: 2px solid #682C7A; font-size: 14px; color: #312E2E; background: #FFF7EC; vertical-align: middle; }
+
+/* Table Buttons */
+.action_cells { display: flex; gap: 10px; justify-content: center; align-items: center; border-bottom: none !important; }
+.template_edit_btn { background: #682C7A; color: white; padding: 8px 20px; border-radius: 20px; border: none; cursor: pointer; font-family: 'Coolvetica', sans-serif; transition: 0.2s; }
+.template_edit_btn:hover { background: #A15FB5; }
+.template_delete_btn { background: #D94848; color: white; padding: 8px 20px; border-radius: 20px; border: none; cursor: pointer; font-family: 'Coolvetica', sans-serif; transition: 0.2s; }
+.template_delete_btn:hover { background: #E86A6A; }
+
+/* Modal Styling */
+.template_modal { background: #FFF7EC; width: 500px; padding: 40px; border-radius: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); display: flex; flex-direction: column; max-height: 90vh; }
+.template_scroll_area { overflow-y: auto; padding-right: 10px; }
+.template_scroll_area::-webkit-scrollbar { width: 8px; }
+.template_scroll_area::-webkit-scrollbar-thumb { background: #682C7A; border-radius: 10px; }
+
+.flex_label { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px; }
+.small_label { font-size: 14px; color: #682C7A; font-family: 'SuperDream', sans-serif; }
+.sub_label { font-family: 'Coolvetica', sans-serif; color: #682C7A; font-size: 20px; margin-bottom: 10px; }
+
+/* Dynamic Options */
+.option_list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
+.option_row { display: flex; gap: 10px; align-items: center; }
+.option_row input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
+
+.option_actions { display: flex; gap: 15px; margin-bottom: 20px; }
+.add_opt_btn { background: #682C7A; color: white; padding: 5px 15px; border-radius: 15px; border: none; cursor: pointer; font-size: 12px; font-family: 'Coolvetica', sans-serif; }
+.clear_opt_btn { background: #D94848; color: white; padding: 5px 15px; border-radius: 15px; border: none; cursor: pointer; font-size: 12px; font-family: 'Coolvetica', sans-serif; }
+
+/* Discount Section */
+.checkbox_group label { display: flex; align-items: center; gap: 10px; font-family: 'Coolvetica', sans-serif; color: #682C7A; font-size: 20px; cursor: pointer; }
+.discount_fields { display: flex; justify-content: flex-start; gap: 40px; opacity: 0; pointer-events: none; transition: 0.3s; }
+.discount_fields.active { opacity: 1; pointer-events: auto; }
+
+/* Delete Modal Specifics */
+.template_delete_box { background: #FFF7EC; padding: 40px; border-radius: 20px; text-align: center; width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+.delete_msg { font-family: 'Coolvetica', sans-serif; color: #682C7A; font-size: 24px; margin-bottom: 20px; line-height: 1.2; }
+.template_delete_btn_large { background: #D94848; color: white; padding: 12px 30px; border-radius: 25px; border: none; font-size: 20px; font-family: 'Coolvetica', sans-serif; cursor: pointer; margin-bottom: 10px; width: 80%; }
+.delete_subtext { display: block; color: #D94848; font-family: 'Arial', sans-serif; font-size: 10px; }
