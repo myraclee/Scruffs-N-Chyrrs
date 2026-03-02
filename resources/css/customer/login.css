@@ -1,10 +1,11 @@
 .header_login {
-    font-family: 'SuperDream', sans-serif;
-    font-size: 3.5rem;
-    color: #6b3282;
-    text-align: center;
-    margin-bottom: 40px;
     margin-top: 40px;
+
+    font-family: SuperDream;
+    font-size: 40px;
+    color: #682c7a;
+    text-align: center;
+    margin-bottom: 25px;
 }
 
 form {
@@ -18,29 +19,28 @@ form {
 }
 
 .login_container {
-    width: 100%;
     margin-bottom: 20px;
     display: flex;
     flex-direction: column;
 }
 
 .login_container label {
-    font-family: 'Coolvetica', sans-serif;
-    color: #6b3282;
-    margin-bottom: 8px;
-    font-size: 1rem;
-    font-weight: 600;
+    font-family: Coolvetica;
+    font-size: 20px;
+    color: #682c7a;
+
+    margin-bottom: 5px;
 }
 
 .login_textbox {
-    padding: 12px 20px;
-    border-radius: 50px;
-    border: 2px solid #c6a4e3;
-    font-family: 'Coolvetica', sans-serif;
-    font-size: 1rem;
-    color: #6b3282;
-    outline: none;
-    transition: border-color 0.3s ease;
+    width: 350px;
+    height: 50px;
+    border-radius: 30px;
+    border: 2px solid transparent;
+    box-shadow: 0 0 10px 1px rgba(0, 0, 0, 0.12);
+    padding-left: 20px;
+    padding-right: 20px;
+    font-size: 15px;
 }
 
 .login_textbox:focus {
@@ -60,25 +60,22 @@ form {
 }
 
 .login_button {
-    padding: 12px 40px;
+    height: 40px;
+    width: 150px;
+    border: none;
+    border-radius: 30px;
+    box-shadow: 0 0 7px 4px rgba(0, 0, 0, 0.12);
     background-color: #6b3282;
     color: #fff0da;
-    border: none;
-    border-radius: 50px;
-    font-family: 'Coolvetica', sans-serif;
-    font-size: 1.1rem;
-    cursor: pointer;
+    font-family: Coolvetica;
+    font-size: 17px;
+    cursor: not-allowed;
     transition: background-color 0.3s ease, transform 0.2s ease;
-    box-shadow: 0 4px 10px rgba(107, 50, 130, 0.3);
 }
 
 .login_button:hover {
-    background-color: #5a2a70;
-    transform: translateY(-2px);
-}
-
-.login_button:active {
-    transform: translateY(0);
+    background-color: #451c52;
+    transform: scale(1.05);
 }
 
 .signup_redirect {
@@ -90,33 +87,34 @@ form {
 }
 
 .signup_redirect a {
-    color: #6b3282;
     text-decoration: none;
-    font-weight: 600;
-    border-bottom: 2px solid #c6a4e3;
-    transition: border-color 0.3s ease;
+    color: #359bf4;
 }
 
 .signup_redirect a:hover {
-    border-bottom-color: #6b3282;
+    color: #0072d6;
+    transition: 0.2s;
+    text-decoration: underline;
 }
 
 .forgot_password {
-    font-family: 'Coolvetica', sans-serif;
-    color: #a8a8a8;
-    text-align: center;
-    margin-top: 10px;
+    font-family: Coolvetica;
+    text-align: right;
+    margin-top: 5px;
     font-size: 0.9rem;
+    margin-right: 10px;
 }
 
 .forgot_password a {
-    color: #6b3282;
+    color: #359bf4;
     text-decoration: none;
     transition: color 0.3s ease;
 }
 
 .forgot_password a:hover {
-    color: #8a5da1;
+    color: #0072d6;
+    transition: 0.2s;
+    text-decoration: underline;
 }
 
 /* MOBILE RESPONSIVENESS */
