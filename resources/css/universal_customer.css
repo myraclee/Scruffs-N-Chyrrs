@@ -26,3 +26,35 @@ body {
 .upper_body {
     flex: 1;
 }
+
+/* scroll wheel */
+/* Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+}
+
+/* Chrome / Edge / Safari */
+*::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border-radius: 10px;
+    transition: background-color 0.3s ease;
+}
+
+/* SHOW scrollbar on hover */
+*:hover {
+    scrollbar-color: #682C7A transparent;
+}
+
+*:hover::-webkit-scrollbar-thumb {
+    background-color: #682C7A;
+}

@@ -1,0 +1,405 @@
+/* Modal*/
+.products_modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+}
+
+.products_modal_content {
+    background: #FFF7EC;
+    padding: 20px;
+    border-radius: 15px;
+    width: 600px;
+    height: 600px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow-y: auto;
+}
+
+.products_modal_content h2{
+    font-family: SuperDream;
+    font-size: 30px;
+    color: #682C7A;
+
+    text-align: center;
+}
+
+.products_modal_content p{
+    margin-top: 10px;
+    
+    font-family: Coolvetica;
+    font-size: 13px;
+    color: #682C7A;
+    text-align: center;
+
+    margin-bottom: 10px;
+}
+
+.products_modal_content label{
+    font-family: Coolvetica;
+    font-size: 20px;
+    color: #682C7A;
+
+    margin-bottom: 15px;
+}
+
+.products_title_input{
+    width: 100%;
+    min-height: 40px;
+    padding-left: 20px;
+    padding-right: 20px;
+
+    box-sizing: border-box;
+    border-radius: 30px;
+    border: 2px solid #682C7A;
+    font-size: 16px;
+
+    margin-bottom: 15px;
+}
+
+.products_title_input:focus{
+    outline: none;
+}
+
+/* Cover image */
+#products_main_image_wrapper {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.products_add_box {
+    width: 120px;
+    height: 120px;
+    border: 2px solid #682C7A;
+    border-radius: 10px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 40px;
+    color: #682C7A;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.products_add_box:hover{
+    background-color: #DCBAE6;
+    transition: 0.3s ease;
+}
+
+#products_main_image_preview {
+    width: 119px;
+    height: 119px;
+    object-fit: cover;
+
+    border-radius: 7px;
+    margin-bottom: 5px;
+
+    border: 2px solid #682C7A;
+}
+
+.products_remove_main_image_btn {
+    margin-bottom: 10px;
+}
+
+/* Price images */
+.products_price_wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.products_price_box_wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.products_price_box {
+    width: 170px;
+    height: 240px;
+
+    border: 2px solid #682C7A;
+    border-radius: 10px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 40px;
+    color: #682C7A;
+
+    cursor: pointer;
+    flex-shrink: 0;
+    overflow: hidden;
+    margin-bottom: 5px;
+}
+
+.products_price_box:hover{
+    background-color: #DCBAE6;
+    transition: 0.3s ease;
+}
+
+.products_price_box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 7px;
+}
+
+/* Modal actions fixed at bottom right */
+/* .products_modal_actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+} */
+
+/* Buttons */
+
+.products_modal_actions{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    margin-top: 20px;
+}
+
+.products_modal_actions_right{
+    display: flex;
+    margin-left: auto;
+    gap: 10px;
+}
+
+.products_button_save {
+    border: none;
+    padding: 8px 14px;
+
+    width: 90px;
+    height: 35px;
+
+    background: #682C7A;
+    border-radius: 30px;
+
+    font-family: Coolvetica;
+    font-size: 15px;
+    color: #FFF7EC;
+
+    cursor: pointer;
+}
+
+.products_button_save:hover{
+    transform: scale(1.05);
+    transition: 0.2s ease;
+}
+
+.products_button_cancel {
+    border: none;
+    padding: 8px 14px;
+
+    width: 90px;
+    height: 35px;
+
+    background: #999999;
+    border-radius: 30px;
+
+    font-family: Coolvetica;
+    font-size: 15px;
+    color: #FFF7EC;
+
+    cursor: pointer;
+}
+
+.products_button_cancel:hover{
+    transform: scale(1.05);
+    transition: 0.2s ease;
+}
+
+.products_button_delete { 
+    border: none;
+    padding: 8px 14px;
+
+    width: 90px;
+    height: 35px;
+
+    background: #C83333;
+    border-radius: 30px;
+
+    font-family: Coolvetica;
+    font-size: 15px;
+    color: #FFF7EC;
+
+    cursor: pointer;
+}
+
+.products_button_delete:hover{
+    transform: scale(1.05);
+    transition: 0.2s ease;
+}
+
+.products_button_remove {
+    font-family: Coolvetica;
+    font-size: 12px;
+    color: #FFF7EC;
+
+    background-color: #C83333;
+    border-radius: 30px;
+    width: 60px;
+    height: 25px;
+
+    border: none;
+    cursor: pointer;
+}
+
+.products_button_remove:hover{
+    background-color: #8d0e0e;
+    transition: 0.3s ease;
+}
+
+/* Delete Confirmation */
+.delete_products_modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.delete_products_modal_content {
+    background: #FFF7EC;
+    padding: 30px 35px;
+    border-radius: 14px;
+    width: 90%;
+    max-width: 420px;
+    height: 200px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+    animation: modalPop 0.25s ease-out;
+}
+
+.delete_products_modal_content p {
+    margin: 0;
+    font-size: 16px;
+    color: #333;
+}
+
+.products_small_text {
+    margin-top: 12px;
+    font-size: 13px;
+    color: #888;
+}
+
+.products_small_text { 
+    font-size: 12px; 
+    color: gray; 
+    margin-top: 5px; 
+}
+
+/* Error messages */
+.products_error_message { 
+    color: #C83333; 
+    font-family: Coolvetica;
+    font-size: 12px; 
+    display: block; 
+    margin-top: -5px; 
+}
+
+#products_title_error{
+    margin-top: -10px;
+    margin-bottom: 5px;
+    margin-left: 15px;
+}
+
+#products_cover_error{
+    text-align: center;
+}
+
+#products_prices_error{
+    text-align: center;
+}
+
+/* Product cards */
+.products_card {
+    display: inline-block;
+    margin: 10px;
+    border: 1px solid #ccc;
+    width: 180px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.products_card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+
+.products_card button { margin-top: 5px; }
+
+/* Price Viewer Modal - A4 shape */
+#products_price_viewer_modal .products_modal_content {
+    width: 600px;
+    height: 850px;
+    max-width: 90%;
+    max-height: 90%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    flex-direction: column;
+    overflow: hidden; /* No scroll inside viewer modal */
+}
+
+#products_price_viewer_modal img {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+}
+
+.products_carousel_btn {
+    background: rgba(0,0,0,0.5);
+    color: white;
+    border: none;
+    padding: 10px;
+    font-size: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+#products_prev_price_image { left: 10px; }
+#products_next_price_image { right: 10px; }
+
+/* ================= ANIMATION ================= */
+@keyframes modalPop {
+    from {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Responsive */
+@media screen and (max-width: 768px) {
+    .products_modal_content { width: 90%; }
+    .products_add_box { width: 100px; height: 100px; font-size: 30px; }
+    .products_price_box { width: 140px; height: 198px; font-size: 25px; }
+    #products_main_image_preview { width: 100px; height: 100px; }
+    #products_price_viewer_modal .products_modal_content { width: 90%; height: 80%; }
+}
