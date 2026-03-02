@@ -158,6 +158,45 @@ The application interacts with the following systems:
   - **Notifications:** Slack webhook integration for critical logging and alerts.
   - **Storage:** AWS S3 configuration is present for cloud file storage.
 
+## Current Architecture Overview
+
+### Database Models
+
+Core data models located in `app/Models/`:
+
+- **`User.php`** - Customer & Owner accounts with authentication
+- **`Product.php`** - Merchandise products with cover images & pricing options
+- **`ProductPriceImage.php`** - Price list images displayed for each product variant
+- **`HomeImage.php`** - Images displayed in home page slideshow carousel
+- **`ProductSample.php`** - Sample displays showcasing products in real-world applications
+- **`ProductSampleImage.php`** - Images associated with product samples
+- **`Material.php`** - Material types (e.g., vinyl, paper, plastic)
+
+### API Endpoints
+
+All API endpoints are prefixed with `/api/` and defined in `routes/web.php`:
+
+```
+Products
+  GET    /api/products              - List all products with pricing
+  POST   /api/products              - Create new product
+  GET    /api/products/{id}         - Get product details
+  PUT    /api/products/{id}         - Update product information
+  DELETE /api/products/{id}         - Delete product
+
+Home Images
+  GET    /api/home-images           - List home page slideshow images
+  POST   /api/home-images           - Upload new home image
+  DELETE /api/home-images/{id}      - Remove home image
+
+Product Samples
+  GET    /api/product-samples       - List all product samples
+  POST   /api/product-samples       - Create new sample
+  GET    /api/product-samples/{id}  - Get sample details
+  PUT    /api/product-samples/{id}  - Update sample
+  DELETE /api/product-samples/{id}  - Delete sample
+```
+
 ## Project Conventions & Patterns
 
 ### Frontend Strategy (The Hybrid Model)
@@ -168,6 +207,130 @@ The application uses a specific strategy for frontend assets that requires atten
 2. **Bootstrap 5:** JavaScript components are imported in `resources/js/app.js` (`import 'bootstrap';`) and used for interactive elements like Modals (`tnc.js`).
 3. **Custom CSS:** Specific pages load raw CSS files via Vite (e.g., `universal.css` for fonts, `signup.css` for form styling).
     - *Convention:* Page-specific CSS is injected via `@section('page_css')` in Blade templates.
+
+#### Frontend Asset Organization
+
+The frontend assets are organized by role and functionality:
+
+```
+resources/
+├── css/
+│   ├── app.css                      ← Tailwind 4 initialization
+│   ├── customer/
+│   │   └── pages/
+│   │       ├── home.css             ← Product samples styling
+│   │       ├── home_images.css      ← Slideshow styling
+│   │       └── products.css
+│   ├── owner/
+│   │   └── pages/
+│   │       └── content_management/
+│   │           ├── home_page_content.css
+│   │           ├── products_page_content.css
+│   │           └── content_management.css
+│   ├── universal_customer.css       ← Customer-wide styles & fonts
+│   └── universal_owner.css          ← Owner-wide styles & fonts
+├── js/
+│   ├── app.js                       ← Bootstrap initialization
+│   ├── api/
+│   │   ├── productApi.js            ← Product CRUD operations
+│   │   ├── productSampleApi.js      ← Sample CRUD operations
+│   │   └── homeImageApi.js          ← Home image CRUD operations
+│   ├── utils/
+│   │   ├── toast.js                 ← Toast notifications
+│   │   └── formState.js             ← Form state management
+│   ├── customer/
+│   │   └── pages/
+│   │       ├── home_product_samples.js   ← Load and display samples
+│   │       └── home_images_slideshow.js  ← Auto-rotating slideshow
+│   └── owner/
+│       └── content_page/
+│           ├── products_page_content_refactored.js
+│           ├── product_sample_modal.js
+│           └── edit_home_images_modal.js
+└── views/
+    ├── layouts/
+    │   ├── customer_layout.blade.php
+    │   ├── owner_layout.blade.php
+    │   └── page_parts/
+    ├── customer/
+    │   └── pages/
+    │       ├── home.blade.php           ← Slideshow + samples
+    │       ├── products.blade.php
+    │       └── faqs.blade.php
+    └── owner/
+        └── pages/
+            └── content_management.blade.php ← Admin panel
+```
+
+## Security & Authentication
+
+### CSRF Token Protection
+
+**All API requests with state changes (POST, PUT, DELETE) require CSRF tokens.** This is critical for preventing cross-site request forgery attacks.
+
+#### Getting the CSRF Token
+
+The CSRF token meta tag is included in the layout files (`owner_layout.blade.php`):
+
+```html
+<meta name="csrf-token" content="{{ csrf_token() }}">
+```
+
+#### JavaScript API Utilities Pattern
+
+All JavaScript API clients must include CSRF token handling:
+
+```javascript
+class ProductAPI {
+    constructor() {
+        this.baseUrl = '/api/products';
+    }
+
+    getCsrfToken() {
+        return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    }
+
+    async createProduct(formData) {
+        const response = await fetch(this.baseUrl, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': this.getCsrfToken(),
+                'Accept': 'application/json'
+            },
+            body: formData
+        });
+        return response.json();
+    }
+
+    async updateProduct(id, formData) {
+        const response = await fetch(`${this.baseUrl}/${id}`, {
+            method: 'PUT',
+            headers: {
+                'X-CSRF-TOKEN': this.getCsrfToken(),
+                'Accept': 'application/json'
+            },
+            body: formData
+        });
+        return response.json();
+    }
+
+    async deleteProduct(id) {
+        const response = await fetch(`${this.baseUrl}/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': this.getCsrfToken(),
+                'Accept': 'application/json'
+            }
+        });
+        return response.json();
+    }
+}
+```
+
+**⚠️ Common Errors:**
+
+- **"CSRF token not found"** → Ensure meta tag is in the layout's `<head>` section
+- **"Failed to upload: Unexpected token '<'"** → CSRF token not being sent in request headers; add `'X-CSRF-TOKEN': this.getCsrfToken()` to headers
 
 ### Route Pattern
 
@@ -199,6 +362,252 @@ The application uses a specific strategy for frontend assets that requires atten
 1. **CSS Conflict Risk:** Using Bootstrap JS with Tailwind CSS requires ensuring that class names do not collide. The project currently relies on custom CSS classes (e.g., `.nav_container`, `.footer_tophalf`) rather than purely utility-first CSS, mitigating some collision risks but increasing maintenance overhead.
 2. **Mail Driver:** The default mailer is set to `log` in `mail.php`. For production or testing email delivery, `MAIL_MAILER` must be updated in `.env`.
 
+## Code Style & Conventions
+
+### Language-Specific Guidelines
+
+- **PHP:** PSR-12 (enforced by Laravel Pint via `./vendor/bin/pint`)
+- **JavaScript:** ES6 modules with class-based API clients
+- **CSS:** Mobile-first responsive design using Tailwind utilities + custom classes
+- **Blade Templates:** Follow Laravel conventions; use Coolvetica/SuperDream fonts; maintain consistent `#682C7A` purple theme
+- **API Responses:** Always return JSON with structure: `{ success: boolean, data: mixed, message: string }`
+
+### File Naming Conventions
+
+| Type | Convention | Example |
+|------|-----------|---------|
+| PHP Classes | PascalCase | `ProductController.php`, `HomeImage.php` |
+| PHP Methods | camelCase | `getAllProducts()`, `createProduct()` |
+| JavaScript Files | snake_case | `productApi.js`, `home_images_slideshow.js` |
+| CSS Files | snake_case | `universal_customer.css`, `home_images.css` |
+| Blade Views | snake_case | `home.blade.php`, `content_management.blade.php` |
+| Database Tables | snake_case, plural | `products`, `product_samples`, `home_images` |
+| Database Columns | snake_case | `product_id`, `created_at`, `user_type` |
+
+### Code Organization
+
+**API Client Classes:** Group related API operations in single class files with consistent method patterns:
+
+```javascript
+class ProductAPI {
+    async getAllProducts() { /* GET /api/products */ }
+    async getProduct(id) { /* GET /api/products/:id */ }
+    async createProduct(data) { /* POST /api/products */ }
+    async updateProduct(id, data) { /* PUT /api/products/:id */ }
+    async deleteProduct(id) { /* DELETE /api/products/:id */ }
+}
+```
+
+**Blade Template Structure:**
+
+```blade
+@extends('layouts.customer_layout')
+
+@section('page_css')
+@vite('resources/css/customer/pages/example.css')
+@endsection
+
+@section('content')
+<!-- Page HTML -->
+@endsection
+
+@section('page_js')
+@vite('resources/js/customer/pages/example.js')
+@endsection
+```
+
+## Development Best Practices
+
+### Adding a New Feature (Step-by-Step Guide)
+
+#### 1. Create Migration & Model
+
+```bash
+php artisan make:model YourFeature -m
+```
+
+This generates both the model in `app/Models/YourFeature.php` and a migration in `database/migrations/`. Edit the migration file to define your schema, then run:
+
+```bash
+php artisan migrate
+```
+
+#### 2. Create API Routes
+
+Add routes to `routes/web.php` following the existing pattern:
+
+```php
+// API routes (prefix: /api/)
+Route::prefix('api/your-features')->group(function () {
+    Route::get('/', [YourFeatureController::class, 'index']);           // List all
+    Route::post('/', [YourFeatureController::class, 'store']);          // Create
+    Route::get('/{id}', [YourFeatureController::class, 'show']);        // Get single
+    Route::put('/{id}', [YourFeatureController::class, 'update']);      // Update
+    Route::delete('/{id}', [YourFeatureController::class, 'destroy']);  // Delete
+});
+
+// Web routes (for blade templates)
+Route::get('/path', function () {
+    return view('your_feature.page');
+});
+```
+
+#### 3. Create Frontend API Utility
+
+Create `resources/js/api/yourFeatureApi.js`:
+
+```javascript
+class YourFeatureAPI {
+    constructor() {
+        this.baseUrl = '/api/your-features';
+    }
+
+    getCsrfToken() {
+        return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    }
+
+    async getAll() {
+        const response = await fetch(this.baseUrl);
+        return response.json();
+    }
+
+    async getById(id) {
+        const response = await fetch(`${this.baseUrl}/${id}`);
+        return response.json();
+    }
+
+    async create(formData) {
+        const response = await fetch(this.baseUrl, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': this.getCsrfToken(),
+                'Accept': 'application/json'
+            },
+            body: formData
+        });
+        return response.json();
+    }
+
+    async update(id, formData) {
+        const response = await fetch(`${this.baseUrl}/${id}`, {
+            method: 'PUT',
+            headers: {
+                'X-CSRF-TOKEN': this.getCsrfToken(),
+                'Accept': 'application/json'
+            },
+            body: formData
+        });
+        return response.json();
+    }
+
+    async delete(id) {
+        const response = await fetch(`${this.baseUrl}/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': this.getCsrfToken(),
+                'Accept': 'application/json'
+            }
+        });
+        return response.json();
+    }
+}
+
+export default new YourFeatureAPI();
+```
+
+#### 4. Create Blade Template
+
+Create `resources/views/customer/pages/your_feature.blade.php`:
+
+```blade
+@extends('layouts.customer_layout')
+
+@section('page_css')
+@vite('resources/css/customer/pages/your_feature.css')
+@endsection
+
+@section('content')
+<div class="container">
+    <h1>Your Feature</h1>
+    <!-- Content here -->
+</div>
+@endsection
+
+@section('page_js')
+@vite('resources/js/customer/pages/your_feature.js')
+@endsection
+```
+
+#### 5. Create Page JavaScript
+
+Create `resources/js/customer/pages/your_feature.js`:
+
+```javascript
+import YourFeatureAPI from '../../api/yourFeatureApi.js';
+import { showToast } from '../../utils/toast.js';
+
+async function loadFeatures() {
+    try {
+        const result = await YourFeatureAPI.getAll();
+        if (result.success) {
+            // Render features
+            console.log(result.data);
+        }
+    } catch (error) {
+        showToast('Error loading features', 'error');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', loadFeatures);
+```
+
+#### 6. Add Styles
+
+Create `resources/css/customer/pages/your_feature.css` for page-specific styling.
+
+### General Best Practices
+
+1. **Always include CSRF token in POST/PUT/DELETE requests** to API endpoints
+2. **Use async/await** instead of `.then()` chains for cleaner code
+3. **Validate input** on both frontend (UX) and backend (security)
+4. **Create migrations** for any database changes (never modify DB directly)
+5. **Write tests** for critical business logic (use `composer run test`)
+6. **Use meaningful commit messages** when pushing to git
+7. **Keep functions small and focused** - single responsibility principle
+8. **Document complex logic** with comments, especially in JavaScript APIs
+
+## Troubleshooting & FAQ
+
+### Common Issues & Solutions
+
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| **"CSRF token not found"** | Meta tag missing in layout | Verify `<meta name="csrf-token">` is in layout's `<head>` |
+| **"Failed to upload: Unexpected token '<'"** | CSRF token not sent in request | Add `'X-CSRF-TOKEN': this.getCsrfToken()` to request headers |
+| **API returns 404** | Route not registered | Check `routes/web.php` and ensure route path matches |
+| **Vite not rebuilding** | Dev server not running | Run `composer run dev` or rebuild with `npm run build` |
+| **Database migrations fail** | Wrong credentials or DB doesn't exist | Check `.env` database settings match your MySQL instance |
+| **"Module not found" in JS** | Import path incorrect | Verify file path and use `./` for relative imports |
+| **Styling not applying** | CSS file not imported via Vite | Use `@vite('resources/css/...')` in Blade template |
+| **Bootstrap modal not working** | Bootstrap JS not initialized | Ensure `import 'bootstrap';` in `resources/js/app.js` |
+| **Can't access `/admin` routes** | Routes point to non-existent views | Create view files or update routes in `web.php` |
+
+### Performance Tips
+
+- **Cache API responses** when appropriate to reduce database hits
+- **Use Redis** for sessions and caching in production (configured in `.env`)
+- **Minify assets** in production with `npm run build`
+- **Use database indexes** for frequently queried columns
+- **Lazy-load images** in slideshows and product galleries
+
+### Debugging Techniques
+
+1. **Check Laravel logs:** `storage/logs/laravel.log`
+2. **Use Laravel Pail:** `php artisan pail` (real-time log streaming)
+3. **Browser DevTools:** F12 → Network/Console tabs for API issues
+4. **Add console.log()** in JavaScript to trace execution
+5. **Test API endpoints** directly with tools like Postman or curl
+
 ## Reference: Key Commands
 
 | Action | Command | Description |
@@ -210,6 +619,26 @@ The application uses a specific strategy for frontend assets that requires atten
 | **Build Assets** | `npm run build` | Compiles assets for production. |
 | **Clear Cache** | `php artisan optimize:clear` | Flushes all Laravel caches. |
 | **Rebuild Database** | `php artisan migrate:fresh` | Rebuilds database from scratch. |
+
+## File Structure Summary
+
+| Directory | Purpose |
+|-----------|---------|
+| `app/Models` | Eloquent ORM models (User, Product, ProductSample, etc.) |
+| `app/Http/Controllers` | API and web request handlers |
+| `config/` | Application configuration files |
+| `database/migrations` | Schema definitions and database changes |
+| `database/factories` | Model factories for testing |
+| `database/seeders` | Database seeders for populating test data |
+| `resources/views` | Blade templates organized by domain (customer, owner) |
+| `resources/css` | Stylesheets (Tailwind 4 + Custom CSS) organized by role and page |
+| `resources/js` | JavaScript modules (API clients, utilities, page logic) |
+| `resources/fonts` | Custom fonts (Coolvetica, SuperDream) |
+| `routes/` | Route definitions (web.php for HTTP, console.php for Artisan) |
+| `tests/` | Test files using Pest PHP framework |
+| `public/` | Publicly served files (compiled assets, images) |
+| `storage/` | Application storage (logs, file uploads, sessions) |
+| `bootstrap/` | Framework bootstrap files |
 
 ## Contributing To Scruffs-N-Chyrrs
 

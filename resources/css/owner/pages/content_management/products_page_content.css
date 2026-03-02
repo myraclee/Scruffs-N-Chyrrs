@@ -1,16 +1,102 @@
 /* Modal*/
+.products_page {
+    margin-top: 20px;
+}
+
+.products_page > h1 {
+    font-family: Coolvetica;
+    font-size: 30px;
+    color: #682c7a;
+    margin-bottom: 20px;
+}
+
+#products_no_items_text {
+    margin-left: 50px;
+    color: #999999;
+    margin-bottom: 20px;
+}
+
+#products_container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+    margin-bottom: 20px;
+}
+
+#products_add_btn {
+    border: none;
+    outline: none;
+    width: 130px;
+    height: 35px;
+    background-color: #682c7a;
+    border-radius: 30px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    font-family: Coolvetica;
+    font-size: 15px;
+    color: #fff7ec;
+    cursor: pointer;
+}
+
+#products_add_btn:hover {
+    transform: scale(1.05);
+    transition: 0.2s ease;
+}
+
+.products_card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 230px;
+    width: 160px;
+    background-color: #fff7ec;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.products_card:hover {
+    transform: scale(1.05);
+    transition: 0.2s ease;
+}
+
+.products_card_image {
+    margin-top: 10px;
+    height: 130px;
+    width: 130px;
+    object-fit: cover;
+    border-radius: 5px;
+}
+
+.products_card_info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    padding: 10px;
+    text-align: center;
+}
+
+.products_card_info h3 {
+    font-family: Coolvetica;
+    font-size: 14px;
+    color: #682c7a;
+    margin: 5px 0;
+    word-break: break-word;
+}
+
 .products_modal {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,.5);
+    background: rgba(0, 0, 0, 0.5);
     justify-content: center;
     align-items: center;
     z-index: 1;
 }
 
 .products_modal_content {
-    background: #FFF7EC;
+    background: #fff7ec;
     padding: 20px;
     padding-left: 30px;
     border-radius: 15px;
@@ -22,34 +108,34 @@
     overflow-y: auto;
 }
 
-.products_modal_content h2{
+.products_modal_content h2 {
     font-family: SuperDream;
     font-size: 30px;
-    color: #682C7A;
+    color: #682c7a;
 
     text-align: center;
 }
 
-.products_modal_content p{
+.products_modal_content p {
     margin-top: 10px;
-    
+
     font-family: Coolvetica;
     font-size: 13px;
-    color: #682C7A;
+    color: #682c7a;
     text-align: center;
 
     margin-bottom: 10px;
 }
 
-.products_modal_content label{
+.products_modal_content label {
     font-family: Coolvetica;
     font-size: 20px;
-    color: #682C7A;
+    color: #682c7a;
 
     margin-bottom: 15px;
 }
 
-.products_title_input{
+.products_title_input {
     width: 100%;
     min-height: 40px;
     padding-left: 20px;
@@ -57,13 +143,13 @@
 
     box-sizing: border-box;
     border-radius: 30px;
-    border: 2px solid #682C7A;
+    border: 2px solid #682c7a;
     font-size: 16px;
 
     margin-bottom: 15px;
 }
 
-.products_title_input:focus{
+.products_title_input:focus {
     outline: none;
 }
 
@@ -78,20 +164,20 @@
 .products_add_box {
     width: 120px;
     height: 120px;
-    border: 2px solid #682C7A;
+    border: 2px solid #682c7a;
     border-radius: 10px;
 
     display: flex;
     justify-content: center;
     align-items: center;
     font-size: 40px;
-    color: #682C7A;
+    color: #682c7a;
     cursor: pointer;
     margin-bottom: 10px;
 }
 
-.products_add_box:hover{
-    background-color: #DCBAE6;
+.products_add_box:hover {
+    background-color: #dcbae6;
     transition: 0.3s ease;
 }
 
@@ -103,7 +189,7 @@
     border-radius: 7px;
     margin-bottom: 5px;
 
-    border: 2px solid #682C7A;
+    border: 2px solid #682c7a;
 }
 
 .products_remove_main_image_btn {
@@ -129,7 +215,7 @@
     width: 170px;
     height: 240px;
 
-    border: 2px solid #682C7A;
+    border: 2px solid #682c7a;
     border-radius: 10px;
 
     display: flex;
@@ -137,7 +223,7 @@
     align-items: center;
 
     font-size: 40px;
-    color: #682C7A;
+    color: #682c7a;
 
     cursor: pointer;
     flex-shrink: 0;
@@ -145,8 +231,8 @@
     margin-bottom: 5px;
 }
 
-.products_price_box:hover{
-    background-color: #DCBAE6;
+.products_price_box:hover {
+    background-color: #dcbae6;
     transition: 0.3s ease;
 }
 
@@ -167,7 +253,7 @@
 
 /* Buttons */
 
-.products_modal_actions{
+.products_modal_actions {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -175,7 +261,7 @@
     margin-top: 20px;
 }
 
-.products_modal_actions_right{
+.products_modal_actions_right {
     display: flex;
     margin-left: auto;
     gap: 10px;
@@ -188,17 +274,17 @@
     width: 90px;
     height: 35px;
 
-    background: #682C7A;
+    background: #682c7a;
     border-radius: 30px;
 
     font-family: Coolvetica;
     font-size: 15px;
-    color: #FFF7EC;
+    color: #fff7ec;
 
     cursor: pointer;
 }
 
-.products_button_save:hover{
+.products_button_save:hover {
     transform: scale(1.05);
     transition: 0.2s ease;
 }
@@ -215,35 +301,34 @@
 
     font-family: Coolvetica;
     font-size: 15px;
-    color: #FFF7EC;
+    color: #fff7ec;
 
     cursor: pointer;
 }
 
-.products_button_cancel:hover{
+.products_button_cancel:hover {
     transform: scale(1.05);
     transition: 0.2s ease;
 }
 
-.products_button_delete { 
+.products_button_delete {
     border: none;
     padding: 8px 14px;
 
     width: 90px !important;
     height: 35px !important;
-    
 
-    background: #C83333;
+    background: #c83333;
     border-radius: 30px;
 
     font-family: Coolvetica;
     font-size: 15px;
-    color: #FFF7EC;
+    color: #fff7ec;
 
     cursor: pointer;
 }
 
-.products_button_delete:hover{
+.products_button_delete:hover {
     transform: scale(1.05);
     transition: 0.2s ease;
 }
@@ -251,9 +336,9 @@
 .products_button_remove {
     font-family: Coolvetica;
     font-size: 12px;
-    color: #FFF7EC;
+    color: #fff7ec;
 
-    background-color: #C83333;
+    background-color: #c83333;
     border-radius: 30px;
     width: 60px;
     height: 25px;
@@ -262,7 +347,7 @@
     cursor: pointer;
 }
 
-.products_button_remove:hover{
+.products_button_remove:hover {
     background-color: #8d0e0e;
     transition: 0.3s ease;
 }
@@ -279,11 +364,11 @@
 }
 
 .delete_products_modal_content {
-    background: #FFF7EC;
+    background: #fff7ec;
     padding: 25px 30px;
     border-radius: 20px;
     text-align: center;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     max-width: 400px;
     width: 90%;
 }
@@ -291,16 +376,16 @@
 .delete_products_modal_content p:first-child {
     font-family: Coolvetica;
     font-size: 18px;
-    color: #682C7A;
+    color: #682c7a;
     margin-bottom: 15px;
 }
 
-.products_button_confirm_delete{
+.products_button_confirm_delete {
     width: 130px;
     height: 35px;
 
-    background-color: #C83333;
-    color: #FFF7EC;
+    background-color: #c83333;
+    color: #fff7ec;
     border: none;
     outline: none;
     padding: 10px 20px;
@@ -321,49 +406,31 @@
     /* display: block; */
     font-family: Coolvetica;
     font-size: 12px;
-    color: #C83333;
+    color: #c83333;
 }
 
 /* Error messages */
-.products_error_message { 
-    color: #C83333; 
+.products_error_message {
+    color: #c83333;
     font-family: Coolvetica;
-    font-size: 12px; 
-    display: block; 
-    margin-top: -5px; 
+    font-size: 12px;
+    display: block;
+    margin-top: -5px;
 }
 
-#products_title_error{
+#products_title_error {
     margin-top: -10px;
     margin-bottom: 5px;
     margin-left: 15px;
 }
 
-#products_cover_error{
+#products_cover_error {
     text-align: center;
 }
 
-#products_prices_error{
+#products_prices_error {
     text-align: center;
 }
-
-/* Product cards */
-.products_card {
-    display: inline-block;
-    margin: 10px;
-    border: 1px solid #ccc;
-    width: 180px;
-    text-align: center;
-    cursor: pointer;
-}
-
-.products_card img {
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
-}
-
-.products_card button { margin-top: 5px; }
 
 /* Price Viewer Modal - A4 shape */
 #products_price_viewer_modal .products_modal_content {
@@ -386,7 +453,7 @@
 }
 
 .products_carousel_btn {
-    background: rgba(0,0,0,0.5);
+    background: rgba(0, 0, 0, 0.5);
     color: white;
     border: none;
     padding: 10px;
@@ -398,8 +465,12 @@
     transform: translateY(-50%);
 }
 
-#products_prev_price_image { left: 10px; }
-#products_next_price_image { right: 10px; }
+#products_prev_price_image {
+    left: 10px;
+}
+#products_next_price_image {
+    right: 10px;
+}
 
 /* ================= ANIMATION ================= */
 @keyframes modalPop {
@@ -415,9 +486,25 @@
 
 /* Responsive */
 @media screen and (max-width: 768px) {
-    .products_modal_content { width: 90%; }
-    .products_add_box { width: 100px; height: 100px; font-size: 30px; }
-    .products_price_box { width: 140px; height: 198px; font-size: 25px; }
-    #products_main_image_preview { width: 100px; height: 100px; }
-    #products_price_viewer_modal .products_modal_content { width: 90%; height: 80%; }
+    .products_modal_content {
+        width: 90%;
+    }
+    .products_add_box {
+        width: 100px;
+        height: 100px;
+        font-size: 30px;
+    }
+    .products_price_box {
+        width: 140px;
+        height: 198px;
+        font-size: 25px;
+    }
+    #products_main_image_preview {
+        width: 100px;
+        height: 100px;
+    }
+    #products_price_viewer_modal .products_modal_content {
+        width: 90%;
+        height: 80%;
+    }
 }

@@ -1,0 +1,148 @@
+/* ===== FONTS ===== */
+@font-face {
+    font-family: SuperDream;
+    src: url(../../fonts/SuperDream.ttf);
+}
+
+@font-face {
+    font-family: Coolvetica;
+    src: url(../../fonts/Coolvetica.otf);
+}
+
+/* ===== RESET ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    height: 100%;
+}
+
+/* ===== BODY ===== */
+body {
+    font-family: Coolvetica;
+    background-color: #fff0da;
+}
+
+/* ===== MAIN WRAPPER ===== */
+.main-wrapper {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ===== LOGIN SECTION ===== */
+.login_section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.header_login {
+    font-family: SuperDream;
+    color: #682c7a;
+    font-size: 50px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+/* ===== FORM ===== */
+.login_form {
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    padding: 0 20px;
+}
+
+.login_container {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.login_container label {
+    font-size: 16px;
+    color: #682c7a;
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.login_container input {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 20px;
+    border: 2px solid #d6b7e5;
+    outline: none;
+    font-size: 16px;
+    font-family: Arial, sans-serif;
+}
+
+.login_container input:focus {
+    border-color: #682c7a;
+    box-shadow: 0 0 0 3px rgba(104, 44, 122, 0.1);
+}
+
+/* ===== LOGIN BUTTON ===== */
+.login_button_container {
+    margin-top: 25px;
+    text-align: center;
+}
+
+.login_button {
+    width: 160px;
+    padding: 12px 20px;
+    border-radius: 25px;
+    border: none;
+    background: #6b2e83;
+    color: #fff0da;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 16px;
+    font-family: Coolvetica;
+    transition: 0.3s ease;
+}
+
+.login_button:hover {
+    background: #a15fb5;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(104, 44, 122, 0.3);
+}
+
+/* ===== FORGOT PASSWORD LINK ===== */
+.forgot_password {
+    display: block;
+    font-size: 14px;
+    margin-top: 20px;
+    text-align: center;
+}
+
+.forgot_password a {
+    text-decoration: none;
+    color: #6b2e83;
+    font-weight: 600;
+}
+
+.forgot_password a:hover {
+    text-decoration: underline;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .header_login {
+        font-size: 36px;
+        margin-bottom: 25px;
+    }
+
+    .login_form {
+        max-width: 90%;
+    }
+
+    .login_button {
+        width: 100%;
+    }
+}

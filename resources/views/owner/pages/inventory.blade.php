@@ -133,14 +133,7 @@
             </div>
             
             <div class="consumed_list">
-                @foreach(['Stickers', 'Button Pins', 'Posters', 'Business Cards', 'Photocards'] as $product)
-                <div class="consumed_item">
-                    <label class="checkbox_label">
-                        <input type="checkbox" class="add_product_checkbox"> {{ $product }}
-                    </label>
-                    <input type="number" class="tiny_input" placeholder="qty" min="0">
-                </div>
-                @endforeach
+                <!-- Products loaded dynamically by JavaScript -->
             </div>
         </div>
 
@@ -170,14 +163,7 @@
             </div>
             
             <div class="consumed_list">
-                @foreach(['Stickers', 'Button Pins', 'Posters', 'Business Cards', 'Photocards'] as $product)
-                <div class="consumed_item">
-                    <label class="checkbox_label">
-                        <input type="checkbox" class="edit_product_checkbox"> {{ $product }}
-                    </label>
-                    <input type="number" class="tiny_input" placeholder="qty" min="0">
-                </div>
-                @endforeach
+                <!-- Products loaded dynamically by JavaScript -->
             </div>
         </div>
 
@@ -189,165 +175,5 @@
 
 </div>
 
-<script>
-    let currentRowBeingEdited = null;
-
-    function closeAllModals() {
-        document.getElementById('modalOverlay').classList.remove('active');
-        document.getElementById('addMaterialModal').classList.remove('active');
-        document.getElementById('editMaterialModal').classList.remove('active');
-        currentRowBeingEdited = null;
-    }
-
-    // Now accepts the productsString to know what to check!
-    function openEditModal(btn, name, units, productsString) {
-        currentRowBeingEdited = btn.closest('tr'); 
-        
-        document.getElementById('editMaterialName').value = name;
-        document.getElementById('editMaterialUnits').value = units;
-        
-        // Reset all edit checkboxes first
-        document.querySelectorAll('.edit_product_checkbox').forEach(box => box.checked = false);
-
-        // Check the boxes that match the string from the table
-        if (productsString && productsString !== "None assigned") {
-            const activeProducts = productsString.split(',').map(s => s.trim());
-            
-            document.querySelectorAll('.edit_product_checkbox').forEach(box => {
-                const productName = box.nextSibling.textContent.trim();
-                if (activeProducts.includes(productName)) {
-                    box.checked = true;
-                }
-            });
-        }
-        
-        document.getElementById('modalOverlay').classList.add('active');
-        document.getElementById('editMaterialModal').classList.add('active');
-    }
-
-    function updateStatusCards() {
-        const tableBody = document.getElementById('inventoryTableBody');
-        const rows = tableBody.querySelectorAll('tr');
-        
-        let lowStocks = [];
-        let outOfStocks = [];
-        
-        rows.forEach(row => {
-            if(row.id === 'emptyInventoryRow') return; 
-            
-            const name = row.cells[0].textContent.trim();
-            const units = parseInt(row.cells[1].textContent.trim());
-            
-            if (units === 0) {
-                outOfStocks.push(name);
-            } else if (units <= 5) {
-                lowStocks.push(name);
-            }
-        });
-        
-        const lowStockList = document.getElementById('lowStockList');
-        if (lowStocks.length > 0) {
-            lowStockList.innerHTML = lowStocks.map(item => `<p>${item}</p>`).join('');
-        } else {
-            lowStockList.innerHTML = `<p class="empty_status">All levels healthy!</p>`;
-        }
-        
-        const outOfStockList = document.getElementById('outOfStockList');
-        if (outOfStocks.length > 0) {
-            outOfStockList.innerHTML = outOfStocks.map(item => `<p>${item}</p>`).join('');
-        } else {
-            outOfStockList.innerHTML = `<p class="empty_status">All items are in stock.</p>`;
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        // Open Add Modal
-        document.getElementById('openAddModalBtn').addEventListener('click', function() {
-            document.getElementById('modalOverlay').classList.add('active');
-            document.getElementById('addMaterialModal').classList.add('active');
-        });
-
-        // ==========================================
-        // ADD NEW MATERIAL LOGIC
-        // ==========================================
-        const addBtn = document.getElementById('saveSimulatedMaterialBtn');
-        addBtn.addEventListener('click', function() {
-            
-            const materialName = document.getElementById('newMaterialInput').value;
-            const materialUnits = parseInt(document.getElementById('newUnitsInput').value); 
-            
-            if(!materialName || isNaN(materialUnits) || materialUnits < 0) {
-                alert("Please fill out both the Material and valid positive Units!");
-                return;
-            }
-
-            const tableBody = document.getElementById('inventoryTableBody');
-            const emptyRow = document.getElementById('emptyInventoryRow');
-            if(emptyRow) emptyRow.remove();
-
-            let selectedProducts = [];
-            document.querySelectorAll('.add_product_checkbox').forEach(box => {
-                if(box.checked) selectedProducts.push(box.nextSibling.textContent.trim());
-            });
-            let productText = selectedProducts.length > 0 ? selectedProducts.join(', ') : "None assigned";
-
-            const newRow = document.createElement('tr');
-            // Added productText to the openEditModal function
-            newRow.innerHTML = `
-                <td>${materialName}</td>
-                <td class="text-center">${materialUnits}</td>
-                <td>
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        ${productText}
-                        <button class="edit_btn" onclick="openEditModal(this, '${materialName}', ${materialUnits}, '${productText}')">✏️</button>
-                    </div>
-                </td>
-            `;
-            tableBody.appendChild(newRow);
-
-            updateStatusCards();
-
-            document.getElementById('newMaterialInput').value = '';
-            document.getElementById('newUnitsInput').value = '';
-            document.querySelectorAll('.add_product_checkbox').forEach(box => box.checked = false);
-            closeAllModals();
-        });
-
-        // ==========================================
-        // EDIT MATERIAL LOGIC
-        // ==========================================
-        const editBtn = document.getElementById('saveEditMaterialBtn');
-        editBtn.addEventListener('click', function() {
-            if(!currentRowBeingEdited) return; 
-
-            const updatedName = document.getElementById('editMaterialName').value;
-            const updatedUnits = parseInt(document.getElementById('editMaterialUnits').value);
-
-            if(!updatedName || isNaN(updatedUnits) || updatedUnits < 0) {
-                alert("Please fill out both the Material and valid positive Units!");
-                return;
-            }
-
-            let selectedProducts = [];
-            document.querySelectorAll('.edit_product_checkbox').forEach(box => {
-                if(box.checked) selectedProducts.push(box.nextSibling.textContent.trim());
-            });
-            let productText = selectedProducts.length > 0 ? selectedProducts.join(', ') : "None assigned";
-
-            currentRowBeingEdited.cells[0].textContent = updatedName;
-            currentRowBeingEdited.cells[1].textContent = updatedUnits;
-            
-            // Updated so the button remembers the NEW products checked
-            currentRowBeingEdited.cells[2].innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    ${productText}
-                    <button class="edit_btn" onclick="openEditModal(this, '${updatedName}', ${updatedUnits}, '${productText}')">✏️</button>
-                </div>
-            `;
-
-            updateStatusCards();
-            closeAllModals();
-        });
-    });
-</script>
+@vite('resources/js/owner/inventory_refactored.js')
 @endsection

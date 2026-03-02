@@ -1,4 +1,11 @@
-document.addEventListener('DOMContentLoaded', () => {
+/**
+ * Product Samples Modal Management
+ * Handles CRUD operations for product samples with images
+ */
+import ProductSampleAPI from '../../api/productSampleApi.js';
+import Toast from '../../utils/toast.js';
+
+document.addEventListener('DOMContentLoaded', async () => {
     const addSampleBtn = document.querySelector('.add_sample');
     const modal = document.getElementById('addSampleModal');
     const deleteModal = document.getElementById('deleteConfirmModal');
@@ -23,13 +30,34 @@ document.addEventListener('DOMContentLoaded', () => {
     let tempSample = null;
     let editIndex = null;
 
+    // Load existing samples from API on page load
+    try {
+        const loadedSamples = await ProductSampleAPI.getAllSamples();
+        samples = loadedSamples.map(sample => ({
+            id: sample.id,
+            name: sample.name,
+            description: sample.description,
+            images: (sample.images || []).map(img => ({
+                id: img.id,
+                image_path: img.image_path,
+                preview: `/storage/${img.image_path}`,
+                sort_order: img.sort_order
+            }))
+        }));
+        renderSamples();
+    } catch (error) {
+        console.error('Failed to load product samples:', error);
+        Toast.error('Failed to load product samples');
+    }
+
     addSampleBtn.addEventListener('click', () => {
-        tempSample = { name: '', images: [] };
+        tempSample = { id: null, name: '', description: '', images: [] };
         editIndex = null;
         nameInput.value = '';
         hideErrors();
         renderGrid();
         modal.style.display = 'flex';
+        removeDeleteButton();
     });
 
     function closeModal() {
@@ -45,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target === modal) closeModal();
     });
 
-    saveBtn.addEventListener('click', () => {
+    saveBtn.addEventListener('click', async () => {
         hideErrors();
 
         let valid = true;
@@ -62,16 +90,65 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!valid) return;
 
-        tempSample.name = nameInput.value.trim();
+        try {
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
 
-        if (editIndex === null) {
-            samples.push(tempSample);
-        } else {
-            samples[editIndex] = tempSample;
+            tempSample.name = nameInput.value.trim();
+
+            // Separate new images (without id) from existing ones
+            const newImages = tempSample.images.filter(img => !img.id && img.file);
+
+            if (editIndex === null) {
+                // Create new sample
+                const formData = new FormData();
+                formData.append('name', tempSample.name);
+                formData.append('description', tempSample.description || '');
+
+                newImages.forEach((img, idx) => {
+                    formData.append(`images[${idx}]`, img.file);
+                });
+
+                const createdSample = await ProductSampleAPI.createSample(formData);
+                createdSample.images = createdSample.images.map(img => ({
+                    id: img.id,
+                    image_path: img.image_path,
+                    preview: `/storage/${img.image_path}`,
+                    sort_order: img.sort_order
+                }));
+                samples.push(createdSample);
+                Toast.success('Product sample created successfully!');
+            } else {
+                // Update existing sample
+                const sampleToUpdate = samples[editIndex];
+                const formData = new FormData();
+                formData.append('name', tempSample.name);
+                formData.append('description', tempSample.description || '');
+
+                newImages.forEach((img, idx) => {
+                    formData.append(`images[${idx}]`, img.file);
+                });
+
+                const updatedSample = await ProductSampleAPI.updateSample(sampleToUpdate.id, formData);
+                updatedSample.images = updatedSample.images.map(img => ({
+                    id: img.id,
+                    image_path: img.image_path,
+                    preview: `/storage/${img.image_path}`,
+                    sort_order: img.sort_order
+                }));
+                samples[editIndex] = updatedSample;
+                Toast.success('Product sample updated successfully!');
+            }
+
+            renderSamples();
+            closeModal();
+        } catch (error) {
+            console.error('Error saving product sample:', error);
+            Toast.error(error.message || 'Failed to save product sample');
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Save';
         }
-
-        renderSamples();
-        closeModal();
     });
 
     function renderSamples() {
@@ -88,9 +165,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = document.createElement('div');
             card.className = 'product_sample_main_container';
 
+            const firstImagePreview = sample.images.length > 0
+                ? sample.images[0].preview
+                : '/images/placeholder.png';
+
             card.innerHTML = `
                 <div class="product_sample_container">
-                    <img src="${sample.images[0].preview}">
+                    <img src="${firstImagePreview}">
                     <div class="product_sample_container_name">
                         <h3>${sample.name}</h3>
                     </div>
@@ -106,8 +187,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function openEdit(index) {
         editIndex = index;
         tempSample = {
+            id: samples[index].id,
             name: samples[index].name,
-            images: [...samples[index].images]
+            description: samples[index].description,
+            images: samples[index].images.map(img => ({ ...img }))
         };
 
         nameInput.value = tempSample.name;
@@ -116,6 +199,13 @@ document.addEventListener('DOMContentLoaded', () => {
         modal.style.display = 'flex';
 
         injectDeleteButton();
+    }
+
+    function removeDeleteButton() {
+        const deleteBtn = document.getElementById('deleteSampleUpload');
+        if (deleteBtn) {
+            deleteBtn.remove();
+        }
     }
 
     function injectDeleteButton() {
@@ -138,11 +228,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    confirmDeleteBtn.addEventListener('click', () => {
-        samples.splice(editIndex, 1);
-        renderSamples();
-        deleteModal.style.display = 'none';
-        closeModal();
+    confirmDeleteBtn.addEventListener('click', async () => {
+        try {
+            confirmDeleteBtn.disabled = true;
+            confirmDeleteBtn.textContent = 'Deleting...';
+
+            const sampleToDelete = samples[editIndex];
+            await ProductSampleAPI.deleteSample(sampleToDelete.id);
+
+            samples.splice(editIndex, 1);
+            renderSamples();
+            deleteModal.style.display = 'none';
+            closeModal();
+            Toast.success('Product sample deleted successfully!');
+        } catch (error) {
+            console.error('Error deleting product sample:', error);
+            Toast.error(error.message || 'Failed to delete product sample');
+        } finally {
+            confirmDeleteBtn.disabled = false;
+            confirmDeleteBtn.textContent = 'Delete';
+        }
     });
 
     deleteModal.addEventListener('click', e => {
@@ -191,7 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const input = document.createElement('input');
         input.type = 'file';
-        input.accept = '.png,.jpg,.jpeg';
+        input.accept = '.png,.jpg,.jpeg,.gif,.webp';
         input.hidden = true;
 
         slot.onclick = () => input.click();
@@ -202,7 +307,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const reader = new FileReader();
             reader.onload = () => {
-                tempSample.images.push({ file, preview: reader.result });
+                tempSample.images.push({
+                    id: null,
+                    file: file,
+                    preview: reader.result
+                });
                 renderGrid();
             };
             reader.readAsDataURL(file);

@@ -45,11 +45,19 @@ class AuthController extends Controller
     }
 
     /**
-     * Show the login form.
+     * Show the customer login form.
      */
     public function showLogin()
     {
         return view('customer.login_customer');
+    }
+
+    /**
+     * Show the owner login form.
+     */
+    public function showOwnerLogin()
+    {
+        return view('owner.login_owner');
     }
 
     /**
