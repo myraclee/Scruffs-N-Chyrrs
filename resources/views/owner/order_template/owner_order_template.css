@@ -1,0 +1,187 @@
+/* ===== FONTS ===== */
+@font-face {
+    font-family: SuperDream;
+    src: url(../../fonts/SuperDream.ttf);
+}
+
+@font-face {
+    font-family: Coolvetica;
+    src: url(../../fonts/Coolvetica.otf);
+}
+
+/* ===== RESET ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Coolvetica;
+    background-color: #F2F2F2;
+}
+
+/* ===== DASHBOARD LAYOUT ===== */
+.dashboard-wrapper {
+    display: flex;
+    height: 100vh;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+    width: 240px;
+    background: #EEDDC5;
+    padding: 30px 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-logo {
+    width: 160px;
+    margin-bottom: 30px;
+}
+
+.sidebar-menu {
+    list-style: none;
+}
+
+.sidebar-menu li {
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 15px;
+    cursor: pointer;
+    color: #5C2A6A;
+}
+
+.sidebar-menu li.active {
+    background: #C9A4DA;
+    color: white;
+}
+
+.sidebar-menu li:hover {
+    background: #D9BEE8;
+}
+
+.owner-profile {
+    font-size: 13px;
+    color: #5C2A6A;
+    margin-top: auto;
+}
+
+/* ===== PROFILE ===== */
+.owner-profile {
+    font-size: 13px;
+    color: #5C2A6A;
+}
+
+/* ===== MAIN CONTENT ===== */
+.main-content {
+    flex: 1;
+    background: #F6EFE5;
+    padding: 40px;
+}
+
+.page-title {
+    font-family: SuperDream;
+    color: #6B2E83;
+    margin-bottom: 20px;
+}
+
+/* ===== TABS ===== */
+.tabs {
+    margin-bottom: 25px;
+}
+
+.tab-btn {
+    background: #C9A4DA;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 20px;
+    margin-right: 10px;
+    cursor: pointer;
+    color: white;
+}
+
+.active-tab {
+    background: #6B2E83;
+}
+
+/* ===== SECTION TITLE ===== */
+.section-title {
+    color: #6B2E83;
+    margin-bottom: 15px;
+}
+
+/* ===== TABLE ===== */
+.template-table {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    margin-bottom: 25px;
+}
+
+.table-header,
+.table-row {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr 1fr 1fr 1.2fr 1fr 1fr;
+    padding: 12px;
+    align-items: center;
+}
+
+.table-header {
+    background: #6B2E83;
+    color: white;
+    font-size: 13px;
+}
+
+.table-row {
+    border-bottom: 1px solid #E5D4F2;
+    font-size: 13px;
+}
+
+.table-row span {
+    padding: 5px;
+}
+
+/* ===== ACTION BUTTONS ===== */
+.action-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.edit-btn {
+    background: #6B2E83;
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 15px;
+    cursor: pointer;
+}
+
+.delete-btn {
+    background: #D60000;
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 15px;
+    cursor: pointer;
+}
+
+.edit-btn:hover,
+.delete-btn:hover {
+    opacity: 0.9;
+}
+
+/* ===== ADD BUTTON ===== */
+.add-btn {
+    background: #6B2E83;
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 25px;
+    cursor: pointer;
+}
+
+.add-btn:hover {
+    opacity: 0.9;
+}
