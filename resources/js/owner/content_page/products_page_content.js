@@ -280,9 +280,19 @@ products_delete_btn.addEventListener('click', (e) => {
 products_confirm_delete_btn.addEventListener('click', () => {
     products_list.splice(products_edit_index, 1);
     renderProducts();
+
+    // close BOTH modals
     products_delete_confirm_modal.style.display = 'none';
+    products_modal.style.display = 'none';
+
     products_reset_modal();
 });
+
+products_delete_confirm_modal
+    .querySelector('.delete_products_modal_content')
+    .addEventListener('click', e => {
+        e.stopPropagation();
+    });
 
 // ================= PRICE VIEWER =================
 function products_view_price_images(index) {

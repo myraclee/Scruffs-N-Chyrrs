@@ -228,8 +228,9 @@
     border: none;
     padding: 8px 14px;
 
-    width: 90px;
-    height: 35px;
+    width: 90px !important;
+    height: 35px !important;
+    
 
     background: #C83333;
     border-radius: 30px;
@@ -269,41 +270,57 @@
 .delete_products_modal {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.55);
+    background: rgba(0, 0, 0, 0.6);
     display: none;
-    align-items: center;
     justify-content: center;
-    z-index: 9999;
+    align-items: center;
+    z-index: 1000;
 }
 
 .delete_products_modal_content {
     background: #FFF7EC;
-    padding: 30px 35px;
-    border-radius: 14px;
-    width: 90%;
-    max-width: 420px;
-    height: 200px;
+    padding: 25px 30px;
+    border-radius: 20px;
     text-align: center;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
-    animation: modalPop 0.25s ease-out;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    max-width: 400px;
+    width: 90%;
 }
 
-.delete_products_modal_content p {
-    margin: 0;
-    font-size: 16px;
-    color: #333;
+.delete_products_modal_content p:first-child {
+    font-family: Coolvetica;
+    font-size: 18px;
+    color: #682C7A;
+    margin-bottom: 15px;
+}
+
+.products_button_confirm_delete{
+    width: 130px;
+    height: 35px;
+
+    background-color: #C83333;
+    color: #FFF7EC;
+    border: none;
+    outline: none;
+    padding: 10px 20px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-family: Coolvetica;
+    font-size: 14px;
+
+    margin-bottom: 10px;
+}
+
+.products_button_confirm_delete button:hover {
+    transform: scale(1.05);
+    transition: 0.2s ease;
 }
 
 .products_small_text {
-    margin-top: 12px;
-    font-size: 13px;
-    color: #888;
-}
-
-.products_small_text { 
-    font-size: 12px; 
-    color: gray; 
-    margin-top: 5px; 
+    /* display: block; */
+    font-family: Coolvetica;
+    font-size: 12px;
+    color: #C83333;
 }
 
 /* Error messages */

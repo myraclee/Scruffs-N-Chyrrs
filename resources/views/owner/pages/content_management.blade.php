@@ -133,8 +133,8 @@
 <div id="products_delete_confirm_modal" class="delete_products_modal">
     <div class="delete_products_modal_content">
         <p>Do you wish to delete the selected product?</p>
-        <button id="products_confirm_delete_btn" class="products_btn_delete">Delete Product</button>
-        <p class="products_small_text">This process cannot be undone.</p>
+        <button id="products_confirm_delete_btn" class="products_button_confirm_delete">Delete Product</button>
+        <p class="products_small_text">This process cannot be undone</p>
     </div>
 </div>
 
