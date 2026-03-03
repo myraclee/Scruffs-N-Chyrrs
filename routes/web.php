@@ -24,18 +24,14 @@ Route::get('/aboutus', function () {
 })->name('aboutus');
 
 // PASSWORD RESETS
+Route::get('/password/reset', [AuthController::class, 'showResetPassword'])->name('reset-password');
+Route::post('/password/reset', [AuthController::class, 'sendResetCode'])->name('reset-password.send');
 
-Route::get('/password/reset', function () {
-    return view('customer.password_page.reset_password');
-})->name('reset-password');
+Route::get('/password/code', [AuthController::class, 'showEnterCode'])->name('enter-code');
+Route::post('/password/code', [AuthController::class, 'verifyResetCode'])->name('enter-code.verify');
 
-Route::get('/password/code', function () {
-    return view('customer.password_page.enter_code');
-})->name('enter-code');
-
-Route::get('/password/new', function () {
-    return view('customer.password_page.new_password');
-})->name('new-password');
+Route::get('/password/new', [AuthController::class, 'showNewPassword'])->name('new-password');
+Route::post('/password/new', [AuthController::class, 'resetPassword'])->name('new-password.reset');
 
 // AUTHENTICATION ROUTES
 Route::get('/signup', [AuthController::class, 'showSignup'])->name('signup');
