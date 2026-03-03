@@ -39,7 +39,7 @@ Ensure you have the following installed on your local environment:
 
 The project includes a built-in setup script to automate the initial configuration. Run the following command in your terminal:
 
-```bash
+```cmd
 composer run setup
 ```
 
@@ -88,7 +88,7 @@ To obtain your Cloudflare Turnstile site key:
 
 To start the local development server along with the Vite dev server and queue listener, run:
 
-```bash
+```cmd
 composer run dev
 ```
 
@@ -102,7 +102,7 @@ This command uses `concurrently` to execute:
 
 We use Pest for testing. To run the test suite:
 
-```bash
+```cmd
 composer run test
 ```
 
@@ -112,8 +112,8 @@ composer run test
 
 To maintain code style consistency, use Laravel Pint:
 
-```bash
-./vendor/bin/pint
+```cmd
+vendor\bin\pint
 ```
 
 *Uses Laravel Pint for PSR-12 code style enforcement.*
@@ -422,13 +422,13 @@ class ProductAPI {
 
 #### 1. Create Migration & Model
 
-```bash
+```cmd
 php artisan make:model YourFeature -m
 ```
 
 This generates both the model in `app/Models/YourFeature.php` and a migration in `database/migrations/`. Edit the migration file to define your schema, then run:
 
-```bash
+```cmd
 php artisan migrate
 ```
 
@@ -578,19 +578,759 @@ Create `resources/css/customer/pages/your_feature.css` for page-specific styling
 
 ## Troubleshooting & FAQ
 
-### Common Issues & Solutions
+### Quick Reference Table
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| **"CSRF token not found"** | Meta tag missing in layout | Verify `<meta name="csrf-token">` is in layout's `<head>` |
-| **"Failed to upload: Unexpected token '<'"** | CSRF token not sent in request | Add `'X-CSRF-TOKEN': this.getCsrfToken()` to request headers |
-| **API returns 404** | Route not registered | Check `routes/web.php` and ensure route path matches |
-| **Vite not rebuilding** | Dev server not running | Run `composer run dev` or rebuild with `npm run build` |
-| **Database migrations fail** | Wrong credentials or DB doesn't exist | Check `.env` database settings match your MySQL instance |
+| Issue | Root Cause | Quick Solution |
+| ------- | ----------- | ----------------- |
+| **CSRF token not found** | Meta tag missing in layout or token retrieval fails | Verify `<meta name="csrf-token" content="{{ csrf_token() }}">` in layout's `<head>` and check browser console |
+| **Failed to upload image: Unexpected token '<', "<!DOCTYPE"... is not valid JSON** | CSRF token not sent in request headers. Server returning HTML error page instead of JSON | Ensure CSRF token is sent in request headers and API routes are registered. Add `'X-CSRF-TOKEN': this.getCsrfToken()` to request headers |
+| **API returns 404** | Route not registered in `routes/web.php` | Check endpoint path in `routes/web.php` and verify route exists |
+| **Vite not rebuilding** | Dev server not running or port conflict | Run `composer run dev` to start all services or rebuild with `npm run build` |
+| **Database migrations fail** | Wrong credentials or Invalid `.env` credentials or DB doesn't exist | Verify `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` in `.env` match your MySQL instance |
 | **"Module not found" in JS** | Import path incorrect | Verify file path and use `./` for relative imports |
 | **Styling not applying** | CSS file not imported via Vite | Use `@vite('resources/css/...')` in Blade template |
 | **Bootstrap modal not working** | Bootstrap JS not initialized | Ensure `import 'bootstrap';` in `resources/js/app.js` |
 | **Can't access `/admin` routes** | Routes point to non-existent views | Create view files or update routes in `web.php` |
+
+---
+
+## Error Deep Dives
+
+### Error: "Failed to upload image: Unexpected token '<', "<!DOCTYPE"... is not valid JSON"
+
+#### Understanding the Error
+
+This error occurs when JavaScript tries to parse a JSON response from the server, but instead receives an **HTML document** (indicated by the `<` character starting with `<!DOCTYPE`). The browser's JSON parser fails because HTML is not valid JSON, triggering a `SyntaxError`.
+
+**Why does this happen?**
+When you upload a file and the server returns an error page (like 404, 403, or 500 with HTML), the frontend tries to parse it as JSON and fails.
+
+#### Root Causes & Scenarios
+
+1. **CSRF Token Missing or Not Sent**
+   - The `<meta name="csrf-token" content="{{ csrf_token() }}">` tag is missing from the layout
+   - The CSRF token is not being included in the `X-CSRF-TOKEN` header
+   - Laravel's CSRF middleware rejects the request, returning a 403 HTML error page
+   - **Symptom:** Upload button sends request but server responds with HTML error page
+
+2. **User Not Authenticated (Expired Session)**
+   - Session token expired or user logged out
+   - Route requires authentication but user isn't authenticated
+   - Laravel returns 401/403 unauthorized HTML page
+   - **Symptom:** Error appears after being logged in for a long time without activity
+
+3. **API Route Not Registered**
+   - Endpoint path doesn't match any registered route in `routes/web.php`
+   - Typo in API endpoint URL in JavaScript
+   - Server returns 404 HTML error page
+   - **Symptom:** Check Network tab, see 404 status code
+
+4. **Server Configuration / Database Issue**
+   - Database connection fails during file processing
+   - File storage permissions incorrect
+   - Laravel `.env` configuration missing or wrong
+   - **Symptom:** Error occurs after CSRF passes, during file save operation
+
+5. **Application in Debug Mode with Stack Trace**
+   - `APP_DEBUG=true` in `.env` with an exception thrown
+   - Laravel returns detailed HTML error page instead of JSON
+   - **Symptom:** HTML response contains full stack trace in Network tab
+
+#### Prevention: Before Development
+
+✅ **Always verify these before building upload features:**
+
+1. **Meta tag present in layouts** — Check both layout files:
+
+   ```cmd
+   REM Customer layout
+   findstr "csrf-token" resources\views\layouts\customer_layout.blade.php
+   
+   REM Owner layout
+   findstr "csrf-token" resources\views\owner\layouts\owner_layout.blade.php
+   ```
+
+   Expected output: `<meta name="csrf-token" content="{{ csrf_token() }}">`
+
+2. **API client initializes CSRF token correctly** — Verify `getCsrfToken()` method in API class:
+
+   ```javascript
+   // From resources/js/api/productApi.js (lines 16-21)
+   getCsrfToken() {
+       return document.querySelector('meta[name="csrf-token"]')
+           ?.getAttribute('content');
+   }
+   ```
+
+3. **Routes are properly registered** — Check `routes/web.php`:
+
+   ```cmd
+   findstr "POST.*api/products" routes\web.php
+   findstr "POST.*api/home-images" routes\web.php
+   findstr "POST.*api/product-samples" routes\web.php
+   ```
+
+4. **File permissions correct** — Storage directories writable:
+
+   ```cmd
+   REM Grant full permissions to current user on storage directories
+   icacls "storage\app\public" /grant:r "%USERNAME%":(OI)(CI)F /T
+   icacls "storage\logs" /grant:r "%USERNAME%":(OI)(CI)F /T
+   ```
+
+5. **`.env` properly configured** — Verify key variables exist:
+
+   ```cmd
+   findstr "APP_KEY=base64:" .env
+   findstr "DB_CONNECTION=mysql" .env
+   ```
+
+#### Diagnosis: Step-by-Step Troubleshooting
+
+**Step 1: Capture the API Response**
+
+1. Open browser DevTools: Press `F12` → Click **Network** tab
+2. Attempt the upload (try uploading an image)
+3. Look for the POST request (usually `POST /api/products` or similar)
+4. Click that request to inspect it
+5. Click the **Response** tab — **This is what the server actually returned**
+
+**Expected:** JSON like:
+
+```json
+{
+  "success": false,
+  "errors": {"cover_image": ["The image must be a PNG or JPEG file"]},
+  "message": "Validation failed"
+}
+```
+
+**Actual (if error):** HTML starting with:
+
+```html
+<!DOCTYPE html>
+<html>
+  <head><title>403 Forbidden</title></head>
+  <body>...
+```
+
+---
+
+**Step 2: Verify CSRF Token in Request**
+
+1. Still in Network tab, check the **Request Headers** section
+2. Scroll down and look for a header named `x-csrf-token`
+3. Verify it has a value (should be a long random string, not empty)
+
+**If missing:**
+
+- Token not being sent → indicates JavaScript isn't calling `getCsrfToken()` or token retrieval failed
+- Move to **Common Fixes** section, Fix #1
+
+**If present:**
+
+- Token was sent → problem is elsewhere, check Step 3
+
+---
+
+**Step 3: Check File Upload Parameters**
+
+1. Still in Network tab, click the **Payload** tab
+2. Verify form data includes:
+   - File field (e.g., `cover_image`: [File object])
+   - Token field (if added via FormData): `_token`: [value]
+
+**If file missing:**
+
+- File input not properly selected in JavaScript
+- Check browser Console for errors (press F12 → **Console** tab)
+
+---
+
+**Step 4: Check Browser Console for Errors**
+
+1. Press `F12` → Click **Console** tab
+2. Look for error messages in red
+3. Exact error should say: `SyntaxError: Unexpected token '<'...`
+
+**If you see this:**
+
+- Confirms server returned HTML
+- Check Laravel logs next
+
+---
+
+**Step 5: Check Laravel Application Logs**
+
+```cmd
+REM Real-time log streaming (requires Laravel Pail)
+php artisan pail
+
+REM Or view the log file directly (PowerShell command)
+Get-Content -Path storage\logs\laravel.log -Wait
+
+REM Or check the most recent errors
+type storage\logs\laravel.log
+```
+
+**Look for:**
+
+- `TokenMismatchException` → CSRF token invalid or missing
+- `ModelNotFoundException` → Route handler issue
+- `FileException` → File storage/permission problem
+- Any exception class name and message
+
+---
+
+#### Common Fixes
+
+**Fix #1: Add CSRF Token to Request Headers**
+
+This is the #1 most common cause. Ensure your API client sends the CSRF token in headers:
+
+```javascript
+// Correct pattern from resources/js/api/productApi.js (lines 55-70)
+async createProduct(formData) {
+    const response = await fetch('/api/products', {
+        method: 'POST',
+        body: formData,  // FormData with files
+        headers: {
+            'X-CSRF-TOKEN': this.getCsrfToken(),  // ← CRITICAL
+            'Accept': 'application/json'
+        }
+    });
+    
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    return await response.json();
+}
+```
+
+**Critical points:**
+
+- Header name is `X-CSRF-TOKEN` (case-insensitive in HTTP, but convention matters)
+- Value must be the result of `this.getCsrfToken()`
+- Do **NOT** manually set `Content-Type: multipart/form-data` — let browser handle file boundary
+- Always check response status before parsing JSON
+
+---
+
+**Fix #2: Add Token to FormData as Fallback**
+
+Some configurations require the token in FormData as well:
+
+```javascript
+// Additional safety layer
+async createProduct(formData) {
+    if (this.getCsrfToken() && !formData.has('_token')) {
+        formData.append('_token', this.getCsrfToken());
+    }
+    
+    const response = await fetch('/api/products', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRF-TOKEN': this.getCsrfToken()
+        }
+    });
+    
+    return await response.json();
+}
+```
+
+---
+
+**Fix #3: Verify Routes Registered in `routes/web.php`**
+
+Check that your upload endpoint is actually defined:
+
+```cmd
+REM Check if route exists
+findstr /N "POST.*api/products" routes\web.php
+findstr /N "POST.*api/home-images" routes\web.php
+findstr /N "POST.*api/product-samples" routes\web.php
+```
+
+If not found, add the route:
+
+```php
+// routes/web.php
+Route::post('/api/products', [ProductController::class, 'store']);
+Route::post('/api/home-images', [HomeImageController::class, 'store']);
+Route::post('/api/product-samples', [ProductSampleController::class, 'store']);
+```
+
+---
+
+**Fix #4: Ensure Storage Symlink Exists**
+
+Files are stored in `storage/app/public/` but accessed via `/storage/...`. This requires a symlink:
+
+```cmd
+REM Create the symlink
+php artisan storage:link
+
+REM Verify it was created
+dir public\storage
+
+REM Should show the storage directory junction/symlink
+REM If not created, check file permissions and run as Administrator if needed
+```
+
+---
+
+**Fix #5: Check File Validation Rules**
+
+The upload fails at validation. Check your controller for file size/type restrictions:
+
+```php
+// From app/Http/Controllers/Api/ProductController.php
+$validated = $request->validate([
+    'cover_image' => 'required|image|mimes:png,jpg,jpeg|max:2048',  // 2MB max
+    'price_images.*' => 'required|image|mimes:png,jpg,jpeg|max:5120'  // 5MB max each
+]);
+```
+
+If your file exceeds size or type constraints:
+
+- Reduce file size in your image editor
+- Ensure file format matches `mimes:` list
+- Or update validation rule in controller if smaller files fail
+
+**Test with a known-good file:**
+
+```cmd
+REM Create a test image using PowerShell or download one
+REM The easiest approach is to use a sample image from your project
+REM Visit https://www.pngquant.org/ to create a minimal PNG
+REM Or simply download any image and save it as test.png
+REM Then try uploading this file to test the upload functionality
+```
+
+---
+
+#### Expected vs. Actual API Responses
+
+**Successful Upload (Status 201):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "name": "Sticker Pack",
+    "description": "Amazing stickers",
+    "created_at": "2026-03-04T12:34:56.000000Z",
+    "updated_at": "2026-03-04T12:34:56.000000Z"
+  },
+  "message": "Product created successfully"
+}
+```
+
+**Validation Error (Status 422):**
+
+```json
+{
+  "success": false,
+  "errors": {
+    "cover_image": [
+      "The cover image field is required.",
+      "The cover image must be an image.",
+      "The cover image must be a file of type: png, jpg, jpeg."
+    ]
+  },
+  "message": "Validation failed"
+}
+```
+
+**Auth Error (Status 403 - HTML):**
+
+```html
+<!DOCTYPE html>
+<html>
+  <head><title>403 Forbidden</title></head>
+  <body>
+    <h1>403 Forbidden</h1>
+    <p>CSRF token mismatch.</p>
+  </body>
+</html>
+<!-- ← This is the problem! JSON parser fails on < -->
+```
+
+**Server Error (Status 500 - in production, JSON):**
+
+```json
+{
+  "success": false,
+  "error": "Failed to upload image",
+  "message": "Disk 'public' does not have a configured driver."
+}
+```
+
+---
+
+### Error: "CSRF token not found"
+
+#### Understanding the Error
+
+This error occurs when JavaScript cannot retrieve the CSRF token from the page's HTML. The application needs the token to send with requests, but the meta tag (which contains the token) is either missing, malformed, or not yet loaded by the time the code runs.
+
+#### Root Causes
+
+1. **Meta Tag Missing from Layout**
+   - `<meta name="csrf-token">` not included in layout's `<head>` section
+   - Layout file not properly extended by the Blade view
+   - **Symptom:** Searching page source (Ctrl+U) shows no `csrf-token` meta tag
+
+2. **JavaScript Runs Before DOM Loads**
+   - Token retrieval code executes before `<head>` is parsed
+   - Script tag loaded with `async` attribute causing race condition
+   - **Symptom:** Works sometimes, fails other times (timing issue)
+
+3. **Incorrect Selector in `getCsrfToken()` Method**
+   - Selector string `'meta[name="csrf-token"]'` is wrong
+   - Attribute name or value doesn't match actual HTML
+   - **Symptom:** Console shows `null` when running selector manually
+
+4. **Browser Cache or Security Issues**
+   - Stale cached page in browser
+   - Private/Incognito mode blocking data access
+   - Extensions interfering with DOM access
+   - **Symptom:** Works in fresh browser, fails after reload
+
+#### Prevention: Before Development
+
+✅ **Ensure proper CSRF token setup:**
+
+1. **Add meta tag to ALL layout files** at the end of `<head>`:
+
+   ```html
+   <head>
+       <!-- Other meta tags -->
+       <meta name="csrf-token" content="{{ csrf_token() }}">
+   </head>
+   ```
+
+   Verify in both:
+   - `resources/views/layouts/customer_layout.blade.php`
+   - `resources/views/owner/layouts/owner_layout.blade.php`
+
+2. **Wrap API initialization in DOMContentLoaded:**
+
+   ```javascript
+   document.addEventListener('DOMContentLoaded', async () => {
+       // Token retrieval and API calls here
+       const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+       // Now safe to use token
+   });
+   ```
+
+3. **Use safe retrieval with optional chaining:**
+
+   ```javascript
+   getCsrfToken() {
+       // ? prevents error if element doesn't exist
+       return document.querySelector('meta[name="csrf-token"]')
+           ?.getAttribute('content');
+   }
+   ```
+
+4. **Test in multiple browser contexts:**
+   - Normal window
+   - Incognito/Private mode
+   - After hard refresh (Ctrl+Shift+R)
+   - On actual deployed server (not just localhost)
+
+#### Diagnosis: Step-by-Step Troubleshooting
+
+**Step 1: Verify Meta Tag Exists in Page Source**
+
+1. Go to the page where error occurs
+2. Right-click → **View Page Source** (or press Ctrl+U)
+3. Press Ctrl+F, search for `csrf-token`
+4. Look for this line:
+
+   ```html
+   <meta name="csrf-token" content="eyJpdiI6IjRyR...">
+   ```
+
+**If found:**
+
+- Meta tag exists → move to Step 2
+- Value looks like random string → token is valid
+
+**If NOT found:**
+
+- The layout doesn't include the meta tag
+- Add it to the appropriate layout file:
+
+  ```html
+  <head>
+      ...other meta tags...
+      <meta name="csrf-token" content="{{ csrf_token() }}">
+  </head>
+  ```
+
+---
+
+**Step 2: Verify the Selector Works**
+
+1. Press `F12` → **Console** tab
+2. Copy-paste this command and press Enter:
+
+   ```javascript
+   document.querySelector('meta[name="csrf-token"]')
+   ```
+
+**If you see:** `<meta name="csrf-token" content="...">` element printout
+
+- Selector is correct, element exists
+- Problem might be timing
+
+**If you see:** `null`
+
+- Selector doesn't find the element
+- Check spelling: `csrf-token` (not `csrfToken` or `csrf_token`)
+- Verify `name` attribute has exact value `csrf-token`
+
+---
+
+**Step 3: Get the Token Value**
+
+Still in Console, run:
+
+```javascript
+document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+```
+
+**If you see:** A long random string (e.g., `"eyJpdiI6IjRyR2VhYkplYUxscEFONlp5YkFN..."`)
+
+- Token exists and is retrievable
+- Selector pattern is correct
+
+**If you see:** `null` or `undefined`
+
+- The content attribute is missing or empty
+- This is a server-side issue (Laravel not generating token)
+- Restart application: `composer run dev`
+
+---
+
+**Step 4: Verify Timing with DOMContentLoaded**
+
+In Console, run:
+
+```javascript
+console.log('DOM loaded?', document.readyState);
+console.log('Token exists?', document.querySelector('meta[name="csrf-token"]') !== null);
+```
+
+**If both return `true`/`loaded`:**
+
+- DOM is ready, token is present
+- Your API client should work
+
+**If shows `loading`:**
+
+- Script is running before page fully loads
+- Wrap your code in `DOMContentLoaded` event
+
+---
+
+**Step 5: Check API Client Initialization**
+
+For product uploads, verify `productApi.js` is properly imported and initialized:
+
+```javascript
+// In the page that needs uploads, check that API is imported
+import ProductAPI from '...api/productApi.js';
+
+// Verify getCsrfToken() works
+console.log(ProductAPI.getCsrfToken());  // Should return token string
+```
+
+---
+
+#### Common Fixes
+
+**Fix #1: Add Missing Meta Tag to Layout**
+
+Add this line to the `<head>` section of the layout file:
+
+```html
+<!-- resources/views/layouts/customer_layout.blade.php -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">  <!-- ← ADD THIS LINE -->
+    <title>Scruffs&Chyrrs</title>
+    ...rest of head...
+</head>
+```
+
+Do this for **all layout files:**
+
+- `resources/views/layouts/customer_layout.blade.php`
+- `resources/views/owner/layouts/owner_layout.blade.php`
+
+---
+
+**Fix #2: Wrap Code in DOMContentLoaded**
+
+Ensure token retrieval happens after DOM loads:
+
+```javascript
+// ❌ BAD - runs before DOM loads
+const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+// ✅ GOOD - waits for DOM
+document.addEventListener('DOMContentLoaded', () => {
+    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    // Now safe to use token
+    performUpload(token);
+});
+```
+
+---
+
+**Fix #3: Use Optional Chaining Safely**
+
+Prevent errors if element doesn't exist:
+
+```javascript
+// From resources/js/api/productApi.js (correct pattern)
+getCsrfToken() {
+    const token = document.querySelector('meta[name="csrf-token"]')
+        ?.getAttribute('content');
+    
+    if (!token) {
+        console.warn('CSRF token not found in meta tag');
+        return '';
+    }
+    
+    return token;
+}
+```
+
+The `?.` operator returns `undefined` (not an error) if element doesn't exist, preventing crashes.
+
+---
+
+**Fix #4: Clear Browser Cache and Test Again**
+
+Stale cache can cause issues:
+
+```cmd
+REM Hard refresh in browser: Ctrl+Shift+R (Windows) or Cmd+Shift+R (Mac)
+REM Or Clear cache: Ctrl+Shift+Delete
+```
+
+Then:
+
+1. Test in **Incognito/Private mode** (no cache interference)
+2. If it works in Incognito, the issue was browser cache
+3. Clear cache from normal browser and try again
+
+---
+
+**Fix #5: Verify Laravel is Generating Tokens**
+
+Tokens are generated by Laravel's CSRF middleware. Restart the application:
+
+```cmd
+REM Stop the dev server (Ctrl+C)
+REM Then restart
+composer run dev
+
+REM This forces Laravel to reinitialize and all views to re-render
+REM New CSRF tokens will be generated for all sessions
+```
+
+---
+
+#### DevTools Verification Checklist
+
+Use this checklist to verify CSRF token setup:
+
+- [ ] Page source (Ctrl+U) contains `<meta name="csrf-token" content=...>`
+- [ ] Meta tag is in `<head>` section (not in `<body>`)
+- [ ] Content attribute has a non-empty value (long random string)
+- [ ] Console command returns token: `document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')`
+- [ ] API client imports work: `import ProductAPI from '...api/productApi.js'`
+- [ ] `ProductAPI.getCsrfToken()` returns a string (not empty, not null)
+- [ ] Network tab shows `x-csrf-token` header in API request
+- [ ] Browser console has no errors (F12 → Console tab)
+
+---
+
+### Preventative Best Practices
+
+To avoid the above errors during development, follow these guidelines:
+
+#### 1. **CSRF Token Handling**
+
+- ✅ Always include `<meta name="csrf-token">` in JSON format inside every layout's `<head>`
+- ✅ Use the provided API client classes that have `getCsrfToken()` method
+- ✅ Wrap API calls in `DOMContentLoaded` event listener
+- ✅ Test CSRF token presence immediately after first page load
+- ❌ Never hardcode token values; always retrieve from meta tag dynamically
+
+#### 2. **API Route Registration**
+
+- ✅ Register all upload endpoints in `routes/web.php` before building frontend
+- ✅ Use RESTful naming: `POST /api/products`, `PUT /api/products/{id}`, `DELETE /api/products/{id}`
+- ✅ Test routes with Postman or curl before integrating with frontend
+- ✅ Include routes in this order: POST (create), GET (read), PUT (update), DELETE (remove)
+- ❌ Don't change API paths after frontend is built without updating JavaScript imports
+
+#### 3. **File Upload Handling**
+
+- ✅ Always use `FormData` object for file uploads (never JSON with File objects)
+- ✅ Don't manually set `Content-Type` header when using FormData (browser handles multipart boundary)
+- ✅ Include CSRF token in both headers AND FormData `_token` field for maximum compatibility
+- ✅ Test file uploads with various file sizes, formats (PNG, JPG, GIF, WebP)
+- ✅ Set reasonable file size limits in validation (2-5MB for single files, check controller)
+- ❌ Don't attempt to upload files larger than the limit defined in PHP
+
+#### 4. **Error Handling & Logging**
+
+- ✅ Use try-catch blocks in all async API calls
+- ✅ Log network responses to browser console during development (`console.log(response)`)
+- ✅ Check Laravel logs immediately when error occurs: `php artisan pail` or `Get-Content -Path storage\logs\laravel.log -Wait` (PowerShell)
+- ✅ Use Toast notifications to show user-friendly error messages
+- ✅ Return consistent JSON response structure from all API endpoints (success, data, errors, message fields)
+- ❌ Don't rely on console.log alone; always check Network tab in DevTools
+
+#### 5. **Testing Workflows**
+
+- ✅ Start dev server with `composer run dev` before any feature work (ensures all services running)
+- ✅ Test uploads after every backend controller change
+- ✅ Verify API responses in Network tab before debugging JavaScript
+- ✅ Clear browser cache (Ctrl+Shift+R) when testing code changes
+- ✅ Test in multiple browsers (Chrome, Firefox, Safari) for compatibility
+- ❌ Don't assume JavaScript is wrong until you've checked server logs and Network responses
+
+#### 6. **File Storage & Permissions**
+
+- ✅ Run `php artisan storage:link` after initial setup and before deployment
+- ✅ Ensure `storage/app/public/` directory is writable: `icacls "storage" /grant:r "%USERNAME%":(OI)(CI)F /T`
+- ✅ Verify uploaded files appear in `storage/app/public/{category}/` after upload
+- ✅ Check that files are accessible via `/storage/...` URL in browser
+- ❌ Don't store files in `public/` directly (use storage disk for consistency)
+
+#### 7. **API Client Classes Best Practices**
+
+- ✅ Always export API clients as singleton: `export default new ProductAPI()`
+- ✅ Create separate API client class for each resource (Products, Materials, etc.)
+- ✅ Implement getCsrfToken() method consistently across all clients
+- ✅ Use async/await for all fetch calls (more readable than .then())
+- ✅ Include error handling in every API method
+- ✅ Return structured responses: `{success: true|false, data: {...}, errors: {...}, message: '...'}`
+- ❌ Don't make API clients dependent on each other; keep them standalone and composable
+
+---
 
 ### Performance Tips
 
