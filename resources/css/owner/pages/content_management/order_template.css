@@ -1,3 +1,156 @@
+/* MODAL */
+.modal_overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    z-index: 9999;
+
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+/* ACTIVE STATE */
+.modal_overlay.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.template_modal {
+    background: #fff7ec;
+    width: 520px;
+    max-height: 90vh;
+    padding: 40px;
+    border-radius: 30px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+
+    display: flex;
+    flex-direction: column;
+
+    overflow-y: auto; /* 👈 makes WHOLE modal scroll */
+    overflow-x: hidden;
+
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+}
+
+.modal_overlay.active .template_modal {
+    transform: scale(1);
+}
+
+.template_delete_box {
+    background: #fff7ec;
+    padding: 40px;
+    border-radius: 25px;
+    text-align: center;
+    width: 420px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+}
+
+.modal_overlay.active .template_delete_box {
+    transform: scale(1);
+}
+
+/* Modal Content */
+.modal_title {
+    font-family: SuperDream;
+    font-size: 30px;
+    color: #682c7a;
+    text-align: center;
+}
+
+.order_description {
+    margin-top: 10px;
+    font-family: Coolvetica;
+    font-size: 13px;
+    color: #682c7a;
+    text-align: center;
+}
+
+.input_group {
+    display: flex;
+    flex-direction: column;
+}
+
+.input_group label {
+    font-family: Coolvetica;
+    font-size: 20px;
+    color: #682c7a;
+}
+
+.text_input {
+    width: 100%;
+    min-height: 40px;
+    padding-left: 20px;
+    padding-right: 20px;
+    box-sizing: border-box;
+    border-radius: 30px;
+    border: 2px solid #682c7a;
+    font-size: 16px;
+    margin-bottom: 15px;
+}
+
+.option_header {
+    font-family: Coolvetica;
+    font-size: 12px;
+    color: #682c7a;
+
+    display: flex;
+    flex-direction: row;
+
+    margin-bottom: -10px;
+    margin-left: 30px;
+}
+
+.option_actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.small_option {
+    margin-right: 130px;
+}
+
+.option_inputs {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-left: 30px;
+}
+
+/* #tempOpt1Label {
+    margin-bottom: 4px;
+} */
+
+#productOptions {
+    margin-right: 35px;
+    width: 205px;
+}
+
+#productPrices {
+    margin-right: 10px;
+    width: 80px;
+}
+
+.option_inputs > input {
+    border: #682c7a 2px solid;
+    border-radius: 30px;
+    height: 25px;
+
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
 /* Order Template Tables */
 .template_list_container {
     display: flex;
@@ -79,47 +232,6 @@
     background: #e86a6a;
 }
 
-/* Modal Styling */
-.template_modal {
-    background: #fff7ec;
-    width: 500px;
-    padding: 40px;
-    border-radius: 30px;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-    display: flex;
-    flex-direction: column;
-    max-height: 90vh;
-}
-.template_scroll_area {
-    overflow-y: auto;
-    padding-right: 10px;
-}
-.template_scroll_area::-webkit-scrollbar {
-    width: 8px;
-}
-.template_scroll_area::-webkit-scrollbar-thumb {
-    background: #682c7a;
-    border-radius: 10px;
-}
-
-.flex_label {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    margin-bottom: 8px;
-}
-.small_label {
-    font-size: 14px;
-    color: #682c7a;
-    font-family: "SuperDream", sans-serif;
-}
-.sub_label {
-    font-family: "Coolvetica", sans-serif;
-    color: #682c7a;
-    font-size: 20px;
-    margin-bottom: 10px;
-}
-
 /* Dynamic Options */
 .option_list {
     display: flex;
@@ -138,11 +250,6 @@
     cursor: pointer;
 }
 
-.option_actions {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 20px;
-}
 .add_opt_btn {
     background: #682c7a;
     color: white;
@@ -185,110 +292,4 @@
 .discount_fields.active {
     opacity: 1;
     pointer-events: auto;
-}
-
-/* Delete Modal Specifics */
-.template_delete_box {
-    background: #fff7ec;
-    padding: 40px;
-    border-radius: 20px;
-    text-align: center;
-    width: 400px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-}
-.delete_msg {
-    font-family: "Coolvetica", sans-serif;
-    color: #682c7a;
-    font-size: 24px;
-    margin-bottom: 20px;
-    line-height: 1.2;
-}
-.template_delete_btn_large {
-    background: #d94848;
-    color: white;
-    padding: 12px 30px;
-    border-radius: 25px;
-    border: none;
-    font-size: 20px;
-    font-family: "Coolvetica", sans-serif;
-    cursor: pointer;
-    margin-bottom: 10px;
-    width: 80%;
-}
-.delete_subtext {
-    display: block;
-    color: #d94848;
-    font-family: "Arial", sans-serif;
-    font-size: 10px;
-}
-
-/* modal */
-.modal_overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5); /* dark transparent background */
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    padding: 20px;
-}
-
-.modal_overlay.active {
-    display: flex;
-}
-
-/* ================= MAIN TEMPLATE MODAL ================= */
-
-.template_modal {
-    background: #ffffff;
-    width: 600px;
-    max-height: 90vh;
-    border-radius: 18px;
-    padding: 30px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
-    animation: modalSlide 0.2s ease-out;
-    display: flex;
-    flex-direction: column;
-}
-
-/* Scrollable content area */
-.template_scroll_area {
-    overflow-y: auto;
-    margin-top: 15px;
-    padding-right: 5px;
-}
-
-/* ================= DELETE MODAL ================= */
-
-.delete_confirm_box {
-    background: #ffffff;
-    padding: 40px;
-    border-radius: 16px;
-    text-align: center;
-    width: 400px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
-    animation: modalScale 0.2s ease-out;
-}
-
-/* ================= OPTION ROW ================= */
-
-.option_row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
-}
-
-/* ================= DISCOUNT TOGGLE ================= */
-
-.discount_fields {
-    display: none;
-    gap: 20px;
-    justify-content: center;
-    margin-top: 10px;
-}
-
-.discount_fields.active {
-    display: flex;
 }

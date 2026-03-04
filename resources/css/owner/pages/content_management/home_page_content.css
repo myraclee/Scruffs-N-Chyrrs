@@ -1,15 +1,15 @@
 /* HOME PAGE CONTENT */
 
-.content_homepage_images h2{
+.content_homepage_images h2 {
     font-family: Coolvetica;
     font-size: 30px;
-    color: #682C7A;
+    color: #682c7a;
 
     margin-bottom: 20px;
 }
 
 /* Home Page Images */
-.empty_home_images{
+.empty_home_images {
     margin-left: 50px;
     color: #999999;
     margin-bottom: -20px;
@@ -29,7 +29,7 @@
     object-fit: cover;
 }
 
-.home_edit{
+.home_edit {
     margin-top: 20px;
 
     display: flex;
@@ -38,20 +38,20 @@
     gap: 20px;
 }
 
-.edit_home_images{
+.edit_home_images {
     border: none;
     outline: none;
 
     width: 130px;
     height: 35px;
 
-    background-color: #682C7A;
+    background-color: #682c7a;
     border-radius: 30px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 
     font-family: Coolvetica;
     font-size: 15px;
-    color: #FFF7EC;
+    color: #fff7ec;
 
     cursor: pointer;
 }
@@ -61,27 +61,27 @@
     transition: 0.2s ease;
 }
 
-.home_images_count{
+.home_images_count {
     font-family: Coolvetica;
     font-size: 15px;
-    color: #682C7A;
+    color: #682c7a;
 }
 
 /* Product Sample Images */
 
-.content_homepage_product{
+.content_homepage_product {
     margin-top: 20px;
 }
 
-.content_homepage_product > h2{
+.content_homepage_product > h2 {
     font-family: Coolvetica;
     font-size: 30px;
-    color: #682C7A;
+    color: #682c7a;
 
     margin-bottom: 20px;
 }
 
-.empty_sample_images{
+.empty_sample_images {
     margin-left: 50px;
     color: #999999;
 }
@@ -100,7 +100,7 @@
     gap: 10px;
 }
 
-.product_sample_container{
+.product_sample_container {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -108,20 +108,20 @@
     height: 230px;
     width: 160px;
 
-    background-color: #FFF7EC;
+    background-color: #fff7ec;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
-.product_sample_container img{
+.product_sample_container img {
     margin-top: 10px;
     height: 130px;
     width: 130px;
     object-fit: cover;
-    
+
     margin-bottom: 15px;
 }
 
-.product_sample_container_name{
+.product_sample_container_name {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -129,34 +129,34 @@
     height: 60px;
 }
 
-.product_sample_container_name h3{
+.product_sample_container_name h3 {
     font-family: SuperDream;
     font-size: 18px;
-    color: #682C7A;
+    color: #682c7a;
 
     overflow: hidden;
     overflow-wrap: break-word;
-    word-wrap: break-word; 
+    word-wrap: break-word;
     text-align: center;
 
     width: 130px;
     margin-bottom: 10px;
 }
 
-.product_sample_main_container button{
+.product_sample_main_container button {
     border: none;
     outline: none;
 
     width: 60px;
     height: 25px;
-    
-    background-color: #682C7A;
+
+    background-color: #682c7a;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     border-radius: 30px;
 
     font-family: Coolvetica;
     font-size: 12px;
-    color: #FFF7EC;
+    color: #fff7ec;
 
     cursor: pointer;
 }
@@ -166,7 +166,7 @@
     transition: 0.3s ease;
 }
 
-.add_sample{
+.add_sample {
     margin-top: 20px;
 
     border: none;
@@ -175,13 +175,13 @@
     width: 130px;
     height: 35px;
 
-    background-color: #682C7A;
+    background-color: #682c7a;
     border-radius: 30px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 
     font-family: Coolvetica;
     font-size: 15px;
-    color: #FFF7EC;
+    color: #fff7ec;
 
     cursor: pointer;
 }
@@ -197,7 +197,7 @@
 .edit_home_images_modal {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,.6);
+    background: rgba(0, 0, 0, 0.6);
     display: none;
     justify-content: center;
     align-items: center;
@@ -205,29 +205,29 @@
 }
 
 .edit_home_image_modal_box {
-    background: #FFF7EC;
+    background: #fff7ec;
     width: 500px;
     padding: 20px;
     border-radius: 30px;
-    
+
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
 }
 
-.edit_home_image_modal_box h3{
+.edit_home_image_modal_box h3 {
     font-family: SuperDream;
     font-size: 30px;
-    color: #682C7A;
+    color: #682c7a;
 }
 
-.home_image_description{
+.home_image_description {
     margin-top: 10px;
-    
+
     font-family: Coolvetica;
     font-size: 13px;
-    color: #682C7A;
+    color: #682c7a;
     text-align: center;
 }
 
@@ -236,14 +236,14 @@
     flex-wrap: wrap;
     gap: 15px;
     justify-content: center;
-    width: 390px;       
+    width: 390px;
     margin: 20px auto;
 }
 
 .image_slot {
     width: 120px;
     height: 120px;
-    border: 2px solid #682C7A;
+    border: 2px solid #682c7a;
     border-radius: 10px;
 
     display: flex;
@@ -256,7 +256,7 @@
 .image_slot.plus::before {
     content: "+";
     font-size: 40px;
-    color: #682C7A;
+    color: #682c7a;
 }
 
 .image_slot img {
@@ -266,8 +266,8 @@
     border-radius: 8px;
 }
 
-.image_slot:hover{
-    background-color: #DCBAE6;
+.image_slot:hover {
+    background-color: #dcbae6;
     transition: 0.3s ease;
 }
 
@@ -276,9 +276,9 @@
 
     font-family: Coolvetica;
     font-size: 12px;
-    color: #FFF7EC;
+    color: #fff7ec;
 
-    background-color: #C83333;
+    background-color: #c83333;
     border-radius: 30px;
     width: 60px;
     height: 25px;
@@ -287,7 +287,7 @@
     cursor: pointer;
 }
 
-.clear_image:hover{
+.clear_image:hover {
     background-color: #8d0e0e;
     transition: 0.3s ease;
 }
@@ -303,7 +303,7 @@
     text-align: center;
     font-family: Coolvetica;
     font-size: 15px;
-    color: #682C7A;
+    color: #682c7a;
 }
 
 .home_image_actions {
@@ -324,12 +324,12 @@
 
     font-family: Coolvetica;
     font-size: 15px;
-    color: #FFF7EC;
+    color: #fff7ec;
 
     cursor: pointer;
 }
 
-.home_image_cancel:hover{
+.home_image_cancel:hover {
     transform: scale(1.05);
     transition: 0.2s ease;
 }
@@ -341,17 +341,17 @@
     width: 90px;
     height: 35px;
 
-    background: #682C7A;
+    background: #682c7a;
     border-radius: 30px;
 
     font-family: Coolvetica;
     font-size: 15px;
-    color: #FFF7EC;
+    color: #fff7ec;
 
     cursor: pointer;
 }
 
-.home_image_save:hover{
+.home_image_save:hover {
     transform: scale(1.05);
     transition: 0.2s ease;
 }
@@ -368,7 +368,7 @@
 }
 
 .add_sample_modal_box {
-    background: #FFF7EC;
+    background: #fff7ec;
     width: 500px;
     max-width: 90%;
     padding: 25px;
@@ -378,30 +378,32 @@
     gap: 15px;
 }
 
-.add_sample_modal_box h2{
+.add_sample_modal_box h2 {
     font-family: SuperDream;
     font-size: 30px;
-    color: #682C7A;
+    color: #682c7a;
     margin: 0 auto;
 }
 
-.add_sample_description{
+.add_sample_description {
     font-family: Coolvetica;
     font-size: 13px;
-    color: #682C7A;
+    color: #682c7a;
     text-align: center;
 }
 
 .modal_section_title {
     font-family: Coolvetica;
     font-size: 20px;
-    color: #682C7A;
+    color: #682c7a;
 }
 
-.add_sample_modal_box > h3{
+.add_sample_modal_box > h3 {
     font-family: Coolvetica;
     font-size: 20px;
-    color: #682C7A;
+    color: #682c7a;
+
+    margin-bottom: -10px;
 }
 
 #sampleNameInput {
@@ -410,11 +412,11 @@
     padding-left: 20px;
     padding-right: 20px;
     border-radius: 30px;
-    border: 2px solid #682C7A;
+    border: 2px solid #682c7a;
     font-size: 16px;
 }
 
-#sampleNameInput:focus{
+#sampleNameInput:focus {
     outline: none;
 }
 
@@ -437,8 +439,8 @@
     height: 120px;
 
     border-radius: 14px;
-    border: 2px solid #682C7A;
-    background: #FFF7EC;
+    border: 2px solid #682c7a;
+    background: #fff7ec;
 
     display: flex;
     justify-content: center;
@@ -447,15 +449,15 @@
     position: relative;
 }
 
-.sample_image_slot:hover{
-    background-color: #DCBAE6;
+.sample_image_slot:hover {
+    background-color: #dcbae6;
     transition: 0.3s ease;
 }
 
 .sample_image_slot.plus::before {
-    content: '+';
+    content: "+";
     font-size: 42px;
-    color: #682C7A;
+    color: #682c7a;
 }
 
 .sample_image_slot img {
@@ -475,9 +477,9 @@
 .sample_image_slot_wrapper button {
     font-family: Coolvetica;
     font-size: 12px;
-    color: #FFF7EC;
+    color: #fff7ec;
 
-    background-color: #C83333;
+    background-color: #c83333;
     border-radius: 30px;
     width: 60px;
     height: 25px;
@@ -486,7 +488,7 @@
     cursor: pointer;
 }
 
-.sample_image_slot_wrapper button:hover{
+.sample_image_slot_wrapper button:hover {
     background-color: #8d0e0e;
     transition: 0.3s ease;
 }
@@ -494,7 +496,7 @@
 .sample_image_counter {
     font-family: Coolvetica;
     font-size: 14px;
-    color: #682C7A;
+    color: #682c7a;
 
     text-align: center;
 }
@@ -520,7 +522,7 @@
 
 #cancelSampleUpload {
     background: #999999;
-    color: #FFF7EC;
+    color: #fff7ec;
 
     width: 90px;
     height: 35px;
@@ -532,8 +534,8 @@
 }
 
 #saveSampleUpload {
-    background: #682C7A;
-    color: #FFF7EC;
+    background: #682c7a;
+    color: #fff7ec;
 
     width: 90px;
     height: 35px;
@@ -544,9 +546,9 @@
     transition: 0.2s ease;
 }
 
-#deleteSampleUpload{
-    background: #C83333;
-    color: #FFF7EC;
+#deleteSampleUpload {
+    background: #c83333;
+    color: #fff7ec;
 
     width: 90px;
     height: 35px;
@@ -557,19 +559,19 @@
     transition: 0.2s ease;
 }
 
-.sample_name_error{
+.sample_name_error {
     font-family: Coolvetica;
     font-size: 10px;
-    color: #C83333;
+    color: #c83333;
     margin-top: -10px;
     margin-bottom: -10px;
     margin-left: 13px;
 }
 
-.sample_images_error{
+.sample_images_error {
     font-family: Coolvetica;
     font-size: 10px;
-    color: #C83333;
+    color: #c83333;
 
     text-align: center;
     margin-top: -10px;
@@ -589,11 +591,11 @@
 }
 
 .delete_confirm_box {
-    background: #FFF7EC;
+    background: #fff7ec;
     padding: 25px 30px;
     border-radius: 20px;
     text-align: center;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     max-width: 400px;
     width: 90%;
 }
@@ -601,13 +603,13 @@
 .delete_confirm_box p {
     font-family: Coolvetica;
     font-size: 18px;
-    color: #682C7A;
+    color: #682c7a;
     margin-bottom: 20px;
 }
 
 .delete_confirm_box button {
-    background-color: #C83333;
-    color: #FFF7EC;
+    background-color: #c83333;
+    color: #fff7ec;
     border: none;
     outline: none;
     padding: 10px 20px;
@@ -628,7 +630,7 @@
     display: block;
     font-family: Coolvetica;
     font-size: 12px;
-    color: #C83333;
+    color: #c83333;
 }
 
 /* MEDIA QUERIES */

@@ -62,7 +62,7 @@
                     <input type="text" id="sampleNameInput" placeholder="Enter product sample name" maxlength="30"/>
                     <p class="sample_name_error" id="sampleNameError">Sample name is required.</p>
 
-                    <h3 style="margin-top:15px;">Sample Images</h3>
+                    <h3>Sample Images</h3>
                     <div class="sample_image_grid" id="sampleImageGrid"></div>
                     <p class="sample_images_error" id="sampleImageError">At least one image is required.</p>
 
@@ -194,47 +194,32 @@
         <div class="modal_overlay" id="templateModalOverlay">
             <div class="template_modal" id="templateModal">
                 <h2 id="templateModalTitle" class="modal_title">Add New Template</h2>
+                <p class="order_description">Sell your products!</p>
 
                 <div class="template_scroll_area">
                     <div class="input_group">
-                        <label>Product Category</label>
+                        <label>Product Name</label>
                         <input type="text" id="tempCategory" class="text_input">
                     </div>
 
                     <div class="input_group">
-                        <label>1st Option Label</label>
+                        <label>Product Options (1)</label>
                         <input type="text" id="tempOpt1Label" class="text_input">
                     </div>
 
-                    <div class="input_group">
-                        <div class="flex_label">
-                            <label>1st Option Selection</label>
-                            <label class="small_label">Price</label>
+                    <div class="option_list">
+                        <div class="option_header">
+                            <h3 class="small_option">Option Selection</h3>
+                            <h3 class="small_price">Price (Php)</h3>
                         </div>
-                        <div id="opt1List" class="option_list">
-                            </div>
-                        <div class="option_actions">
-                            <button class="add_opt_btn" onclick="addOptionRow('opt1List')">Add Option</button>
-                            <button class="clear_opt_btn" onclick="clearOptions('opt1List')">Clear Options</button>
-                        </div>
-                    </div>
 
-                    <div class="input_group">
-                        <label>2nd Option Label</label>
-                        <input type="text" id="tempOpt2Label" class="text_input">
-                    </div>
-
-                    <div class="input_group">
-                        <div class="flex_label">
-                            <label>2nd Option Selection</label>
-                            <label class="small_label">Price</label>
-                        </div>
-                        <div id="opt2List" class="option_list">
+                        <div class="option_inputs">
+                            <input type="text" id="productOptions"></input>
+                            <input type="text" id="productPrices"></input>
+                            <div class="option_actions">
+                                <svg xmlns="http://www.w3.org/2000/svg" id="deleteProductOptions" height="20px" viewBox="0 -960 960 960" width="20px" fill="#c83333"><path d="m339-288 141-141 141 141 51-51-141-141 141-141-51-51-141 141-141-141-51 51 141 141-141 141 51 51ZM480-96q-79 0-149-30t-122.5-82.5Q156-261 126-331T96-480q0-80 30-149.5t82.5-122Q261-804 331-834t149-30q80 0 149.5 30t122 82.5Q804-699 834-629.5T864-480q0 79-30 149t-82.5 122.5Q699-156 629.5-126T480-96Zm0-72q130 0 221-91t91-221q0-130-91-221t-221-91q-130 0-221 91t-91 221q0 130 91 221t221 91Zm0-312Z"/></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" id="addProductOptions" height="20px" viewBox="0 -960 960 960" width="20px" fill="#682c7a"><path d="M444-288h72v-156h156v-72H516v-156h-72v156H288v72h156v156Zm36.28 192Q401-96 331-126t-122.5-82.5Q156-261 126-330.96t-30-149.5Q96-560 126-629.5q30-69.5 82.5-122T330.96-834q69.96-30 149.5-30t149.04 30q69.5 30 122 82.5T834-629.28q30 69.73 30 149Q864-401 834-331t-82.5 122.5Q699-156 629.28-126q-69.73 30-149 30Zm-.28-72q130 0 221-91t91-221q0-130-91-221t-221-91q-130 0-221 91t-91 221q0 130 91 221t221 91Zm0-312Z"/></svg>
                             </div>
-                        <div class="option_actions">
-                            <button class="add_opt_btn" onclick="addOptionRow('opt2List')">Add Option</button>
-                            <button class="clear_opt_btn" onclick="clearOptions('opt2List')">Clear Options</button>
-                        </div>
                     </div>
 
                     <div class="input_group">

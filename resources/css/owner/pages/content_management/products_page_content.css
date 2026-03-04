@@ -10,6 +10,10 @@
     margin-bottom: 20px;
 }
 
+#products_container {
+    margin-left: 50px;
+}
+
 #products_no_items_text {
     margin-left: 50px;
     color: #999999;
@@ -150,6 +154,10 @@
 
 .products_title_input:focus {
     outline: none;
+}
+
+.products_btn_primary {
+    margin-top: 15px;
 }
 
 /* Cover image */
