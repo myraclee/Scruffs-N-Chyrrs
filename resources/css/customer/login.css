@@ -41,10 +41,12 @@ form {
     padding-left: 20px;
     padding-right: 20px;
     font-size: 15px;
+
+    outline: #6b3282;
 }
 
 .login_textbox:focus {
-    border-color: #6b3282;
+    border: solid 2px #682c7a;
 }
 
 .login_textbox::placeholder {
@@ -70,7 +72,9 @@ form {
     font-family: Coolvetica;
     font-size: 17px;
     cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
+    transition:
+        background-color 0.3s ease,
+        transform 0.2s ease;
 }
 
 .login_button:hover {
@@ -79,7 +83,7 @@ form {
 }
 
 .signup_redirect {
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     color: #6b3282;
     text-align: center;
     margin-top: 15px;

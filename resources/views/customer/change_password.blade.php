@@ -70,8 +70,8 @@
             </div>
 
             <div class="form_actions">
-                <button type="submit" class="action_btn submit_btn">Change Password</button>
                 <a href="{{ route('account') }}" class="action_btn cancel_btn">Cancel</a>
+                <button type="submit" class="action_btn submit_btn">Change Password</button>
             </div>
         </form>
     </div>

@@ -86,7 +86,6 @@
 }
 
 .action_btn {
-    padding: 12px 30px;
     border: none;
     border-radius: 50px;
     font-family: Coolvetica;
@@ -97,31 +96,35 @@
     text-decoration: none;
 
     text-align: center;
-    min-width: 120px;
-    max-height: 45px;
+    width: 150px;
+    height: 40px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .edit_btn,
 .change_password_btn {
     background-color: #6b3282;
-    color: #fff0da;
+    color: #fff7ec;
 }
 
 .edit_btn:hover,
 .change_password_btn:hover {
-    background-color: #5a2a70;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(107, 50, 130, 0.3);
+    transform: scale(1.05);
+    transition: 0.2s ease;
 }
 
 .logout_btn {
     background-color: #c83333;
-    color: #ffffff;
+    color: #fff7ec;
 }
 
 .logout_btn:hover {
-    background-color: #a82a2a;
-    transform: translateY(-2px);
+    background-color: #c83333;
+    transform: scale(1.05);
+    transition: 0.2s ease;
 }
 
 @media screen and (max-width: 768px) {

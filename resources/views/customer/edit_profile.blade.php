@@ -87,8 +87,8 @@
             </div>
 
             <div class="form_actions">
-                <button type="submit" class="action_btn submit_btn">Save Changes</button>
                 <a href="{{ route('account') }}" class="action_btn cancel_btn">Cancel</a>
+                <button type="submit" class="action_btn submit_btn">Save</button>
             </div>
         </form>
     </div>

@@ -20,7 +20,6 @@
     display: flex;
     flex-wrap: wrap;
     gap: 40px;
-    margin-bottom: 20px;
 }
 
 #products_add_btn {
