@@ -154,107 +154,93 @@
     </section>
 
     <section class="content_section" id="ordertemplate">
-        <h2 style="font-family: 'SuperDream', sans-serif; color: #682C7A; font-size: 40px; margin-bottom: 20px;">Order Template</h2>
+        <h2 class="order_template_header">Order Template</h2>
+        <p class="empty_order_template" id="emptyOrderTemplate">No order templates made yet.</p>
+        <button id="open_add_template_btn" class="add_template_button">Add New Template</button>
 
-        <div id="template_list_container" class="template_list_container">
-            <div class="template_table_wrapper">
-                <table class="template_table">
-                    <thead>
-                        <tr>
-                            <th>Product Category</th>
-                            <th>Lamination Options</th>
-                            <th>Options Label</th>
-                            <th>Options Selection</th>
-                            <th>Discount Description</th>
-                            <th>Discount Rate</th>
-                            <th style="text-align: center;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Stickers</td>
-                            <td>Matte, Glossy, Glitter, Holo Rainbow, Holo Broken Glass</td>
-                            <td>Sticker Type</td>
-                            <td>Die-Cut, Kiss-Cut</td>
-                            <td>5 peso per sheet for 7 sheets and above</td>
-                            <td>- Php 5 / qty >= 7</td>
-                            <td class="action_cells">
-                                <button class="template_edit_btn" onclick="openTemplateModal(true)">Edit</button>
-                                <button class="template_delete_btn" onclick="openDeleteTemplateModal()">Delete</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+        <!-- Product Cards -->
+        <div id="productCardsContainer" class="product_cards_container"></div>
 
-            </div>
-
-        <button id="open_add_template_btn" class="primary_button" onclick="openTemplateModal(false)" style="margin-top: 20px;">Add New Template</button>
-
-        <div class="modal_overlay" id="templateModalOverlay">
-            <div class="template_modal" id="templateModal">
-                <h2 id="templateModalTitle" class="modal_title">Add New Template</h2>
+        <!-- Add / Edit Modal -->
+        <div class="add_template_modal" id="templateModalOverlay">
+            <div class="add_template_modal_box" id="templateModal">
+                <h2 class="modal_title" id="templateModalTitle">Add New Template</h2>
                 <p class="order_description">Sell your products!</p>
 
-                <div class="template_scroll_area">
-                    <div class="input_group">
-                        <label>Product Name</label>
-                        <input type="text" id="tempCategory" class="text_input">
+                <div class="modal_tabs">
+                    <button class="modal_tab modal_tab_active" id="tab_details" type="button">Product Details</button>
+                    <button class="modal_tab" id="tab_pricing" type="button">Pricing</button>
+                </div>
+
+                <!-- Product Details Panel -->
+                <div class="modal_panel" id="panel_details">
+                    <div class="product_information">
+                        <label for="productName">Product Name</label>
+                        <input type="text" id="productName" class="product_name_input">
                     </div>
 
-                    <div class="input_group">
-                        <label>Product Options (1)</label>
-                        <input type="text" id="tempOpt1Label" class="text_input">
+                    <div id="productOptionsWrapper"></div>
+
+                    <div class="product_description">
+                        <label for="productDescription">Description</label>
+                        <textarea id="productDescription" class="product_input_description"></textarea>
                     </div>
 
-                    <div class="option_list">
-                        <div class="option_header">
-                            <h3 class="small_option">Option Selection</h3>
-                            <h3 class="small_price">Price (Php)</h3>
+                    <div class="product_image_description">
+                        <h3>Image Notes</h3>
+                        <div class="product_image_notes"></div>
+                    </div>
+                </div>
+
+                <!-- Pricing Panel -->
+                <div class="modal_panel modal_panel_hidden" id="panel_pricing">
+                    <div class="pricing_combinations_header">
+                        <span class="pricing_col_combo">Combination</span>
+                        <span class="pricing_col_price">Price</span>
+                    </div>
+                    <div id="pricingCombinations" class="pricing_combinations"></div>
+
+                    <div class="product_discount">
+                        <div class="product_discount_checkbox">
+                            <label class="product_discount_header">Apply Bulk Discount?</label>
+                            <input type="checkbox" id="applyProductDiscount" class="apply_discount_checkbox">
                         </div>
-
-                        <div class="option_inputs">
-                            <input type="text" id="productOptions"></input>
-                            <input type="text" id="productPrices"></input>
-                            <div class="option_actions">
-                                <svg xmlns="http://www.w3.org/2000/svg" id="deleteProductOptions" height="20px" viewBox="0 -960 960 960" width="20px" fill="#c83333"><path d="m339-288 141-141 141 141 51-51-141-141 141-141-51-51-141 141-141-141-51 51 141 141-141 141 51 51ZM480-96q-79 0-149-30t-122.5-82.5Q156-261 126-331T96-480q0-80 30-149.5t82.5-122Q261-804 331-834t149-30q80 0 149.5 30t122 82.5Q804-699 834-629.5T864-480q0 79-30 149t-82.5 122.5Q699-156 629.5-126T480-96Zm0-72q130 0 221-91t91-221q0-130-91-221t-221-91q-130 0-221 91t-91 221q0 130 91 221t221 91Zm0-312Z"/></svg>
-                                <svg xmlns="http://www.w3.org/2000/svg" id="addProductOptions" height="20px" viewBox="0 -960 960 960" width="20px" fill="#682c7a"><path d="M444-288h72v-156h156v-72H516v-156h-72v156H288v72h156v156Zm36.28 192Q401-96 331-126t-122.5-82.5Q156-261 126-330.96t-30-149.5Q96-560 126-629.5q30-69.5 82.5-122T330.96-834q69.96-30 149.5-30t149.04 30q69.5 30 122 82.5T834-629.28q30 69.73 30 149Q864-401 834-331t-82.5 122.5Q699-156 629.28-126q-69.73 30-149 30Zm-.28-72q130 0 221-91t91-221q0-130-91-221t-221-91q-130 0-221 91t-91 221q0 130 91 221t221 91Zm0-312Z"/></svg>
-                            </div>
+                        <div id="discountRowsWrapper" class="discount_rows_wrapper hidden"></div>
                     </div>
+                </div>
 
-                    <div class="input_group">
-                        <label>Description</label>
-                        <input type="text" id="tempDesc" class="text_input">
-                    </div>
-
-                    <div class="input_group checkbox_group">
-                        <label>Discount <input type="checkbox" id="tempDiscountCheck" onchange="toggleDiscountFields()"></label>
-                    </div>
-
-                    <h4 class="sub_label">Discount Rate</h4>
-                    <div class="discount_fields" id="discountFields">
-                        <div class="input_group" style="text-align: center;">
-                            <label class="small_label">Discount</label>
-                            <input type="number" id="tempDiscountVal" class="number_input tiny_input">
-                        </div>
-                        <div class="input_group" style="text-align: center;">
-                            <label class="small_label">Per Quantity</label>
-                            <input type="number" id="tempDiscountQty" class="number_input tiny_input">
-                        </div>
-                    </div>
-
-                    <div class="modal_actions">
-                        <button class="cancel_btn" onclick="closeTemplateModals()">Cancel</button>
-                        <button class="save_btn" onclick="closeTemplateModals()">Save Changes</button>
+                <div class="product_order_actions">
+                    <button class="delete_product_modal_btn btn_hidden" id="deleteProductBtn" type="button">Delete</button>
+                    <div class="product_order_actions_right">
+                        <button class="cancel_product" type="button">Cancel</button>
+                        <button class="save_product" type="button">Save</button>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- Detail Modal -->
+        <div class="detail_modal" id="detailModalOverlay">
+            <div class="detail_modal_box">
+                <h2 class="detail_modal_name" id="detailProductName"></h2>
+                <p class="detail_modal_description" id="detailProductDescription"></p>
+                <div id="detailOptionsContainer" class="detail_options_container"></div>
+                <div class="detail_price_row">
+                    <span class="detail_price_label">Price</span>
+                    <span class="detail_price_value" id="detailPriceValue">—</span>
+                </div>
+                <div id="detailImagesContainer" class="detail_images_container"></div>
+                <div class="detail_actions">
+                    <button class="detail_close_btn" id="detailCloseBtn" type="button">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Confirmation Modal -->
         <div class="modal_overlay" id="deleteTemplateModalOverlay">
             <div class="delete_confirm_box template_delete_box">
                 <p class="delete_msg">Do you wish to delete the<br>selected template?</p>
-                <button class="template_delete_btn_large" onclick="closeTemplateModals()">Delete Template</button>
+                <button class="template_delete_btn_large" id="deleteConfirmProceedBtn" type="button">Delete Template</button>
                 <small class="delete_subtext">This process cannot be undone</small>
             </div>
         </div>

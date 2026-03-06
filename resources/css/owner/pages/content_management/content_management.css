@@ -1,30 +1,30 @@
-.page_header{
+.page_header {
     font-family: SuperDream;
     font-size: 50px;
-    color: #682C7A;
+    color: #682c7a;
 
     margin-bottom: 20px;
 }
 
 /* Button Pages */
 
-.content_pages{
+.content_pages {
     display: flex;
     flex-direction: row;
     gap: 20px;
 }
 
-.content_option{
+.content_option {
     border: none;
     outline: none;
 
     width: 150px;
     height: 35px;
 
-    background-color: #DCBAE6;
+    background-color: #dcbae6;
     border-radius: 20px;
 
-    color: #682C7A;
+    color: #682c7a;
     font-family: Coolvetica;
     font-size: 15px;
 
@@ -34,13 +34,13 @@
 }
 
 .content_option.active {
-    background: #682C7A;
-    color: #FFF7EC;
+    background: #682c7a;
+    color: #fff7ec;
 }
 
-.content_option:hover{
+.content_option:hover {
     background-color: #4c1c5b;
-    color: #FFF7EC;
+    color: #fff7ec;
     transform: scale(1.05);
     transition: 0.3s ease;
 }
@@ -54,13 +54,12 @@
 }
 
 /* HR */
-hr{
+hr {
     margin-left: -100px;
     margin-top: 30px;
     margin-bottom: 30px;
 
     border: 0;
-    border-top: 1px solid #682C7A;
+    border-top: 1px solid #682c7a;
     height: 0;
 }
-
