@@ -91,75 +91,79 @@
 
     <section class="content_section" id="products">
         <div class="products_page">
-    <h1>Products</h1>
-    <div id="products_container">
-        <p id="products_no_items_text">No products uploaded.</p>
-    </div>
-    <button id="products_add_btn" class="products_btn_primary">Add Product</button>
-</div>
-
-<!-- Add/Edit Product Modal -->
-<div id="products_modal" class="products_modal">
-    <div class="products_modal_content">
-        <h2 id="products_modal_title">Add Product</h2>
-        <p>Display your products and its price list!</p>
-
-        <label>Product Name</label>
-        <input type="text" id="products_title_input" class="products_title_input" placeholder="Enter product name" />
-        <span id="products_title_error" class="products_error_message"></span>
-
-        <label>Product Description</label>
-        <textarea id="products_description_input" class="products_description_input" placeholder="Enter product description (optional)" rows="3" style="width: 100%; padding: 20px; padding-bottom: 30px; border-radius: 4px; border: 1px solid #ddd; font-family: Arial, sans-serif;"></textarea>
-
-        <label>Main Cover Image:</label>
-        <div id="products_main_image_wrapper">
-            <div id="products_main_add_box" class="products_add_box">+</div>
-            <img id="products_main_image_preview" alt="Main Image Preview" style="display:none" />
-            <button id="products_remove_main_image_btn" class="products_button_remove" style="display:none">Remove</button>
+            <h1>Products</h1>
+            <div id="products_container">
+                <p id="products_no_items_text">No products uploaded.</p>
+            </div>
+            <button id="products_add_btn" class="products_btn_primary">Add Product</button>
         </div>
-        <span id="products_cover_error" class="products_error_message"></span>
 
-        <label>Price List Images:</label>
-        <div id="products_price_images_wrapper" class="products_price_wrapper"></div>
-        <span id="products_prices_error" class="products_error_message"></span>
+        <!-- Add/Edit Product Modal -->
+        <div id="products_modal" class="products_modal">
+            <div class="products_modal_content">
+                <h2 id="products_modal_title">Add Product</h2>
+                <p>Display your products and its price list!</p>
 
-        <div class="products_modal_actions">
-            <button id="products_delete_btn" class="products_button_delete" style="display:none">Delete</button>
-            <div class="products_modal_actions_right">
-                <button id="products_cancel_btn" class="products_button_cancel">Cancel</button>
-                <button id="products_save_btn" class="products_button_save">Save</button>
+                <label>Product Name</label>
+                <input type="text" id="products_title_input" class="products_title_input" placeholder="Enter product name" />
+                <span id="products_title_error" class="products_error_message"></span>
+
+                <label>Product Description</label>
+                <textarea id="products_description_input" class="products_description_input" placeholder="Enter product description (optional)" rows="3"></textarea>
+
+                <label>Main Cover Image</label>
+                <div id="products_main_image_wrapper">
+                    <div id="products_main_add_box" class="products_add_box">+</div>
+                    <img id="products_main_image_preview" alt="Main Image Preview" style="display:none" />
+                    <button id="products_remove_main_image_btn" class="products_button_remove" style="display:none">Remove</button>
+                </div>
+                <span id="products_cover_error" class="products_error_message"></span>
+
+                <label>Price List Images</label>
+                <div id="products_price_images_wrapper" class="products_price_wrapper"></div>
+                <span id="products_prices_error" class="products_error_message"></span>
+
+                <label>Image Notes</label>
+                <div id="products_image_notes_wrapper" class="products_image_notes_wrapper"></div>
+
+                <div class="products_modal_actions">
+                    <button id="products_delete_btn" class="products_button_delete" style="display:none">Delete</button>
+                    <div class="products_modal_actions_right">
+                        <button id="products_cancel_btn" class="products_button_cancel">Cancel</button>
+                        <button id="products_save_btn" class="products_button_save">Save</button>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
 
-<!-- Delete Confirmation Modal -->
-<div id="products_delete_confirm_modal" class="delete_products_modal">
-    <div class="delete_products_modal_content">
-        <p>Do you wish to delete the selected product?</p>
-        <button id="products_confirm_delete_btn" class="products_button_confirm_delete">Delete Product</button>
-        <p class="products_small_text">This process cannot be undone</p>
-    </div>
-</div>
+        <!-- Delete Confirmation Modal -->
+        <div id="products_delete_confirm_modal" class="delete_products_modal">
+            <div class="delete_products_modal_content">
+                <p>Do you wish to delete the selected product?</p>
+                <button id="products_confirm_delete_btn" class="products_button_confirm_delete">Delete Product</button>
+                <p class="products_small_text">This process cannot be undone</p>
+            </div>
+        </div>
 
-<!-- Price Images Viewer Modal -->
-<div id="products_price_viewer_modal" class="products_modal">
-    <div class="products_modal_content">
-        <h3 id="products_viewer_title"></h3>
-        <button id="products_prev_price_image" class="products_carousel_btn">&lt;</button>
-        <img id="products_price_viewer_image" src="" alt="Price Image" />
-        <button id="products_next_price_image" class="products_carousel_btn">&gt;</button>
-    </div>
-</div>
+        <!-- Price Images Viewer Modal -->
+        <div id="products_price_viewer_modal" class="products_modal">
+            <div class="products_modal_content">
+                <h3 id="products_viewer_title"></h3>
+                <button id="products_prev_price_image" class="products_carousel_btn">&lt;</button>
+                <img id="products_price_viewer_image" src="" alt="Price Image" />
+                <button id="products_next_price_image" class="products_carousel_btn">&gt;</button>
+            </div>
+        </div>
     </section>
 
     <section class="content_section" id="ordertemplate">
         <h2 class="order_template_header">Order Template</h2>
-        <p class="empty_order_template" id="emptyOrderTemplate">No order templates made yet.</p>
-        <button id="open_add_template_btn" class="add_template_button">Add New Template</button>
 
-        <!-- Product Cards -->
+        <!-- Product Cards (between header and button) -->
+        <p class="empty_order_template" id="emptyOrderTemplate">No order templates made yet.</p>
         <div id="productCardsContainer" class="product_cards_container"></div>
+
+        <button id="open_add_template_btn" class="add_template_button">Add New Template</button>
 
         <!-- Add / Edit Modal -->
         <div class="add_template_modal" id="templateModalOverlay">
@@ -176,20 +180,12 @@
                 <div class="modal_panel" id="panel_details">
                     <div class="product_information">
                         <label for="productName">Product Name</label>
-                        <input type="text" id="productName" class="product_name_input">
+                        <div class="select_wrapper">
+                            <select id="productName" class="product_name_select"></select>
+                        </div>
                     </div>
 
                     <div id="productOptionsWrapper"></div>
-
-                    <div class="product_description">
-                        <label for="productDescription">Description</label>
-                        <textarea id="productDescription" class="product_input_description"></textarea>
-                    </div>
-
-                    <div class="product_image_description">
-                        <h3>Image Notes</h3>
-                        <div class="product_image_notes"></div>
-                    </div>
                 </div>
 
                 <!-- Pricing Panel -->
@@ -223,13 +219,11 @@
         <div class="detail_modal" id="detailModalOverlay">
             <div class="detail_modal_box">
                 <h2 class="detail_modal_name" id="detailProductName"></h2>
-                <p class="detail_modal_description" id="detailProductDescription"></p>
                 <div id="detailOptionsContainer" class="detail_options_container"></div>
                 <div class="detail_price_row">
                     <span class="detail_price_label">Price</span>
                     <span class="detail_price_value" id="detailPriceValue">—</span>
                 </div>
-                <div id="detailImagesContainer" class="detail_images_container"></div>
                 <div class="detail_actions">
                     <button class="detail_close_btn" id="detailCloseBtn" type="button">Close</button>
                 </div>

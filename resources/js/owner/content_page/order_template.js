@@ -45,23 +45,91 @@ function createSVG(className, pathD) {
 
 // ==================== VALIDATION HELPERS ====================
 
-function setError(input, message) {
-    input.classList.add("input_error");
-    let msg = input.parentElement.querySelector(".input_error_msg");
+function setError(el, message) {
+    el.classList.add("input_error");
+    let msg = el.parentElement.querySelector(".input_error_msg");
     if (!msg) {
         msg = document.createElement("span");
         msg.className = "input_error_msg";
-        input.parentElement.appendChild(msg);
+        el.parentElement.appendChild(msg);
     }
     msg.textContent = message;
     msg.classList.remove("hidden");
 }
 
-function clearError(input) {
-    input.classList.remove("input_error");
-    const msg = input.parentElement.querySelector(".input_error_msg");
+function clearError(el) {
+    el.classList.remove("input_error");
+    const msg = el.parentElement.querySelector(".input_error_msg");
     if (msg) msg.classList.add("hidden");
 }
+
+// ==================== NUMERIC-ONLY HELPER ====================
+
+function enforceNumeric(input) {
+    input.addEventListener("input", () => {
+        input.value = input.value
+            .replace(/[^0-9.]/g, "")
+            .replace(/(\..*?)\..*/g, "$1");
+    });
+}
+
+// ==================== PRODUCT NAME DROPDOWN ====================
+
+/**
+ * Populate the Product Name <select> from a list of product objects.
+ * Preserves the currently selected value if it still exists.
+ */
+function populateProductSelect(productList) {
+    const select = document.getElementById("productName");
+    const currentVal = select.value;
+
+    select.innerHTML = "";
+
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = "— Select a product —";
+    placeholder.disabled = true;
+    placeholder.selected = true;
+    select.appendChild(placeholder);
+
+    productList.forEach((p) => {
+        const opt = document.createElement("option");
+        opt.value = p.name;
+        opt.textContent = p.name;
+        select.appendChild(opt);
+    });
+
+    // Re-select previous value if it still exists in the list
+    if (currentVal) {
+        const match = Array.from(select.options).find(
+            (o) => o.value === currentVal,
+        );
+        if (match) select.value = currentVal;
+    }
+}
+
+/**
+ * Fetch product names from the API and populate the select.
+ * Falls back gracefully if the API is unavailable.
+ */
+async function loadProductNamesFromAPI() {
+    try {
+        const response = await fetch("/api/products", {
+            headers: { Accept: "application/json" },
+        });
+        if (!response.ok) return;
+        const data = await response.json();
+        const productList = Array.isArray(data) ? data : (data.data ?? []);
+        populateProductSelect(productList);
+    } catch (err) {
+        console.warn("Order template: could not load product names.", err);
+    }
+}
+
+// Listen for products being saved/deleted on the same page (same-page sync)
+window.addEventListener("productsUpdated", (e) => {
+    populateProductSelect(e.detail ?? []);
+});
 
 // ==================== SPEC ROWS ====================
 
@@ -283,11 +351,14 @@ function switchTab(tab) {
 
 function validateProductDetails() {
     let valid = true;
-    const nameInput = document.getElementById("productName");
-    if (!nameInput.value.trim()) {
-        setError(nameInput, "Product name is required.");
+
+    const nameSelect = document.getElementById("productName");
+    if (!nameSelect.value || nameSelect.value.trim() === "") {
+        setError(nameSelect, "Product name is required.");
         valid = false;
-    } else clearError(nameInput);
+    } else {
+        clearError(nameSelect);
+    }
 
     getAllOptions().forEach((opt) => {
         const labelInput = opt.querySelector(".product_option_input");
@@ -320,7 +391,6 @@ function cartesian(arrays) {
 function generateCombinations() {
     const container = document.getElementById("pricingCombinations");
 
-    // Save existing values before rebuilding
     const savedData = {};
     container.querySelectorAll(".combination_row").forEach((row) => {
         const label = row.querySelector(".combination_label").textContent;
@@ -353,7 +423,6 @@ function generateCombinations() {
         const label = document.createElement("span");
         label.className = "combination_label";
         label.textContent = labelText;
-        label.title = labelText;
 
         const priceInput = document.createElement("input");
         priceInput.type = "text";
@@ -387,6 +456,8 @@ function createDiscountRow() {
     qtyLbl.textContent = "Min. Quantity (≥)";
     const qtyInput = document.createElement("input");
     qtyInput.type = "text";
+    qtyInput.inputMode = "numeric";
+    enforceNumeric(qtyInput);
     qtyWrap.appendChild(qtyLbl);
     qtyWrap.appendChild(qtyInput);
 
@@ -396,6 +467,8 @@ function createDiscountRow() {
     priceLbl.textContent = "Price Reduction / pc";
     const priceInput = document.createElement("input");
     priceInput.type = "text";
+    priceInput.inputMode = "decimal";
+    enforceNumeric(priceInput);
     priceWrap.appendChild(priceLbl);
     priceWrap.appendChild(priceInput);
 
@@ -461,60 +534,10 @@ function setupDiscount() {
     });
 }
 
-// ==================== IMAGE UPLOAD ====================
-
-function setupImageUpload() {
-    const container = document.querySelector(".product_image_notes");
-    container.innerHTML = "";
-    addUploadBox(container);
-}
-
-function addUploadBox(container) {
-    const box = document.createElement("div");
-    box.className = "image_upload_box";
-    const plus = document.createElement("span");
-    plus.className = "image_upload_plus";
-    plus.textContent = "+";
-    box.appendChild(plus);
-
-    const fileInput = document.createElement("input");
-    fileInput.type = "file";
-    fileInput.accept = "image/png, image/jpeg";
-    fileInput.style.display = "none";
-    document.body.appendChild(fileInput);
-
-    function handleClick() {
-        fileInput.click();
-    }
-    box.addEventListener("click", handleClick);
-
-    fileInput.addEventListener("change", (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            box.removeEventListener("click", handleClick);
-            plus.remove();
-            fileInput.remove();
-            const img = document.createElement("img");
-            img.src = ev.target.result;
-            img.className = "image_display_img";
-            box.classList.add("image_display_box");
-            box.appendChild(img);
-            addUploadBox(container);
-        };
-        reader.readAsDataURL(file);
-    });
-    container.appendChild(box);
-}
-
 // ==================== COLLECT DATA ====================
 
 function collectProductData() {
     const name = document.getElementById("productName").value.trim();
-    const description = document
-        .getElementById("productDescription")
-        .value.trim();
 
     const options = getAllOptions().map((opt) => ({
         label: opt.querySelector(".product_option_input").value.trim(),
@@ -549,19 +572,7 @@ function collectProductData() {
             .value.trim(),
     }));
 
-    const images = Array.from(
-        document.querySelectorAll(".image_display_box .image_display_img"),
-    ).map((img) => img.src);
-
-    return {
-        name,
-        description,
-        options,
-        combinations,
-        discountEnabled,
-        discountRows,
-        images,
-    };
+    return { name, options, combinations, discountEnabled, discountRows };
 }
 
 // ==================== SAVE ====================
@@ -683,7 +694,6 @@ function createProductCard(product) {
 
     card.appendChild(optionsDiv);
 
-    // Price display
     const priceDiv = document.createElement("div");
     priceDiv.className = "product_card_price";
 
@@ -696,7 +706,6 @@ function createProductCard(product) {
     updateCardPrice();
     card.appendChild(priceDiv);
 
-    // Edit button
     const editBtn = document.createElement("button");
     editBtn.className = "product_card_edit_btn";
     editBtn.textContent = "Edit";
@@ -721,8 +730,8 @@ function openEditModal(productId) {
     document.getElementById("templateModalTitle").textContent = "Edit Template";
     document.getElementById("deleteProductBtn").classList.remove("btn_hidden");
 
-    document.getElementById("productName").value = product.name;
-    document.getElementById("productDescription").value = product.description;
+    const nameSelect = document.getElementById("productName");
+    nameSelect.value = product.name;
 
     const wrapper = getOptionsWrapper();
     wrapper.innerHTML = "";
@@ -745,7 +754,6 @@ function openEditModal(productId) {
     });
     refreshOptionButtons();
 
-    // Restore combinations
     const combContainer = document.getElementById("pricingCombinations");
     combContainer.innerHTML = "";
     Object.entries(product.combinations).forEach(([labelText, data]) => {
@@ -754,7 +762,6 @@ function openEditModal(productId) {
         const label = document.createElement("span");
         label.className = "combination_label";
         label.textContent = labelText;
-        label.title = labelText;
         const priceInput = document.createElement("input");
         priceInput.type = "text";
         priceInput.className = "combination_price_input";
@@ -769,7 +776,6 @@ function openEditModal(productId) {
         combContainer.appendChild(row);
     });
 
-    // Restore discount
     const checkbox = document.getElementById("applyProductDiscount");
     checkbox.checked = product.discountEnabled;
     const discountWrapper = document.getElementById("discountRowsWrapper");
@@ -788,20 +794,6 @@ function openEditModal(productId) {
     } else {
         discountWrapper.classList.add("hidden");
     }
-
-    // Restore images
-    const imgContainer = document.querySelector(".product_image_notes");
-    imgContainer.innerHTML = "";
-    product.images.forEach((src) => {
-        const box = document.createElement("div");
-        box.className = "image_upload_box image_display_box";
-        const img = document.createElement("img");
-        img.src = src;
-        img.className = "image_display_img";
-        box.appendChild(img);
-        imgContainer.appendChild(box);
-    });
-    addUploadBox(imgContainer);
 
     switchTab("details");
     document
@@ -829,8 +821,6 @@ function openDetailModal(productId) {
     if (!product) return;
 
     document.getElementById("detailProductName").textContent = product.name;
-    document.getElementById("detailProductDescription").textContent =
-        product.description;
 
     const optContainer = document.getElementById("detailOptionsContainer");
     optContainer.innerHTML = "";
@@ -871,15 +861,6 @@ function openDetailModal(productId) {
     selects.forEach((s) => s.addEventListener("change", updateDetailPrice));
     updateDetailPrice();
 
-    const imgContainer = document.getElementById("detailImagesContainer");
-    imgContainer.innerHTML = "";
-    product.images.forEach((src) => {
-        const img = document.createElement("img");
-        img.src = src;
-        img.className = "detail_image";
-        imgContainer.appendChild(img);
-    });
-
     detailOverlay.classList.add("active");
 }
 
@@ -893,8 +874,8 @@ function setupCancelButton() {
 }
 
 function resetModal() {
-    document.getElementById("productName").value = "";
-    document.getElementById("productDescription").value = "";
+    const nameSelect = document.getElementById("productName");
+    nameSelect.value = "";
     editingProductId = null;
     document.getElementById("templateModalTitle").textContent =
         "Add New Template";
@@ -915,30 +896,24 @@ function resetModal() {
     wrapper.appendChild(createOptionContainer(1));
     refreshOptionButtons();
     document.getElementById("pricingCombinations").innerHTML = "";
-    setupImageUpload();
 }
 
 // ==================== INIT ====================
 
 function initModal() {
-    document
-        .getElementById("productName")
-        .addEventListener("input", () =>
-            clearError(document.getElementById("productName")),
-        );
-    document
-        .getElementById("productDescription")
-        .addEventListener("input", () =>
-            clearError(document.getElementById("productDescription")),
-        );
+    const nameSelect = document.getElementById("productName");
+    nameSelect.addEventListener("change", () => clearError(nameSelect));
+
     getOptionsWrapper().appendChild(createOptionContainer(1));
     refreshOptionButtons();
     setupTabs();
     setupDiscount();
-    setupImageUpload();
     setupCancelButton();
     setupSaveButton();
     setupDeleteButton();
+
+    // Load product names into the dropdown from the API
+    loadProductNamesFromAPI();
 }
 
 document.addEventListener("DOMContentLoaded", initModal);

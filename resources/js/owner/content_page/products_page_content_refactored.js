@@ -15,7 +15,6 @@ const products_title_input = document.getElementById("products_title_input");
 const products_description_input = document.getElementById(
     "products_description_input",
 );
-
 const products_main_add_box = document.getElementById("products_main_add_box");
 const products_main_image_preview = document.getElementById(
     "products_main_image_preview",
@@ -23,27 +22,25 @@ const products_main_image_preview = document.getElementById(
 const products_remove_main_image_btn = document.getElementById(
     "products_remove_main_image_btn",
 );
-
 const products_price_images_wrapper = document.getElementById(
     "products_price_images_wrapper",
 );
-
+const products_image_notes_wrapper = document.getElementById(
+    "products_image_notes_wrapper",
+);
 const products_cancel_btn = document.getElementById("products_cancel_btn");
 const products_save_btn = document.getElementById("products_save_btn");
 const products_delete_btn = document.getElementById("products_delete_btn");
-
 const products_container = document.getElementById("products_container");
 const products_no_items_text = document.getElementById(
     "products_no_items_text",
 );
-
 const products_delete_confirm_modal = document.getElementById(
     "products_delete_confirm_modal",
 );
 const products_confirm_delete_btn = document.getElementById(
     "products_confirm_delete_btn",
 );
-
 const products_price_viewer_modal = document.getElementById(
     "products_price_viewer_modal",
 );
@@ -57,36 +54,34 @@ const products_next_price_image = document.getElementById(
     "products_next_price_image",
 );
 const products_viewer_title = document.getElementById("products_viewer_title");
-
 const products_title_error = document.getElementById("products_title_error");
 const products_cover_error = document.getElementById("products_cover_error");
 const products_prices_error = document.getElementById("products_prices_error");
 
 // ================= STATE =================
-let products_list = []; // Will be populated from API
-let products_edit_id = null; // Store product ID for editing (null for new, number for edit)
+let products_list = [];
+let products_edit_id = null;
 let products_current_viewer_index = 0;
 let products_has_cover = false;
-let products_main_file = null; // Store the actual File object for upload
-let products_price_files = []; // Store File objects for price images
+let products_main_file = null;
+let products_price_files = [];
+let products_notes_files = [];
 
 // ================= INITIALIZATION =================
 document.addEventListener("DOMContentLoaded", async () => {
+    createAddPriceBox();
+    initNotesUpload();
     await loadProductsFromAPI();
 });
 
-/**
- * Load all products from API on page load
- */
 async function loadProductsFromAPI() {
     try {
-        // Show loading state
         products_container.innerHTML =
             '<p style="color: #999;">Loading products...</p>';
-
         const products = await ProductAPI.getAllProducts();
         products_list = products;
         renderProducts();
+        dispatchProductsUpdated();
     } catch (error) {
         console.error("Error loading products:", error);
         Toast.error("Failed to load products from database");
@@ -95,20 +90,35 @@ async function loadProductsFromAPI() {
     }
 }
 
+function dispatchProductsUpdated() {
+    window.dispatchEvent(
+        new CustomEvent("productsUpdated", { detail: products_list }),
+    );
+}
+
+// ================= VALIDATION HELPERS =================
+function setFieldError(field, errorEl, message) {
+    errorEl.textContent = message;
+    field.classList.add("products_input_error");
+}
+function clearFieldError(field, errorEl) {
+    errorEl.textContent = "";
+    field.classList.remove("products_input_error");
+}
+
+products_title_input.addEventListener("input", () => {
+    clearFieldError(products_title_input, products_title_error);
+});
+
 // ================= COVER IMAGE HANDLING =================
 products_main_add_box.addEventListener("click", () => {
     const input = document.createElement("input");
     input.type = "file";
     input.accept = "image/png, image/jpg, image/jpeg";
-
     input.onchange = (e) => {
         const file = e.target.files[0];
         if (!file) return;
-
-        // Store the actual file for upload
         products_main_file = file;
-
-        // Show preview
         const reader = new FileReader();
         reader.onload = (event) => {
             products_main_image_preview.src = event.target.result;
@@ -116,14 +126,12 @@ products_main_add_box.addEventListener("click", () => {
             products_main_image_preview.style.objectFit = "cover";
         };
         reader.readAsDataURL(file);
-
         products_main_add_box.style.display = "none";
         products_remove_main_image_btn.style.display = "block";
-
         products_has_cover = true;
         products_cover_error.textContent = "";
+        products_main_add_box.classList.remove("products_input_error");
     };
-
     input.click();
 });
 
@@ -132,104 +140,191 @@ products_remove_main_image_btn.addEventListener("click", () => {
     products_main_image_preview.style.display = "none";
     products_remove_main_image_btn.style.display = "none";
     products_main_add_box.style.display = "flex";
-
     products_main_file = null;
     products_has_cover = false;
 });
 
 // ================= PRICE IMAGES HANDLING =================
-function createPriceBox(existingSrc = null, isExistingFromDB = false) {
+
+/**
+ * Returns the single "+" add box currently in the price wrapper, or null.
+ */
+function getPriceAddBox() {
+    return (
+        products_price_images_wrapper.querySelector(
+            ".products_price_add_box",
+        ) || null
+    );
+}
+
+function createPriceBox(existingSrc = null) {
     const wrapper = document.createElement("div");
     wrapper.className = "products_price_box_wrapper";
-    wrapper.style.display = "flex";
-    wrapper.style.flexDirection = "column";
-    wrapper.style.alignItems = "center";
 
     const box = document.createElement("div");
     box.className = "products_price_box";
-    box.style.flexDirection = "column";
 
     if (!existingSrc) {
-        // Add new image box
+        // This is the "+" upload box
+        box.classList.add("products_price_add_box");
         box.textContent = "+";
         box.addEventListener("click", () => {
-            if (box.querySelector("img")) return;
-
             const input = document.createElement("input");
             input.type = "file";
             input.accept = "image/png, image/jpg, image/jpeg";
-
             input.onchange = (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
-
-                // Store file for upload
                 products_price_files.push(file);
-
-                // Show preview
                 const reader = new FileReader();
                 reader.onload = (event) => {
-                    box.innerHTML = "";
-                    const img = document.createElement("img");
-                    img.src = event.target.result;
-                    img.style.objectFit = "cover";
-                    box.appendChild(img);
-
-                    const removeBtn = document.createElement("button");
-                    removeBtn.textContent = "Remove";
-                    removeBtn.className = "products_button_remove";
-                    removeBtn.onclick = () => {
-                        wrapper.remove();
-                        products_price_files = products_price_files.filter(
-                            (f) => f !== file,
+                    // Build a filled wrapper and insert before the "+" box wrapper
+                    const filledWrapper = buildFilledPriceWrapper(
+                        event.target.result,
+                        file,
+                    );
+                    const addBoxWrapper = getPriceAddBox()?.parentElement;
+                    if (addBoxWrapper) {
+                        products_price_images_wrapper.insertBefore(
+                            filledWrapper,
+                            addBoxWrapper,
                         );
-                        createAddPriceBox();
-                    };
-
-                    wrapper.appendChild(box);
-                    wrapper.appendChild(removeBtn);
-                    // FIX: Append wrapper to container so price image preview is visible
-                    products_price_images_wrapper.appendChild(wrapper);
+                    } else {
+                        products_price_images_wrapper.appendChild(
+                            filledWrapper,
+                        );
+                    }
+                    // Clear validation error
                     products_prices_error.textContent = "";
-                    createAddPriceBox();
+                    box.classList.remove("products_input_error");
                 };
                 reader.readAsDataURL(file);
             };
-
             input.click();
         });
-    } else {
-        // Existing image from database
-        const img = document.createElement("img");
-        img.src = existingSrc;
-        img.style.objectFit = "cover";
-        box.appendChild(img);
-
-        const removeBtn = document.createElement("button");
-        removeBtn.textContent = "Remove";
-        removeBtn.className = "products_button_remove";
-        removeBtn.onclick = () => {
-            wrapper.remove();
-            createAddPriceBox();
-        };
         wrapper.appendChild(box);
-        wrapper.appendChild(removeBtn);
         return wrapper;
     }
 
+    // Filled box (existing DB image) — built via buildFilledPriceWrapper
+    return null;
+}
+
+function buildFilledPriceWrapper(src, file = null) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "products_price_box_wrapper";
+
+    const box = document.createElement("div");
+    box.className = "products_price_box";
+
+    const img = document.createElement("img");
+    img.src = src;
+    img.style.objectFit = "cover";
+    box.appendChild(img);
+
+    const removeBtn = document.createElement("button");
+    removeBtn.textContent = "Remove";
+    removeBtn.className = "products_button_remove";
+    removeBtn.type = "button";
+    removeBtn.onclick = () => {
+        if (file) {
+            products_price_files = products_price_files.filter(
+                (f) => f !== file,
+            );
+        }
+        wrapper.remove();
+        createAddPriceBox();
+    };
+
     wrapper.appendChild(box);
+    wrapper.appendChild(removeBtn);
     return wrapper;
 }
 
 function createAddPriceBox() {
-    const hasAddBox = [...products_price_images_wrapper.children].some(
-        (wrapper) =>
-            wrapper.querySelector(".products_price_box").textContent === "+",
-    );
-
-    if (!hasAddBox) {
+    if (!getPriceAddBox()) {
         products_price_images_wrapper.appendChild(createPriceBox());
     }
+}
+
+// ================= IMAGE NOTES HANDLING =================
+
+/**
+ * Build a wrapper containing the note image + Remove button.
+ * Used both for new uploads and for restoring existing DB images.
+ */
+function buildNoteWrapper(src, file = null) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "products_notes_item_wrapper";
+
+    const box = document.createElement("div");
+    box.className = "products_notes_upload_box products_notes_display_box";
+
+    const img = document.createElement("img");
+    img.src = src;
+    img.className = "products_notes_img";
+    box.appendChild(img);
+
+    const removeBtn = document.createElement("button");
+    removeBtn.textContent = "Remove";
+    removeBtn.className = "products_button_remove";
+    removeBtn.type = "button";
+    removeBtn.onclick = () => {
+        if (file) {
+            products_notes_files = products_notes_files.filter(
+                (f) => f !== file,
+            );
+        }
+        wrapper.remove();
+    };
+
+    wrapper.appendChild(box);
+    wrapper.appendChild(removeBtn);
+    return wrapper;
+}
+
+/**
+ * Create the "+" upload box for notes and return it (does NOT append itself).
+ */
+function createNotesAddBox() {
+    const box = document.createElement("div");
+    box.className = "products_notes_upload_box";
+
+    const plus = document.createElement("span");
+    plus.className = "products_notes_plus";
+    plus.textContent = "+";
+    box.appendChild(plus);
+
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = "image/png, image/jpeg";
+    fileInput.style.display = "none";
+    document.body.appendChild(fileInput);
+
+    box.addEventListener("click", () => fileInput.click());
+
+    fileInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        products_notes_files.push(file);
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            fileInput.remove();
+            // Insert the new image wrapper just before the "+" box
+            const noteWrapper = buildNoteWrapper(ev.target.result, file);
+            products_image_notes_wrapper.insertBefore(noteWrapper, box);
+        };
+        reader.readAsDataURL(file);
+    });
+
+    return box;
+}
+
+function initNotesUpload() {
+    if (!products_image_notes_wrapper) return;
+    products_image_notes_wrapper.innerHTML = "";
+    products_notes_files = [];
+    products_image_notes_wrapper.appendChild(createNotesAddBox());
 }
 
 // ================= MODAL CONTROL =================
@@ -259,40 +354,49 @@ products_cancel_btn.addEventListener("click", () => {
 products_save_btn.addEventListener("click", async () => {
     let hasError = false;
 
-    // Validation
+    // Validate product name
     if (!products_title_input.value.trim()) {
-        products_title_error.textContent = "Product title is required";
+        setFieldError(
+            products_title_input,
+            products_title_error,
+            "Product name is required",
+        );
         hasError = true;
     } else {
-        products_title_error.textContent = "";
+        clearFieldError(products_title_input, products_title_error);
     }
 
+    // Validate cover image
     if (!products_has_cover) {
         products_cover_error.textContent = "Cover image is required";
+        products_main_add_box.classList.add("products_input_error");
         hasError = true;
     } else {
         products_cover_error.textContent = "";
+        products_main_add_box.classList.remove("products_input_error");
     }
 
+    // Validate price images — mark the "+" add box red if empty
     const priceImages = [
         ...products_price_images_wrapper.querySelectorAll("img"),
     ];
+    const priceAddBox = getPriceAddBox();
     if (!priceImages.length) {
         products_prices_error.textContent =
             "At least one price image is required";
+        if (priceAddBox) priceAddBox.classList.add("products_input_error");
         hasError = true;
     } else {
         products_prices_error.textContent = "";
+        if (priceAddBox) priceAddBox.classList.remove("products_input_error");
     }
 
     if (hasError) return;
 
-    // Disable save button during API call
     products_save_btn.disabled = true;
     products_save_btn.textContent = "Saving...";
 
     try {
-        // Create FormData for multipart upload
         const formData = new FormData();
         formData.append("name", products_title_input.value.trim());
         formData.append("description", products_description_input?.value ?? "");
@@ -301,25 +405,23 @@ products_save_btn.addEventListener("click", async () => {
             formData.append("cover_image", products_main_file);
         }
 
-        // Add price images
         products_price_files.forEach((file, index) => {
             formData.append(`price_images[${index}]`, file);
         });
 
+        products_notes_files.forEach((file, index) => {
+            formData.append(`note_images[${index}]`, file);
+        });
+
         if (products_edit_id !== null) {
-            // Update existing product
             await ProductAPI.updateProduct(products_edit_id, formData);
             Toast.success("Product updated successfully!");
         } else {
-            // Create new product
             await ProductAPI.createProduct(formData);
             Toast.success("Product created successfully!");
         }
 
-        // Reload products from API
         await loadProductsFromAPI();
-
-        // Close modal
         products_modal.style.display = "none";
         products_reset_modal();
     } catch (error) {
@@ -333,23 +435,18 @@ products_save_btn.addEventListener("click", async () => {
 
 // ================= EDIT PRODUCT =================
 async function editProduct(productId) {
-    // Find product in list
     const product = products_list.find((p) => p.id === productId);
     if (!product) {
         Toast.error("Product not found");
         return;
     }
 
-    // Set edit mode
     products_edit_id = productId;
-
-    // Populate form with product data
     products_title_input.value = product.name || "";
     if (products_description_input) {
         products_description_input.value = product.description || "";
     }
 
-    // Show cover image
     if (product.cover_image_path) {
         products_main_image_preview.src = `/storage/${product.cover_image_path}`;
         products_main_image_preview.style.display = "block";
@@ -358,54 +455,53 @@ async function editProduct(productId) {
         products_has_cover = true;
     }
 
-    // Clear price images wrapper
+    // Restore price images
     products_price_images_wrapper.innerHTML = "";
-
-    // Show existing price images
+    products_price_files = [];
     if (product.price_images && product.price_images.length > 0) {
         product.price_images.forEach((priceImage) => {
             const imagePath = priceImage.image_path || priceImage.path;
             products_price_images_wrapper.appendChild(
-                createPriceBox(`/storage/${imagePath}`, true),
+                buildFilledPriceWrapper(`/storage/${imagePath}`),
             );
         });
     }
-
     createAddPriceBox();
 
-    // Show delete button and update modal title
+    // Restore image notes
+    products_image_notes_wrapper.innerHTML = "";
+    products_notes_files = [];
+    if (product.note_images && product.note_images.length > 0) {
+        product.note_images.forEach((noteImg) => {
+            const notePath = noteImg.image_path || noteImg.path;
+            products_image_notes_wrapper.appendChild(
+                buildNoteWrapper(`/storage/${notePath}`),
+            );
+        });
+    }
+    products_image_notes_wrapper.appendChild(createNotesAddBox());
+
     products_delete_btn.style.display = "block";
     document.getElementById("products_modal_title").textContent =
         "Edit Product";
-
-    // Show modal
     products_modal.style.display = "flex";
 }
 
 // ================= DELETE PRODUCT =================
 products_delete_btn.addEventListener("click", () => {
     if (products_edit_id === null) return;
-
     products_delete_confirm_modal.style.display = "flex";
 });
 
 products_confirm_delete_btn.addEventListener("click", async () => {
     if (products_edit_id === null) return;
-
     const productId = products_edit_id;
-
-    // Disable button during API call
     products_confirm_delete_btn.disabled = true;
     products_confirm_delete_btn.textContent = "Deleting...";
-
     try {
         await ProductAPI.deleteProduct(productId);
         Toast.success("Product deleted successfully!");
-
-        // Reload products
         await loadProductsFromAPI();
-
-        // Close modals
         products_modal.style.display = "none";
         products_delete_confirm_modal.style.display = "none";
         products_reset_modal();
@@ -421,12 +517,10 @@ products_confirm_delete_btn.addEventListener("click", async () => {
 // ================= RENDER PRODUCTS =================
 function renderProducts() {
     products_container.innerHTML = "";
-
     if (!products_list.length) {
         products_container.appendChild(products_no_items_text);
         return;
     }
-
     products_list.forEach((product) => {
         const card = document.createElement("div");
         card.className = "products_card";
@@ -463,7 +557,6 @@ function products_view_price_images(productId) {
         Toast.info("No price images to display");
         return;
     }
-
     products_current_viewer_index = 0;
     products_viewer_title.textContent = `${product.name} - Price Images`;
     updatePriceImageViewer(product.price_images);
@@ -472,7 +565,6 @@ function products_view_price_images(productId) {
 
 function updatePriceImageViewer(priceImages) {
     if (!priceImages.length) return;
-
     const currentImage = priceImages[products_current_viewer_index];
     products_price_viewer_image.src = `/storage/${currentImage.image_path}`;
 }
@@ -480,7 +572,6 @@ function updatePriceImageViewer(priceImages) {
 products_prev_price_image.addEventListener("click", () => {
     const product = products_list.find((p) => p.id === products_edit_id);
     if (!product || !product.price_images) return;
-
     products_current_viewer_index =
         (products_current_viewer_index - 1 + product.price_images.length) %
         product.price_images.length;
@@ -490,7 +581,6 @@ products_prev_price_image.addEventListener("click", () => {
 products_next_price_image.addEventListener("click", () => {
     const product = products_list.find((p) => p.id === products_edit_id);
     if (!product || !product.price_images) return;
-
     products_current_viewer_index =
         (products_current_viewer_index + 1) % product.price_images.length;
     updatePriceImageViewer(product.price_images);
@@ -499,29 +589,28 @@ products_next_price_image.addEventListener("click", () => {
 // ================= RESET MODAL =================
 function products_reset_modal() {
     products_edit_id = null;
+
     products_title_input.value = "";
-    if (products_description_input) {
-        products_description_input.value = "";
-    }
+    products_title_input.classList.remove("products_input_error");
+    products_title_error.textContent = "";
+
+    if (products_description_input) products_description_input.value = "";
+
     products_main_image_preview.src = "";
     products_main_image_preview.style.display = "none";
     products_main_add_box.style.display = "flex";
+    products_main_add_box.classList.remove("products_input_error");
     products_remove_main_image_btn.style.display = "none";
-    products_price_images_wrapper.innerHTML = "";
     products_main_file = null;
-    products_price_files = [];
     products_has_cover = false;
 
-    document.getElementById("products_modal_title").textContent = "Add Product";
-
-    // Clear error messages
-    products_title_error.textContent = "";
+    products_price_images_wrapper.innerHTML = "";
+    products_price_files = [];
     products_cover_error.textContent = "";
     products_prices_error.textContent = "";
 
-    // Create initial add price box
+    document.getElementById("products_modal_title").textContent = "Add Product";
+
+    initNotesUpload();
     createAddPriceBox();
 }
-
-// Initialize add price box on load
-createAddPriceBox();

@@ -1,6 +1,7 @@
 /* ==================== INPUTS ==================== */
 
-input:focus {
+input:focus,
+select:focus {
     outline: none;
 }
 
@@ -36,17 +37,13 @@ input:focus {
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.45);
-
     display: flex;
     justify-content: center;
     align-items: center;
-
     z-index: 9999;
-
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-
     overflow-y: auto;
     padding: 20px;
     box-sizing: border-box;
@@ -66,11 +63,9 @@ input:focus {
     padding: 40px;
     border-radius: 30px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
-
     max-height: 85vh;
     overflow-y: auto;
     box-sizing: border-box;
-
     scrollbar-width: none;
     -ms-overflow-style: none;
 }
@@ -105,7 +100,6 @@ input:focus {
     gap: 10px;
     padding-bottom: 15px;
     border-bottom: 2px solid #682c7a;
-    margin-bottom: 0;
 }
 
 .modal_tab {
@@ -142,7 +136,7 @@ input:focus {
     display: none;
 }
 
-/* ==================== PRODUCT NAME ==================== */
+/* ==================== PRODUCT NAME (SELECT) ==================== */
 
 .product_information {
     display: flex;
@@ -159,15 +153,27 @@ input:focus {
     margin-bottom: 10px;
 }
 
-.product_information input {
+.product_name_select {
     width: 100%;
     height: 40px;
-    padding-left: 20px;
-    padding-right: 20px;
+    padding-left: 16px;
+    padding-right: 36px;
     box-sizing: border-box;
     border-radius: 30px;
     border: 2px solid #682c7a;
-    font-size: 16px;
+    font-size: 15px;
+    background-color: #fff;
+    color: #333;
+    appearance: none;
+    cursor: pointer;
+    transition:
+        border-color 0.2s ease,
+        background-color 0.2s ease;
+}
+
+.product_name_select:hover {
+    background-color: #f5eafa;
+    border-color: #4c1c5b;
 }
 
 /* ==================== PRODUCT OPTIONS ==================== */
@@ -200,7 +206,7 @@ input:focus {
     box-sizing: border-box;
     border-radius: 30px;
     border: 2px solid #682c7a;
-    font-size: 16px;
+    font-size: 15px;
     margin-bottom: 10px;
 }
 
@@ -298,6 +304,7 @@ input:focus {
     width: 200px;
     padding-left: 5px;
     padding-right: 5px;
+    font-size: 13px;
 }
 
 /* ==================== SPEC SVG BUTTONS ==================== */
@@ -374,102 +381,6 @@ input:focus {
     background-color: #8d0e0e;
 }
 
-/* ==================== DESCRIPTION ==================== */
-
-.product_description {
-    display: flex;
-    flex-direction: column;
-    padding-top: 15px;
-    padding-bottom: 15px;
-    border-bottom: 2px solid #682c7a;
-}
-
-.product_description label {
-    font-family: Coolvetica;
-    font-size: 20px;
-    color: #682c7a;
-    margin-bottom: 10px;
-}
-
-.product_description input,
-.product_description textarea {
-    width: 100%;
-    min-height: 80px;
-    padding: 10px 20px;
-    box-sizing: border-box;
-    border-radius: 20px;
-    border: 2px solid #682c7a;
-    font-size: 16px;
-    font-family: inherit;
-    resize: vertical;
-    line-height: 1.4;
-}
-
-/* ==================== IMAGE NOTES ==================== */
-
-.product_image_description {
-    padding-top: 15px;
-}
-
-.product_image_description h3 {
-    font-family: Coolvetica;
-    font-size: 20px;
-    color: #682c7a;
-    font-weight: 100;
-    margin-bottom: 10px;
-}
-
-.product_image_notes {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 10px;
-    padding-top: 5px;
-    padding-bottom: 5px;
-}
-
-.image_upload_box {
-    width: 120px;
-    height: 120px;
-    border: 2px solid #682c7a;
-    border-radius: 12px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: #682c7a;
-    cursor: pointer;
-    background-color: #fff;
-    flex-shrink: 0;
-    overflow: hidden;
-    transition: background-color 0.3s ease;
-}
-
-.image_upload_box:hover {
-    background-color: #dcbae6;
-}
-
-.image_upload_plus {
-    font-size: 42px;
-    user-select: none;
-    line-height: 1;
-    pointer-events: none;
-}
-
-.image_display_box {
-    cursor: default;
-}
-
-.image_display_box:hover {
-    background-color: transparent;
-}
-
-.image_display_img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
 /* ==================== PRICING COMBINATIONS ==================== */
 
 .pricing_combinations_header {
@@ -503,37 +414,40 @@ input:focus {
 .combination_row {
     display: flex;
     flex-direction: row;
-    align-items: center;
+    align-items: flex-start;
     padding: 6px 0;
     border-bottom: 1px solid #e8d5f0;
-    gap: 6px;
+    gap: 10px;
 }
 
 .combination_row:last-child {
     border-bottom: none;
 }
 
+/* Wraps across rows — Coolvetica, no truncation */
 .combination_label {
     font-family: Coolvetica;
     font-size: 14px;
     color: #682c7a;
     flex: 1;
     min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    word-break: break-word;
+    white-space: normal;
+    overflow-wrap: break-word;
+    line-height: 1.4;
+    padding-top: 3px;
 }
 
 .combination_price_input {
     border: 2px solid #682c7a;
     border-radius: 30px;
-    height: 24px;
+    height: 28px;
     width: 75px;
     padding-left: 8px;
     padding-right: 8px;
     font-size: 13px;
-    font-family: Coolvetica;
     flex-shrink: 0;
+    align-self: flex-start;
 }
 
 /* ==================== DISCOUNT ==================== */
@@ -650,6 +564,7 @@ input:focus {
     width: 80px;
     padding-left: 5px;
     padding-right: 5px;
+    font-size: 13px;
 }
 
 /* ==================== ACTION BUTTONS ==================== */
@@ -657,10 +572,16 @@ input:focus {
 .product_order_actions {
     display: flex;
     flex-direction: row;
-    justify-content: flex-end;
+    justify-content: space-between;
     align-items: center;
-    gap: 10px;
     margin-top: 30px;
+}
+
+.product_order_actions_right {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
 }
 
 .cancel_product {
@@ -699,19 +620,25 @@ input:focus {
     transform: scale(1.05);
 }
 
-/* ==================== MAIN TEMPLATE ==================== */
+/* ==================== MAIN TEMPLATE SECTION ==================== */
+
+#ordertemplate {
+    box-sizing: border-box;
+    max-width: 100%;
+    min-width: 0;
+    padding: 0;
+}
 
 .order_template_header {
     font-family: Coolvetica;
     font-size: 30px;
     color: #682c7a;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 
 .empty_order_template {
-    margin-left: 50px;
     color: #999999;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
 .add_template_button {
@@ -727,129 +654,12 @@ input:focus {
     color: #fff7ec;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    display: block;
+    margin-top: 15px;
 }
 
 .add_template_button:hover {
     background-color: #4c1c5b;
-}
-
-/* ==================== MEDIA QUERIES ==================== */
-
-@media (max-width: 600px) {
-    .add_template_modal {
-        padding: 15px;
-        align-items: flex-start;
-    }
-
-    .add_template_modal_box {
-        width: 100%;
-        padding: 25px 20px;
-        border-radius: 20px;
-        max-height: 90vh;
-    }
-
-    .modal_title {
-        font-size: 24px;
-    }
-
-    .product_option_specification_container {
-        gap: 6px;
-    }
-
-    .product_option_name {
-        width: 160px;
-    }
-
-    .product_option_name input {
-        width: 160px;
-    }
-
-    .product_availability {
-        width: 45px;
-    }
-
-    .add_product_option,
-    .delete_product_option {
-        width: 110px;
-        font-size: 13px;
-    }
-}
-
-@media (max-width: 420px) {
-    .add_template_modal_box {
-        padding: 20px 15px;
-        border-radius: 16px;
-        max-height: 92vh;
-    }
-
-    .modal_title {
-        font-size: 20px;
-    }
-
-    .order_description {
-        font-size: 11px;
-    }
-
-    .product_option_specification_container {
-        flex-wrap: nowrap;
-        gap: 4px;
-    }
-
-    .product_option_specification_actions_container {
-        min-width: 44px;
-    }
-
-    .product_option_name {
-        width: 130px;
-        min-width: 0;
-    }
-
-    .product_option_name input {
-        width: 100%;
-    }
-
-    .product_availability {
-        width: 36px;
-        min-width: 0;
-    }
-
-    .product_option_label label,
-    .product_information label,
-    .product_description label,
-    .product_discount_checkbox label {
-        font-size: 16px;
-    }
-
-    .add_product_option,
-    .delete_product_option {
-        width: 100%;
-        height: 30px;
-        font-size: 13px;
-    }
-
-    .cancel_product,
-    .save_product {
-        width: 80px;
-        height: 32px;
-        font-size: 13px;
-    }
-
-    .modal_tab {
-        font-size: 12px;
-        padding: 0 12px;
-    }
-
-    .combination_price_input {
-        width: 65px;
-    }
-}
-
-/* ==================== SIDENAV SPACING FIX ==================== */
-
-#ordertemplate {
-    box-sizing: border-box;
-    max-width: 100%;
-    min-width: 0;
 }
 
 /* ==================== PRODUCT CARDS CONTAINER ==================== */
@@ -858,7 +668,7 @@ input:focus {
     display: flex;
     flex-wrap: wrap;
     gap: 15px;
-    margin-top: 20px;
+    margin-bottom: 5px;
     max-width: 100%;
     box-sizing: border-box;
 }
@@ -873,7 +683,7 @@ input:focus {
 .select_wrapper::after {
     content: "";
     position: absolute;
-    right: 12px;
+    right: 14px;
     top: 50%;
     transform: translateY(-50%);
     width: 0;
@@ -900,6 +710,7 @@ input:focus {
     transition:
         transform 0.2s ease,
         box-shadow 0.2s ease;
+    box-sizing: border-box;
 }
 
 .product_card:hover {
@@ -913,6 +724,8 @@ input:focus {
     color: #682c7a;
     margin: 0;
     word-break: break-word;
+    white-space: normal;
+    line-height: 1.3;
 }
 
 .product_card_options {
@@ -939,9 +752,8 @@ input:focus {
     border: 2px solid #682c7a;
     border-radius: 30px;
     background-color: white;
-    font-family: Coolvetica;
     font-size: 13px;
-    color: #682c7a;
+    color: #333;
     padding-left: 12px;
     padding-right: 30px;
     cursor: pointer;
@@ -995,17 +807,13 @@ input:focus {
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.45);
-
     display: flex;
     justify-content: center;
     align-items: center;
-
     z-index: 9999;
-
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-
     padding: 20px;
     box-sizing: border-box;
 }
@@ -1022,7 +830,6 @@ input:focus {
     padding: 35px;
     border-radius: 30px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
-
     max-height: 85vh;
     overflow-y: auto;
     box-sizing: border-box;
@@ -1039,17 +846,12 @@ input:focus {
     font-size: 26px;
     color: #682c7a;
     text-align: center;
-    margin-bottom: 5px;
-}
-
-.detail_modal_description {
-    font-family: Coolvetica;
-    font-size: 13px;
-    color: #682c7a;
-    text-align: center;
     margin-bottom: 15px;
     padding-bottom: 15px;
     border-bottom: 2px solid #682c7a;
+    word-break: break-word;
+    white-space: normal;
+    line-height: 1.3;
 }
 
 .detail_options_container {
@@ -1079,9 +881,8 @@ input:focus {
     border: 2px solid #682c7a;
     border-radius: 30px;
     background-color: white;
-    font-family: Coolvetica;
     font-size: 14px;
-    color: #682c7a;
+    color: #333;
     padding-left: 16px;
     padding-right: 36px;
     cursor: pointer;
@@ -1123,22 +924,6 @@ input:focus {
     color: #682c7a;
 }
 
-.detail_images_container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
-.detail_image {
-    width: 120px;
-    height: 120px;
-    object-fit: cover;
-    border-radius: 12px;
-    border: 2px solid #682c7a;
-}
-
 .detail_actions {
     display: flex;
     justify-content: flex-end;
@@ -1163,21 +948,6 @@ input:focus {
 }
 
 /* ==================== MODAL DELETE BUTTON ==================== */
-
-.product_order_actions {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 30px;
-}
-
-.product_order_actions_right {
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
-    align-items: center;
-}
 
 .delete_product_modal_btn {
     border: none;
@@ -1206,13 +976,10 @@ input:focus {
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.5);
-
     display: flex;
     justify-content: center;
     align-items: center;
-
     z-index: 10000;
-
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -1269,4 +1036,95 @@ input:focus {
     font-family: Coolvetica;
     font-size: 12px;
     color: #999;
+}
+
+/* ==================== MEDIA QUERIES ==================== */
+
+@media (max-width: 600px) {
+    .add_template_modal {
+        padding: 15px;
+        align-items: flex-start;
+    }
+    .add_template_modal_box {
+        width: 100%;
+        padding: 25px 20px;
+        border-radius: 20px;
+        max-height: 90vh;
+    }
+    .modal_title {
+        font-size: 24px;
+    }
+    .product_option_specification_container {
+        gap: 6px;
+    }
+    .product_option_name {
+        width: 160px;
+    }
+    .product_option_name input {
+        width: 160px;
+    }
+    .product_availability {
+        width: 45px;
+    }
+    .add_product_option,
+    .delete_product_option {
+        width: 110px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 420px) {
+    .add_template_modal_box {
+        padding: 20px 15px;
+        border-radius: 16px;
+        max-height: 92vh;
+    }
+    .modal_title {
+        font-size: 20px;
+    }
+    .order_description {
+        font-size: 11px;
+    }
+    .product_option_specification_container {
+        flex-wrap: nowrap;
+        gap: 4px;
+    }
+    .product_option_specification_actions_container {
+        min-width: 44px;
+    }
+    .product_option_name {
+        width: 130px;
+        min-width: 0;
+    }
+    .product_option_name input {
+        width: 100%;
+    }
+    .product_availability {
+        width: 36px;
+        min-width: 0;
+    }
+    .product_option_label label,
+    .product_information label,
+    .product_discount_checkbox label {
+        font-size: 16px;
+    }
+    .add_product_option,
+    .delete_product_option {
+        width: 100%;
+        height: 30px;
+        font-size: 13px;
+    }
+    .cancel_product,
+    .save_product {
+        width: 80px;
+        height: 32px;
+        font-size: 13px;
+    }
+    .modal_tab {
+        font-size: 12px;
+        padding: 0 12px;
+    }
+    .combination_price_input {
+        width: 65px;
+    }
 }
