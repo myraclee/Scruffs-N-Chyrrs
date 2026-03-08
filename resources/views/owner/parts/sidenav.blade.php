@@ -70,19 +70,9 @@
         </div>
     </div>
 
-    {{-- USER SECTION --}}
+{{-- USER SECTION --}}
     <div class="user_section" id="userSection">
-        <div class="bottom_menu">
-        <img src="{{ asset('images/brand_elements/sea_bunny.png') }}">
-        <div class="user_expand">
-            <div class="user_info">
-                <p class="user_name">{{ Auth::user()->name ?? 'Celina Felizardo' }}</p>
-                <p class="user_email">{{ Auth::user()->email ?? 'email@gmail.com' }}</p>
-            </div>
-            <span class="arrow" id="userToggle">⮝</span>
-        </div>
-        </div>
-
+        
         <div class="user_popup" id="userPopup">
             <div class="sidenav_account">
                 <a href="{{ route('account') }}">View Account</a>
@@ -99,6 +89,18 @@
                 <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#312E2E"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-55-58 102-102H360v-80h327L585-622l55-58 200 200-200 200Z"/></svg>
             </div>
         </div>
+
+        <div class="bottom_menu" id="userToggle">
+            <img src="{{ asset('images/brand_elements/sea_bunny.png') }}" class="avatar_img">
+            <div class="user_expand">
+                <div class="user_info">
+                    <p class="user_name">{{ Auth::user()->name ?? 'Celina Felizardo' }}</p>
+                    <p class="user_email">{{ Auth::user()->email ?? 'celinafelizardo@gmail.com' }}</p>
+                </div>
+                <svg class="arrow_icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#5F6368"><path d="M480-345 240-585l56-56 184 184 184-184 56 56-240 240Z"/></svg>
+            </div>
+        </div>
+
     </div>
 </aside>
 

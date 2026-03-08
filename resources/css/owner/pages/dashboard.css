@@ -1,0 +1,123 @@
+.dashboard_container { padding: 20px 40px; max-width: 1200px; margin: 0 auto; }
+
+/* Headers */
+.welcome_header { 
+    font-family: 'SuperDream', sans-serif; 
+    font-size: 55px; 
+    color: #682C7A; 
+    margin-bottom: 40px; 
+    text-align: left; /* Changed to left! */
+    font-weight: normal; 
+}
+.welcome_name { 
+    color: #A15FB5; 
+    font-family: 'SuperDream', sans-serif; 
+}
+.section_title { font-family: 'Coolvetica', sans-serif; font-size: 22px; color: #312E2E; text-align: center; margin-bottom: 20px; margin-top: 40px; }
+
+/* --- Weekly Report Grid --- */
+.report_grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.report_card { background: #FFF7EC; border: 2px solid #682C7A; border-radius: 15px; padding: 30px 20px; text-align: center; box-shadow: 2px 4px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center; gap: 15px; }
+
+.card_label { 
+    font-family: 'Coolvetica', sans-serif; 
+    font-size: 22px; 
+    color: #682C7A; 
+    font-weight: bold; 
+}
+.card_value { font-family: 'Coolvetica', sans-serif; font-size: 32px; font-weight: bold; }
+.card_value_small { font-family: 'Coolvetica', sans-serif; font-size: 20px; font-weight: bold; }
+.purple_text { color: #682C7A; }
+
+/* --- Weekly Sales Grid --- */
+.sales_grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.sales_card { background: #FFF7EC; border-radius: 15px; padding: 20px 15px; text-align: center; box-shadow: 2px 4px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 10px; }
+
+/* Color Specific Rules for Sales Cards */
+.border-purple { border: 2px solid #682C7A; }
+.text-purple { color: #682C7A; }
+
+.border-green { border: 2px solid #4CAF50; }
+.text-green { color: #4CAF50; }
+
+.border-yellow { border: 2px solid #F4C430; }
+.text-yellow { color: #F4C430; }
+
+.border-red { border: 2px solid #D94848; }
+.text-red { color: #D94848; }
+
+/* Re-styling labels/values for the smaller cards */
+.sales_card .card_label { font-size: 18px; font-family: 'Coolvetica', sans-serif; font-weight: bold; }
+.sales_card .card_value { font-size: 28px; font-family: 'Coolvetica', sans-serif; font-weight: bold; }
+
+/* --- Charts Section --- */
+.charts_container { display: flex; flex-direction: column; gap: 40px; align-items: center; padding-bottom: 50px;}
+.chart_card { background: #FFF7EC; border: 2px solid #682C7A; border-radius: 20px; padding: 30px; width: 100%; max-width: 800px; box-shadow: 2px 4px 10px rgba(0,0,0,0.05); }
+.chart_title { 
+    font-family: 'Coolvetica', sans-serif; 
+    font-size: 26px; 
+    color: #682C7A; /* Changed to Purple! */
+    text-align: center; 
+    margin-top: 0; 
+    margin-bottom: 30px; 
+    font-weight: bold;
+}
+.canvas_wrapper { position: relative; height: 350px; width: 100%; }
+
+/* Responsive Adjustments */
+@media (max-width: 900px) {
+    .report_grid { grid-template-columns: 1fr; }
+    .sales_grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+    .sales_grid { grid-template-columns: 1fr; }
+}
+/* --- Chart Scroll Area --- */
+.chart_scroll_area {
+    width: 100%;
+    overflow-x: auto;   /* Allows horizontal scrolling */
+    overflow-y: hidden; /* Prevents accidental vertical scrolling */
+    padding-bottom: 15px; /* Gives the scrollbar some breathing room */
+}
+
+/* Custom Scrollbar for the Chart */
+.chart_scroll_area::-webkit-scrollbar { 
+    height: 8px; 
+}
+.chart_scroll_area::-webkit-scrollbar-track { 
+    background: #FFF7EC; 
+    border-radius: 10px; 
+}
+.chart_scroll_area::-webkit-scrollbar-thumb { 
+    background: #DCBAE6; 
+    border-radius: 10px; 
+}
+.chart_scroll_area::-webkit-scrollbar-thumb:hover { 
+    background: #9659A7; 
+}
+/* --- Pie Chart Header & Dropdown --- */
+.chart_header_row { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 30px; 
+}
+.chart_header_row .chart_title { 
+    margin-bottom: 0; /* Overrides the default margin so it aligns with the dropdown */
+}
+.month_dropdown { 
+    font-family: 'Coolvetica', sans-serif; 
+    font-size: 16px; 
+    color: #682C7A; 
+    border: 2px solid #682C7A; 
+    border-radius: 10px; 
+    padding: 5px 10px; 
+    background-color: #FFF7EC; 
+    cursor: pointer; 
+    outline: none; 
+    transition: 0.2s;
+}
+.month_dropdown:hover, .month_dropdown:focus { 
+    border-color: #A15FB5; 
+    background-color: #fff;
+}

@@ -1,4 +1,4 @@
-@extends('layouts.owner_layout')
+@extends('owner.layouts.owner_layout')
 
 @section('page_css')
 @vite(['resources/css/owner/login.css'])

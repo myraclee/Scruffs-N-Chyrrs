@@ -40,6 +40,7 @@ export default defineConfig({
                 'resources/js/owner/content_page/products_page_content_refactored.js',
                 'resources/js/owner/content_page/edit_home_images_modal.js',
                 'resources/js/owner/content_page/product_sample_modal.js',
+                'resources/css/owner/pages/dashboard.css',
             ],
             refresh: true,
         }),

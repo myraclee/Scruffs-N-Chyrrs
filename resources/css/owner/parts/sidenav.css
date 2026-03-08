@@ -144,71 +144,140 @@ nav {
     transform: scale(1);
 }
 
-/* BOTTOM MENU */
+/* --- BOTTOM MENU SECTION --- */
 .user_section {
-    position: relative;
     display: flex;
     flex-direction: column;
-
-    border-top: 1px solid #312e2e;
-    overflow: hidden;
-
-    transition: all 0.3s ease;
-}
-
-.bottom_menu > img {
-    height: 35px;
+    width: 100%;
 }
 
 .bottom_menu {
     display: flex;
     flex-direction: row;
-    justify-content: center;
-    gap: 20px;
-    padding-top: 10px;
-    padding-bottom: 10px;
+    align-items: center;
+    gap: 10px; /* Slightly tighter gap */
+    padding: 20px 15px;
+    border-top: 1px solid #312e2e;
+    cursor: pointer; 
+    transition: background 0.2s ease;
+    background: #fff0da;
+    z-index: 2; 
+    box-sizing: border-box; /* Keeps padding inside the 230px width */
+    width: 100%;
+}
+
+.bottom_menu:hover {
+    background: #ffe3b3; 
+}
+
+.avatar_img {
+    height: 40px; /* Slightly scaled down to ensure fit */
+    width: auto;
 }
 
 .user_expand {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 15px;
+    flex-grow: 1; 
+    min-width: 0; /* MAGIC FIX: Allows the flex child to shrink! */
+    gap: 8px;
+}
 
-    transition: transform 0.3s ease;
+.user_info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0; /* MAGIC FIX: Allows the text to shrink! */
+    flex-grow: 1;
 }
 
 .user_name {
-    font-size: 15px;
-    font-family: Coolvetica;
+    font-size: 16px; /* Bumped up slightly since Coolvetica runs a bit smaller */
+    font-family: 'Coolvetica', sans-serif; /* Brought back your brand font! */
+    font-weight: normal; /* Coolvetica is already quite thick, so we don't need bold */
     color: #312e2e;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .user_email {
-    font-size: 11px;
-    font-family: Coolvetica;
+    font-size: 12px;
+    font-family: Arial, sans-serif;
     color: #707070;
+    white-space: nowrap;       /* Forces text to stay on one line */
+    overflow: hidden;          /* Hides the overflow */
+    text-overflow: ellipsis;   /* Adds the "..." */
 }
 
-.arrow {
+.arrow_icon {
+    transition: transform 0.3s ease;
+    flex-shrink: 0; /* Prevents the arrow from ever getting squished */
+}
+
+/* --- BOTTOM MENU OPTIONS (POPUP) --- */
+.user_popup {
     display: flex;
-    align-items: center;
-    justify-content: center;
-
-    color: #312e2e;
-    font-size: 20px;
-
-    transition: transform 0.25s ease;
-    cursor: pointer;
-
-    -webkit-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
+    flex-direction: column;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    background: #fff0da;
+    transition: max-height 0.35s ease, opacity 0.3s ease;
 }
 
-.arrow:hover {
-    color: #682c7a;
-    transition: 0.3s ease;
+.sidenav_account,
+.sidenav_main,
+.sidenav_logout {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 15px 20px;
+    box-sizing: border-box;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.sidenav_account:hover,
+.sidenav_main:hover,
+.sidenav_logout:hover {
+    background: #dcbae6;
+}
+
+.sidenav_account a,
+.sidenav_main a,
+.sidenav_logout a {
+    font-family: 'Coolvetica', sans-serif;
+    font-size: 16px;
+    color: #312e2e;
+    text-decoration: none;
+    width: 100%;
+    display: block;
+}
+
+.logout_link {
+    background: transparent;
+    border: none;
+    color: #312e2e;
+    font-family: 'Coolvetica', sans-serif;
+    font-size: 16px;
+    padding: 0;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+}
+
+/* --- ACTIVE STATE (When Clicked) --- */
+.user_section.active .user_popup {
+    max-height: 250px; 
+    opacity: 1;
+}
+
+.user_section.active .arrow_icon {
+    transform: rotate(180deg);
 }
 
 /* BOTTOM MENU OPTIONS */
