@@ -86,8 +86,6 @@ To obtain your Cloudflare Turnstile site key:
 
 ### Running the Application
 
-#### Option 1: Recommended — All-in-One (Windows, macOS, Linux)
-
 To start the local development server along with the Vite dev server and queue listener, run:
 
 ```cmd
@@ -99,49 +97,6 @@ This command uses `concurrently` to execute:
 - **Server:** `php artisan serve` (Host: 127.0.0.1:8000)
 - **Queue:** `php artisan queue:listen` (Background jobs)
 - **Vite:** `npm run dev` (Frontend hot-reloading)
-
-**Benefits:** Single command, all services start together, automatic asset compilation.
-
----
-
-#### Option 2: Platform-Specific Scripts
-
-If you prefer running each service in a separate terminal window:
-
-**Windows:**
-
-```cmd
-dev-windows.bat
-```
-
-**Note:** Ensure the backend server is running on `http://127.0.0.1:8000` before accessing the application in your browser.
-
----
-
-#### Option 3: Frontend-Only Development (Advanced)
-
-If a Laravel backend server is already running on `http://127.0.0.1:8000`, you can run just the Vite dev server:
-
-```cmd
-npm run dev
-```
-
-**Requirements:**
-
-- A Laravel development server must be running separately on port `8000`
-
-**Use case:** Multiple developers working on the frontend in parallel while a backend server runs on a shared machine or VM.
-
----
-
-### API Proxy Configuration
-
-The Vite development server is configured with automatic API proxying. This allows frontend development to work seamlessly regardless of whether you're running `composer run dev` (single command) or just `npm run dev` (frontend-only):
-
-- **API Routes:** All requests to `/api/*` are proxied to `http://127.0.0.1:8000`
-- **Static Storage:** All requests to `/storage/*` are proxied to `http://127.0.0.1:8000`
-
-This configuration is in `vite.config.js` under `server.proxy` and only applies during development. It ensures image uploads, API calls, and asset serving work correctly regardless of your development setup.
 
 ### Testing
 
