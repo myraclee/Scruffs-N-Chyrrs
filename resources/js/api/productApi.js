@@ -107,7 +107,8 @@ class ProductAPI {
         method: 'POST',
         body: formData,
         headers: {
-          'X-CSRF-TOKEN': this.getCsrfToken()
+          'X-CSRF-TOKEN': this.getCsrfToken(),
+          Accept: 'application/json'
         }
         // Don't set Content-Type header - browser will set it with boundary for multipart
       });
@@ -160,7 +161,8 @@ class ProductAPI {
         method: 'POST', // Using POST with _method=PUT for form data
         body: formData,
         headers: {
-          'X-CSRF-TOKEN': this.getCsrfToken()
+          'X-CSRF-TOKEN': this.getCsrfToken(),
+          Accept: 'application/json'
         }
       });
 
@@ -201,7 +203,8 @@ class ProductAPI {
         headers: {
           'X-Requested-With': 'XMLHttpRequest',
           'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': this.getCsrfToken()
+          'X-CSRF-TOKEN': this.getCsrfToken(),
+          Accept: 'application/json'
         }
       });
 
