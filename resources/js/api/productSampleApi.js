@@ -100,7 +100,8 @@ class ProductSampleAPI {
         method: 'POST',
         body: formData,
         headers: {
-          'X-CSRF-TOKEN': this.getCsrfToken()
+          'X-CSRF-TOKEN': this.getCsrfToken(),
+          Accept: 'application/json'
         }
       });
 
@@ -143,7 +144,8 @@ class ProductSampleAPI {
         method: 'PUT',
         body: formData,
         headers: {
-          'X-CSRF-TOKEN': this.getCsrfToken()
+          'X-CSRF-TOKEN': this.getCsrfToken(),
+          Accept: 'application/json'
         }
       });
 
@@ -179,7 +181,8 @@ class ProductSampleAPI {
       const response = await fetch(`${this.baseUrl}/${id}`, {
         method: 'DELETE',
         headers: {
-          'X-CSRF-TOKEN': this.getCsrfToken()
+          'X-CSRF-TOKEN': this.getCsrfToken(),
+          Accept: 'application/json'
         }
       });
 

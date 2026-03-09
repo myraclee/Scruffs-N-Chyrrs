@@ -71,7 +71,8 @@ class HomeImageAPI {
         method: 'POST',
         body: formData,
         headers: {
-          'X-CSRF-TOKEN': this.getCsrfToken()
+          'X-CSRF-TOKEN': this.getCsrfToken(),
+          Accept: 'application/json'
         }
       });
 
@@ -107,7 +108,8 @@ class HomeImageAPI {
       const response = await fetch(`${this.baseUrl}/${id}`, {
         method: 'DELETE',
         headers: {
-          'X-CSRF-TOKEN': this.getCsrfToken()
+          'X-CSRF-TOKEN': this.getCsrfToken(),
+          Accept: 'application/json'
         }
       });
 

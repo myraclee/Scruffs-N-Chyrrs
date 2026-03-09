@@ -50,5 +50,15 @@ export default defineConfig({
         watch: {
             ignored: ['**/storage/framework/views/**'],
         },
+        proxy: {
+            '/api': {
+                target: 'http://127.0.0.1:8000',
+                changeOrigin: true,
+            },
+            '/storage': {
+                target: 'http://127.0.0.1:8000',
+                changeOrigin: true,
+            },
+        },
     },
 });
