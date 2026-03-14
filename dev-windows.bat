@@ -26,7 +26,7 @@ echo To stop, close the terminal windows or press CTRL+C in each.
 echo ============================================================
 echo.
 
-REM Start Laravel server and queue listener in a new window
+REM Start Laravel server, queue listener, and Vite in a new window via concurrently.
 start "Scruffs-N-Chyrrs Backend" cmd /k "composer run dev && pause"
 
 echo.

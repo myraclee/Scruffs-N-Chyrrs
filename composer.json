@@ -43,6 +43,7 @@
             "@php artisan key:generate",
             "@php artisan migrate --force",
             "npm install",
+            "@php artisan storage:link",
             "npm run build"
         ],
         "dev": [
