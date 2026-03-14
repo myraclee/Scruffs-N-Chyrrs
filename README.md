@@ -1,62 +1,893 @@
-# Scruffs-N-Chyrrs
+# Scruffs-N-Chyrrs: Ordering and Inventory Tracking System
 
-**Scruffs-N-Chyrrs** is a modern, monolithic web application designed for merchandise manufacturing services (stickers, prints, pins). This project is built on the standard **PHP** ecosystem, utilizing **Laravel 12** as the core framework.
+A modern, comprehensive web application for managing merchandise manufacturing services including stickers, prints, and pins. Built with **Laravel 12**, **Vite 7**, **Tailwind CSS 4 + Bootstrap 5**, and **Pest PHP** testing framework.
 
-The architecture follows a standard **MVC (Model-View-Controller)** pattern but integrates a hybrid frontend stack combining **Blade templates**, **Bootstrap 5**, and **Tailwind CSS 4** via **Vite 7**. It features robust configuration for enterprise-grade integrations including AWS SES, Redis, and Slack, suggesting a focus on scalability and reliable background processing.
+## Table of Contents
 
-## Core Tech Stack
+- [Quick Start](#quick-start)
+- [Project Overview](#project-overview)
+- [Prerequisites](#prerequisites)
+- [Getting Started](#getting-started)
+  - [Step 1: Clone the Repository](#step-1-clone-the-repository)
+  - [Step 2: Run the Setup Script](#step-2-run-the-setup-script)
+  - [Step 3: Configuration](#step-3-configuration)
+- [Verification After Setup](#verification-after-setup)
+- [Running the Application](#running-the-application)
+- [Testing](#testing)
+- [Code Quality](#code-quality--formatting)
+- [Working with Images and File Uploads](#working-with-images-and-file-uploads)
+- [Common Commands Reference](#common-commands-reference)
+- [Project Structure](#project-structure)
+- [Development Workflow](#development-workflow)
+- [Environment-Specific Setup](#environment-specific-setup)
+  - [Windows Developer Mode Setup](#windows-developer-mode-setup)
+  - [macOS Setup](#macos-setup)
+  - [Linux Setup](#linux-setup)
+- [Database Setup](#database-setup)
+- [Key Configuration Files](#key-configuration-files)
+- [Infrastructure & Services](#infrastructure--services)
+- [Current Architecture Overview](#current-architecture-overview)
+- [API Endpoints](#api-endpoints)
+- [Project Conventions & Patterns](#project-conventions--patterns)
+- [Security & Authentication](#security--authentication)
+- [Integration Points & Data Flow](#integration-points--data-flow)
+- [Known Constraints & Caveats](#known-constraints--caveats)
+- [Code Style & Conventions](#code-style--conventions)
+- [Development Best Practices](#development-best-practices)
+- [Troubleshooting & FAQ](#troubleshooting--faq)
+- [Getting Help](#getting-help)
+- [Contributing](#contributing-to-scruffs-n-chyrrs)
+- [License](#project-license)
 
-- **Backend Language:** [PHP 8.2+](https://www.php.net/)
-- **Backend Framework:** [Laravel 12](https://laravel.com/docs/12.x)
-- **Frontend Build Tool:** [Vite 7](https://vitejs.dev/)
-- **Styling Strategy:** Hybrid - [Tailwind CSS 4](https://tailwindcss.com/) + [Bootstrap 5](https://getbootstrap.com/) + Custom Raw CSS
-- **Database:** MySQL (Default) / SQLite (Testing)
-- **Testing:** [Pest PHP 3](https://pestphp.com/) & PHPUnit
-- **Development Tools:** Laravel Boost, Laravel Pail, Laravel Pint
-- **Scripting:** npm scripts & Composer scripts
+---
+
+## Quick Start
+
+**For experienced developers:**
+
+```bash
+composer run setup          # One-command setup (2-5 minutes)
+composer run dev            # Start all servers
+```
+
+> Visit <http://127.0.0.1:8000/>
+
+**For Windows users:** See [Windows Developer Mode Setup](#windows-developer-mode-setup) before running setup.
+
+---
+
+## Project Overview
+
+**Scruffs-N-Chyrrs** is a monolithic Laravel 12 application following the **MVC (Model-View-Controller)** pattern with a modern hybrid frontend stack. The system manages:
+
+- **Product Catalog Management** — Create and manage merchandise products
+- **Pricing & Samples** — Configure pricing tiers and product samples with images
+- **Image Upload & Storage** — Full-featured image management system with validation
+- **User Authentication** — Multi-role authentication system (Customers, Owners/Admin)
+- **Admin Dashboard** — Content management interface for product and image management
+- **Email Notifications** — Multi-driver email system (AWS SES, Postmark, Resend)
+- **Background Job Processing** — Queue system for asynchronous tasks
+- **Responsive Design** — Works seamlessly on desktop, tablet, and mobile devices
+
+### Technology Stack at a Glance
+
+| Layer | Technology | Version |
+| ------- | ----------- | --------- |
+| **Language** | PHP | 8.2+ |
+| **Framework** | Laravel | 12.x |
+| **Frontend Build** | Vite | 7.x |
+| **CSS Framework** | Tailwind CSS + Bootstrap | 4.0 + 5.x |
+| **Node.js** | npm/Node | v18+ |
+| **Database** | MySQL/MariaDB (Prod), SQLite (Dev) | 5.7+ |
+| **Testing** | Pest PHP | 3.x |
+| **Caching** | Redis | Latest |
+
+---
 
 ## Prerequisites
 
-Ensure you have the following installed on your local environment:
+Before starting, ensure you have the following installed on your system:
 
-- PHP 8.2 or higher
-- Composer
-- Node.js & NPM
-- A database engine (MySQL/MariaDB)
+### Required Software
+
+- **PHP 8.2+** — [Download XAMPP Here](https://www.apachefriends.org/download.html) (includes PHP, MySQL, Apache)
+- **Database:** MySQL, MariaDB, or SQLite (Should be included with XAMPP)
+- **Composer** — [Download Here](https://getcomposer.org/download/)
+- **Node.js & NPM v18+** — [Download Here](https://nodejs.org/en/download)
+- **Git** — [Download Here](https://git-scm.com/install/windows)
+
+### Setup Verification
+
+Run these commands to verify installations:
+
+```bash
+php --version          # Should show 8.2 or higher
+composer --version     # Should show version 2.x
+node --version         # Should show v18 or higher
+git --version          # Should show version 2.x
+```
+
+### Post-Installation Configuration (XAMPP Users)
+
+If you installed **XAMPP**, edit the PHP configuration file to increase upload limits for image files:
+
+**Windows:** `C:\xampp\php\php.ini`  
+**macOS:** `/Applications/XAMPP/xamppfiles/etc/php.ini`
+
+Find and update these values to larger limits:
+
+```ini
+upload_max_filesize = 20M
+post_max_size = 25M
+```
+
+Then restart Apache from XAMPP Control Panel.
+
+### Windows-Specific Setup Issues?
+
+**⚠️ Important for Windows Users:**
+
+Windows 10/11 may require special setup for creating symbolic links (used for image file access). See [Windows Developer Mode Setup](#windows-developer-mode-setup) section below for detailed instructions on **Developer Mode**, **Administrator Privileges**, and **Troubleshooting**.
+
+---
 
 ## Getting Started
 
-### 1. Pre-Installation
+### Step 1: Clone the Repository
 
-1. Go to the XAMPP folder.
-2. Go to the PHP folder inside the XAMPP folder.
-3. Open the php.ini file.
-4. Press CTRL + F and search ";extension=zip".
-5. Remove the ";" to change the text to "extension=zip".
-6. Save the file.
+```bash
+git clone https://github.com/your-org/Scruffs-N-Chyrrs.git
+cd Scruffs-N-Chyrrs
+```
 
-### 2. Installation
+### Step 2: Run the Setup Script
 
-The project includes a built-in setup script to automate the initial configuration. Run the following command in your terminal:
+```bash
+composer run setup
+```
+
+**What this does:**
+
+1. Installs PHP dependencies (Composer packages)
+2. Creates `.env` configuration file from `.env.example`
+3. Generates application encryption key (`APP_KEY`)
+4. Runs database migrations to set up tables
+5. Installs Node.js dependencies (npm packages)
+6. **Creates symbolic link:** `public/storage` → `storage/app/public` (critical for images)
+7. Builds frontend assets (Vite compilation)
+
+**Expected Duration:** 2-5 minutes depending on your internet connection and system speed
+
+**Troubleshooting:** If setup fails on the `storage:link` step on Windows, see [Windows Developer Mode Setup](#windows-developer-mode-setup).
+
+### Step 3: Configuration
+
+The setup automatically creates a `.env` file with sensible defaults. For most local development, no changes are needed. However, you can customize these common settings:
+
+```env
+# Database Connection
+DB_CONNECTION=sqlite        # Options: sqlite, mysql
+DB_DATABASE=scruffsnchyrrs
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_USERNAME=root
+DB_PASSWORD=
+
+# Application
+APP_NAME="Scruffs & Chyrrs"
+APP_ENV=local
+APP_DEBUG=true
+
+# Mail (for email notifications)
+MAIL_MAILER=log             # Options: log, postmark, resend, ses
+
+# Cloudflare Turnstile (for signup CAPTCHA)
+CLOUDFLARE_TURNSTILE_SITEKEY=your-site-key-here
+CLOUDFLARE_TURNSTILE_SECRETKEY=your-secret-key-here
+```
+
+---
+
+## Verification After Setup
+
+After setup completes, verify everything is working correctly:
+
+### 1. Verify Symbolic Link
+
+The setup creates a **symbolic link** that allows image files to be served to the web. Verify it exists by running these commands in your terminal in the project root directory `\Scruffs-N-Chyrrs>`:
+
+**On Windows (Command Prompt):**
+
+```cmd
+dir /AL public
+```
+
+**Expected output:** You should see `<SYMLINK>` indicator next to `storage`:
+
+```cmd
+Directory of D:\path\to\Scruffs-N-Chyrrs\public
+
+03/15/2026  10:30 AM    <SYMLINK>    storage [storage/app/public]
+```
+
+**On Windows (PowerShell):**
+
+```powershell
+Get-Item -Path public/storage | Select-Object LinkType, Target
+```
+
+**Expected output:**
+
+```powershell
+LinkType           Target
+--------           ------
+SymbolicLink       storage\app\public
+```
+
+**On macOS/Linux:**
+
+```bash
+ls -la public/ | grep storage
+```
+
+**Expected output:** `storage -> storage/app/public` (or similar arrow notation)
+
+**If the symlink doesn't exist:** See [Troubleshooting: Images Don't Display](#troubleshooting-images-dont-display) section.
+
+### 2. Verify Database
+
+```bash
+php artisan migrate:status
+```
+
+Should show all migrations as `Ran`:
+
+```bash
+Migration name ........................... Batch / Status
+0001_01_01_000000_create_users_table .... 1 / Ran
+0001_01_01_000001_create_cache_table .... 1 / Ran
+(etc.)
+```
+
+If any show as `Pending`, run: `php artisan migrate`
+
+### 3. Verify Assets (Optional)
+
+```bash
+test -f public/build/manifest.json && echo "✓ Assets OK" || echo "✗ Assets missing"
+```
+
+Compiled assets should exist at `public/build/manifest.json`.
+
+---
+
+## Running the Application
+
+### Development Server (All Services Together)
+
+Start all servers with one command:
+
+```bash
+composer run dev
+```
+
+This runs concurrently:
+
+- **Laravel Web Server** — `php artisan serve` (accessible at `http://localhost:8000`)
+- **Queue Listener** — `php artisan queue:listen --tries=1` (processes background jobs)
+- **Vite Dev Server** — `npm run dev` (hot-reloads frontend assets)
+
+**Then open in your browser:** `http://127.0.0.1:8000/`
+
+To stop all services: Press `Ctrl+C` in the terminal.
+
+### Running Individual Services (Advanced)
+
+If you prefer separate terminal windows for development:
+
+**Terminal 1: Web Server**
+
+```bash
+php artisan serve
+```
+
+> Server running at <http://127.0.0.1:8000> (you can specify a different port with `--port=8080`)
+
+**Terminal 2: Queue Listener**
+
+```bash
+php artisan queue:listen --tries=1
+```
+
+> Listens for background jobs
+
+**Terminal 3: Frontend Build Tool**
+
+```bash
+npm run dev
+```
+
+> Watches for changes and hot-reloads frontend assets
+
+### Production Build
+
+To build assets for production deployment:
+
+```bash
+npm run build
+```
+
+This creates optimized assets in `public/build/`.
+
+---
+
+## Testing
+
+### Run All Tests
+
+```bash
+composer run test
+```
+
+Uses **Pest PHP** framework with an in-memory SQLite database. Tests are completely isolated and don't affect your local development database.
+
+### Run Specific Test File
+
+```bash
+php artisan test tests/Feature/Auth/LoginTest.php
+```
+
+### Run Tests Matching a Pattern
+
+```bash
+php artisan test --filter=upload
+```
+
+### Generate Test Coverage
+
+```bash
+php artisan test --coverage
+```
+
+---
+
+## Code Quality & Formatting
+
+### Auto-Format Code (Recommended Before Commit)
+
+```bash
+./vendor/bin/pint
+```
+
+Automatically fixes PHP code style according to **PSR-12** standards. Modifies files in-place.
+
+### Check Code Style Without Fixing
+
+```bash
+./vendor/bin/pint --test
+```
+
+Checks if code passes style rules without making changes.
+
+---
+
+## Working with Images and File Uploads
+
+The application uses a **symbolic link** to serve uploaded images. Understanding this is crucial for file upload functionality:
+
+### How Image Upload Works
+
+```txt
+User uploads image via admin interface
+         ↓
+Backend validates file (size, format, dimensions)
+         ↓
+Saves to: storage/app/public/home_images/ (or other category)
+         ↓
+Symbolic Link: public/storage → storage/app/public
+         ↓
+Web accessible at: /storage/home_images/{filename}
+         ↓
+Browser displays: ✓ Image loads correctly
+```
+
+### File Categories
+
+Images are organized by category:
+
+- **`storage/app/public/home_images/`** — Homepage carousel/banner images
+- **`storage/app/public/product_samples/`** — Product sample images
+- **Other categories** — As defined by your product types
+
+### Testing Image Upload
+
+After setup completes and symlink is verified:
+
+1. Start the development server:
+
+   ```bash
+   composer run dev
+   ```
+
+2. Navigate to the admin panel → **Content Management**
+
+3. Upload a test image via "Home Page Images" section
+
+4. Verify:
+   - ✅ File appears in `storage/app/public/home_images/`
+   - ✅ Database record is created
+   - ✅ Image displays on the website
+   - ✅ URL follows pattern: `http://127.0.0.1:8000/storage/home_images/filename.jpg`
+
+### If Images Don't Display
+
+See [Troubleshooting: Images Don't Display](#troubleshooting-images-dont-display) section below.
+
+---
+
+## Common Commands Reference
+
+| Command | Purpose | Details |
+| --------- | --------- | --------- |
+| `composer run setup` | Initial project setup | Installs deps, creates .env, runs migrations, builds assets |
+| `composer run dev` | Start all dev servers | Runs Laravel, Queue, Vite concurrently |
+| `composer run test` | Run test suite | Uses Pest PHP with SQLite |
+| `php artisan serve` | Start Laravel server only | Runs at <http://127.0.0.1:8000> |
+| `php artisan queue:listen` | Start queue worker | Processes background jobs |
+| `npm run dev` | Start Vite dev server | Hot-reloads frontend assets |
+| `npm run build` | Build assets for production | Creates optimized files in public/build/ |
+| `php artisan migrate` | Run all pending migrations | Creates database tables |
+| `php artisan migrate:fresh` | Reset database from scratch | Deletes all data and rebuilds tables |
+| `php artisan migrate:status` | Show migration status | Lists which migrations have run |
+| `php artisan tinker` | Interactive PHP shell | Test code interactively |
+| `php artisan storage:link` | Create storage symlink manually | Useful if automatic setup failed |
+| `./vendor/bin/pint` | Format code automatically | Fixes PSR-12 style issues |
+| `php artisan optimize:clear` | Clear all caches | Flushes views, routes, config caches |
+| `git pull origin main` | Get latest code | Updates local repository |
+
+---
+
+## Project Structure
+
+```txt
+Scruffs-N-Chyrrs/
+├── app/                              # Application logic
+│   ├── Http/
+│   │   ├── Controllers/              # Request handlers
+│   │   └── Middleware/               # Request middleware layers
+│   ├── Models/                       # Eloquent ORM models
+│   │   ├── User.php
+│   │   ├── Product.php
+│   │   ├── ProductSample.php
+│   │   ├── HomeImage.php
+│   │   ├── Material.php
+│   │   └── ...
+│   ├── Mail/                         # Email classes
+│   │   └── PasswordResetCode.php
+│   └── Providers/                    # Service providers
+│       └── AppServiceProvider.php
+├── config/                           # Configuration files
+│   ├── app.php                       # Application settings
+│   ├── database.php                  # Database connections
+│   ├── mail.php                      # Email configuration
+│   ├── services.php                  # External service configs (AWS, Postmark, Slack)
+│   ├── auth.php                      # Authentication settings
+│   ├── cache.php                     # Cache driver configuration
+│   └── ...
+├── database/                         # Database schema and data
+│   ├── migrations/                   # Schema definitions
+│   │   ├── 0001_01_01_000000_create_users_table.php
+│   │   ├── 2026_03_02_000000_create_products_table.php
+│   │   └── ...
+│   ├── factories/                    # Model factories for testing
+│   │   └── UserFactory.php
+│   └── seeders/                      # Database seeders
+│       └── DatabaseSeeder.php
+├── resources/                        # Frontend assets
+│   ├── css/                          # Stylesheets
+│   │   ├── app.css                   # Main CSS (Tailwind imports)
+│   │   ├── universal.css             # Global fonts and styles
+│   │   ├── signup.css                # Signup page styles
+│   │   └── ...
+│   ├── js/                           # JavaScript files
+│   │   ├── app.js                    # Main JS entry (Bootstrap, app init)
+│   │   ├── api/                      # API client classes
+│   │   │   ├── productApi.js
+│   │   │   ├── homeImageApi.js
+│   │   │   └── ...
+│   │   ├── pages/                    # Page-specific JavaScript
+│   │   └── utils/                    # Utility functions
+│   ├── fonts/                        # Custom fonts
+│   │   ├── Coolvetica.woff2
+│   │   ├── SuperDream.woff2
+│   │   └── ...
+│   └── views/                        # Blade templates
+│       ├── layouts/                  # Layout templates
+│       │   ├── customer_layout.blade.php
+│       │   └── owner_layout.blade.php
+│       ├── customer/                 # Customer-facing pages
+│       ├── owner/                    # Owner/admin pages
+│       ├── page_parts/               # Reusable components
+│       │   ├── header.blade.php
+│       │   ├── footer.blade.php
+│       │   └── ...
+│       └── auth/                     # Authentication pages
+├── routes/                           # Route definitions
+│   ├── web.php                       # HTTP route definitions
+│   └── console.php                   # Artisan command definitions
+├── storage/                          # File storage and logs
+│   ├── app/
+│   │   └── public/                   # Uploaded files (web-accessible via symlink)
+│   │       ├── home_images/          # Homepage images
+│   │       ├── product_samples/      # Product sample images
+│   │       └── ...
+│   ├── logs/                         # Application logs
+│   │   └── laravel.log
+│   └── framework/                    # Framework caches
+├── tests/                            # Test files (Pest PHP)
+│   ├── Feature/                      # Feature tests (end-to-end)
+│   ├── Unit/                         # Unit tests
+│   ├── TestCase.php                  # Base test case
+│   └── Pest.php                      # Pest configuration
+├── public/                           # Web root (served by web server)
+│   ├── index.php                     # Laravel entry point
+│   ├── storage/                      # Symlink to storage/app/public (CRITICAL FOR IMAGES)
+│   ├── build/                        # Compiled assets (Vite output)
+│   │   ├── manifest.json
+│   │   └── assets/
+│   ├── images/                       # Static images
+│   │   ├── brand_elements/
+│   │   └── website_elements/
+│   └── robots.txt
+├── bootstrap/                        # Framework bootstrap files
+│   ├── app.php
+│   ├── providers.php
+│   └── cache/
+├── vendor/                           # Composer dependencies (auto-generated)
+├── node_modules/                     # npm dependencies (auto-generated)
+├── .env                              # Environment configuration (auto-created)
+├── .env.example                      # Environment template
+├── .gitignore                        # Git ignore rules
+├── composer.json                     # PHP dependencies and scripts
+├── package.json                      # Node.js dependencies
+├── vite.config.js                    # Frontend build configuration
+├── vite.config.php                   # Laravel Vite plugin config
+├── phpunit.xml                       # Test configuration
+├── artisan                           # Laravel command line tool
+└── README.md                         # This file
+```
+
+---
+
+## Development Workflow
+
+### 1. Check for New Changes
+
+```bash
+git pull origin main
+```
+
+### 2. Install Any New Dependencies
+
+```bash
+composer install
+npm install
+```
+
+### 3. Run Migrations if Database Schema Changed
+
+```bash
+php artisan migrate
+```
+
+### 4. Start Development Servers
+
+```bash
+composer run dev
+```
+
+### 5. Make Your Changes
+
+- Edit files in `app/`, `resources/`, etc.
+- **Frontend changes auto-reload** (Vite Hot Module Replacement)
+- **Backend changes require page refresh** or restart
+
+### 6. Test Your Changes
+
+```bash
+composer run test
+```
+
+### 7. Format Code Before Commit
+
+```bash
+./vendor/bin/pint
+```
+
+### 8. Commit and Push
+
+```bash
+git add .
+git commit -m "Feature: Add product pricing tiers"
+git push origin your-branch-name
+```
+
+### 9. Create Pull Request
+
+Push to GitHub and create PR for code review.
+
+---
+
+## Environment-Specific Setup
+
+### Windows Developer Mode Setup
+
+Windows 10/11 users may encounter issues creating symbolic links. This section provides complete setup guidance.
+
+#### Prerequisites for Windows
+
+Before running setup, ensure you have:
+
+- **XAMPP** installed.
+- **PHP 8.2+ (XAMPP)** installed and accessible in PATH.
+- **MySQL/MariaDB (XAMPP)** installed, started, and running for database.
+- **Composer** installed globally.
+- **Node.js & NPM** installed.
+- **Git** installed and configured.
+- **Administrator privileges OR Developer Mode enabled** (see below).
+
+#### Option 1: Enable Windows Developer Mode (Recommended)
+
+This allows creating symlinks without administrator privileges:
+
+**Steps:**
+
+1. Open **Settings** → **Update & Security** → **For developers**
+2. Under "Developer Mode" section, toggle the switch **ON**
+3. Windows will install necessary components (may take 1-2 minutes)
+4. **Restart your computer**
+5. After restart, you can create symlinks as a regular user
+
+**After enabling:**
 
 ```cmd
 composer run setup
 ```
 
-This script will:
+> Done! No special configuration needed.
 
-- Install PHP dependencies via Composer.
-- Create a `.env` file from `.env.example`.
-- Generate the application encryption key.
-- Run database migrations.
-- Install NPM dependencies.
-- Build frontend assets.
+Should work without requiring administrator privileges.
 
-### 3. Configuration
+#### Option 2: Run Setup as Administrator (If Developer Mode Unavailable)
 
-Open the `.env` file and configure your database credentials:
+If you can't enable Developer Mode:
 
-```dotenv
+1. Right-click **Command Prompt** or **PowerShell**
+2. Select **"Run as Administrator"**
+3. Navigate to project directory and run:
+
+   ```cmd
+   composer run setup
+   ```
+
+#### Option 3: Manual Symlink Creation (If Automatic Setup Failed)
+
+If the setup script's symlink creation fails, create it manually:
+
+**Using Command Prompt (requires admin):**
+
+```cmd
+rmdir public\storage 2>nul
+mklink /D public\storage storage\app\public
+```
+
+**Using PowerShell (Windows 10 Build 14393+ with Developer Mode):**
+
+```powershell
+New-Item -ItemType SymbolicLink -Path "public\storage" -Target "storage\app\public"
+```
+
+#### Verifying Symlink on Windows
+
+After setup, verify the symlink was created correctly:
+
+**Method 1: Command Prompt**
+
+```cmd
+dir /AL public
+```
+
+**Expected output:** You should see `<SYMLINK>` indicator next to `storage`:
+
+```cmd
+Directory of D:\path\to\Scruffs-N-Chyrrs\public
+
+03/15/2026  10:30 AM    <SYMLINK>    storage [storage/app/public]
+               0 bytes
+```
+
+**Method 2: PowerShell**
+
+```powershell
+Get-Item -Path public/storage | Select-Object LinkType, Target
+```
+
+**Expected output:**
+
+```powershell
+LinkType           Target
+--------           ------
+SymbolicLink       storage\app\public
+```
+
+#### Windows Troubleshooting
+
+##### Problem: "Access Denied" During Setup
+
+**Symptoms:** Setup fails with error message during `storage:link` step.
+
+**Solutions:**
+
+1. **Enable Developer Mode** (see Option 1 above), then rerun:
+
+   ```cmd
+   composer run setup
+   ```
+
+2. **Run as Administrator** (see Option 2 above)
+
+3. **Check antivirus software** — Some antivirus programs block symlink creation. Temporarily disable or add exception for your project directory.
+
+4. **Create symlink manually** (see Option 3 above)
+
+##### Problem: "public/storage" Already Exists as a Directory
+
+**Symptoms:** Setup fails or symlink wasn't created, but `public/storage` folder exists.
+
+**Cause:** A previous developer or setup attempt may have created `public/storage` as a regular directory instead of a symlink.
+
+**Solution:**
+
+1. Delete the incorrect directory:
+
+   ```cmd
+   rmdir public\storage /s /q
+   ```
+
+2. Clear npm cache and reinstall (if needed):
+
+   ```cmd
+   npm cache clean --force
+   npm install
+   ```
+
+3. Rerun setup:
+
+   ```cmd
+   composer run setup
+   ```
+
+4. Verify symlink was created:
+
+   ```cmd
+   dir /AL public
+   ```
+
+##### Problem: "The system cannot find the file specified" Error
+
+**Symptoms:** Error appears when trying to create symlink or run Laravel commands.
+
+**Solution:**
+
+1. Ensure correct project directory:
+
+   ```cmd
+   cd path\to\Scruffs-N-Chyrrs
+   ```
+
+   > pwd # or 'cd' in PowerShell to show current directory
+
+2. Verify `storage/app/public` directory exists:
+
+   ```cmd
+   dir storage\app\public
+   ```
+
+3. If it doesn't exist, run migrations first:
+
+   ```cmd
+   php artisan migrate
+   ```
+
+4. Then create the symlink:
+
+   ```cmd
+   php artisan storage:link
+   ```
+
+#### Using Git with Symlinks on Windows
+
+**Important:** The `public/storage` symlink is **NOT** committed to Git (it's in `.gitignore`). This is intentional:
+
+- Each developer's system creates the link appropriately
+- Prevents merge conflicts across different systems
+- Symlinks work differently on Windows/Mac/Linux
+- The `.gitignore` prevents accidental commits
+
+When you switch branches or pull code, the symlink remains valid unless you manually delete it.
+
+---
+
+### macOS Setup
+
+Apple's UNIX-based system handles symlinks natively. Setup should work seamlessly:
+
+```bash
+composer run setup
+```
+
+> Done! No special configuration needed.
+
+**Verify symlink:**
+
+```bash
+ls -la public/ | grep storage
+```
+
+Expected: Shows `storage -> storage/app/public`
+
+---
+
+### Linux Setup
+
+Linux handles symlinks natively. Setup should work seamlessly:
+
+```bash
+composer run setup
+```
+
+> Done! No special configuration needed.
+
+**Verify symlink:**
+
+```bash
+ls -la public/ | grep storage
+```
+
+Expected: Shows `storage -> storage/app/public`
+
+---
+
+## Database Setup
+
+### Using SQLite (Default for Development)
+
+SQLite requires no installation and works out-of-box:
+
+```bash
+php artisan migrate
+```
+
+Database file: `database/database.sqlite`
+
+**Advantages:**
+
+- Zero configuration
+- No server needed
+- Perfect for local development
+- Included with PHP
+
+**Disadvantages:**
+
+- Not suitable for production
+- Limited concurrency support
+- Slower with large datasets
+
+### Switch to MySQL
+
+Edit `.env`:
+
+```env
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
@@ -65,394 +896,468 @@ DB_USERNAME=root
 DB_PASSWORD=
 ```
 
-#### Cloudflare Turnstile CAPTCHA Configuration
+**Create the database** (if not exists):
 
-The signup form uses **Cloudflare Turnstile** for CAPTCHA protection. You must configure the site key in your `.env` file:
-
-```dotenv
-CLOUDFLARE_TURNSTILE_SITEKEY=YOUR-SITE-KEY
+```bash
+mysql -u root -p
+CREATE DATABASE scruffsnchyrrs;
+EXIT;
 ```
 
-To obtain your Cloudflare Turnstile site key:
+Then run migrations:
 
-1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com/).
-2. Navigate to **Turnstile** in the left sidebar.
-3. Create a new site or use an existing one.
-4. Copy your **Site Key** and paste it into the `CLOUDFLARE_TURNSTILE_SITEKEY` variable in your `.env` file.
-
-> **Note:** Without this configuration, the signup form's CAPTCHA validation will not function, and form submissions will fail.
-
-## Development Workflow
-
-### Running the Application
-
-To start the local development server along with the Vite dev server and queue listener, run:
-
-```cmd
-composer run dev
+```bash
+php artisan migrate
 ```
 
-This command uses `concurrently` to execute:
+### Reset Database
 
-- **Server:** `php artisan serve` (Host: 127.0.0.1:8000)
-- **Queue:** `php artisan queue:listen` (Background jobs)
-- **Vite:** `npm run dev` (Frontend hot-reloading)
+**⚠️ Caution:** This deletes all data!
 
-### Testing
-
-We use Pest for testing. To run the test suite:
-
-```cmd
-composer run test
+```bash
+php artisan migrate:fresh
 ```
 
-*Uses Pest PHP running against an in-memory SQLite database (`phpunit.xml`).*
+To reset and seed with test data:
 
-### Code Quality
-
-To maintain code style consistency, use Laravel Pint:
-
-```cmd
-vendor\bin\pint
+```bash
+php artisan migrate:fresh --seed
 ```
 
-*Uses Laravel Pint for PSR-12 code style enforcement.*
+### Check Migration Status
 
-## Project Structure
+```bash
+php artisan migrate:status
+```
 
-- **`app/`**: Contains core application logic (Models, Controllers, Providers).
-  - `Models/`: Eloquent ORM definitions (e.g., `User.php`).
-  - `Providers/`: Service bootstrapping (`AppServiceProvider.php`).
-- **`config/`**: Source of truth for system behavior.
-  - `services.php`: Credentials for AWS, Resend, Postmark, Slack.
-  - `database.php`: Definitions for MySQL and Redis connections.
-- **`database/`**: Migrations, factories, and seeders.
-- **`resources/`**: Frontend assets.
-  - `views/`: Blade templates organized by domain (`customer/`, `page_parts/`, `layouts/`).
-  - `css/`: Hybrid styling. `app.css` initializes Tailwind 4. Custom CSS files (`universal.css`, `signup.css`) handle specific page styling.
-  - `js/`: Application logic (`app.js` initializes Bootstrap).
-- **`routes/`**: Application route definitions.
-  - `web.php`: Defines synchronous HTTP endpoints.
-  - `console.php`: Artisan command definitions.
-- **`tests/`**: Feature and Unit Tests.
-  - `Pest.php`: Configuration for the Pest testing framework.
+Shows which migrations have run and which are pending.
 
-### Key Configuration Files
+---
 
-- **`vite.config.js`**: Configures the frontend build pipeline. It utilizes `@tailwindcss/vite` (Tailwind 4) and `laravel-vite-plugin`. It explicitly tracks CSS/JS entry points.
-- **`composer.json`**: Defines backend dependencies and custom operational scripts.
-- **`package.json`**: Defines frontend dependencies. Note the coexistence of `bootstrap` and `tailwindcss`.
+## Key Configuration Files
 
-### Infrastructure & Services
+| File | Purpose |
+| ------ | --------- |
+| `config/app.php` | Base application settings (name, timezone, locale, debug mode) |
+| `config/database.php` | Database connections (MySQL, SQLite, Redis) and cache settings |
+| `config/mail.php` | Email driver configuration (Postmark, Resend, SES, LOG) |
+| `config/services.php` | External service credentials (AWS, Postmark, Slack, Cloudflare) |
+| `config/auth.php` | Authentication guards and password reset settings |
+| `config/cache.php` | Cache driver (Redis, File, Database) and TTL settings |
+| `config/queue.php` | Queue driver configuration (Database, SQS, Redis) |
+| `config/session.php` | Session driver (File, Database, Redis) and timeout |
+| `.env` | Environment-specific variables (created during setup) |
+| `vite.config.js` | Frontend build tool configuration |
+| `composer.json` | PHP dependencies and custom scripts |
+| `package.json` | Node.js dependencies |
 
-The application interacts with the following systems:
+---
 
-- **Data Persistence:**
-  - **Primary:** Relational Database (MySQL configured via `DB_CONNECTION`).
-  - **Caching/Session:** Redis (via `predis/phpredis`) is the target architecture for production caching and session management (`config/database.php`, `config/cache.php`).
-- **Queue System:**
-  - Database-driven queues are currently active in the dev workflow (`php artisan queue:listen`).
-  - Configuration exists for SQS and Redis queues.
-- **External Integrations:**
-  - **Email:** Multi-driver support configured for AWS SES, Postmark, and Resend.
-  - **Notifications:** Slack webhook integration for critical logging and alerts.
-  - **Storage:** AWS S3 configuration is present for cloud file storage.
+## Infrastructure & Services
+
+The application integrates with several external systems and services:
+
+### Data Persistence
+
+- **Primary Database:** MySQL/MariaDB (production), SQLite (development)
+  - Stores: Users, Products, Samples, Images, Materials, Pricing, etc.
+  - Connection configured via `DB_*` variables in `.env`
+
+- **Session & Cache Storage:** Redis
+  - Configured via `REDIS_*` variables in `.env`
+  - Used by Laravel for session management and cache layer
+  - Optional but recommended for production scaling
+
+### Queue System
+
+- **Current (Development):** Database-driven queues
+  - Run in development with: `php artisan queue:listen`
+  - Processes background jobs synchronously in development
+
+- **Production-Ready Options:**
+  - Redis queues (recommended for performance)
+  - SQS (Amazon Simple Queue Service)
+  - Database queues (simpler but slower)
+
+### Email Services
+
+Multiple drivers available, configured via `MAIL_MAILER` in `.env`:
+
+- **Development:** `log` driver (emails written to logs)
+- **Production:** `ses` (AWS SES), `postmark`, or `resend`
+  - Requires API keys in `config/services.php`
+
+### External Integrations
+
+- **AWS Services** — S3 (file storage), SES (email), IAM (authentication)
+- **Slack** — System alerts and notifications via webhook
+- **Cloudflare Turnstile** — CAPTCHA protection on signup form
+
+---
 
 ## Current Architecture Overview
 
 ### Database Models
 
-Core data models located in `app/Models/`:
+The application uses Eloquent ORM with the following primary models:
 
-- **`User.php`** - Customer & Owner accounts with authentication
-- **`Product.php`** - Merchandise products with cover images & pricing options
-- **`ProductPriceImage.php`** - Price list images displayed for each product variant
-- **`HomeImage.php`** - Images displayed in home page slideshow carousel
-- **`ProductSample.php`** - Sample displays showcasing products in real-world applications
-- **`ProductSampleImage.php`** - Images associated with product samples
-- **`Material.php`** - Material types (e.g., vinyl, paper, plastic)
+- **User** — Customer and owner accounts
+- **Product** — Merchandise product definitions
+- **ProductSample** — Product sample images
+- **HomeImage** — Homepage carousel images
+- **Material** — Product materials (polymers, metals, etc.)
+- **ProductMaterial** — Pivot table for Product ↔ Material relationships
+- **ProductPriceImage** — Pricing tier images
 
 ### API Endpoints
 
-All API endpoints are prefixed with `/api/` and defined in `routes/web.php`:
+The application provides JSON APIs for:
 
-```
-Products
-  GET    /api/products              - List all products with pricing
-  POST   /api/products              - Create new product
-  GET    /api/products/{id}         - Get product details
-  PUT    /api/products/{id}         - Update product information
-  DELETE /api/products/{id}         - Delete product
+| Endpoint | Method | Purpose |
+| ---------- | -------- | --------- |
+| `/api/products` | GET | List all products |
+| `/api/products/{id}` | GET | Get single product |
+| `/api/products` | POST | Create new product |
+| `/api/products/{id}` | PUT | Update product |
+| `/api/products/{id}` | DELETE | Delete product |
+| `/api/home-images` | GET | List homepage images |
+| `/api/home-images` | POST | Upload homepage image |
+| `/api/product-samples` | GET | List product samples |
+| `/api/product-samples` | POST | Upload product sample |
 
-Home Images
-  GET    /api/home-images           - List home page slideshow images
-  POST   /api/home-images           - Upload new home image
-  DELETE /api/home-images/{id}      - Remove home image
+All POST/PUT/DELETE endpoints require CSRF token.
 
-Product Samples
-  GET    /api/product-samples       - List all product samples
-  POST   /api/product-samples       - Create new sample
-  GET    /api/product-samples/{id}  - Get sample details
-  PUT    /api/product-samples/{id}  - Update sample
-  DELETE /api/product-samples/{id}  - Delete sample
-```
+---
 
 ## Project Conventions & Patterns
 
-### Frontend Strategy (The Hybrid Model)
+### Frontend Strategy: Hybrid CSS Architecture
 
-The application uses a specific strategy for frontend assets that requires attention to avoid conflicts:
+The application uses a specific frontend strategy combining multiple CSS frameworks:
 
-1. **Tailwind CSS 4:** Initialized in `resources/css/app.css` via `@import "tailwindcss";` and the `@theme` directive.
-2. **Bootstrap 5:** JavaScript components are imported in `resources/js/app.js` (`import 'bootstrap';`) and used for interactive elements like Modals (`tnc.js`).
-3. **Custom CSS:** Specific pages load raw CSS files via Vite (e.g., `universal.css` for fonts, `signup.css` for form styling).
-    - *Convention:* Page-specific CSS is injected via `@section('page_css')` in Blade templates.
+1. **Tailwind CSS 4** — Initialized in `resources/css/app.css`
+   - Main utility-first framework
+   - Imported via `@import "tailwindcss";`
+   - Configured with `@theme` directive
 
-#### Frontend Asset Organization
+2. **Bootstrap 5** — JavaScript components imported in `resources/js/app.js`
+   - Used for interactive elements (Modals, Dropdowns, Alerts)
+   - Imported via: `import 'bootstrap';`
 
-The frontend assets are organized by role and functionality:
+3. **Custom CSS** — Page-specific stylesheets
+   - Loaded via Vite: `@vite('resources/css/page_name.css')`
+   - Injected in Blade templates via `@section('page_css')`
 
-```
-resources/
-├── css/
-│   ├── app.css                      ← Tailwind 4 initialization
-│   ├── customer/
-│   │   └── pages/
-│   │       ├── home.css             ← Product samples styling
-│   │       ├── home_images.css      ← Slideshow styling
-│   │       └── products.css
-│   ├── owner/
-│   │   └── pages/
-│   │       └── content_management/
-│   │           ├── home_page_content.css
-│   │           ├── products_page_content.css
-│   │           └── content_management.css
-│   ├── universal_customer.css       ← Customer-wide styles & fonts
-│   └── universal_owner.css          ← Owner-wide styles & fonts
-├── js/
-│   ├── app.js                       ← Bootstrap initialization
-│   ├── api/
-│   │   ├── productApi.js            ← Product CRUD operations
-│   │   ├── productSampleApi.js      ← Sample CRUD operations
-│   │   └── homeImageApi.js          ← Home image CRUD operations
-│   ├── utils/
-│   │   ├── toast.js                 ← Toast notifications
-│   │   └── formState.js             ← Form state management
-│   ├── customer/
-│   │   └── pages/
-│   │       ├── home_product_samples.js   ← Load and display samples
-│   │       └── home_images_slideshow.js  ← Auto-rotating slideshow
-│   └── owner/
-│       └── content_page/
-│           ├── products_page_content_refactored.js
-│           ├── product_sample_modal.js
-│           └── edit_home_images_modal.js
-└── views/
-    ├── layouts/
-    │   ├── customer_layout.blade.php
-    │   ├── owner_layout.blade.php
-    │   └── page_parts/
-    ├── customer/
-    │   └── pages/
-    │       ├── home.blade.php           ← Slideshow + samples
-    │       ├── products.blade.php
-    │       └── faqs.blade.php
-    └── owner/
-        └── pages/
-            └── content_management.blade.php ← Admin panel
-```
+**⚠️ Warning:** Be careful to avoid CSS class name conflicts between Tailwind and Bootstrap. Use custom class names (e.g., `.nav_container`, `.footer_tophalf`) rather than relying on framework utility classes for critical UI.
+
+### Route & Controller Pattern
+
+Currently, routes are defined as **closures** in `routes/web.php` returning views directly.
+
+**Future Refactoring Target:** As logic grows, migrate closures to:
+
+- Invokable controllers (single-action controllers)
+- Resource controllers (full CRUD operations)
+- Service classes (business logic extraction)
+
+### Asset Management
+
+**Images:**
+
+- Static images: `public/images/` (categorized: `brand_elements/`, `website_elements/`)
+- Uploaded images: `storage/app/public/` (web-accessible via symlink)
+
+**Fonts:**
+
+- Custom fonts: `resources/fonts/` (Coolvetica, SuperDream, etc.)
+- Loaded via `@font-face` in `universal.css`
+
+**CSS/JS:**
+
+- Imported via Vite: `@vite('resources/css/...')` and `@vite('resources/js/...')`
+- Hot-reloads during development via Vite HMR
+
+---
 
 ## Security & Authentication
 
 ### CSRF Token Protection
 
-**All API requests with state changes (POST, PUT, DELETE) require CSRF tokens.** This is critical for preventing cross-site request forgery attacks.
+All state-changing requests (POST, PUT, DELETE) require a CSRF token:
 
-#### Getting the CSRF Token
-
-The CSRF token meta tag is included in the layout files (`owner_layout.blade.php`):
+**In Blade templates:**
 
 ```html
 <meta name="csrf-token" content="{{ csrf_token() }}">
 ```
 
-#### JavaScript API Utilities Pattern
+Required in the `<head>` of every layout file.
 
-All JavaScript API clients must include CSRF token handling:
+**In JavaScript API calls:**
 
 ```javascript
+const getCsrfToken = () => {
+    return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+};
+
+async function uploadImage(formData) {
+    const response = await fetch('/api/products', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': getCsrfToken(),
+            Accept: 'application/json'
+        },
+        body: formData
+    });
+    return response.json();
+}
+```
+
+### API Client Pattern
+
+API clients provide consistent CSRF token handling:
+
+```javascript
+// resources/js/api/productApi.js
 class ProductAPI {
     constructor() {
         this.baseUrl = '/api/products';
     }
 
     getCsrfToken() {
-        return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        return document.querySelector('meta[name="csrf-token"]')
+            ?.getAttribute('content');
     }
 
-    async createProduct(formData) {
+    async getAll() {
+        const response = await fetch(this.baseUrl);
+        return response.json();
+    }
+
+    async create(formData) {
         const response = await fetch(this.baseUrl, {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': this.getCsrfToken(),
-                'Accept': 'application/json'
+                Accept: 'application/json'
             },
             body: formData
-        });
-        return response.json();
-    }
-
-    async updateProduct(id, formData) {
-        const response = await fetch(`${this.baseUrl}/${id}`, {
-            method: 'PUT',
-            headers: {
-                'X-CSRF-TOKEN': this.getCsrfToken(),
-                'Accept': 'application/json'
-            },
-            body: formData
-        });
-        return response.json();
-    }
-
-    async deleteProduct(id) {
-        const response = await fetch(`${this.baseUrl}/${id}`, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': this.getCsrfToken(),
-                'Accept': 'application/json'
-            }
         });
         return response.json();
     }
 }
+
+export default new ProductAPI();
 ```
 
-**⚠️ Common Errors:**
+### Authentication Guards
 
-- **"CSRF token not found"** → Ensure meta tag is in the layout's `<head>` section
-- **"Failed to upload: Unexpected token '<'"** → CSRF token not being sent in request headers; add `'X-CSRF-TOKEN': this.getCsrfToken()` to headers
+- **web** guard — Session-based authentication (default)
+- Custom middleware for role-based access control (Customer vs. Owner)
 
-### Route Pattern
-
-- **Routing:** Routes currently use closure-based definitions in `routes/web.php` returning views directly.
-
-### Asset Management
-
-- **Images:** Stored in `public/images/` and categorized into `brand_elements` and `website_elements`.
-- **Fonts:** Custom fonts (`Coolvetica`, `SuperDream`) are stored in `resources/fonts/` and loaded via `@font-face` in `universal.css`.
+---
 
 ## Integration Points & Data Flow
 
-### Data Flow Diagram Description
+### Data Flow Overview
 
-1. **End User** interacts with the **Scruffs N Chyrrs Application**.
-2. The App reads/writes business data to the **Main Database (MySQL)**.
-3. Session state and application cache are stored in **Redis**.
-4. Transactional emails are dispatched via one of the configured providers (**Postmark**, **Resend**, or **AWS SES**) based on `.env` configuration.
-5. System alerts and logs are pushed to **Slack**.
+```txt
+End User
+    ↓
+[Scruffs-N-Chyrrs Application]
+    ↓
+    ├→ [Main Database (MySQL)]
+    │   └ Stores: Users, Products, Samples, Images, Materials, etc.
+    │
+    ├→ [Redis Cache/Sessions]
+    │   └ Caches: User sessions, frequently accessed data
+    │
+    ├→ [Email Service] (Postmark/Resend/AWS SES)
+    │   └ Sends: Account confirmations, password resets, notifications
+    │
+    ├→ [Slack Webhook]
+    │   └ Posts: System alerts, error logs, important events
+    │
+    └→ [File Storage (Local/S3)]
+        └ Stores: Uploaded images, files
+```
 
-### External Service Configuration
+### Configuration for External Services
 
-- **AWS SES:** Requires `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION`.
-- **Postmark/Resend:** Require specific API keys in `.env`.
-- **Slack:** configured via `LOG_SLACK_WEBHOOK_URL` in logging channels.
+**AWS SES (Email):**
+
+- Requires: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION`
+- Configured in: `config/services.php`
+
+**Postmark/Resend (Email):**
+
+- Requires: API key in `POSTMARK_TOKEN` or `RESEND_API_KEY`
+- Set `MAIL_MAILER=postmark` or `MAIL_MAILER=resend` in `.env`
+
+**Slack (Notifications):**
+
+- Requires: Webhook URL in `LOG_SLACK_WEBHOOK_URL`
+- Configured in: `config/logging.php`
+
+---
 
 ## Known Constraints & Caveats
 
-1. **CSS Conflict Risk:** Using Bootstrap JS with Tailwind CSS requires ensuring that class names do not collide. The project currently relies on custom CSS classes (e.g., `.nav_container`, `.footer_tophalf`) rather than purely utility-first CSS, mitigating some collision risks but increasing maintenance overhead.
-2. **Mail Driver:** The default mailer is set to `log` in `mail.php`. For production or testing email delivery, `MAIL_MAILER` must be updated in `.env`.
+### CSS Class Conflicts
+
+Using Bootstrap JS with Tailwind CSS can cause class name collisions. The project mitigates this by:
+
+- Using custom class names (`.nav_container`, `.footer_tophalf`) instead of framework utility classes
+- Maintaining separate CSS files per page
+- **Increasing maintenance overhead** — Custom CSS requires more manual management
+
+**Future improvement:** Consider moving to a pure utility-first approach (Tailwind only) or Component-based architecture.
+
+### Database Port Configuration
+
+The `.env` defaults `DB_PORT` to `3307` (not standard 3306), suggesting the development environment may be running MySQL alongside another instance.
+
+**Verify your configuration:**
+
+Test MySQL connection with:
+
+```bash
+mysql -h 127.0.0.1 -P 3307 -u root -p
+```
+
+If your MySQL is on standard port 3306, update `.env`:
+
+```env
+DB_PORT=3306
+```
+
+### Mail Driver Default
+
+The default mailer is set to `log` in `config/mail.php` and production should use:
+
+```env
+MAIL_MAILER=ses    # or postmark, resend
+```
+
+Update `MAIL_MAILER` in `.env` before deployment or email testing.
+
+---
 
 ## Code Style & Conventions
 
-### Language-Specific Guidelines
+### PHP Code Style
 
-- **PHP:** PSR-12 (enforced by Laravel Pint via `./vendor/bin/pint`)
-- **JavaScript:** ES6 modules with class-based API clients
-- **CSS:** Mobile-first responsive design using Tailwind utilities + custom classes
-- **Blade Templates:** Follow Laravel conventions; use Coolvetica/SuperDream fonts; maintain consistent `#682C7A` purple theme
-- **API Responses:** Always return JSON with structure: `{ success: boolean, data: mixed, message: string }`
+The project uses **Laravel Pint** for PSR-12 compliance:
 
-### File Naming Conventions
-
-| Type | Convention | Example |
-|------|-----------|---------|
-| PHP Classes | PascalCase | `ProductController.php`, `HomeImage.php` |
-| PHP Methods | camelCase | `getAllProducts()`, `createProduct()` |
-| JavaScript Files | snake_case | `productApi.js`, `home_images_slideshow.js` |
-| CSS Files | snake_case | `universal_customer.css`, `home_images.css` |
-| Blade Views | snake_case | `home.blade.php`, `content_management.blade.php` |
-| Database Tables | snake_case, plural | `products`, `product_samples`, `home_images` |
-| Database Columns | snake_case | `product_id`, `created_at`, `user_type` |
-
-### Code Organization
-
-**API Client Classes:** Group related API operations in single class files with consistent method patterns:
-
-```javascript
-class ProductAPI {
-    async getAllProducts() { /* GET /api/products */ }
-    async getProduct(id) { /* GET /api/products/:id */ }
-    async createProduct(data) { /* POST /api/products */ }
-    async updateProduct(id, data) { /* PUT /api/products/:id */ }
-    async deleteProduct(id) { /* DELETE /api/products/:id */ }
-}
+```bash
+./vendor/bin/pint
 ```
 
-**Blade Template Structure:**
+**Key conventions:**
 
-```blade
-@extends('layouts.customer_layout')
+- Spaces over tabs (4 spaces per indent)
+- Class names: `PascalCase` (e.g., `ProductController`)
+- Method names: `camelCase` (e.g., `getProductPrice()`)
+- Constants: `UPPER_CASE` (e.g., `MAX_UPLOAD_SIZE`)
+- Properties: `camelCase` (e.g., `$userName`)
 
-@section('page_css')
-@vite('resources/css/customer/pages/example.css')
-@endsection
+### JavaScript/TypeScript Code Style
 
-@section('content')
-<!-- Page HTML -->
-@endsection
+Not currently linted. Recommended conventions:
 
-@section('page_js')
-@vite('resources/js/customer/pages/example.js')
-@endsection
-```
+- **Variable names:** `camelCase` (e.g., `isLoading`, `handleClick`)
+- **Constants:** `UPPER_CASE` (e.g., `API_BASE_URL`)
+- **Class/Component names:** `PascalCase` (e.g., `ProductForm`)
+- **File names:** `kebab-case` (e.g., `product-api.js`) or `camelCase` (e.g., `productApi.js`)
+
+### Blade Template Conventions
+
+- **Layout files:** `layouts/` directory with `*_layout.blade.php` naming
+- **Reusable components:** `page_parts/` directory with descriptive names
+- **Page templates:** Organized by feature/role (e.g., `customer/pages/`, `owner/pages/`)
+- **Spacing:** Consistent indentation with 4-space tabs
+
+### File Naming
+
+| File Type | Convention | Example |
+| ----------- | ----------- | --------- |
+| Models | PascalCase | `Product.php`, `HomeImage.php` |
+| Controllers | PascalCase + "Controller" | `ProductController.php` |
+| Migrations | Timestamp + snake_case | `2026_03_02_000000_create_products_table.php` |
+| Views | snake_case + `.blade.php` | `product_list.blade.php` |
+| CSS files | snake_case | `universal.css`, `signup.css` |
+| JS files | camelCase (preferred) or kebab-case | `productApi.js` or `product-api.js` |
+
+---
 
 ## Development Best Practices
 
-### Adding a New Feature (Step-by-Step Guide)
+### Adding New Features (Step-by-Step)
 
-#### 1. Create Migration & Model
+#### 1. Create Database Migration
 
-```cmd
-php artisan make:model YourFeature -m
+```bash
+php artisan make:migration create_your_features_table
 ```
 
-This generates both the model in `app/Models/YourFeature.php` and a migration in `database/migrations/`. Edit the migration file to define your schema, then run:
+Edit the migration in `database/migrations/` and define your schema:
 
-```cmd
+```php
+Schema::create('your_features', function (Blueprint $table) {
+    $table->id();
+    $table->string('name');
+    $table->text('description')->nullable();
+    $table->timestamps();
+});
+```
+
+Run the migration:
+
+```bash
 php artisan migrate
 ```
 
-#### 2. Create API Routes
+#### 2. Create Model
 
-Add routes to `routes/web.php` following the existing pattern:
+```bash
+php artisan make:model YourFeature
+```
+
+Add relationships and accessors in `app/Models/YourFeature.php`:
 
 ```php
-// API routes (prefix: /api/)
-Route::prefix('api/your-features')->group(function () {
-    Route::get('/', [YourFeatureController::class, 'index']);           // List all
-    Route::post('/', [YourFeatureController::class, 'store']);          // Create
-    Route::get('/{id}', [YourFeatureController::class, 'show']);        // Get single
-    Route::put('/{id}', [YourFeatureController::class, 'update']);      // Update
-    Route::delete('/{id}', [YourFeatureController::class, 'destroy']);  // Delete
+class YourFeature extends Model
+{
+    protected $fillable = ['name', 'description'];
+    
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
+}
+```
+
+#### 3. Create API Routes
+
+Edit `routes/web.php`:
+
+```php
+Route::get('/api/your-features', function () {
+    return response()->json(YourFeature::all());
 });
 
-// Web routes (for blade templates)
-Route::get('/path', function () {
-    return view('your_feature.page');
+Route::post('/api/your-features', function (Request $request) {
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'description' => 'nullable|string'
+    ]);
+    
+    $feature = YourFeature::create($validated);
+    return response()->json(['success' => true, 'data' => $feature], 201);
 });
 ```
 
-#### 3. Create Frontend API Utility
+#### 4. Create API Client
 
 Create `resources/js/api/yourFeatureApi.js`:
 
@@ -471,42 +1376,14 @@ class YourFeatureAPI {
         return response.json();
     }
 
-    async getById(id) {
-        const response = await fetch(`${this.baseUrl}/${id}`);
-        return response.json();
-    }
-
     async create(formData) {
         const response = await fetch(this.baseUrl, {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': this.getCsrfToken(),
-                'Accept': 'application/json'
+                Accept: 'application/json'
             },
             body: formData
-        });
-        return response.json();
-    }
-
-    async update(id, formData) {
-        const response = await fetch(`${this.baseUrl}/${id}`, {
-            method: 'PUT',
-            headers: {
-                'X-CSRF-TOKEN': this.getCsrfToken(),
-                'Accept': 'application/json'
-            },
-            body: formData
-        });
-        return response.json();
-    }
-
-    async delete(id) {
-        const response = await fetch(`${this.baseUrl}/${id}`, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': this.getCsrfToken(),
-                'Accept': 'application/json'
-            }
         });
         return response.json();
     }
@@ -515,7 +1392,7 @@ class YourFeatureAPI {
 export default new YourFeatureAPI();
 ```
 
-#### 4. Create Blade Template
+#### 5. Create Blade Template
 
 Create `resources/views/customer/pages/your_feature.blade.php`:
 
@@ -538,7 +1415,7 @@ Create `resources/views/customer/pages/your_feature.blade.php`:
 @endsection
 ```
 
-#### 5. Create Page JavaScript
+#### 6. Create Page JavaScript
 
 Create `resources/js/customer/pages/your_feature.js`:
 
@@ -550,7 +1427,6 @@ async function loadFeatures() {
     try {
         const result = await YourFeatureAPI.getAll();
         if (result.success) {
-            // Render features
             console.log(result.data);
         }
     } catch (error) {
@@ -561,7 +1437,7 @@ async function loadFeatures() {
 document.addEventListener('DOMContentLoaded', loadFeatures);
 ```
 
-#### 6. Add Styles
+#### 7. Create Styles
 
 Create `resources/css/customer/pages/your_feature.css` for page-specific styling.
 
@@ -573,268 +1449,217 @@ Create `resources/css/customer/pages/your_feature.css` for page-specific styling
 4. **Create migrations** for any database changes (never modify DB directly)
 5. **Write tests** for critical business logic (use `composer run test`)
 6. **Use meaningful commit messages** when pushing to git
-7. **Keep functions small and focused** - single responsibility principle
+7. **Keep functions small and focused** — single responsibility principle
 8. **Document complex logic** with comments, especially in JavaScript APIs
+
+---
 
 ## Troubleshooting & FAQ
 
 ### Quick Reference Table
 
 | Issue | Root Cause | Quick Solution |
-| ------- | ----------- | ----------------- |
-| **CSRF token not found** | Meta tag missing in layout or token retrieval fails | Verify `<meta name="csrf-token" content="{{ csrf_token() }}">` in layout's `<head>` and check browser console |
-| **Failed to upload image: Unexpected token '<', "<!DOCTYPE"... is not valid JSON** | CSRF token not sent in request headers. Server returning HTML error page instead of JSON | Ensure CSRF token is sent in request headers and API routes are registered. Add `'X-CSRF-TOKEN': this.getCsrfToken()` to request headers |
-| **API returns 404** | Route not registered in `routes/web.php` | Check endpoint path in `routes/web.php` and verify route exists |
-| **Vite not rebuilding** | Dev server not running or port conflict | Run `composer run dev` to start all services or rebuild with `npm run build` |
-| **Database migrations fail** | Wrong credentials or Invalid `.env` credentials or DB doesn't exist | Verify `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` in `.env` match your MySQL instance |
-| **"Module not found" in JS** | Import path incorrect | Verify file path and use `./` for relative imports |
+| ------- | ----------- | --------- |
+| **Images don't display** | Missing or broken symbolic link | Run `php artisan storage:link` or see Windows setup section |
+| **CSRF token not found** | Meta tag missing in layout | Add `<meta name="csrf-token" content="{{ csrf_token() }}">` to `<head>` |
+| **Failed to upload image: Unexpected token '<'** | Server returning HTML instead of JSON (CSRF error) | Ensure CSRF token is sent in request headers |
+| **API returns 404** | Route not registered in routes/web.php | Check endpoint path and verify route exists |
+| **Vite not rebuilding** | Dev server not running | Run `composer run dev` or `npm run dev` |
+| **Database migrations fail** | Wrong credentials or DB doesn't exist | Verify DB_* variables in .env match your MySQL instance |
+| **"Module not found" in JS** | Import path incorrect | Use `./` for relative imports and verify file exists |
 | **Styling not applying** | CSS file not imported via Vite | Use `@vite('resources/css/...')` in Blade template |
-| **Bootstrap modal not working** | Bootstrap JS not initialized | Ensure `import 'bootstrap';` in `resources/js/app.js` |
-| **Can't access `/admin` routes** | Routes point to non-existent views | Create view files or update routes in `web.php` |
+| **Bootstrap modal not working** | Bootstrap JS not initialized | Ensure `import 'bootstrap';` in resources/js/app.js |
+| **Setup fails on Windows** | Symbolic link creation requires admin | Enable Developer Mode or run as Administrator |
+
+### Troubleshooting: Images Don't Display
+
+#### Understanding the Issue
+
+Images upload successfully to the database and file system, but show as broken on the website. This is typically caused by a missing or broken symbolic link.
+
+#### Verification Steps
+
+1. **Check if symlink exists:**
+
+   **Windows:**
+
+   ```cmd
+   dir /AL public
+   ```
+
+   Should show `<SYMLINK>` next to storage.
+
+   **macOS/Linux:**
+
+   ```bash
+   ls -la public/ | grep storage
+   ```
+
+   Should show arrow: `storage -> storage/app/public`
+
+2. **Check if files actually exist:**
+
+   ```bash
+   ls storage/app/public/home_images/
+   ```
+
+   Should list uploaded image files.
+
+3. **Test image URL in browser:**
+
+   Visit: `http://localhost:8000/storage/home_images/filename.jpg`
+
+   If you see 404, the symlink is broken or missing.
+
+#### Solutions
+
+**Solution 1: Recreate the Symlink**
+
+```bash
+php artisan storage:link
+```
+
+Then verify:
+
+> Windows
+
+```cmd
+dir /AL public
+```
+
+> macOS/Linux
+
+```bash
+ls -la public/ | grep storage
+```
+
+**Solution 2: Manual Symlink Creation**
+
+If above fails, create manually:
+
+**Windows (Command Prompt):**
+
+```cmd
+rmdir public\storage 2>nul
+mklink /D public\storage storage\app\public
+```
+
+**macOS/Linux:**
+
+```bash
+rm -f public/storage
+ln -s storage/app/public public/storage
+```
+
+**Solution 3: Check File Permissions**
+
+Ensure storage directory is writable:
+
+**Windows:**
+
+```cmd
+icacls "storage\app\public" /grant:r "%USERNAME%":(OI)(CI)F /T
+```
+
+**macOS/Linux:**
+
+```bash
+chmod -R 755 storage/app/public
+```
+
+**Solution 4: Verify Database Records**
+
+Check that images were actually saved to database:
+
+```bash
+php artisan tinker
+```
+
+Then:
+
+```php
+>>> use App\Models\HomeImage;
+>>> HomeImage::all();
+=> Collection { ... }
+```
 
 ---
 
-## Error Deep Dives
+### Troubleshooting: API Upload Errors
 
-### Error: "Failed to upload image: Unexpected token '<', "<!DOCTYPE"... is not valid JSON"
+#### Error: "Failed to upload image: Unexpected token '<', "<!DOCTYPE"... is not valid JSON"
 
-#### Understanding the Error
+This error occurs when JavaScript tries to parse a JSON response but receives HTML instead (usually an error page).
 
-This error occurs when JavaScript tries to parse a JSON response from the server, but instead receives an **HTML document** (indicated by the `<` character starting with `<!DOCTYPE`). The browser's JSON parser fails because HTML is not valid JSON, triggering a `SyntaxError`.
+#### Root Causes
 
-**Why does this happen?**
-When you upload a file and the server returns an error page (like 404, 403, or 500 with HTML), the frontend tries to parse it as JSON and fails.
+1. **CSRF Token Missing in Headers**
+   - JavaScript not sending `X-CSRF-TOKEN` header
+   - Token retrieval from meta tag failing
+   - Solution: Verify `getCsrfToken()` method is returning a value
 
-#### Root Causes & Scenarios
-
-1. **CSRF Token Missing or Not Sent**
-   - The `<meta name="csrf-token" content="{{ csrf_token() }}">` tag is missing from the layout
-   - The CSRF token is not being included in the `X-CSRF-TOKEN` header
-   - Laravel's CSRF middleware rejects the request, returning a 403 HTML error page
-   - **Symptom:** Upload button sends request but server responds with HTML error page
-
-2. **User Not Authenticated (Expired Session)**
-   - Session token expired or user logged out
-   - Route requires authentication but user isn't authenticated
-   - Laravel returns 401/403 unauthorized HTML page
-   - **Symptom:** Error appears after being logged in for a long time without activity
+2. **User Not Authenticated**
+   - Session expired or user logged out
+   - Route requires authentication
+   - Solution: Check session/auth status in browser console
 
 3. **API Route Not Registered**
-   - Endpoint path doesn't match any registered route in `routes/web.php`
-   - Typo in API endpoint URL in JavaScript
-   - Server returns 404 HTML error page
-   - **Symptom:** Check Network tab, see 404 status code
+   - Typo in endpoint URL
+   - Route not defined in `routes/web.php`
+   - Solution: Verify route exists with `grep "POST.*api/products" routes/web.php`
 
-4. **Server Configuration / Database Issue**
-   - Database connection fails during file processing
-   - File storage permissions incorrect
-   - Laravel `.env` configuration missing or wrong
-   - **Symptom:** Error occurs after CSRF passes, during file save operation
+4. **Server Error (500)**
+   - Database connection failed
+   - File storage permissions issue
+   - Laravel exception thrown
+   - Solution: Check `storage/logs/laravel.log`
 
-5. **Application in Debug Mode with Stack Trace**
-   - `APP_DEBUG=true` in `.env` with an exception thrown
-   - Laravel returns detailed HTML error page instead of JSON
-   - **Symptom:** HTML response contains full stack trace in Network tab
+#### Diagnosis
 
-#### Prevention: Before Development
+1. **Check Network Tab (F12 → Network):**
+   - Look for failed API request
+   - Click to inspect
+   - Check **Response** tab for HTML or JSON
 
-✅ **Always verify these before building upload features:**
+2. **Check Request Headers:**
+   - Verify `x-csrf-token` header is present
+   - Verify header value is not empty
 
-1. **Meta tag present in layouts** — Check both layout files:
+3. **Check Laravel Logs:**
 
-    Customer layout
+    Real-time logs
 
-   ```cmd
-   findstr "csrf-token" resources\views\layouts\customer_layout.blade.php
+   ```bash
+   php artisan pail
    ```
 
-    Owner layout
+    Or tail the log file
 
-   ```cmd
-   findstr "csrf-token" resources\views\owner\layouts\owner_layout.blade.php
+   ```bash
+   tail -f storage/logs/laravel.log
    ```
 
-   Expected output: `<meta name="csrf-token" content="{{ csrf_token() }}">`
+#### Solutions
 
-2. **API client initializes CSRF token correctly** — Verify `getCsrfToken()` method in API class:
-
-   ```javascript
-   // From resources/js/api/productApi.js (lines 16-21)
-   getCsrfToken() {
-       return document.querySelector('meta[name="csrf-token"]')
-           ?.getAttribute('content');
-   }
-   ```
-
-3. **Routes are properly registered** — Check `routes/web.php`:
-
-   ```cmd
-   findstr "POST.*api/products" routes\web.php
-   findstr "POST.*api/home-images" routes\web.php
-   findstr "POST.*api/product-samples" routes\web.php
-   ```
-
-4. **File permissions correct** — Storage directories writable:
-
-    Grant full permissions to current user on storage directories
-
-   ```cmd
-   icacls "storage\app\public" /grant:r "%USERNAME%":(OI)(CI)F /T
-   icacls "storage\logs" /grant:r "%USERNAME%":(OI)(CI)F /T
-   ```
-
-5. **`.env` properly configured** — Verify key variables exist:
-
-   ```cmd
-   findstr "APP_KEY=base64:" .env
-   findstr "DB_CONNECTION=mysql" .env
-   ```
-
-#### Diagnosis: Step-by-Step Troubleshooting
-
-**Step 1: Capture the API Response**
-
-1. Open browser DevTools: Press `F12` → Click **Network** tab
-2. Attempt the upload (try uploading an image)
-3. Look for the POST request (usually `POST /api/products` or similar)
-4. Click that request to inspect it
-5. Click the **Response** tab — **This is what the server actually returned**
-
-**Expected:** JSON like:
-
-```json
-{
-  "success": false,
-  "errors": {"cover_image": ["The image must be a PNG or JPEG file"]},
-  "message": "Validation failed"
-}
-```
-
-**Actual (if error):** HTML starting with:
-
-```html
-<!DOCTYPE html>
-<html>
-  <head><title>403 Forbidden</title></head>
-  <body>...
-```
-
----
-
-**Step 2: Verify CSRF Token in Request**
-
-1. Still in Network tab, check the **Request Headers** section
-2. Scroll down and look for a header named `x-csrf-token`
-3. Verify it has a value (should be a long random string, not empty)
-
-**If missing:**
-
-- Token not being sent → indicates JavaScript isn't calling `getCsrfToken()` or token retrieval failed
-- Move to **Common Fixes** section, Fix #1
-
-**If present:**
-
-- Token was sent → problem is elsewhere, check Step 3
-
----
-
-**Step 3: Check File Upload Parameters**
-
-1. Still in Network tab, click the **Payload** tab
-2. Verify form data includes:
-   - File field (e.g., `cover_image`: [File object])
-   - Token field (if added via FormData): `_token`: [value]
-
-**If file missing:**
-
-- File input not properly selected in JavaScript
-- Check browser Console for errors (press F12 → **Console** tab)
-
----
-
-**Step 4: Check Browser Console for Errors**
-
-1. Press `F12` → Click **Console** tab
-2. Look for error messages in red
-3. Exact error should say: `SyntaxError: Unexpected token '<'...`
-
-**If you see this:**
-
-- Confirms server returned HTML
-- Check Laravel logs next
-
----
-
-**Step 5: Check Laravel Application Logs**
-
-Real-time log streaming (requires Laravel Pail)
-
-```cmd
-php artisan pail
-```
-
-Or view the log file directly (PowerShell command)
-
-```cmd
-Get-Content -Path storage\logs\laravel.log -Wait
-```
-
-Or check the most recent errors
-
-```cmd
-type storage\logs\laravel.log
-```
-
-**Look for:**
-
-- `TokenMismatchException` → CSRF token invalid or missing
-- `ModelNotFoundException` → Route handler issue
-- `FileException` → File storage/permission problem
-- Any exception class name and message
-
----
-
-#### Common Fixes
-
-**Fix #1: Add CSRF Token to Request Headers**
-
-This is the #1 most common cause. Ensure your API client sends the CSRF token in headers:
+**Solution 1: Ensure CSRF Token in Headers**
 
 ```javascript
-// Correct pattern from resources/js/api/productApi.js (lines 55-70)
 async createProduct(formData) {
     const response = await fetch('/api/products', {
         method: 'POST',
-        body: formData,  // FormData with files
+        body: formData,
         headers: {
             'X-CSRF-TOKEN': this.getCsrfToken(),  // ← CRITICAL
-            'Accept': 'application/json'
+            Accept: 'application/json'
         }
     });
-    
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
     return await response.json();
 }
 ```
 
-**Critical points:**
-
-- Header name is `X-CSRF-TOKEN` (case-insensitive in HTTP, but convention matters)
-- Value must be the result of `this.getCsrfToken()`
-- Do **NOT** manually set `Content-Type: multipart/form-data` — let browser handle file boundary
-- Always check response status before parsing JSON
-
----
-
-**Fix #2: Add Token to FormData as Fallback**
-
-Some configurations require the token in FormData as well:
+**Solution 2: Add Token to FormData as Backup**
 
 ```javascript
-// Additional safety layer
 async createProduct(formData) {
     if (this.getCsrfToken() && !formData.has('_token')) {
         formData.append('_token', this.getCsrfToken());
@@ -844,378 +1669,120 @@ async createProduct(formData) {
         method: 'POST',
         body: formData,
         headers: {
-            'X-CSRF-TOKEN': this.getCsrfToken()
+            'X-CSRF-TOKEN': this.getCsrfToken(),
+            Accept: 'application/json'
         }
     });
-    
     return await response.json();
 }
 ```
 
----
+**Solution 3: Verify Routes Exist**
 
-**Fix #3: Verify Routes Registered in `routes/web.php`**
+Check if route is registered in `routes/web.php`
 
-Check that your upload endpoint is actually defined:
-
-Check if route exists
-
-```cmd
-findstr /N "POST.*api/products" routes\web.php
-findstr /N "POST.*api/home-images" routes\web.php
-findstr /N "POST.*api/product-samples" routes\web.php
+```bash
+grep -n "POST.*api/products" routes/web.php
 ```
 
-If not found, add the route:
+If not found, add to `routes/web.php`:
 
 ```php
-// routes/web.php
-Route::post('/api/products', [ProductController::class, 'store']);
-Route::post('/api/home-images', [HomeImageController::class, 'store']);
-Route::post('/api/product-samples', [ProductSampleController::class, 'store']);
-```
-
----
-
-**Fix #4: Ensure Storage Symlink Exists**
-
-Files are stored in `storage/app/public/` but accessed via `/storage/...`. This requires a symlink:
-
-Create the symlink
-
-```cmd
-php artisan storage:link
-```
-
-Verify it was created
-
-```cmd
-dir public\storage
-```
-
-Should show the storage directory junction/symlink.
-If not created, check file permissions and run as Administrator if needed.
-
----
-
-**Fix #5: Check File Validation Rules**
-
-The upload fails at validation. Check your controller for file size/type restrictions:
-
-```php
-// From app/Http/Controllers/Api/ProductController.php
-$validated = $request->validate([
-    'cover_image' => 'required|image|mimes:png,jpg,jpeg|max:2048',  // 2MB max
-    'price_images.*' => 'required|image|mimes:png,jpg,jpeg|max:5120'  // 5MB max each
-]);
-```
-
-If your file exceeds size or type constraints:
-
-- Reduce file size in your image editor
-- Ensure file format matches `mimes:` list
-- Or update validation rule in controller if smaller files fail
-
-**Test with a known-good file:**
-
-Create a test image using PowerShell or download one.
-The easiest approach is to use a sample image from your project.
-Visit <https://www.pngquant.org/> to create a minimal PNG.
-Or simply download any image and save it as test.png
-Then try uploading this file to test the upload functionality.
-
----
-
-#### Expected vs. Actual API Responses
-
-**Successful Upload (Status 201):**
-
-```json
-{
-  "success": true,
-  "data": {
-    "id": 1,
-    "name": "Sticker Pack",
-    "description": "Amazing stickers",
-    "created_at": "2026-03-04T12:34:56.000000Z",
-    "updated_at": "2026-03-04T12:34:56.000000Z"
-  },
-  "message": "Product created successfully"
-}
-```
-
-**Validation Error (Status 422):**
-
-```json
-{
-  "success": false,
-  "errors": {
-    "cover_image": [
-      "The cover image field is required.",
-      "The cover image must be an image.",
-      "The cover image must be a file of type: png, jpg, jpeg."
-    ]
-  },
-  "message": "Validation failed"
-}
-```
-
-**Auth Error (Status 403 - HTML):**
-
-```html
-<!DOCTYPE html>
-<html>
-  <head><title>403 Forbidden</title></head>
-  <body>
-    <h1>403 Forbidden</h1>
-    <p>CSRF token mismatch.</p>
-  </body>
-</html>
-<!-- ← This is the problem! JSON parser fails on < -->
-```
-
-**Server Error (Status 500 - in production, JSON):**
-
-```json
-{
-  "success": false,
-  "error": "Failed to upload image",
-  "message": "Disk 'public' does not have a configured driver."
-}
-```
-
----
-
-### Error: "CSRF token not found"
-
-#### Understanding the Error
-
-This error occurs when JavaScript cannot retrieve the CSRF token from the page's HTML. The application needs the token to send with requests, but the meta tag (which contains the token) is either missing, malformed, or not yet loaded by the time the code runs.
-
-#### Root Causes
-
-1. **Meta Tag Missing from Layout**
-   - `<meta name="csrf-token">` not included in layout's `<head>` section
-   - Layout file not properly extended by the Blade view
-   - **Symptom:** Searching page source (Ctrl+U) shows no `csrf-token` meta tag
-
-2. **JavaScript Runs Before DOM Loads**
-   - Token retrieval code executes before `<head>` is parsed
-   - Script tag loaded with `async` attribute causing race condition
-   - **Symptom:** Works sometimes, fails other times (timing issue)
-
-3. **Incorrect Selector in `getCsrfToken()` Method**
-   - Selector string `'meta[name="csrf-token"]'` is wrong
-   - Attribute name or value doesn't match actual HTML
-   - **Symptom:** Console shows `null` when running selector manually
-
-4. **Browser Cache or Security Issues**
-   - Stale cached page in browser
-   - Private/Incognito mode blocking data access
-   - Extensions interfering with DOM access
-   - **Symptom:** Works in fresh browser, fails after reload
-
-#### Prevention: Before Development
-
-✅ **Ensure proper CSRF token setup:**
-
-1. **Add meta tag to ALL layout files** at the end of `<head>`:
-
-   ```html
-   <head>
-       <!-- Other meta tags -->
-       <meta name="csrf-token" content="{{ csrf_token() }}">
-   </head>
-   ```
-
-   Verify in both:
-   - `resources/views/layouts/customer_layout.blade.php`
-   - `resources/views/owner/layouts/owner_layout.blade.php`
-
-2. **Wrap API initialization in DOMContentLoaded:**
-
-   ```javascript
-   document.addEventListener('DOMContentLoaded', async () => {
-       // Token retrieval and API calls here
-       const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-       // Now safe to use token
-   });
-   ```
-
-3. **Use safe retrieval with optional chaining:**
-
-   ```javascript
-   getCsrfToken() {
-       // ? prevents error if element doesn't exist
-       return document.querySelector('meta[name="csrf-token"]')
-           ?.getAttribute('content');
-   }
-   ```
-
-4. **Test in multiple browser contexts:**
-   - Normal window
-   - Incognito/Private mode
-   - After hard refresh (Ctrl+Shift+R)
-   - On actual deployed server (not just localhost)
-
-#### Diagnosis: Step-by-Step Troubleshooting
-
-**Step 1: Verify Meta Tag Exists in Page Source**
-
-1. Go to the page where error occurs
-2. Right-click → **View Page Source** (or press Ctrl+U)
-3. Press Ctrl+F, search for `csrf-token`
-4. Look for this line:
-
-   ```html
-   <meta name="csrf-token" content="eyJpdiI6IjRyR...">
-   ```
-
-**If found:**
-
-- Meta tag exists → move to Step 2
-- Value looks like random string → token is valid
-
-**If NOT found:**
-
-- The layout doesn't include the meta tag
-- Add it to the appropriate layout file:
-
-  ```html
-  <head>
-      ...other meta tags...
-      <meta name="csrf-token" content="{{ csrf_token() }}">
-  </head>
-  ```
-
----
-
-**Step 2: Verify the Selector Works**
-
-1. Press `F12` → **Console** tab
-2. Copy-paste this command and press Enter:
-
-   ```javascript
-   document.querySelector('meta[name="csrf-token"]')
-   ```
-
-**If you see:** `<meta name="csrf-token" content="...">` element printout
-
-- Selector is correct, element exists
-- Problem might be timing
-
-**If you see:** `null`
-
-- Selector doesn't find the element
-- Check spelling: `csrf-token` (not `csrfToken` or `csrf_token`)
-- Verify `name` attribute has exact value `csrf-token`
-
----
-
-**Step 3: Get the Token Value**
-
-Still in Console, run:
-
-```javascript
-document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-```
-
-**If you see:** A long random string (e.g., `"eyJpdiI6IjRyR2VhYkplYUxscEFONlp5YkFN..."`)
-
-- Token exists and is retrievable
-- Selector pattern is correct
-
-**If you see:** `null` or `undefined`
-
-- The content attribute is missing or empty
-- This is a server-side issue (Laravel not generating token)
-- Restart application: `composer run dev`
-
----
-
-**Step 4: Verify Timing with DOMContentLoaded**
-
-In Console, run:
-
-```javascript
-console.log('DOM loaded?', document.readyState);
-console.log('Token exists?', document.querySelector('meta[name="csrf-token"]') !== null);
-```
-
-**If both return `true`/`loaded`:**
-
-- DOM is ready, token is present
-- Your API client should work
-
-**If shows `loading`:**
-
-- Script is running before page fully loads
-- Wrap your code in `DOMContentLoaded` event
-
----
-
-**Step 5: Check API Client Initialization**
-
-For product uploads, verify `productApi.js` is properly imported and initialized:
-
-```javascript
-// In the page that needs uploads, check that API is imported
-import ProductAPI from '...api/productApi.js';
-
-// Verify getCsrfToken() works
-console.log(ProductAPI.getCsrfToken());  // Should return token string
-```
-
----
-
-#### Other Common Fixes
-
-**Fix #1: Add Missing Meta Tag to Layout**
-
-Add this line to the `<head>` section of the layout file:
-
-```html
-<!-- resources/views/layouts/customer_layout.blade.php -->
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">  <!-- ← ADD THIS LINE -->
-    <title>Scruffs&Chyrrs</title>
-    ...rest of head...
-</head>
-```
-
-Do this for **all layout files:**
-
-- `resources/views/layouts/customer_layout.blade.php`
-- `resources/views/owner/layouts/owner_layout.blade.php`
-
----
-
-**Fix #2: Wrap Code in DOMContentLoaded**
-
-Ensure token retrieval happens after DOM loads:
-
-```javascript
-// ❌ BAD - runs before DOM loads
-const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-// ✅ GOOD - waits for DOM
-document.addEventListener('DOMContentLoaded', () => {
-    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-    // Now safe to use token
-    performUpload(token);
+Route::post('/api/products', function (Request $request) {
+    // Handle upload
 });
 ```
 
 ---
 
-**Fix #3: Use Optional Chaining Safely**
+### Troubleshooting: CSRF Token Not Found
 
-Prevent errors if element doesn't exist:
+#### Understanding the Error
+
+JavaScript cannot retrieve the CSRF token from the page's HTML. The application needs the token for POST requests, but the meta tag is either missing or the JavaScript runs before the DOM loads.
+
+#### Root Causes
+
+1. **Meta Tag Missing from Layout**
+   - `<meta name="csrf-token">` not in `<head>` section
+   - Layout not properly extended by view
+
+2. **JavaScript Runs Before DOM Loads**
+   - Token retrieval code executes before page fully loads
+   - Race condition between script execution and DOM parsing
+
+3. **Incorrect Selector**
+   - Attribute name or value doesn't match actual HTML
+
+4. **Browser Cache**
+   - Stale cached page preventing fresh token generation
+
+#### Verification Steps
+
+1. **Check Page Source for Meta Tag:**
+
+   Right-click page → **View Page Source** (Ctrl+U)
+   Search for `csrf-token`
+
+   Expected: `<meta name="csrf-token" content="eyJpdiI6I...`
+
+2. **Test Selector in Browser Console:**
+
+   ```javascript
+   document.querySelector('meta[name="csrf-token"]')
+       ?.getAttribute('content')
+   ```
+
+   Should return a long random string, not `null`.
+
+3. **Check for Console Errors:**
+
+   F12 → **Console** tab for any JavaScript errors.
+
+#### Solutions
+
+**Solution 1: Add Meta Tag to Layouts**
+
+Add to `<head>` section of all layout files:
+
+```html
+<!-- resources/views/layouts/customer_layout.blade.php -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">  <!-- ← ADD THIS -->
+    <title>Scruffs & Chyrrs</title>
+    <!-- other meta tags -->
+</head>
+```
+
+Do this for:
+
+- `resources/views/layouts/customer_layout.blade.php`
+- `resources/views/owner/layouts/owner_layout.blade.php`
+- Any other layout files
+
+**Solution 2: Wrap Code in DOMContentLoaded**
+
+Ensure token retrieval happens after DOM loads:
 
 ```javascript
-// From resources/js/api/productApi.js (correct pattern)
+document.addEventListener('DOMContentLoaded', () => {
+    const token = document.querySelector('meta[name="csrf-token"]')
+        ?.getAttribute('content');
+    
+    if (!token) {
+        console.error('CSRF token not found');
+        return;
+    }
+    
+    // Safe to use token now
+    performUpload(token);
+});
+```
+
+**Solution 3: Use Safe Retrieval with Optional Chaining**
+
+```javascript
 getCsrfToken() {
     const token = document.querySelector('meta[name="csrf-token"]')
         ?.getAttribute('content');
@@ -1229,118 +1796,169 @@ getCsrfToken() {
 }
 ```
 
-The `?.` operator returns `undefined` (not an error) if element doesn't exist, preventing crashes.
+**Solution 4: Clear Browser Cache and Test**
 
----
+- Hard refresh: Ctrl+Shift+R (Windows) or Cmd+Shift+R (Mac)
+- Or test in **Incognito/Private mode** (no cache)
+- If it works in Incognito, clear normal browser cache
 
-**Fix #4: Clear Browser Cache and Test Again**
+**Solution 5: Restart Laravel Application**
 
-Stale cache can cause issues:
+Generate new tokens:
 
-- Hard refresh in browser: Ctrl+Shift+R (Windows) or Cmd+Shift+R (Mac)
-- Or Clear cache: Ctrl+Shift+Delete
-
-Then:
-
-1. Test in **Incognito/Private mode** (no cache interference)
-2. If it works in Incognito, the issue was browser cache
-3. Clear cache from normal browser and try again
-
----
-
-**Fix #5: Verify Laravel is Generating Tokens**
-
-Tokens are generated by Laravel's CSRF middleware. Restart the application:
-
-```cmd
+```bash
 composer run dev
 ```
 
-> Stop the dev server (Ctrl+C). Then restart the dev server. This will clear any cached views and regenerate CSRF tokens for all sessions. This is especially important if you recently changed the layout files or updated Laravel.
-
-This forces Laravel to reinitialize and all views to re-render. New CSRF tokens will be generated for all sessions.
+Stop (Ctrl+C) and restart. Forces Laravel to reinitialize and regenerate all CSRF tokens.
 
 ---
 
-#### DevTools Verification Checklist
+### Common Issues & Solutions
 
-Use this checklist to verify CSRF token setup:
+#### Issue: `composer: command not found`
 
-- [ ] Page source (Ctrl+U) contains `<meta name="csrf-token" content=...>`
-- [ ] Meta tag is in `<head>` section (not in `<body>`)
-- [ ] Content attribute has a non-empty value (long random string)
-- [ ] Console command returns token: `document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')`
-- [ ] API client imports work: `import ProductAPI from '...api/productApi.js'`
-- [ ] `ProductAPI.getCsrfToken()` returns a string (not empty, not null)
-- [ ] Network tab shows `x-csrf-token` header in API request
-- [ ] Browser console has no errors (F12 → Console tab)
+**Solution:**
+
+Install Composer globally or use the installer:
+
+> Visit <https://getcomposer.org/download/>
+
+```bash
+php composer.phar install  # Use local composer
+```
+
+#### Issue: Database Connection Error
+
+**Solution:**
+
+Verify `.env` file and database is running:
+
+```bash
+php artisan tinker  # Test connection interactively
+```
+
+Check that:
+
+- `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD` are correct in `.env`
+- Database server is running
+- Database specified in `DB_DATABASE` exists
+
+#### Issue: npm/node Version Issues
+
+**Solution:**
+
+Update Node.js to v18+:
+
+> Visit <https://nodejs.org/en/download> for installer
+
+```bash
+node --version  # Check current version
+```
+
+#### Issue: Port 8000 Already in Use
+
+**Solution:**
+
+Use a different port:
+
+```bash
+php artisan serve --port=8080
+```
+
+#### Issue: Queue Not Processing Jobs
+
+**Solution:**
+
+Queue listener must be running in separate terminal:
+
+```bash
+php artisan queue:listen --tries=1
+```
+
+The `composer run dev` command starts this automatically.
+
+#### Issue: Assets Not Compiling
+
+**Solution:**
+
+Rebuild with:
+
+```bash
+npm run build
+```
+
+Or start Vite dev server:
+
+```bash
+npm run dev
+```
 
 ---
 
 ### Preventative Best Practices
 
-To avoid the above errors during development, follow these guidelines:
+To avoid common issues during development:
 
-#### 1. **CSRF Token Handling**
+#### 1. CSRF Token Handling
 
-- ✅ Always include `<meta name="csrf-token">` in JSON format inside every layout's `<head>`
-- ✅ Use the provided API client classes that have `getCsrfToken()` method
-- ✅ Wrap API calls in `DOMContentLoaded` event listener
-- ✅ Test CSRF token presence immediately after first page load
-- ❌ Never hardcode token values; always retrieve from meta tag dynamically
+- ✅ Always include `<meta name="csrf-token">` in every layout's `<head>`
+- ✅ Use provided API client classes with `getCsrfToken()` method
+- ✅ Wrap API calls in `DOMContentLoaded` event
+- ✅ Test token presence immediately after page load
+- ❌ Never hardcode token values
 
-#### 2. **API Route Registration**
+#### 2. API Route Registration
 
-- ✅ Register all upload endpoints in `routes/web.php` before building frontend
+- ✅ Register upload endpoints in `routes/web.php` before building frontend
 - ✅ Use RESTful naming: `POST /api/products`, `PUT /api/products/{id}`, `DELETE /api/products/{id}`
-- ✅ Test routes with Postman or curl before integrating with frontend
-- ✅ Include routes in this order: POST (create), GET (read), PUT (update), DELETE (remove)
-- ❌ Don't change API paths after frontend is built without updating JavaScript imports
+- ✅ Test routes with Postman before integrating with frontend
+- ❌ Don't change API paths after frontend is built without updating JavaScript
 
-#### 3. **File Upload Handling**
+#### 3. File Upload Handling
 
 - ✅ Always use `FormData` object for file uploads (never JSON with File objects)
-- ✅ Don't manually set `Content-Type` header when using FormData (browser handles multipart boundary)
-- ✅ Include CSRF token in both headers AND FormData `_token` field for maximum compatibility
-- ✅ Test file uploads with various file sizes, formats (PNG, JPG, GIF, WebP)
-- ✅ Set reasonable file size limits in validation (2-5MB for single files, check controller)
-- ❌ Don't attempt to upload files larger than the limit defined in PHP
+- ✅ Don't manually set `Content-Type` header when using FormData
+- ✅ Include CSRF token in both headers AND FormData `_token` field
+- ✅ Test uploads with various file sizes and formats
+- ✅ Set reasonable file size limits in validation (2-5MB)
+- ❌ Don't attempt to upload files larger than limit
 
-#### 4. **Error Handling & Logging**
+#### 4. Error Handling & Logging
 
 - ✅ Use try-catch blocks in all async API calls
-- ✅ Log network responses to browser console during development (`console.log(response)`)
-- ✅ Check Laravel logs immediately when error occurs: `php artisan pail` or `Get-Content -Path storage\logs\laravel.log -Wait` (PowerShell)
-- ✅ Use Toast notifications to show user-friendly error messages
-- ✅ Return consistent JSON response structure from all API endpoints (success, data, errors, message fields)
-- ❌ Don't rely on console.log alone; always check Network tab in DevTools
+- ✅ Log network responses to console during development
+- ✅ Check Laravel logs immediately when error occurs: `php artisan pail`
+- ✅ Use Toast notifications for user-friendly errors
+- ✅ Return consistent JSON from all API endpoints
+- ❌ Don't rely on console.log alone
 
-#### 5. **Testing Workflows**
+#### 5. Testing Workflows
 
-- ✅ Start dev server with `composer run dev` before any feature work (ensures all services running)
-- ✅ Test uploads after every backend controller change
+- ✅ Start dev server with `composer run dev` before feature work
+- ✅ Test uploads after every backend change
 - ✅ Verify API responses in Network tab before debugging JavaScript
 - ✅ Clear browser cache (Ctrl+Shift+R) when testing code changes
-- ✅ Test in multiple browsers (Chrome, Firefox, Safari) for compatibility
-- ❌ Don't assume JavaScript is wrong until you've checked server logs and Network responses
+- ✅ Test in multiple browsers (Chrome, Firefox, Safari)
+- ❌ Don't assume JavaScript is wrong until checking server logs
 
-#### 6. **File Storage & Permissions**
+#### 6. File Storage & Permissions
 
-- ✅ Run `php artisan storage:link` after initial setup and before deployment
-- ✅ Ensure `storage/app/public/` directory is writable: `icacls "storage" /grant:r "%USERNAME%":(OI)(CI)F /T`
-- ✅ Verify uploaded files appear in `storage/app/public/{category}/` after upload
-- ✅ Check that files are accessible via `/storage/...` URL in browser
-- ❌ Don't store files in `public/` directly (use storage disk for consistency)
+- ✅ Run `php artisan storage:link` after initial setup
+- ✅ Ensure `storage/` directory is writable
+- ✅ Verify uploaded files appear in `storage/app/public/` after upload
+- ✅ Check files are accessible via `/storage/...` URL
+- ❌ Don't store files in `public/` directly
 
-#### 7. **API Client Classes Best Practices**
+#### 7. API Client Classes
 
-- ✅ Always export API clients as singleton: `export default new ProductAPI()`
-- ✅ Create separate API client class for each resource (Products, Materials, etc.)
-- ✅ Implement getCsrfToken() method consistently across all clients
-- ✅ Use async/await for all fetch calls (more readable than .then())
-- ✅ Include error handling in every API method
-- ✅ Return structured responses: `{success: true|false, data: {...}, errors: {...}, message: '...'}`
-- ❌ Don't make API clients dependent on each other; keep them standalone and composable
+- ✅ Always export as singleton: `export default new ProductAPI()`
+- ✅ Create separate API client for each resource
+- ✅ Implement `getCsrfToken()` consistently across clients
+- ✅ Use async/await for all fetch calls
+- ✅ Include error handling in every method
+- ✅ Return structured responses with `success`, `data`, `errors`, `message` fields
+- ❌ Don't make API clients dependent on each other
 
 ---
 
@@ -1358,50 +1976,62 @@ To avoid the above errors during development, follow these guidelines:
 2. **Use Laravel Pail:** `php artisan pail` (real-time log streaming)
 3. **Browser DevTools:** F12 → Network/Console tabs for API issues
 4. **Add console.log()** in JavaScript to trace execution
-5. **Test API endpoints** directly with tools like Postman or curl
+5. **Test API endpoints** directly with Postman or curl
 
-## Reference: Key Commands
+---
 
-| Action | Command | Description |
-| :--- | :--- | :--- |
-| **Setup Project** | `composer run setup` | Full install from scratch. |
-| **Start Dev** | `composer run dev` | Starts App, Queue, and Vite. |
-| **Run Tests** | `composer run test` | Executes Pest test suite. |
-| **Format Code** | `./vendor/bin/pint` | Auto-fixes PHP code style. |
-| **Build Assets** | `npm run build` | Compiles assets for production. |
-| **Clear Cache** | `php artisan optimize:clear` | Flushes all Laravel caches. |
-| **Rebuild Database** | `php artisan migrate:fresh` | Rebuilds database from scratch. |
+## Getting Help
 
-## File Structure Summary
+If you encounter issues not covered in this documentation:
 
-| Directory | Purpose |
-| ----------- | --------- |
-| `app/Models` | Eloquent ORM models (User, Product, ProductSample, etc.) |
-| `app/Http/Controllers` | API and web request handlers |
-| `config/` | Application configuration files |
-| `database/migrations` | Schema definitions and database changes |
-| `database/factories` | Model factories for testing |
-| `database/seeders` | Database seeders for populating test data |
-| `resources/views` | Blade templates organized by domain (customer, owner) |
-| `resources/css` | Stylesheets (Tailwind 4 + Custom CSS) organized by role and page |
-| `resources/js` | JavaScript modules (API clients, utilities, page logic) |
-| `resources/fonts` | Custom fonts (Coolvetica, SuperDream) |
-| `routes/` | Route definitions (web.php for HTTP, console.php for Artisan) |
-| `tests/` | Test files using Pest PHP framework |
-| `public/` | Publicly served files (compiled assets, images) |
-| `storage/` | Application storage (logs, file uploads, sessions) |
-| `bootstrap/` | Framework bootstrap files |
+1. **Check the Troubleshooting & FAQ section above** — Most common issues are documented
+2. **Review Laravel logs:** `storage/logs/laravel.log` or `php artisan pail`
+3. **Run `php artisan tinker`** — Interactive PHP shell for testing
+4. **Check browser DevTools:**
+   - F12 → Network tab for API responses
+   - F12 → Console tab for JavaScript errors
+5. **Verify prerequisites** — Ensure all software versions match requirements
+6. **Post to team communication channel** — Share error messages and steps taken
+
+---
 
 ## Contributing To Scruffs-N-Chyrrs
 
 1. Clone the repository.
 2. Create a new feature branch (`git checkout -b feature/amazing-feature`).
-3. Ensure tests pass before committing.
-4. Open a Pull Request.
+3. Ensure tests pass before committing: `composer run test`
+4. Format code: `./vendor/bin/pint`
+5. Open a Pull Request with a clear description of changes.
+
+### Before Committing
+
+**Always run these before pushing code:**
+
+> Format code
+
+```bash
+./vendor/bin/pint
+```
+
+> Run tests
+
+```bash
+composer run test
+```
+
+> Check git status
+
+```bash
+git status
+```
+
+---
 
 ## Project License
 
 The Scruffs-N-Chyrrs project is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+---
 
 ## Laravel Framework
 
@@ -1414,27 +2044,27 @@ The Scruffs-N-Chyrrs project is open-sourced software licensed under the [MIT li
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
-## About Laravel
+### About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- [Simple, fast routing engine](https://laravel.com/docs/routing)
+- [Powerful dependency injection container](https://laravel.com/docs/container)
+- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage
+- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent)
+- Database agnostic [schema migrations](https://laravel.com/docs/migrations)
+- [Robust background job processing](https://laravel.com/docs/queues)
+- [Real-time event broadcasting](https://laravel.com/docs/broadcasting)
 
 Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
-## Learning Laravel
+### Learning Laravel
 
 Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
 
 If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
 
-## Laravel Sponsors
+### Laravel Sponsors
 
 We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
 
@@ -1449,18 +2079,22 @@ We would like to extend our thanks to the following sponsors for funding Laravel
 - **[Redberry](https://redberry.international/laravel-development)**
 - **[Active Logic](https://activelogic.com)**
 
-## Contributing To Laravel
+### Contributing To Laravel
 
 Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
 
-## Code of Conduct
+### Code of Conduct
 
 In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Useful Resources
 
-## Laravel License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- **Laravel Documentation:** [laravel.com/docs](https://laravel.com/docs/)
+- **Pest Testing:** [pestphp.com](https://pestphp.com/)
+- **Vite Build Tool:** [vitejs.dev](https://vitejs.dev/)
+- **Tailwind CSS:** [tailwindcss.com](https://tailwindcss.com/)
+- **Bootstrap:** [getbootstrap.com](https://getbootstrap.com/)
+- **Composer:** [getcomposer.org](https://getcomposer.org/)
+- **Node.js/npm:** [nodejs.org](https://nodejs.org/)
