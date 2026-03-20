@@ -94,8 +94,8 @@
             <img src="{{ asset('images/brand_elements/sea_bunny.png') }}" class="avatar_img">
             <div class="user_expand">
                 <div class="user_info">
-                    <p class="user_name">{{ Auth::user()->name ?? 'Celina Felizardo' }}</p>
-                    <p class="user_email">{{ Auth::user()->email ?? 'celinafelizardo@gmail.com' }}</p>
+                    <p class="user_name">{{ Auth::user()->first_name }} {{ Auth::user()->last_name }}</p>
+                    <p class="user_email">{{ Auth::user()->email }}</p>
                 </div>
                 <svg class="arrow_icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#5F6368"><path d="M480-345 240-585l56-56 184 184 184-184 56 56-240 240Z"/></svg>
             </div>

@@ -123,7 +123,7 @@ nav {
 .inventory_nav::after,
 .orders_nav::after,
 .content_nav::after {
-    content: "";
+    content: '';
     position: absolute;
     inset: 0;
     background: #dcbae6;
@@ -131,9 +131,7 @@ nav {
     z-index: -1;
     opacity: 0;
     transform: scale(0.9);
-    transition:
-        opacity 0.25s ease,
-        transform 0.25s ease;
+    transition: opacity 0.25s ease, transform 0.25s ease;
 }
 
 .dashboard_nav.active::after,
@@ -158,16 +156,16 @@ nav {
     gap: 10px; /* Slightly tighter gap */
     padding: 20px 15px;
     border-top: 1px solid #312e2e;
-    cursor: pointer; 
+    cursor: pointer;
     transition: background 0.2s ease;
     background: #fff0da;
-    z-index: 2; 
+    z-index: 2;
     box-sizing: border-box; /* Keeps padding inside the 230px width */
     width: 100%;
 }
 
 .bottom_menu:hover {
-    background: #ffe3b3; 
+    background: #ffe3b3;
 }
 
 .avatar_img {
@@ -179,7 +177,7 @@ nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-grow: 1; 
+    flex-grow: 1;
     min-width: 0; /* MAGIC FIX: Allows the flex child to shrink! */
     gap: 8px;
 }
@@ -197,18 +195,18 @@ nav {
     font-weight: normal; /* Coolvetica is already quite thick, so we don't need bold */
     color: #312e2e;
     margin-bottom: 2px;
-    white-space: nowrap;
+    white-space: wrap;
     overflow: hidden;
-    text-overflow: ellipsis;
+    text-overflow: wrap;
 }
 
 .user_email {
     font-size: 12px;
     font-family: Arial, sans-serif;
     color: #707070;
-    white-space: nowrap;       /* Forces text to stay on one line */
-    overflow: hidden;          /* Hides the overflow */
-    text-overflow: ellipsis;   /* Adds the "..." */
+    white-space: nowrap; /* Forces text to stay on one line */
+    overflow: hidden; /* Hides the overflow */
+    text-overflow: ellipsis; /* Adds the "..." */
 }
 
 .arrow_icon {
@@ -272,7 +270,7 @@ nav {
 
 /* --- ACTIVE STATE (When Clicked) --- */
 .user_section.active .user_popup {
-    max-height: 250px; 
+    max-height: 250px;
     opacity: 1;
 }
 
@@ -292,10 +290,7 @@ nav {
     transform: translateY(6px);
     overflow: hidden;
 
-    transition:
-        transform 0.35s ease,
-        opacity 0.35s ease,
-        margin-top 0.35s ease;
+    transition: transform 0.35s ease, opacity 0.35s ease, margin-top 0.35s ease;
 }
 
 .sidenav_account,

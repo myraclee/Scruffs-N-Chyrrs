@@ -1,8 +1,13 @@
+// ================= IMPORTS =================
+import orderTemplateApi from '../../api/orderTemplateApi.js';
+import toast from '../../utils/toast.js';
+
 // ==================== PRODUCT STORE ====================
 
 let products = [];
 let editingProductId = null;
 let pendingDeleteId = null;
+let isLoading = false;
 
 // ==================== MODAL ====================
 
@@ -537,19 +542,19 @@ function setupDiscount() {
 // ==================== COLLECT DATA ====================
 
 function collectProductData() {
-    const name = document.getElementById("productName").value.trim();
-
-    const options = getAllOptions().map((opt) => ({
+    const options = getAllOptions().map((opt, idx) => ({
         label: opt.querySelector(".product_option_input").value.trim(),
-        specs: Array.from(opt.querySelectorAll(".spec_input_row"))
-            .map((row) => ({
-                available: row.querySelector(".product_availability input")
-                    .checked,
-                type: row
+        position: idx,
+        option_types: Array.from(opt.querySelectorAll(".spec_input_row"))
+            .map((row, typeIdx) => ({
+                type_name: row
                     .querySelector(".product_option_name input")
                     .value.trim(),
+                is_available: row.querySelector(".product_availability input")
+                    .checked,
+                position: typeIdx,
             }))
-            .filter((s) => s.type !== ""),
+            .filter((s) => s.type_name !== ""),
     }));
 
     const combinations = {};
@@ -572,28 +577,75 @@ function collectProductData() {
             .value.trim(),
     }));
 
-    return { name, options, combinations, discountEnabled, discountRows };
+    return { options, combinations, discountEnabled, discountRows };
 }
 
 // ==================== SAVE ====================
 
 function setupSaveButton() {
-    document.querySelector(".save_product").addEventListener("click", () => {
+    document.querySelector(".save_product").addEventListener("click", async () => {
         if (!validateProductDetails()) {
             switchTab("details");
             return;
         }
-        const data = collectProductData();
-        if (editingProductId !== null) {
-            const idx = products.findIndex((p) => p.id === editingProductId);
-            if (idx !== -1) products[idx] = { ...data, id: editingProductId };
-        } else {
-            data.id = Date.now();
-            products.push(data);
+
+        if (isLoading) return;
+        isLoading = true;
+
+        try {
+            const data = collectProductData();
+            const nameSelect = document.getElementById("productName");
+            const selectedProductName = nameSelect.value.trim();
+
+            // Get the product ID by fetching all products
+            const allProducts = await fetch('/api/products')
+                .then(r => r.json())
+                .then(d => d.data || []);
+
+            const selectedProduct = allProducts.find(p => p.name === selectedProductName);
+            if (!selectedProduct) {
+                toast.error('Selected product not found');
+                isLoading = false;
+                return;
+            }
+
+            const payload = {
+                product_id: selectedProduct.id,
+                options: data.options,
+                pricings: Object.entries(data.combinations).map(([key, price]) => ({
+                    combination_key: key,
+                    price: parseFloat(price) || 0,
+                })),
+                discounts: data.discountEnabled && data.discountRows.length > 0
+                    ? data.discountRows.map((row, idx) => ({
+                        min_quantity: parseInt(row.qty) || 0,
+                        price_reduction: parseFloat(row.reduction) || 0,
+                        position: idx,
+                    }))
+                    : [],
+            };
+
+            let result;
+            if (editingProductId !== null) {
+                // Update existing template
+                result = await orderTemplateApi.updateOrderTemplate(editingProductId, payload);
+                toast.success('Order template updated successfully');
+            } else {
+                // Create new template
+                result = await orderTemplateApi.createOrderTemplate(payload);
+                toast.success('Order template created successfully');
+            }
+
+            // Reload templates and refresh UI
+            await loadOrderTemplates();
+            resetModal();
+            closeModal();
+        } catch (error) {
+            console.error('Error saving order template:', error);
+            toast.error(error.message || 'Failed to save order template');
+        } finally {
+            isLoading = false;
         }
-        renderProducts();
-        resetModal();
-        closeModal();
     });
 }
 
@@ -614,14 +666,29 @@ function setupDeleteButton() {
 
     document
         .getElementById("deleteConfirmProceedBtn")
-        .addEventListener("click", () => {
+        .addEventListener("click", async () => {
             if (pendingDeleteId === null) return;
-            products = products.filter((p) => p.id !== pendingDeleteId);
-            pendingDeleteId = null;
-            confirmOverlay.classList.remove("active");
-            renderProducts();
-            resetModal();
-            closeModal();
+
+            if (isLoading) return;
+            isLoading = true;
+
+            try {
+                await orderTemplateApi.deleteOrderTemplate(pendingDeleteId);
+                toast.success('Order template deleted successfully');
+
+                pendingDeleteId = null;
+                confirmOverlay.classList.remove("active");
+
+                // Reload templates and refresh UI
+                await loadOrderTemplates();
+                resetModal();
+                closeModal();
+            } catch (error) {
+                console.error('Error deleting order template:', error);
+                toast.error(error.message || 'Failed to delete order template');
+            } finally {
+                isLoading = false;
+            }
         });
 
     confirmOverlay.addEventListener("click", (e) => {
@@ -633,6 +700,19 @@ function setupDeleteButton() {
 }
 
 // ==================== RENDER PRODUCT CARDS ====================
+
+async function loadOrderTemplates() {
+    try {
+        isLoading = true;
+        products = await orderTemplateApi.getAllOrderTemplates();
+        renderProducts();
+    } catch (error) {
+        console.error('Error loading order templates:', error);
+        toast.error('Failed to load order templates');
+    } finally {
+        isLoading = false;
+    }
+}
 
 function renderProducts() {
     const container = document.getElementById("productCardsContainer");
@@ -648,20 +728,21 @@ function renderProducts() {
     );
 }
 
-function createProductCard(product) {
+function createProductCard(template) {
     const card = document.createElement("div");
     card.className = "product_card";
 
     const name = document.createElement("h3");
     name.className = "product_card_name";
-    name.textContent = product.name;
+    name.textContent = template.product.name;
     card.appendChild(name);
 
     const optionsDiv = document.createElement("div");
     optionsDiv.className = "product_card_options";
     const selects = [];
 
-    product.options.forEach((opt) => {
+    // Transform API response to card structure
+    template.options.forEach((opt) => {
         const wrap = document.createElement("div");
         wrap.className = "product_card_option_wrap";
 
@@ -676,12 +757,12 @@ function createProductCard(product) {
         select.className = "product_card_select";
         select.addEventListener("click", (e) => e.stopPropagation());
 
-        opt.specs
-            .filter((s) => s.available)
+        opt.option_types
+            .filter((s) => s.is_available)
             .forEach((spec) => {
                 const option = document.createElement("option");
-                option.value = spec.type;
-                option.textContent = spec.type;
+                option.value = spec.type_name;
+                option.textContent = spec.type_name;
                 select.appendChild(option);
             });
 
@@ -699,7 +780,8 @@ function createProductCard(product) {
 
     function updateCardPrice() {
         const key = selects.map((s) => s.value).join(" | ");
-        const price = product.combinations[key];
+        const pricing = template.pricings.find(p => p.combination_key === key);
+        const price = pricing?.price;
         priceDiv.textContent = price ? `₱${parseFloat(price).toFixed(2)}` : "—";
     }
     selects.forEach((s) => s.addEventListener("change", updateCardPrice));
@@ -712,30 +794,30 @@ function createProductCard(product) {
     editBtn.type = "button";
     editBtn.addEventListener("click", (e) => {
         e.stopPropagation();
-        openEditModal(product.id);
+        openEditModal(template.id);
     });
     card.appendChild(editBtn);
 
-    card.addEventListener("click", () => openDetailModal(product.id));
+    card.addEventListener("click", () => openDetailModal(template.id));
     return card;
 }
 
 // ==================== EDIT MODAL ====================
 
-function openEditModal(productId) {
-    const product = products.find((p) => p.id === productId);
-    if (!product) return;
-    editingProductId = productId;
+function openEditModal(templateId) {
+    const template = products.find((p) => p.id === templateId);
+    if (!template) return;
+    editingProductId = templateId;
 
     document.getElementById("templateModalTitle").textContent = "Edit Template";
     document.getElementById("deleteProductBtn").classList.remove("btn_hidden");
 
     const nameSelect = document.getElementById("productName");
-    nameSelect.value = product.name;
+    nameSelect.value = template.product.name;
 
     const wrapper = getOptionsWrapper();
     wrapper.innerHTML = "";
-    product.options.forEach((opt, i) => {
+    template.options.forEach((opt, i) => {
         const container = createOptionContainer(i + 1);
         wrapper.appendChild(container);
         container.querySelector(".product_option_input").value = opt.label;
@@ -743,11 +825,11 @@ function openEditModal(productId) {
         specWrapper
             .querySelectorAll(".spec_input_row")
             .forEach((r) => r.remove());
-        opt.specs.forEach((spec) => {
+        opt.option_types.forEach((optType) => {
             const row = createSpecRow();
             row.querySelector(".product_availability input").checked =
-                spec.available;
-            row.querySelector(".product_option_name input").value = spec.type;
+                optType.is_available;
+            row.querySelector(".product_option_name input").value = optType.type_name;
             specWrapper.appendChild(row);
         });
         refreshSpecButtons(specWrapper);
@@ -756,16 +838,16 @@ function openEditModal(productId) {
 
     const combContainer = document.getElementById("pricingCombinations");
     combContainer.innerHTML = "";
-    Object.entries(product.combinations).forEach(([labelText, data]) => {
+    template.pricings.forEach((pricing) => {
         const row = document.createElement("div");
         row.className = "combination_row";
         const label = document.createElement("span");
         label.className = "combination_label";
-        label.textContent = labelText;
+        label.textContent = pricing.combination_key;
         const priceInput = document.createElement("input");
         priceInput.type = "text";
         priceInput.className = "combination_price_input";
-        priceInput.value = data || "";
+        priceInput.value = pricing.price || "";
         priceInput.addEventListener("input", () => {
             priceInput.value = priceInput.value
                 .replace(/[^0-9.]/g, "")
@@ -777,17 +859,18 @@ function openEditModal(productId) {
     });
 
     const checkbox = document.getElementById("applyProductDiscount");
-    checkbox.checked = product.discountEnabled;
+    const hasDiscounts = template.discounts && template.discounts.length > 0;
+    checkbox.checked = hasDiscounts;
     const discountWrapper = document.getElementById("discountRowsWrapper");
     discountWrapper.innerHTML = "";
-    if (product.discountEnabled) {
+    if (hasDiscounts) {
         discountWrapper.classList.remove("hidden");
-        product.discountRows.forEach((dr) => {
+        template.discounts.forEach((discount) => {
             const row = createDiscountRow();
             row.querySelector(".product_discount_quantity input").value =
-                dr.qty;
+                discount.min_quantity;
             row.querySelector(".product_discount_print input").value =
-                dr.reduction;
+                discount.price_reduction;
             discountWrapper.appendChild(row);
         });
         refreshDiscountButtons(discountWrapper);
@@ -816,17 +899,17 @@ detailOverlay.addEventListener("click", (e) => {
     if (e.target === detailOverlay) detailOverlay.classList.remove("active");
 });
 
-function openDetailModal(productId) {
-    const product = products.find((p) => p.id === productId);
-    if (!product) return;
+function openDetailModal(templateId) {
+    const template = products.find((p) => p.id === templateId);
+    if (!template) return;
 
-    document.getElementById("detailProductName").textContent = product.name;
+    document.getElementById("detailProductName").textContent = template.product.name;
 
     const optContainer = document.getElementById("detailOptionsContainer");
     optContainer.innerHTML = "";
     const selects = [];
 
-    product.options.forEach((opt) => {
+    template.options.forEach((opt) => {
         const wrap = document.createElement("div");
         wrap.className = "detail_option_wrap";
         const lbl = document.createElement("label");
@@ -836,12 +919,12 @@ function openDetailModal(productId) {
         selectWrap.className = "select_wrapper";
         const select = document.createElement("select");
         select.className = "detail_select";
-        opt.specs
-            .filter((s) => s.available)
-            .forEach((spec) => {
+        opt.option_types
+            .filter((s) => s.is_available)
+            .forEach((optType) => {
                 const option = document.createElement("option");
-                option.value = spec.type;
-                option.textContent = spec.type;
+                option.value = optType.type_name;
+                option.textContent = optType.type_name;
                 select.appendChild(option);
             });
         selects.push(select);
@@ -855,7 +938,8 @@ function openDetailModal(productId) {
 
     function updateDetailPrice() {
         const key = selects.map((s) => s.value).join(" | ");
-        const price = product.combinations[key];
+        const pricing = template.pricings.find(p => p.combination_key === key);
+        const price = pricing?.price;
         priceEl.textContent = price ? `₱${parseFloat(price).toFixed(2)}` : "—";
     }
     selects.forEach((s) => s.addEventListener("change", updateDetailPrice));
@@ -914,6 +998,9 @@ function initModal() {
 
     // Load product names into the dropdown from the API
     loadProductNamesFromAPI();
+
+    // Load existing order templates from the API on page load
+    loadOrderTemplates();
 }
 
 document.addEventListener("DOMContentLoaded", initModal);

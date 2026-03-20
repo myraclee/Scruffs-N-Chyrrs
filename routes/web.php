@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\MaterialController;
 use App\Http\Controllers\Api\HomeImageController;
 use App\Http\Controllers\Api\ProductSampleController;
+use App\Http\Controllers\Api\OrderTemplateController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -79,6 +80,14 @@ Route::prefix('api/product-samples')->group(function () {
     Route::get('{productSample}', [ProductSampleController::class, 'show']);
     Route::put('{productSample}', [ProductSampleController::class, 'update']);
     Route::delete('{productSample}', [ProductSampleController::class, 'destroy']);
+});
+
+Route::prefix('api/order-templates')->group(function () {
+    Route::get('/', [OrderTemplateController::class, 'index']);
+    Route::post('/', [OrderTemplateController::class, 'store']);
+    Route::get('{orderTemplate}', [OrderTemplateController::class, 'show']);
+    Route::put('{orderTemplate}', [OrderTemplateController::class, 'update']);
+    Route::delete('{orderTemplate}', [OrderTemplateController::class, 'destroy']);
 });
 
 // OWNER ROUTES
