@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\MaterialController;
 use App\Http\Controllers\Api\HomeImageController;
 use App\Http\Controllers\Api\ProductSampleController;
 use App\Http\Controllers\Api\OrderTemplateController;
+use App\Http\Controllers\Api\FaqController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -88,6 +89,16 @@ Route::prefix('api/order-templates')->group(function () {
     Route::get('{orderTemplate}', [OrderTemplateController::class, 'show']);
     Route::put('{orderTemplate}', [OrderTemplateController::class, 'update']);
     Route::delete('{orderTemplate}', [OrderTemplateController::class, 'destroy']);
+});
+
+// FAQ ROUTES - Public read, auth required for write operations
+Route::prefix('api/faqs')->group(function () {
+    Route::get('/', [FaqController::class, 'index']); // Public - get active FAQs
+    Route::post('/', [FaqController::class, 'store'])->middleware('auth'); // Auth required
+    Route::put('{faq}', [FaqController::class, 'update'])->middleware('auth'); // Auth required
+    Route::delete('{faq}', [FaqController::class, 'destroy'])->middleware('auth'); // Auth required
+    Route::post('/reorder', [FaqController::class, 'reorder'])->middleware('auth'); // Auth required
+    Route::get('/admin/index', [FaqController::class, 'adminIndex'])->middleware('auth'); // Admin only - get all FAQs
 });
 
 // OWNER ROUTES
