@@ -1060,7 +1060,7 @@ select:focus {
 .rush_fees_section {
     margin-top: 30px;
     padding-top: 20px;
-    border-top: 2px solid #682c7a;
+    border-top: 1px solid #682c7a;
 }
 
 .rush_fees_section_header {
