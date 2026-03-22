@@ -316,19 +316,24 @@ nav {
 
 .close_sidenav {
     position: absolute;
-    top: 15px;
-    right: 15px;
+    top: 0px; /* Moved higher! (Was 15px) */
+    right: 0px; /* Tucked slightly to the right */
     background: transparent;
     border: none;
-    color: #682c7a;
-    font-size: 32px;
+    color: #682C7A;
     cursor: pointer;
     z-index: 101;
     transition: color 0.2s ease;
+    
+    /* Centers the new SVG icon */
+    display: flex; 
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
 }
 
 .close_sidenav:hover {
-    color: #a15fb5;
+    color: #A15FB5;
 }
 
 /* =============================================

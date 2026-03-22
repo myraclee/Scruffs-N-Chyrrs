@@ -11,45 +11,60 @@
     margin-top: 50px;
 }
 
+/* --- Floating Centered Logo --- */
 .label_name {
     height: 90px;
     position: absolute;
     top: -50px;
+    left: 50%; /* Keeps it perfectly centered */
+    transform: translateX(-50%); /* Adjusts for its own width */
+    z-index: 10;
 }
 
+/* --- The Main White Pill --- */
 .nav_horizontal {
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    /* BACK TO ORIGINAL: Spreads bunny left, links middle, icon right */
+    justify-content: space-between; 
     align-items: center;
 
-    width: 1200px;
+    /* THE FIX: Caps at 1200px, but fluidly shrinks on smaller screens */
+    max-width: 1200px;
+    width: 90%; 
+    margin: 0 auto;
+    box-sizing: border-box;
     height: 80px;
 
     background-color: #fff7ec;
     border-radius: 100px;
     padding-left: 30px;
     padding-right: 30px;
-
     box-shadow: 5px 5px 15px rgba(165, 165, 165, 0.3);
 }
 
-.nav_horizontal img {
-    height: 50px;
+.orange_logo {
+    height: 50px; /* Restored size! */
 }
 
+/* --- Navigation Links --- */
 .nav_list {
     list-style: none;
     display: flex;
-    gap: 80px;
+    gap: 60px; /* Slightly reduced to make room for the bigger text */
     width: 100%;
-    margin-top: 20px;
+    margin: 0;
+    padding: 0;
+    align-items: center;
+    justify-content: center;
 }
 
 .nav_list a {
     text-decoration: none;
     font-family: SuperDream;
     color: #682c7a;
+    font-size: 26px; /* THE FIX: Bigger text on desktop! */
+    letter-spacing: 1px; /* Adds a tiny bit of breathing room to the letters */
 }
 
 /* INTERACTION */
@@ -66,7 +81,6 @@
     content: "★";
     font-size: 14px;
     color: #682c7a;
-
     position: absolute;
     bottom: -13px;
     left: 50%;
@@ -83,26 +97,30 @@ a:hover .person_icon {
 }
 
 /* NAVBAR POPUP*/
+.account_wrapper {
+    position: relative; /* This is the anchor point! */
+    display: flex;
+    align-items: center;
+}
+
 .account_trigger {
-    position: relative;
-    display: inline-block;
+    display: flex;
+    align-items: center;
 }
 
 .account_popup {
     position: absolute;
     display: none;
     z-index: 100;
-
-    display: none;
     flex-direction: column;
     justify-content: center;
 
-    top: calc(100% + 5px);
-    right: 0;
-    margin-right: 145px;
+    top: calc(100% + 15px); /* Pushes it just below the icon */
+    right: 0; /* Aligns it perfectly to the right edge of the icon */
+    /* Removed the weird margin-right rule! */
+
     width: 150px;
     height: 100px;
-
     background-color: #fff7ec;
     box-shadow: 5px 5px 15px rgba(165, 165, 165, 0.3);
     border-radius: 15px;
@@ -116,11 +134,9 @@ a:hover .person_icon {
 .account_popup button {
     padding: 8px 10px;
     cursor: pointer;
-
     text-decoration: none;
     background: transparent;
     border: none;
-
     color: #682c7a;
     font-family: Coolvetica;
     width: 100%;
@@ -140,10 +156,8 @@ a:hover .person_icon {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-
     padding-left: 10px;
     padding-right: 15px;
-
     cursor: pointer;
     transition: background 0.2s ease;
 }
@@ -153,16 +167,8 @@ a:hover .person_icon {
     background: #f0e8d8;
 }
 
-.guest_login svg {
-    padding-right: 4px;
-    height: 35px;
-    width: 35px;
-}
-
-.guest_signup svg {
-    height: 35px;
-    width: 35px;
-}
+.guest_login svg { padding-right: 4px; height: 35px; width: 35px; }
+.guest_signup svg { height: 35px; width: 35px; }
 
 .logout_btn {
     background: transparent;
@@ -176,6 +182,75 @@ a:hover .person_icon {
     transition: background 0.2s ease;
 }
 
-.logout_btn:hover {
-    background: #f0e8d8;
+.logout_btn:hover { background: #f0e8d8; }
+
+
+/* ==========================================
+   NAVBAR MOBILE & TABLET RESPONSIVENESS
+   ========================================== */
+
+/* 1. Tablets (e.g., iPads & iPad Minis - up to 1024px) 
+      Keeps the pill shape but shrinks the text so it fits perfectly! */
+@media screen and (max-width: 1024px) {
+    .nav_horizontal {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+    .nav_list { 
+        gap: 30px; /* Tighter gap for tablets */
+    } 
+    .nav_list a {
+        font-size: 20px; /* Scales down from 26px so it doesn't overflow */
+    }
 }
+
+/* 2. Mobile Phones (e.g., iPhones - up to 600px)
+      Triggers the stacked, super-compact layout ONLY for phones */
+@media screen and (max-width: 600px) {
+    .nav_horizontal {
+        height: auto; 
+        padding: 40px 15px 15px 15px; 
+        flex-direction: row; 
+        flex-wrap: wrap; 
+        justify-content: center; 
+        align-items: center;
+        border-radius: 20px; 
+        gap: 8px; 
+    }
+    
+    .orange_logo { 
+        display: none; /* Hide bunny inside the bar on phones */
+    }
+    
+    .nav_list {
+        gap: 10px; 
+        justify-content: center;
+        flex-wrap: wrap; 
+        width: auto; 
+        margin: 0;
+    }
+
+    .nav_list a {
+        font-size: 13px; /* Small text for narrow screens */
+    }
+
+    .nav_list li.active a::after {
+        font-size: 10px;
+        bottom: -10px;
+    }
+
+    .person_icon {
+        width: 24px; 
+        height: 24px;
+    }
+    
+    .label_name { 
+        height: 55px; 
+        top: -25px; 
+    }
+}
+
+.account_popup {
+        right: 50%;
+        transform: translateX(50%); /* Centers it exactly under the profile icon */
+    }

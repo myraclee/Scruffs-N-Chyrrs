@@ -127,6 +127,90 @@
     transition: 0.2s ease;
 }
 
+/* --- My Orders Section --- */
+.account_orders_section {
+    background: #fff7ec;
+    padding: 30px;
+    border-radius: 30px;
+    margin: 0 auto 30px auto; /* Forces it to center */
+    max-width: 700px; /* Hard-caps the width to match the info box perfectly */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
+    width: 90%;
+}
+
+.account_orders_section h2 {
+    font-family: "Coolvetica", sans-serif;
+    color: #6b3282;
+    margin-top: 0;
+    margin-bottom: 25px;
+    font-size: 1.5rem;
+}
+
+.orders_list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.order_card {
+    background: #fffdfa;
+    border-radius: 20px;
+    border-left: 3px solid #6b3282;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.order_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px dashed #dcbae6;
+    padding-bottom: 10px;
+}
+
+.order_id {
+    font-family: "Coolvetica", sans-serif;
+    color: #6b3282;
+    font-size: 18px;
+}
+
+.order_date {
+    font-family: Arial, sans-serif;
+    color: #707070;
+    font-size: 14px;
+}
+
+.order_details p {
+    font-family: Arial, sans-serif;
+    color: #312e2e;
+    font-size: 15px;
+    margin: 5px 0;
+}
+
+.order_status {
+    font-family: "Coolvetica", sans-serif;
+    font-size: 14px;
+    padding: 5px 15px;
+    border-radius: 20px;
+    align-self: flex-start; /* Prevents the badge from stretching across the card */
+}
+
+/* Status Colors (Matching the Owner Dashboard!) */
+.status_pending { background-color: #FFF2D9; color: #F4C430; border: 1px solid #F4C430; }
+.status_completed { background-color: #E8F5E9; color: #4CAF50; border: 1px solid #4CAF50; }
+
+.no_orders_text {
+    font-family: Arial, sans-serif;
+    color: #707070;
+    font-style: italic;
+    text-align: center;
+    padding: 20px 0;
+}
+
 @media screen and (max-width: 768px) {
     .account_container {
         padding: 20px;
@@ -147,6 +231,22 @@
 
     .action_btn {
         width: 100%;
+        max-width: 250px; /* Stops them from touching the edges */
         padding: 12px 20px;
+        margin: 0 auto; /* Keeps them perfectly centered */
     }
 }
+
+/* --- Mobile Order Adjustments --- */
+    .account_orders_section {
+        padding: 20px;
+    }
+    .order_header {
+        flex-direction: column; /* Stacks the Order ID and the Date */
+        align-items: flex-start;
+        gap: 5px;
+    }
+
+    .order_card {
+        padding: 15px; /* Slightly tighter padding for smaller screens */
+    }

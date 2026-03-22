@@ -3,7 +3,9 @@
 </button>
 
 <aside class="sidenav" id="mySidenav">
-    <button class="close_sidenav" id="closeSidenav">&times;</button>
+    <button class="close_sidenav" id="closeSidenav">
+        <svg xmlns="http://www.w3.org/2000/svg" height="32" viewBox="0 -960 960 960" width="32" fill="currentColor"><path d="M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z"/></svg>
+    </button>
 
     <div class="nav_top">
         <img src="{{ asset('images/brand_elements/label_name.png') }}">
