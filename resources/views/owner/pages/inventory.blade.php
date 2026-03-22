@@ -73,7 +73,7 @@
         <div class="input_group">
             <div class="consumed_header">
                 <label>Products Consumed</label>
-                <span class="consumed_note">One material is consumed for every amount of this quantity:</span>
+                <span class="consumed_note">One material is consumed for<br>every amount of this quantity:</span>
             </div>
             
             <div class="consumed_list">
