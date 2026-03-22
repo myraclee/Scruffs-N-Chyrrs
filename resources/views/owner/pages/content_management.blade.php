@@ -240,6 +240,62 @@
         </div>
 
     </section>
+
+    {{-- FAQs SECTION --}}
+    <section class="content_section" id="faqs">
+        <h2 class="faqs_header">Frequently Asked Questions</h2>
+
+        <p class="empty_faqs" id="emptyFaqsText">No FAQs available yet.</p>
+        <div id="faqsContainer" class="faqs_container"></div>
+
+        <button id="add_faq_btn" class="add_faq_button">Add FAQ</button>
+
+        {{-- Add / Edit FAQ Modal --}}
+        <div class="add_faq_modal" id="faqModalOverlay">
+            <div class="add_faq_modal_box" id="faqModal">
+                <h2 class="modal_title" id="faqModalTitle">Add New FAQ</h2>
+                <p class="faq_description">Manage your Frequently Asked Questions</p>
+
+                <label for="faqCategory">Category</label>
+                <div class="select_wrapper">
+                    <select id="faqCategory" class="faq_category_select">
+                        <option value="">Select a category</option>
+                        <option value="General Questions">General Questions</option>
+                        <option value="Shipping & Orders">Shipping & Orders</option>
+                        <option value="Customization & Finishes">Customization & Finishes</option>
+                        <option value="Pricing & Discounts">Pricing & Discounts</option>
+                    </select>
+                </div>
+                <span id="faqCategoryError" class="faq_error_message hidden">Category is required.</span>
+
+                <label for="faqQuestion">Question</label>
+                <input type="text" id="faqQuestion" class="faq_question_input" placeholder="Enter question" maxlength="255" />
+                <span id="faqQuestionError" class="faq_error_message hidden">Question is required.</span>
+
+                <label for="faqAnswer">Answer</label>
+                <textarea id="faqAnswer" class="faq_answer_input" placeholder="Enter answer" rows="6"></textarea>
+                <span id="faqAnswerError" class="faq_error_message hidden">Answer is required.</span>
+
+                <div class="faq_modal_actions">
+                    <button class="delete_faq_modal_btn btn_hidden" id="deleteFaqBtn" type="button">Delete</button>
+                    <div class="faq_modal_actions_right">
+                        <button class="cancel_faq" type="button">Cancel</button>
+                        <button class="save_faq" type="button">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Delete Confirmation Modal --}}
+        <div class="modal_overlay" id="deleteFaqModalOverlay">
+            <div class="delete_confirm_box faq_delete_box">
+                <p class="delete_msg">Do you wish to delete the<br>selected FAQ?</p>
+                <button class="faq_delete_btn_large" id="deleteFaqConfirmBtn" type="button">Delete FAQ</button>
+                <small class="delete_subtext">This process cannot be undone</small>
+            </div>
+        </div>
+
+    </section>
 @endsection
 
 @vite('resources/js/owner/content_page/main_content_page.js')
@@ -247,3 +303,5 @@
 @vite('resources/js/owner/content_page/product_sample_modal.js')
 @vite('resources/js/owner/content_page/products_page_content_refactored.js')
 @vite('resources/js/owner/content_page/order_template.js')
+@vite('resources/js/owner/content_page/faq_management.js')
+@vite(['resources/css/owner/pages/content_management/faq_management.css'])
