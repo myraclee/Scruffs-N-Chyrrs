@@ -38,36 +38,40 @@
 </div>
 
         <div class="account_orders_section">
-            <h2>My Orders</h2>
+            <h2>My Orders >o<</h2>
             
             <div class="orders_list">
-                <div class="order_card">
-                    <div class="order_header">
-                        <span class="order_id">Order #10042</span>
-                        <span class="order_date">March 15, 2026</span>
-                    </div>
-                    <div class="order_details">
-                        <p><strong>Items:</strong> 50x Glossy Stickers, 20x Button Pins</p>
-                        <p><strong>Total:</strong> Php 1,250.00</p>
-                    </div>
-                    <div class="order_status status_pending">Pending</div>
-                </div>
-
-                <div class="order_card">
-                    <div class="order_header">
-                        <span class="order_id">Order #10038</span>
-                        <span class="order_date">March 02, 2026</span>
-                    </div>
-                    <div class="order_details">
-                        <p><strong>Items:</strong> 100x Matte Business Cards</p>
-                        <p><strong>Total:</strong> Php 850.00</p>
-                    </div>
-                    <div class="order_status status_completed">Completed</div>
-                </div>
                 
-                </div>
+                {{-- 🚀 BACKEND DEV (AARON): Replace Auth::user()->orders with the actual relationship/variable --}}
+                @forelse (Auth::user()->orders ?? [] as $order)
+                    <div class="order_card">
+                        <div class="order_header">
+                            <span class="order_id">Order #{{ $order->id ?? '0000' }}</span>
+                            <span class="order_date">{{ $order->created_at ? $order->created_at->format('F d, Y') : 'Date Pending' }}</span>
+                        </div>
+                        <div class="order_details">
+                            <p><strong>Items:</strong> 
+                                {{-- Aaron: Loop through order items or use an items summary attribute here --}}
+                                {{ $order->items_summary ?? 'Your lovely items' }}
+                            </p>
+                            <p><strong>Total:</strong> Php {{ number_format($order->total_amount ?? 0, 2) }}</p>
+                        </div>
+                        
+                        <div class="order_status status_{{ strtolower($order->status ?? 'pending') }}">
+                            {{ ucfirst($order->status ?? 'Pending') }}
+                        </div>
+                    </div>
+                
+                @empty
+                    <div class="empty_orders">
+                        <p class="no_orders_text">Oops! You haven't ordered anything yet~ ( ´ ▽ ` )</p>
+                        <p class="no_orders_subtext">Time to bring your imagination to life!</p>
+                    </div>
+                @endforelse
+                
+            </div>
         </div>
-        
+
         <div class="account_actions">
             <a href="{{ route('edit-profile') }}" class="action_btn edit_btn">Edit Profile</a>
             <a href="{{ route('change-password') }}" class="action_btn change_password_btn">Change Password</a>

@@ -199,6 +199,29 @@
     align-self: flex-start; /* Prevents the badge from stretching across the card */
 }
 
+/* --- Empty Orders State --- */
+.empty_orders {
+    text-align: center;
+    padding: 30px 15px;
+    background: #fffdfa;
+    border-radius: 20px;
+    border: 2px dashed #dcbae6;
+}
+
+.no_orders_text {
+    font-family: "Coolvetica", sans-serif;
+    color: #6b3282;
+    font-size: 20px;
+    margin-bottom: 8px;
+}
+
+.no_orders_subtext {
+    font-family: Arial, sans-serif;
+    color: #707070;
+    font-size: 14px;
+    margin: 0;
+}
+
 /* Status Colors (Matching the Owner Dashboard!) */
 .status_pending { background-color: #FFF2D9; color: #F4C430; border: 1px solid #F4C430; }
 .status_completed { background-color: #E8F5E9; color: #4CAF50; border: 1px solid #4CAF50; }
