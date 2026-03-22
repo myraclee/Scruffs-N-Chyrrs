@@ -524,6 +524,8 @@ function renderProducts() {
     products_list.forEach((product) => {
         const card = document.createElement("div");
         card.className = "products_card";
+        card.style.display = "flex";
+        card.style.alignItems = "center";
 
         const img = document.createElement("img");
         img.className = "products_card_image";
@@ -540,12 +542,12 @@ function renderProducts() {
 
         const editBtn = document.createElement("button");
         editBtn.textContent = "Edit";
-        editBtn.className = "products_button_save";
-        editBtn.style.marginTop = "5px";
+        editBtn.className = "products_button_edit";
+        editBtn.style.marginLeft = "auto";
         editBtn.onclick = () => editProduct(product.id);
 
-        infoDiv.append(title, editBtn);
-        card.append(img, infoDiv);
+        infoDiv.append(title);
+        card.append(img, infoDiv, editBtn);
         products_container.appendChild(card);
     });
 }

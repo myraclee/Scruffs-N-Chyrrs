@@ -49,11 +49,12 @@
     height: 230px;
     width: 160px;
     background-color: #fff7ec;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    border: 2px solid #682c7a;
     cursor: pointer;
     transition: transform 0.2s ease;
-    border-radius: 12px;
+    border-radius: 20px;
     overflow: hidden;
+    padding: 8px;
 }
 
 .products_card:hover {
@@ -378,6 +379,22 @@
 }
 
 /* ================= BUTTONS ================= */
+
+.products_button_edit {
+    border: none;
+    outline: none;
+    width: 60px;
+    height: 25px;
+    background-color: #682c7a;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    border-radius: 30px;
+    font-family: Coolvetica;
+    font-size: 12px;
+    color: #fff7ec;
+    cursor: pointer;
+    align-self: end;
+}
+
 .products_button_save {
     border: none;
     padding: 8px 14px;

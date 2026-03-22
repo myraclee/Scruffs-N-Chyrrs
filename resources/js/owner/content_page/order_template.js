@@ -1,6 +1,6 @@
 // ================= IMPORTS =================
-import orderTemplateApi from '../../api/orderTemplateApi.js';
-import toast from '../../utils/toast.js';
+import orderTemplateApi from "../../api/orderTemplateApi.js";
+import toast from "../../utils/toast.js";
 
 // ==================== PRODUCT STORE ====================
 
@@ -383,6 +383,20 @@ function validateProductDetails() {
     return valid;
 }
 
+function validatePricing() {
+    let valid = true;
+    document.querySelectorAll(".combination_price_input").forEach((input) => {
+        const val = input.value.trim();
+        if (!val || isNaN(parseFloat(val))) {
+            input.classList.add("input_error");
+            valid = false;
+        } else {
+            input.classList.remove("input_error");
+        }
+    });
+    return valid;
+}
+
 // ==================== PRICING COMBINATIONS ====================
 
 function cartesian(arrays) {
@@ -437,6 +451,9 @@ function generateCombinations() {
             priceInput.value = priceInput.value
                 .replace(/[^0-9.]/g, "")
                 .replace(/(\..*?)\..*/g, "$1");
+            if (priceInput.value.trim()) {
+                priceInput.classList.remove("input_error");
+            }
         });
 
         if (savedData[labelText]) {
@@ -583,70 +600,91 @@ function collectProductData() {
 // ==================== SAVE ====================
 
 function setupSaveButton() {
-    document.querySelector(".save_product").addEventListener("click", async () => {
-        if (!validateProductDetails()) {
-            switchTab("details");
-            return;
-        }
-
-        if (isLoading) return;
-        isLoading = true;
-
-        try {
-            const data = collectProductData();
-            const nameSelect = document.getElementById("productName");
-            const selectedProductName = nameSelect.value.trim();
-
-            // Get the product ID by fetching all products
-            const allProducts = await fetch('/api/products')
-                .then(r => r.json())
-                .then(d => d.data || []);
-
-            const selectedProduct = allProducts.find(p => p.name === selectedProductName);
-            if (!selectedProduct) {
-                toast.error('Selected product not found');
-                isLoading = false;
+    document
+        .querySelector(".save_product")
+        .addEventListener("click", async () => {
+            if (!validateProductDetails()) {
+                switchTab("details");
                 return;
             }
 
-            const payload = {
-                product_id: selectedProduct.id,
-                options: data.options,
-                pricings: Object.entries(data.combinations).map(([key, price]) => ({
-                    combination_key: key,
-                    price: parseFloat(price) || 0,
-                })),
-                discounts: data.discountEnabled && data.discountRows.length > 0
-                    ? data.discountRows.map((row, idx) => ({
-                        min_quantity: parseInt(row.qty) || 0,
-                        price_reduction: parseFloat(row.reduction) || 0,
-                        position: idx,
-                    }))
-                    : [],
-            };
+            // Ensure pricing combinations are generated before validating
+            generateCombinations();
 
-            let result;
-            if (editingProductId !== null) {
-                // Update existing template
-                result = await orderTemplateApi.updateOrderTemplate(editingProductId, payload);
-                toast.success('Order template updated successfully');
-            } else {
-                // Create new template
-                result = await orderTemplateApi.createOrderTemplate(payload);
-                toast.success('Order template created successfully');
+            if (!validatePricing()) {
+                switchTab("pricing");
+                toast.error("Please fill in all combination prices.");
+                return;
             }
 
-            // Reload templates and refresh UI
-            await loadOrderTemplates();
-            resetModal();
-            closeModal();
-        } catch (error) {
-            console.error('Error saving order template:', error);
-            toast.error(error.message || 'Failed to save order template');
-        } finally {
-            isLoading = false;
-        }
-    });
+            if (isLoading) return;
+            isLoading = true;
+
+            try {
+                const data = collectProductData();
+                const nameSelect = document.getElementById("productName");
+                const selectedProductName = nameSelect.value.trim();
+
+                // Get the product ID by fetching all products
+                const allProducts = await fetch("/api/products")
+                    .then((r) => r.json())
+                    .then((d) => d.data || []);
+
+                const selectedProduct = allProducts.find(
+                    (p) => p.name === selectedProductName,
+                );
+                if (!selectedProduct) {
+                    toast.error("Selected product not found");
+                    isLoading = false;
+                    return;
+                }
+
+                const payload = {
+                    product_id: selectedProduct.id,
+                    options: data.options,
+                    pricings: Object.entries(data.combinations).map(
+                        ([key, price]) => ({
+                            combination_key: key,
+                            price: parseFloat(price) || 0,
+                        }),
+                    ),
+                    discounts:
+                        data.discountEnabled && data.discountRows.length > 0
+                            ? data.discountRows.map((row, idx) => ({
+                                  min_quantity: parseInt(row.qty) || 0,
+                                  price_reduction:
+                                      parseFloat(row.reduction) || 0,
+                                  position: idx,
+                              }))
+                            : [],
+                };
+
+                let result;
+                if (editingProductId !== null) {
+                    // Update existing template
+                    result = await orderTemplateApi.updateOrderTemplate(
+                        editingProductId,
+                        payload,
+                    );
+                    toast.success("Order template updated successfully");
+                } else {
+                    // Create new template
+                    result =
+                        await orderTemplateApi.createOrderTemplate(payload);
+                    toast.success("Order template created successfully");
+                }
+
+                // Reload templates and refresh UI
+                await loadOrderTemplates();
+                resetModal();
+                closeModal();
+            } catch (error) {
+                console.error("Error saving order template:", error);
+                toast.error(error.message || "Failed to save order template");
+            } finally {
+                isLoading = false;
+            }
+        });
 }
 
 // ==================== DELETE CONFIRMATION ====================
@@ -674,7 +712,7 @@ function setupDeleteButton() {
 
             try {
                 await orderTemplateApi.deleteOrderTemplate(pendingDeleteId);
-                toast.success('Order template deleted successfully');
+                toast.success("Order template deleted successfully");
 
                 pendingDeleteId = null;
                 confirmOverlay.classList.remove("active");
@@ -684,8 +722,8 @@ function setupDeleteButton() {
                 resetModal();
                 closeModal();
             } catch (error) {
-                console.error('Error deleting order template:', error);
-                toast.error(error.message || 'Failed to delete order template');
+                console.error("Error deleting order template:", error);
+                toast.error(error.message || "Failed to delete order template");
             } finally {
                 isLoading = false;
             }
@@ -707,8 +745,8 @@ async function loadOrderTemplates() {
         products = await orderTemplateApi.getAllOrderTemplates();
         renderProducts();
     } catch (error) {
-        console.error('Error loading order templates:', error);
-        toast.error('Failed to load order templates');
+        console.error("Error loading order templates:", error);
+        toast.error("Failed to load order templates");
     } finally {
         isLoading = false;
     }
@@ -780,7 +818,9 @@ function createProductCard(template) {
 
     function updateCardPrice() {
         const key = selects.map((s) => s.value).join(" | ");
-        const pricing = template.pricings.find(p => p.combination_key === key);
+        const pricing = template.pricings.find(
+            (p) => p.combination_key === key,
+        );
         const price = pricing?.price;
         priceDiv.textContent = price ? `₱${parseFloat(price).toFixed(2)}` : "—";
     }
@@ -829,7 +869,8 @@ function openEditModal(templateId) {
             const row = createSpecRow();
             row.querySelector(".product_availability input").checked =
                 optType.is_available;
-            row.querySelector(".product_option_name input").value = optType.type_name;
+            row.querySelector(".product_option_name input").value =
+                optType.type_name;
             specWrapper.appendChild(row);
         });
         refreshSpecButtons(specWrapper);
@@ -852,6 +893,9 @@ function openEditModal(templateId) {
             priceInput.value = priceInput.value
                 .replace(/[^0-9.]/g, "")
                 .replace(/(\..*?)\..*/g, "$1");
+            if (priceInput.value.trim()) {
+                priceInput.classList.remove("input_error");
+            }
         });
         row.appendChild(label);
         row.appendChild(priceInput);
@@ -903,7 +947,8 @@ function openDetailModal(templateId) {
     const template = products.find((p) => p.id === templateId);
     if (!template) return;
 
-    document.getElementById("detailProductName").textContent = template.product.name;
+    document.getElementById("detailProductName").textContent =
+        template.product.name;
 
     const optContainer = document.getElementById("detailOptionsContainer");
     optContainer.innerHTML = "";
@@ -938,7 +983,9 @@ function openDetailModal(templateId) {
 
     function updateDetailPrice() {
         const key = selects.map((s) => s.value).join(" | ");
-        const pricing = template.pricings.find(p => p.combination_key === key);
+        const pricing = template.pricings.find(
+            (p) => p.combination_key === key,
+        );
         const price = pricing?.price;
         priceEl.textContent = price ? `₱${parseFloat(price).toFixed(2)}` : "—";
     }
