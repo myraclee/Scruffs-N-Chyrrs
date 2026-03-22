@@ -80,10 +80,6 @@ function enforceNumeric(input) {
 
 // ==================== PRODUCT NAME DROPDOWN ====================
 
-/**
- * Populate the Product Name <select> from a list of product objects.
- * Preserves the currently selected value if it still exists.
- */
 function populateProductSelect(productList) {
     const select = document.getElementById("productName");
     const currentVal = select.value;
@@ -104,7 +100,6 @@ function populateProductSelect(productList) {
         select.appendChild(opt);
     });
 
-    // Re-select previous value if it still exists in the list
     if (currentVal) {
         const match = Array.from(select.options).find(
             (o) => o.value === currentVal,
@@ -113,10 +108,6 @@ function populateProductSelect(productList) {
     }
 }
 
-/**
- * Fetch product names from the API and populate the select.
- * Falls back gracefully if the API is unavailable.
- */
 async function loadProductNamesFromAPI() {
     try {
         const response = await fetch("/api/products", {
@@ -131,7 +122,6 @@ async function loadProductNamesFromAPI() {
     }
 }
 
-// Listen for products being saved/deleted on the same page (same-page sync)
 window.addEventListener("productsUpdated", (e) => {
     populateProductSelect(e.detail ?? []);
 });
@@ -202,6 +192,7 @@ function createSpecRow() {
     );
 
     addSvg.addEventListener("click", () => {
+        // parentElement is now specInputsDiv
         const wrapper = row.parentElement;
         row.after(createSpecRow());
         refreshSpecButtons(wrapper);
@@ -213,8 +204,9 @@ function createSpecRow() {
         refreshSpecButtons(wrapper);
     });
 
-    actionsRow.appendChild(addSvg);
+    // Delete is always first (left), then Add
     actionsRow.appendChild(delSvg);
+    actionsRow.appendChild(addSvg);
     actionsWrap.appendChild(actionsRow);
     row.appendChild(avail);
     row.appendChild(optName);
@@ -266,9 +258,20 @@ function createOptionContainer(index) {
 
     const specWrapper = document.createElement("div");
     specWrapper.className = "spec_rows_wrapper";
-    specWrapper.appendChild(createSpecLabelRow());
-    specWrapper.appendChild(createSpecRow());
-    refreshSpecButtons(specWrapper);
+
+    // Header row lives in its own div — gets the top margin
+    const specHeaderDiv = document.createElement("div");
+    specHeaderDiv.className = "spec_header_div";
+    specHeaderDiv.appendChild(createSpecLabelRow());
+
+    // Input rows live in their own div — no gap between siblings
+    const specInputsDiv = document.createElement("div");
+    specInputsDiv.className = "spec_inputs_div";
+    specInputsDiv.appendChild(createSpecRow());
+
+    specWrapper.appendChild(specHeaderDiv);
+    specWrapper.appendChild(specInputsDiv);
+    refreshSpecButtons(specInputsDiv);
 
     const actions = document.createElement("div");
     actions.className = "product_option_actions";
@@ -608,7 +611,6 @@ function setupSaveButton() {
                 return;
             }
 
-            // Ensure pricing combinations are generated before validating
             generateCombinations();
 
             if (!validatePricing()) {
@@ -625,7 +627,6 @@ function setupSaveButton() {
                 const nameSelect = document.getElementById("productName");
                 const selectedProductName = nameSelect.value.trim();
 
-                // Get the product ID by fetching all products
                 const allProducts = await fetch("/api/products")
                     .then((r) => r.json())
                     .then((d) => d.data || []);
@@ -661,20 +662,17 @@ function setupSaveButton() {
 
                 let result;
                 if (editingProductId !== null) {
-                    // Update existing template
                     result = await orderTemplateApi.updateOrderTemplate(
                         editingProductId,
                         payload,
                     );
                     toast.success("Order template updated successfully");
                 } else {
-                    // Create new template
                     result =
                         await orderTemplateApi.createOrderTemplate(payload);
                     toast.success("Order template created successfully");
                 }
 
-                // Reload templates and refresh UI
                 await loadOrderTemplates();
                 resetModal();
                 closeModal();
@@ -717,7 +715,6 @@ function setupDeleteButton() {
                 pendingDeleteId = null;
                 confirmOverlay.classList.remove("active");
 
-                // Reload templates and refresh UI
                 await loadOrderTemplates();
                 resetModal();
                 closeModal();
@@ -779,7 +776,6 @@ function createProductCard(template) {
     optionsDiv.className = "product_card_options";
     const selects = [];
 
-    // Transform API response to card structure
     template.options.forEach((opt) => {
         const wrap = document.createElement("div");
         wrap.className = "product_card_option_wrap";
@@ -861,19 +857,23 @@ function openEditModal(templateId) {
         const container = createOptionContainer(i + 1);
         wrapper.appendChild(container);
         container.querySelector(".product_option_input").value = opt.label;
+
         const specWrapper = container.querySelector(".spec_rows_wrapper");
-        specWrapper
+        // Target only the inputs div — not the header div
+        const specInputsDiv = specWrapper.querySelector(".spec_inputs_div");
+        specInputsDiv
             .querySelectorAll(".spec_input_row")
             .forEach((r) => r.remove());
+
         opt.option_types.forEach((optType) => {
             const row = createSpecRow();
             row.querySelector(".product_availability input").checked =
                 optType.is_available;
             row.querySelector(".product_option_name input").value =
                 optType.type_name;
-            specWrapper.appendChild(row);
+            specInputsDiv.appendChild(row);
         });
-        refreshSpecButtons(specWrapper);
+        refreshSpecButtons(specInputsDiv);
     });
     refreshOptionButtons();
 
@@ -1043,10 +1043,7 @@ function initModal() {
     setupSaveButton();
     setupDeleteButton();
 
-    // Load product names into the dropdown from the API
     loadProductNamesFromAPI();
-
-    // Load existing order templates from the API on page load
     loadOrderTemplates();
 }
 
