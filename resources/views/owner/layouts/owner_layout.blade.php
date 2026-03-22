@@ -11,7 +11,6 @@
 </head>
 
 <body>
-    <button class="menu-toggle">☰</button>
 
     @include('owner.parts.sidenav')
 

@@ -57,7 +57,17 @@
         </div>
     </div>
 
-    <h2 class="section_title">Charts</h2>
+    <div class="charts_header_container">
+        <h2 class="section_title" style="margin: 0;">Charts</h2>
+        <select id="yearSelector" class="year_dropdown" onchange="updateAllCharts()">
+            <option value="2026" selected>2026</option>
+            <option value="2027">2027</option>
+            <option value="2028">2028</option>
+            <option value="2029">2029</option>
+            <option value="2030">2030</option>
+        </select>
+    </div>
+
     <div class="charts_container">
         
         <div class="chart_card">
@@ -103,54 +113,55 @@
     document.addEventListener('DOMContentLoaded', function() {
         
         // ==========================================
-        // backend instructions for aaron:
-        // Replace the 'mockDatabaseData' object below with real data from the controller.
-        // You can inject it directly using Laravel's json directive like this:
-        // const chartData = @@json($chartData);
+        // 🚀 BACKEND DEV INSTRUCTIONS (AARON):
+        // The data is now nested by YEAR. 
+        // Inject your JSON here: const chartData = @@json($chartData);
         // ==========================================
         
         const chartData = {
-            // Array of 12 numbers representing total revenue from Jan to Dec
-            monthly_revenue: [150, 90, 480, 20, 290, 350, 410, 250, 500, 180, 320, 450], 
-            
-            // Object holding 12 arrays. Each array has 5 numbers representing the 5 categories: 
-            // [Stickers, Button Pins, Posters, Business Cards, Photocards]
-            monthly_sales_categories: {
-                0: [40, 20, 10, 10, 20],  // Jan
-                1: [25, 30, 15,  5, 25],  // Feb
-                2: [50, 10,  5, 15, 20],  // Mar
-                3: [10, 40, 20, 10, 20],  // Apr
-                4: [45, 15, 10, 20, 10],  // May
-                5: [35, 20, 15, 15, 15],  // Jun
-                6: [40, 20, 10, 10, 20],  // Jul
-                7: [30, 25, 15,  5, 25],  // Aug
-                8: [50, 10,  5, 15, 20],  // Sep
-                9: [20, 30, 20, 10, 20],  // Oct
-                10:[45, 15, 10, 20, 10],  // Nov
-                11:[35, 20, 15, 15, 15]   // Dec
+            "2026": {
+                monthly_revenue: [150, 90, 480, 20, 290, 350, 410, 250, 500, 180, 320, 450], 
+                monthly_sales_categories: {
+                    0: [40, 20, 10, 10, 20], 1: [25, 30, 15,  5, 25], 2: [50, 10,  5, 15, 20], 
+                    3: [10, 40, 20, 10, 20], 4: [45, 15, 10, 20, 10], 5: [35, 20, 15, 15, 15], 
+                    6: [40, 20, 10, 10, 20], 7: [30, 25, 15,  5, 25], 8: [50, 10,  5, 15, 20], 
+                    9: [20, 30, 20, 10, 20], 10:[45, 15, 10, 20, 10], 11:[35, 20, 15, 15, 15]
+                }
+            },
+            "2027": {
+                monthly_revenue: [200, 300, 150, 600, 450, 500, 700, 350, 800, 400, 650, 900], // Noticeably higher fake sales!
+                monthly_sales_categories: {
+                    0: [10, 50, 20, 10, 10], 1: [15, 45, 20, 10, 10], 2: [20, 40, 20, 10, 10], 
+                    3: [25, 35, 20, 10, 10], 4: [30, 30, 20, 10, 10], 5: [35, 25, 20, 10, 10], 
+                    6: [40, 20, 20, 10, 10], 7: [45, 15, 20, 10, 10], 8: [50, 10, 20, 10, 10], 
+                    9: [55,  5, 20, 10, 10], 10:[60,  0, 20, 10, 10], 11:[65,  0, 15, 10, 10]
+                }
             }
+            // Backend will naturally generate 2028, 2029, etc. here
         };
 
-        // --- 1. Monthly Revenue Bar Chart ---
+        // --- Initialize Charts with default 2026 data ---
+        const currentYear = "2026";
+        const currentMonthIndex = 2; // March
+
+        // 1. Monthly Revenue Bar Chart
         const revCtx = document.getElementById('revenueChart').getContext('2d');
-        new Chart(revCtx, {
+        window.revenueBarChart = new Chart(revCtx, {
             type: 'bar',
             data: {
                 labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
                 datasets: [{
                     label: 'Revenue (Php)',
-                    data: chartData.monthly_revenue, // <--- PULLS FROM THE UNIFIED DATA
+                    data: chartData[currentYear].monthly_revenue, 
                     backgroundColor: [
                         '#DCBAE6', '#9659A7', '#DCBAE6', '#9659A7', '#DCBAE6', '#9659A7',
                         '#DCBAE6', '#9659A7', '#DCBAE6', '#9659A7', '#DCBAE6', '#9659A7'
                     ],
-                    borderRadius: 10, 
-                    barThickness: 40
+                    borderRadius: 10, barThickness: 40
                 }]
             },
             options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
                 scales: {
                     y: { beginAtZero: true, grid: { display: false }, ticks: { font: { family: 'Coolvetica' } } },
                     x: { grid: { display: false }, ticks: { font: { family: 'Coolvetica' } } }
@@ -158,14 +169,14 @@
             }
         });
 
-        // --- 2. Monthly Sales Pie Chart ---
+        // 2. Monthly Sales Pie Chart
         const salesCtx = document.getElementById('salesChart').getContext('2d');
         window.salesPieChart = new Chart(salesCtx, {
             type: 'pie',
             data: {
                 labels: ['Stickers', 'Button Pins', 'Posters', 'Business Cards', 'Photocards'],
                 datasets: [{
-                    data: chartData.monthly_sales_categories[2], // <--- Defaults to March (Index 2)
+                    data: chartData[currentYear].monthly_sales_categories[currentMonthIndex],
                     backgroundColor: ['#9659A7', '#DCBAE6', '#FFF2D9', '#F4D6D2', '#CDBAA7'],
                     borderWidth: 0
                 }]
@@ -173,21 +184,41 @@
             options: {
                 responsive: true, maintainAspectRatio: false,
                 plugins: {
-                    legend: {
-                        position: 'top',
-                        labels: { font: { family: 'Coolvetica', size: 12 }, usePointStyle: true, boxWidth: 8 }
-                    }
+                    legend: { position: 'top', labels: { font: { family: 'Coolvetica', size: 12 }, usePointStyle: true, boxWidth: 8 } }
                 }
             }
         });
 
-        // --- 3. Interactive Dropdown Logic ---
+        // --- Interactive Dropdown Logic ---
+        
+        // Triggers when the MONTH changes
         window.updatePieChart = function() {
-            const dropdown = document.getElementById('monthSelector');
-            const selectedMonthIndex = dropdown.value; 
+            const selectedYear = document.getElementById('yearSelector').value;
+            const selectedMonthIndex = document.getElementById('monthSelector').value; 
             
-            // Swap out the data array with the newly selected month from our unified data object
-            window.salesPieChart.data.datasets[0].data = chartData.monthly_sales_categories[selectedMonthIndex];
+            // Failsafe: if year doesn't exist in data yet, don't crash
+            if(!chartData[selectedYear]) return; 
+
+            window.salesPieChart.data.datasets[0].data = chartData[selectedYear].monthly_sales_categories[selectedMonthIndex];
+            window.salesPieChart.update();
+        };
+
+        // Triggers when the YEAR changes (Updates BOTH charts!)
+        window.updateAllCharts = function() {
+            const selectedYear = document.getElementById('yearSelector').value;
+            
+            // Failsafe: If they pick 2028 and Aaron hasn't added data, just clear the charts so it doesn't crash
+            if(!chartData[selectedYear]) {
+                window.revenueBarChart.data.datasets[0].data = [];
+                window.salesPieChart.data.datasets[0].data = [];
+            } else {
+                // 1. Update Bar Chart
+                window.revenueBarChart.data.datasets[0].data = chartData[selectedYear].monthly_revenue;
+                // 2. Update Pie Chart (by calling the month function to re-read the currently selected month)
+                window.updatePieChart(); 
+            }
+            
+            window.revenueBarChart.update();
             window.salesPieChart.update();
         };
     });

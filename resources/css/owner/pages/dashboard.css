@@ -95,6 +95,35 @@
 .chart_scroll_area::-webkit-scrollbar-thumb:hover { 
     background: #9659A7; 
 }
+
+/* --- Global Charts Header & Year Dropdown --- */
+.charts_header_container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 40px;
+    margin-bottom: 20px;
+}
+
+.year_dropdown {
+    font-family: 'Coolvetica', sans-serif;
+    font-size: 20px; /* Slightly larger than the month dropdown to show hierarchy */
+    color: #682C7A;
+    border: 2px solid #682C7A;
+    border-radius: 10px;
+    padding: 5px 15px;
+    background-color: #FFF7EC;
+    cursor: pointer;
+    outline: none;
+    transition: 0.2s;
+}
+
+.year_dropdown:hover, .year_dropdown:focus {
+    border-color: #A15FB5;
+    background-color: #fff;
+}
+
 /* --- Pie Chart Header & Dropdown --- */
 .chart_header_row { 
     display: flex; 
@@ -120,4 +149,30 @@
 .month_dropdown:hover, .month_dropdown:focus { 
     border-color: #A15FB5; 
     background-color: #fff;
+}
+
+/* --- DASHBOARD MEDIA QUERIES --- */
+
+/* Tablets (iPad size) */
+@media (max-width: 1024px) {
+    .sales_grid { grid-template-columns: repeat(2, 1fr); } /* 4 boxes become 2x2 */
+    .dashboard_container { padding: 20px; }
+}
+
+/* Mobile Phones */
+@media (max-width: 768px) {
+    .welcome_header { 
+        font-size: 40px; /* Shrinks the giant text */
+        text-align: center; /* Centers it on mobile */
+    }
+    
+    .report_grid { grid-template-columns: 1fr; } /* 3 boxes stack into 1 column */
+    .sales_grid { grid-template-columns: 1fr; }  /* 2x2 boxes stack into 1 column */
+    
+    .chart_header_row { 
+        flex-direction: column; /* Puts the dropdown under the title */
+        gap: 15px; 
+    }
+    
+    .chart_card { padding: 15px; } /* Less padding on small phone screens */
 }
