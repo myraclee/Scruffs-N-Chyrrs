@@ -224,13 +224,40 @@
 }
 
 /* Modal Buttons */
-<<<<<<< HEAD
-.modal_actions { display: flex; justify-content: center; gap: 20px; margin-top: 10px; }
-.cancel_btn, .save_btn { font-family: Coolvetica; font-size: 18px; padding: 12px 30px; border: none; border-radius: 25px; cursor: pointer; color: white; }
-.cancel_btn { background: #9E9E9E; }
-.cancel_btn:hover { background: #7A7A7A; }
-.save_btn { background: #682C7A; }
-.save_btn:hover { background: #A15FB5; }
+/* Modal Buttons */
+.modal_actions {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 10px;
+}
+
+.cancel_btn,
+.save_btn {
+    font-family: 'Coolvetica', sans-serif;
+    font-size: 18px;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    color: white;
+}
+
+.cancel_btn {
+    background: #9e9e9e;
+}
+
+.cancel_btn:hover {
+    background: #7a7a7a;
+}
+
+.save_btn {
+    background: #682c7a;
+}
+
+.save_btn:hover {
+    background: #a15fb5;
+}
 
 /* ==========================================
    INVENTORY MEDIA QUERIES
@@ -248,27 +275,27 @@
     .page_title { 
         font-size: 38px; 
         margin-top: 10px;
-        line-height: 1.1; /* Keeps "Inventory Management" tightly stacked */
+        line-height: 1.1; 
     }
     
     /* Stack the Status Cards */
     .status_cards { 
-        flex-direction: column; /* Changes them from side-by-side to stacked */
+        flex-direction: column; 
         gap: 15px; 
         padding: 0 15px; 
     }
     
     /* Responsive Table Wrapper */
     .table_wrapper { 
-        margin: 0 15px 30px 15px; /* Adds breathing room on the left/right */
-        overflow-x: auto; /* MAGIC FIX: Lets the table scroll left/right if it gets too wide! */
+        margin: 0 15px 30px 15px; 
+        overflow-x: auto; 
     }
     .inventory_table th { font-size: 16px; padding: 12px 10px; }
     .inventory_table td { font-size: 14px; padding: 12px 10px; }
     
     /* Mobile Modal Fixes */
     .material_modal {
-        width: 90%; /* Shrinks the fixed 500px width to fit the screen */
+        width: 90%; 
         padding: 25px;
     }
     .modal_title { font-size: 32px; }
@@ -287,33 +314,3 @@
     }
     .cancel_btn, .save_btn { width: 100%; } 
 }
-=======
-.modal_actions {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin-top: 10px;
-}
-.cancel_btn,
-.save_btn {
-    font-family: Coolvetica;
-    font-size: 18px;
-    padding: 12px 30px;
-    border: none;
-    border-radius: 25px;
-    cursor: pointer;
-    color: white;
-}
-.cancel_btn {
-    background: #9e9e9e;
-}
-.cancel_btn:hover {
-    background: #7a7a7a;
-}
-.save_btn {
-    background: #682c7a;
-}
-.save_btn:hover {
-    background: #a15fb5;
-}
->>>>>>> e1d9f11d3192f96ddb827e16757645d1baa0ef7f
