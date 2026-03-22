@@ -57,3 +57,59 @@
 .cancel_btn:hover { background: #7A7A7A; }
 .save_btn { background: #682C7A; }
 .save_btn:hover { background: #A15FB5; }
+
+/* ==========================================
+   INVENTORY MEDIA QUERIES
+   ========================================== */
+
+/* Tablets (iPad size) */
+@media (max-width: 1024px) {
+    .status_cards { gap: 15px; }
+    .card { padding: 15px 20px; min-width: 150px; }
+}
+
+/* Mobile Phones */
+@media (max-width: 768px) {
+    /* Title Adjustments */
+    .page_title { 
+        font-size: 38px; 
+        margin-top: 10px;
+        line-height: 1.1; /* Keeps "Inventory Management" tightly stacked */
+    }
+    
+    /* Stack the Status Cards */
+    .status_cards { 
+        flex-direction: column; /* Changes them from side-by-side to stacked */
+        gap: 15px; 
+        padding: 0 15px; 
+    }
+    
+    /* Responsive Table Wrapper */
+    .table_wrapper { 
+        margin: 0 15px 30px 15px; /* Adds breathing room on the left/right */
+        overflow-x: auto; /* MAGIC FIX: Lets the table scroll left/right if it gets too wide! */
+    }
+    .inventory_table th { font-size: 16px; padding: 12px 10px; }
+    .inventory_table td { font-size: 14px; padding: 12px 10px; }
+    
+    /* Mobile Modal Fixes */
+    .material_modal {
+        width: 90%; /* Shrinks the fixed 500px width to fit the screen */
+        padding: 25px;
+    }
+    .modal_title { font-size: 32px; }
+    
+    .consumed_header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    .consumed_note { text-align: left; }
+    
+    /* Stack Modal Buttons for easy thumb tapping */
+    .modal_actions { 
+        flex-direction: column; 
+        gap: 10px; 
+    }
+    .cancel_btn, .save_btn { width: 100%; } 
+}

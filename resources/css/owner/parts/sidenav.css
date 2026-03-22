@@ -10,19 +10,6 @@ body {
     min-height: 100vh;
 }
 
-/* MOBILE TOGGLE */
-.menu-toggle {
-    display: none;
-    position: fixed;
-    top: 15px;
-    left: 15px;
-    font-size: 24px;
-    background: #222;
-    color: #fff;
-    border: none;
-    padding: 6px 10px;
-    z-index: 1000;
-}
 
 /* SIDENAV */
 .sidenav {
@@ -362,7 +349,7 @@ nav {
     transform: rotate(180deg);
 }
 
-/* CONTENT — offset by sidenav width, no overflow clipping */
+/* --- CONTENT AREA --- */
 .content {
     margin-left: 230px;
     padding: 30px;
@@ -370,25 +357,94 @@ nav {
     min-width: 0;
     box-sizing: border-box;
     overflow-x: hidden;
+    transition: margin-left 0.3s ease, width 0.3s ease; /* Makes the main page slide smoothly! */
 }
 
-/* MEDIA QUERY */
+/* --- CLOSE BUTTON --- */
+.close_sidenav {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: transparent;
+    border: none;
+    color: #682C7A;
+    font-size: 32px;
+    cursor: pointer;
+    z-index: 101;
+    transition: color 0.2s ease;
+}
+.close_sidenav:hover {
+    color: #A15FB5;
+}
+
+/* --- CUSTOM HAMBURGER BUTTON --- */
+#menuToggle {
+    position: fixed !important;
+    top: 15px !important;
+    left: 15px !important;
+    background: #682C7A !important;
+    color: #FFF7EC !important;
+    
+    /* Aggressive Resets */
+    border: 0 !important; 
+    outline: 0 !important; 
+    box-shadow: none !important; 
+    filter: none !important; 
+    margin: 0 !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    
+    border-radius: 8px !important;
+    padding: 8px 10px !important;
+    cursor: pointer !important;
+    z-index: 900 !important;
+    transition: background 0.3s ease !important;
+    display: none; /* Hidden by default */
+}
+
+/* Hover & Focus States */
+#menuToggle:hover, #menuToggle:focus {
+    background: #A15FB5 !important;
+    box-shadow: none !important;
+    border: 0 !important;
+    outline: 0 !important;
+}
+
+/* Kills ANY hidden ghost boxes (pseudo-elements) */
+#menuToggle::before, #menuToggle::after {
+    display: none !important;
+    content: none !important;
+}
+
+/* Ensure the SVG isn't causing shadows */
+#menuToggle svg {
+    display: block !important;
+    box-shadow: none !important;
+    filter: none !important;
+    background: transparent !important;
+}
+
+/* ==========================================
+   THE MAGIC "CLOSED" STATE
+   ========================================== */
+body.sidenav-closed .sidenav {
+    transform: translateX(-100%);
+}
+body.sidenav-closed .content {
+    margin-left: 0;
+    width: 100%;
+}
+body.sidenav-closed #menuToggle {
+    display: block !important; /* Makes the hamburger appear ONLY when closed! */
+}
+
+/* ==========================================
+   MOBILE & TABLET OVERRIDES
+   ========================================== */
 @media (max-width: 768px) {
-    .menu-toggle {
-        display: block;
-    }
-
-    .sidenav {
-        transform: translateX(-100%);
-    }
-
-    .sidenav.open {
-        transform: translateX(0);
-    }
-
     .content {
-        margin-left: 0;
-        width: 100%;
-        padding-top: 70px;
+        margin-left: 0 !important; 
+        width: 100% !important;
+        padding-top: 70px; 
     }
 }
