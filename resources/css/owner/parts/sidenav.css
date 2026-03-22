@@ -10,12 +10,13 @@ body {
     min-height: 100vh;
 }
 
+/* =============================================
+   SIDENAV
+   ============================================= */
 
-/* SIDENAV */
 .sidenav {
     width: 230px;
     background: #fff0da;
-    color: 3122eE;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -31,11 +32,7 @@ body {
 .nav_top img {
     width: 200px;
     display: block;
-
-    margin: 0 auto;
-    margin-top: 25px;
-    margin-bottom: 25px;
-
+    margin: 25px auto;
     filter: drop-shadow(2px 4px 5px rgba(0, 0, 0, 0.3));
 }
 
@@ -50,6 +47,10 @@ nav {
     gap: 5px;
 }
 
+/* =============================================
+   NAV LINKS
+   ============================================= */
+
 .dashboard_nav,
 .inventory_nav,
 .orders_nav,
@@ -58,34 +59,24 @@ nav {
     flex-direction: row;
     align-items: center;
     gap: 20px;
-
     height: 40px;
     width: 200px;
-
     padding-left: 20px;
     padding-right: 30px;
-
     position: relative;
-
     text-decoration: none;
     user-select: none;
 }
 
-.dashboard_nav svg {
+.dashboard_nav svg,
+.inventory_nav svg,
+.content_nav svg {
     height: 25px;
-}
-
-.inventory_nav svg {
-    height: 25px;
+    width: 25px;
 }
 
 .orders_nav svg {
     height: 23px;
-}
-
-.content_nav svg {
-    height: 25px;
-    width: 25px;
 }
 
 .nav_link {
@@ -94,8 +85,6 @@ nav {
     font-family: Coolvetica;
     font-size: 18px;
     text-decoration: none;
-
-    position: relative;
 }
 
 .dashboard_nav:hover,
@@ -110,7 +99,7 @@ nav {
 .inventory_nav::after,
 .orders_nav::after,
 .content_nav::after {
-    content: '';
+    content: "";
     position: absolute;
     inset: 0;
     background: #dcbae6;
@@ -118,7 +107,9 @@ nav {
     z-index: -1;
     opacity: 0;
     transform: scale(0.9);
-    transition: opacity 0.25s ease, transform 0.25s ease;
+    transition:
+        opacity 0.25s ease,
+        transform 0.25s ease;
 }
 
 .dashboard_nav.active::after,
@@ -129,7 +120,10 @@ nav {
     transform: scale(1);
 }
 
-/* --- BOTTOM MENU SECTION --- */
+/* =============================================
+   USER SECTION (bottom)
+   ============================================= */
+
 .user_section {
     display: flex;
     flex-direction: column;
@@ -140,15 +134,15 @@ nav {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 10px; /* Slightly tighter gap */
+    gap: 10px;
     padding: 20px 15px;
     border-top: 1px solid #312e2e;
     cursor: pointer;
-    transition: background 0.2s ease;
     background: #fff0da;
-    z-index: 2;
-    box-sizing: border-box; /* Keeps padding inside the 230px width */
     width: 100%;
+    box-sizing: border-box;
+    z-index: 2;
+    transition: background 0.2s ease;
 }
 
 .bottom_menu:hover {
@@ -156,7 +150,7 @@ nav {
 }
 
 .avatar_img {
-    height: 40px; /* Slightly scaled down to ensure fit */
+    height: 40px;
     width: auto;
 }
 
@@ -165,43 +159,46 @@ nav {
     justify-content: space-between;
     align-items: center;
     flex-grow: 1;
-    min-width: 0; /* MAGIC FIX: Allows the flex child to shrink! */
+    min-width: 0;
     gap: 8px;
 }
 
 .user_info {
     display: flex;
     flex-direction: column;
-    min-width: 0; /* MAGIC FIX: Allows the text to shrink! */
+    min-width: 0;
     flex-grow: 1;
 }
 
 .user_name {
-    font-size: 16px; /* Bumped up slightly since Coolvetica runs a bit smaller */
-    font-family: 'Coolvetica', sans-serif; /* Brought back your brand font! */
-    font-weight: normal; /* Coolvetica is already quite thick, so we don't need bold */
+    font-family: Coolvetica;
+    font-size: 16px;
+    font-weight: normal;
     color: #312e2e;
     margin-bottom: 2px;
-    white-space: wrap;
+    white-space: nowrap;
     overflow: hidden;
-    text-overflow: wrap;
+    text-overflow: ellipsis;
 }
 
 .user_email {
-    font-size: 12px;
     font-family: Arial, sans-serif;
+    font-size: 12px;
     color: #707070;
-    white-space: nowrap; /* Forces text to stay on one line */
-    overflow: hidden; /* Hides the overflow */
-    text-overflow: ellipsis; /* Adds the "..." */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .arrow_icon {
+    flex-shrink: 0;
     transition: transform 0.3s ease;
-    flex-shrink: 0; /* Prevents the arrow from ever getting squished */
 }
 
-/* --- BOTTOM MENU OPTIONS (POPUP) --- */
+/* =============================================
+   USER POPUP
+   ============================================= */
+
 .user_popup {
     display: flex;
     flex-direction: column;
@@ -209,76 +206,30 @@ nav {
     opacity: 0;
     overflow: hidden;
     background: #fff0da;
-    transition: max-height 0.35s ease, opacity 0.3s ease;
+    transform: translateY(6px);
+    margin-top: 0;
+    transition:
+        max-height 0.35s ease,
+        opacity 0.35s ease,
+        transform 0.35s ease,
+        margin-top 0.35s ease;
 }
 
-.sidenav_account,
-.sidenav_main,
-.sidenav_logout {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding: 15px 20px;
-    box-sizing: border-box;
-    cursor: pointer;
-    transition: background 0.2s ease;
-}
-
-.sidenav_account:hover,
-.sidenav_main:hover,
-.sidenav_logout:hover {
-    background: #dcbae6;
-}
-
-.sidenav_account a,
-.sidenav_main a,
-.sidenav_logout a {
-    font-family: 'Coolvetica', sans-serif;
-    font-size: 16px;
-    color: #312e2e;
-    text-decoration: none;
-    width: 100%;
-    display: block;
-}
-
-.logout_link {
-    background: transparent;
-    border: none;
-    color: #312e2e;
-    font-family: 'Coolvetica', sans-serif;
-    font-size: 16px;
-    padding: 0;
-    cursor: pointer;
-    text-align: left;
-    width: 100%;
-}
-
-/* --- ACTIVE STATE (When Clicked) --- */
 .user_section.active .user_popup {
     max-height: 250px;
     opacity: 1;
+    transform: translateY(0);
+    margin-top: 12px;
 }
 
-.user_section.active .arrow_icon {
+.user_section.active .arrow_icon,
+.user_section.active .arrow {
     transform: rotate(180deg);
 }
 
-/* BOTTOM MENU OPTIONS */
-.user_popup {
-    display: flex;
-    flex-direction: column;
-
-    max-height: 0;
-    opacity: 0;
-    margin-top: 0;
-
-    transform: translateY(6px);
-    overflow: hidden;
-
-    transition: transform 0.35s ease, opacity 0.35s ease, margin-top 0.35s ease;
-}
+/* =============================================
+   POPUP ITEMS
+   ============================================= */
 
 .sidenav_account,
 .sidenav_main,
@@ -287,20 +238,26 @@ nav {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-
     width: 100%;
-    padding: 10px 15px;
+    padding: 12px 18px;
     box-sizing: border-box;
     cursor: pointer;
+    transition: background 0.2s ease;
+    /* Reset in case sidenav_logout is rendered as a <button> */
+    background: transparent;
+    border: none;
+    text-align: left;
 }
 
 .sidenav_account:hover,
 .sidenav_main:hover,
 .sidenav_logout:hover {
     background: #dcbae6;
-    transition: background 0.3s ease;
 }
 
+.sidenav_account p,
+.sidenav_main p,
+.sidenav_logout p,
 .sidenav_account a,
 .sidenav_main a,
 .sidenav_logout a {
@@ -310,7 +267,7 @@ nav {
     text-decoration: none;
     width: 100%;
     display: block;
-    transition: color 0.3s ease;
+    transition: color 0.2s ease;
 }
 
 .sidenav_account a:hover,
@@ -327,29 +284,20 @@ nav {
     font-size: 16px;
     padding: 0;
     cursor: pointer;
-    text-decoration: none;
-    transition: all 0.3s ease;
     text-align: left;
     width: 100%;
+    text-decoration: none;
+    transition: color 0.2s ease;
 }
 
-.logout_link:hover {
-    color: #682c7a;
+.user_popup a {
+    text-decoration: none;
 }
 
-/* ACTIVE STATE */
-.user_section.active .user_popup {
-    max-height: 220px;
-    opacity: 1;
-    transform: translateY(0);
-    margin-top: 12px;
-}
+/* =============================================
+   CONTENT AREA
+   ============================================= */
 
-.user_section.active .arrow {
-    transform: rotate(180deg);
-}
-
-/* --- CONTENT AREA --- */
 .content {
     margin-left: 230px;
     padding: 30px;
@@ -357,66 +305,71 @@ nav {
     min-width: 0;
     box-sizing: border-box;
     overflow-x: hidden;
-    transition: margin-left 0.3s ease, width 0.3s ease; /* Makes the main page slide smoothly! */
+    transition:
+        margin-left 0.3s ease,
+        width 0.3s ease;
 }
 
-/* --- CLOSE BUTTON --- */
+/* =============================================
+   CLOSE BUTTON
+   ============================================= */
+
 .close_sidenav {
     position: absolute;
     top: 15px;
     right: 15px;
     background: transparent;
     border: none;
-    color: #682C7A;
+    color: #682c7a;
     font-size: 32px;
     cursor: pointer;
     z-index: 101;
     transition: color 0.2s ease;
 }
+
 .close_sidenav:hover {
-    color: #A15FB5;
+    color: #a15fb5;
 }
 
-/* --- CUSTOM HAMBURGER BUTTON --- */
+/* =============================================
+   HAMBURGER TOGGLE
+   ============================================= */
+
 #menuToggle {
     position: fixed !important;
     top: 15px !important;
     left: 15px !important;
-    background: #682C7A !important;
-    color: #FFF7EC !important;
-    
-    /* Aggressive Resets */
-    border: 0 !important; 
-    outline: 0 !important; 
-    box-shadow: none !important; 
-    filter: none !important; 
+    background: #682c7a !important;
+    color: #fff7ec !important;
+    border: 0 !important;
+    outline: 0 !important;
+    box-shadow: none !important;
+    filter: none !important;
     margin: 0 !important;
     appearance: none !important;
     -webkit-appearance: none !important;
-    
     border-radius: 8px !important;
     padding: 8px 10px !important;
     cursor: pointer !important;
     z-index: 900 !important;
     transition: background 0.3s ease !important;
-    display: none; /* Hidden by default */
+    display: none;
 }
 
-/* Hover & Focus States */
-#menuToggle:hover, #menuToggle:focus {
-    background: #A15FB5 !important;
+#menuToggle:hover,
+#menuToggle:focus {
+    background: #a15fb5 !important;
     box-shadow: none !important;
     border: 0 !important;
     outline: 0 !important;
 }
 
-/* Kills ANY hidden ghost boxes (pseudo-elements) */
-#menuToggle::before, #menuToggle::after {
+#menuToggle::before,
+#menuToggle::after {
     display: none !important;
     content: none !important;
 }
 
-/* Ensure the SVG isn't causing shadows */
 #menuToggle svg {
     display: block !important;
     box-shadow: none !important;
@@ -424,27 +377,31 @@ nav {
     background: transparent !important;
 }
 
-/* ==========================================
-   THE MAGIC "CLOSED" STATE
-   ========================================== */
+/* =============================================
+   CLOSED STATE
+   ============================================= */
+
 body.sidenav-closed .sidenav {
     transform: translateX(-100%);
 }
+
 body.sidenav-closed .content {
     margin-left: 0;
     width: 100%;
 }
+
 body.sidenav-closed #menuToggle {
-    display: block !important; /* Makes the hamburger appear ONLY when closed! */
+    display: block !important;
 }
 
-/* ==========================================
-   MOBILE & TABLET OVERRIDES
-   ========================================== */
+/* =============================================
+   MEDIA QUERIES
+   ============================================= */
+
 @media (max-width: 768px) {
     .content {
-        margin-left: 0 !important; 
+        margin-left: 0 !important;
         width: 100% !important;
-        padding-top: 70px; 
+        padding-top: 70px;
     }
 }
