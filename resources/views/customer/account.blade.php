@@ -38,7 +38,23 @@
 </div>
 
         <div class="account_orders_section">
-            <h2>My Orders >o<</h2>
+            <div class="account_orders_section">
+            
+            {{-- Calculate the number of orders --}}
+            @php
+                $orderCount = count(Auth::user()->orders ?? []);
+            @endphp
+
+            <h2>
+                My Orders 
+                @if ($orderCount === 0)
+                    (╥_╥)
+                @elseif ($orderCount <= 2)
+                    (^-^)
+                @else
+                    (>o<)
+                @endif
+            </h2>
             
             <div class="orders_list">
                 
