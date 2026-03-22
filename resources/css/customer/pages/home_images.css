@@ -1,64 +1,191 @@
 /**
- * Home Page Images Slideshow
- * Responsive carousel for displaying home page images
+ * home_images.css — slideshow only
+ * All layout and page structure lives in home.css
  */
+
+/* =============================================
+   KEYFRAMES
+   ============================================= */
+
+@keyframes ss_twinkle {
+    0%,
+    100% {
+        opacity: 0.55;
+        transform: scale(1) rotate(0deg);
+    }
+    24% {
+        opacity: 0.04;
+        transform: scale(0.42) rotate(30deg);
+    }
+    50% {
+        opacity: 0.7;
+        transform: scale(1.12) rotate(-8deg);
+    }
+    74% {
+        opacity: 0.05;
+        transform: scale(0.48) rotate(20deg);
+    }
+}
+
+@keyframes emptyIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes kenBurns {
+    from {
+        transform: scale(1) translate(0, 0);
+    }
+    to {
+        transform: scale(1.06) translate(-1%, -0.8%);
+    }
+}
+
+/* =============================================
+   CONTAINER
+   ============================================= */
 
 .home_images_slideshow {
     position: relative;
     width: 100%;
     height: 100%;
-    background: white;
+    background: #e8d5f0;
     overflow: hidden;
 }
 
-.home_images_slideshow.empty {
-    display: none;
+/* Corner sparkles that float over every slide */
+.home_images_slideshow::before {
+    content: "✦";
+    position: absolute;
+    top: 14px;
+    left: 16px;
+    font-size: 16px;
+    color: #682c7a;
+    opacity: 0.55;
+    pointer-events: none;
+    z-index: 4;
+    line-height: 1;
+    animation: ss_twinkle 3.1s ease-in-out infinite;
 }
 
-.home_images_slideshow.empty .home_images_empty_state {
+.home_images_slideshow::after {
+    content: "✦";
+    position: absolute;
+    bottom: 14px;
+    right: 16px;
+    font-size: 13px;
+    color: #682c7a;
+    opacity: 0.45;
+    pointer-events: none;
+    z-index: 4;
+    line-height: 1;
+    animation: ss_twinkle 3.8s ease-in-out infinite;
+    animation-delay: 1.9s;
+}
+
+/* =============================================
+   EMPTY STATE
+   ============================================= */
+
+.home_images_slideshow.empty {
     display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .home_images_empty_state {
     display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    padding: 28px;
+    box-sizing: border-box;
+    font-family: Coolvetica;
+    font-size: 15px;
+    color: #682c7a;
+    opacity: 0.5;
 }
+
+.home_images_slideshow.empty .home_images_empty_state {
+    display: flex;
+    animation: emptyIn 0.6s ease both;
+}
+
+.home_images_empty_state::before {
+    content: "✦";
+    font-size: 32px;
+    color: #682c7a;
+    opacity: 0.35;
+    animation: ss_twinkle 3.2s ease-in-out infinite;
+    display: block;
+    line-height: 1;
+}
+
+.home_images_empty_state::after {
+    content: "✦";
+    font-size: 18px;
+    color: #682c7a;
+    opacity: 0.25;
+    animation: ss_twinkle 4.1s ease-in-out infinite;
+    animation-delay: 1.6s;
+    display: block;
+    line-height: 1;
+}
+
+/* =============================================
+   SLIDES
+   ============================================= */
 
 .home_images_slide {
     position: absolute;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     opacity: 0;
-    transition: opacity 0.6s ease-in-out;
+    transition: opacity 0.75s ease-in-out;
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
 }
 
 .home_images_slide.active {
     opacity: 1;
 }
 
+/* Ken Burns on the active slide */
+.home_images_slide.active img {
+    animation: kenBurns 8s ease-in-out alternate infinite;
+}
+
 .home_images_slide img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    display: block;
 }
 
-/* Navigation buttons - Hidden */
+/* =============================================
+   HIDDEN ELEMENTS
+   ============================================= */
+
 .home_images_nav_btn {
     display: none;
 }
-
-/* Dots indicator - Hidden */
 .home_images_dots_container {
     display: none;
 }
-
 .home_images_dot {
     display: none;
 }
-
-/* Image counter - Hidden */
 .home_images_counter {
     display: none;
 }

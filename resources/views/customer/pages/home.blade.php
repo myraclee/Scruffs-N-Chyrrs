@@ -6,46 +6,87 @@
 @endsection
 
 @section('content')
-    <div class="home_page_opening">
+
+    {{-- ===== HERO ===== --}}
+    <section class="home_page_opening">
+
+        <div class="hero_bg_dots"></div>
+
+        <span class="hero_spark s1">✦</span>
+        <span class="hero_spark s2">✦</span>
+        <span class="hero_spark s3">✦</span>
+        <span class="hero_spark s4">✦</span>
+        <span class="hero_spark s5">✦</span>
+        <span class="hero_spark s6">✦</span>
+        <span class="hero_spark s7">✦</span>
+        <span class="hero_spark s8">✦</span>
+
         <div class="home_page_opening_left">
-            <h2>PRINT YOUR IMAGINATION</h2>
-            <p>Bring your vision into ink with Scruffs&Chyrrs, your friendly printing service!</p>
-            <button>View Products</button>
+            <p class="hero_eyebrow">
+                <span class="twinkle_star">✦</span>
+                Your Local Printing Service
+                <span class="twinkle_star" style="animation-delay:.9s">✦</span>
+            </p>
+            <h2>PRINT YOUR<br><span class="heading_accent">IMAGINATION</span></h2>
+            <p>Bring your vision into ink with Scruffs&amp;Chyrrs — your friendly printing service for stickers, pins, prints, and more.</p>
+            <div class="hero_buttons">
+                <button onclick="window.location='{{ route('products') }}'">View Products</button>
+                <a href="{{ route('aboutus') }}" class="hero_ghost_btn">About Us</a>
+            </div>
         </div>
+
         <div class="home_page_opening_right">
+            <span class="frame_spark fs_tl">✦</span>
+            <span class="frame_spark fs_tr">✦</span>
+            <span class="frame_spark fs_bl">✦</span>
+            <span class="frame_spark fs_br">✦</span>
             <div class="home_images_slideshow">
                 <div class="home_images_empty_state">
                     No images have been uploaded yet.
                 </div>
             </div>
         </div>
-    </div>
 
+    </section>
+
+    {{-- ===== SCROLL DIVIDER ===== --}}
     <div class="page_scoll_divider">
         <div class="text_scroll">
-            <span>Scruffs&Chyrrs</span>
+            <span>Scruffs&amp;Chyrrs</span>
             <span>✦</span>
-            <span>Scruffs&Chyrrs</span>
+            <span>Scruffs&amp;Chyrrs</span>
             <span>✦</span>
-            <span>Scruffs&Chyrrs</span>
+            <span>Scruffs&amp;Chyrrs</span>
             <span>✦</span>
-            <span>Scruffs&Chyrrs</span>
+            <span>Scruffs&amp;Chyrrs</span>
             <span>✦</span>
-            <span>Scruffs&Chyrrs</span>
+            <span>Scruffs&amp;Chyrrs</span>
             <span>✦</span>
-            <span>Scruffs&Chyrrs</span>
+            <span>Scruffs&amp;Chyrrs</span>
             <span>✦</span>
-            <span>Scruffs&Chyrrs</span>
+            <span>Scruffs&amp;Chyrrs</span>
             <span>✦</span>
-            <span>Scruffs&Chyrrs</span>
+            <span>Scruffs&amp;Chyrrs</span>
             <span>✦</span>
         </div>
     </div>
 
+    {{-- ===== PRODUCT SAMPLES ===== --}}
     <div class="home_page_product_samples_container">
-        <h1>Product Samples</h1>
-        <div class="home_page_product_samples">
+
+        <span class="samples_spark sp1">✦</span>
+        <span class="samples_spark sp2">✦</span>
+        <span class="samples_spark sp3">✦</span>
+        <span class="samples_spark sp4">✦</span>
+
+        <div class="samples_header">
+            <span class="twinkle_star samples_header_star">✦</span>
+            <h1>Product Samples</h1>
+            <span class="twinkle_star samples_header_star" style="animation-delay:1.4s">✦</span>
         </div>
+        <p class="samples_sub">A glimpse of what we can make for you</p>
+
+        <div class="home_page_product_samples"></div>
     </div>
 @endsection
 

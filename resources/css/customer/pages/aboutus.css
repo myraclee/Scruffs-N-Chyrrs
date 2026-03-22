@@ -51,7 +51,7 @@
 }
 
 /* Eyebrow letter-spacing expand */
-@keyframes eyebrowSlide {
+@keyframes headerSlide {
     from {
         opacity: 0;
         letter-spacing: 0.4em;
@@ -285,27 +285,27 @@
 }
 
 /* ---- Eyebrow ---- */
-.aboutus_eyebrow {
-    font-family: Coolvetica;
-    font-size: 13px;
+.aboutus_header {
+    font-family: SuperDream;
+    font-size: 30px;
     letter-spacing: 0.18em;
-    color: #a259c4;
+    color: #682c7a;
     text-transform: uppercase;
     margin: 0;
     display: flex;
     align-items: center;
     gap: 10px;
 
-    animation: eyebrowSlide 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: headerSlide 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
     animation-delay: 0.25s;
 }
 
-.eyebrow_star {
-    font-size: 11px;
+.header_star {
+    font-size: 20px;
     animation: twinkle 2.2s ease-in-out infinite;
 }
 
-.eyebrow_star:last-child {
+.header_star:last-child {
     animation-delay: 1.1s;
 }
 
@@ -628,7 +628,7 @@
             0 10px 30px rgba(104, 44, 122, 0.12);
     }
 
-    .aboutus_eyebrow {
+    .aboutus_header {
         font-size: 11px;
         letter-spacing: 0.12em;
     }
