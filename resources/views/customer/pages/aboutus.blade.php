@@ -29,10 +29,10 @@
             <span class="box_star box_star_br">✦</span>
 
             <div class="aboutus_hero_inner">
-                <p class="aboutus_eyebrow">
-                    <span class="eyebrow_star">✦</span>
+                <p class="aboutus_header">
+                    <span class="header_star">✦</span>
                     Who We Are
-                    <span class="eyebrow_star">✦</span>
+                    <span class="header_star">✦</span>
                 </p>
 
                 <div class="aboutus_brand_img_wrap">
