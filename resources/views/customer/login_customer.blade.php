@@ -4,6 +4,10 @@
 @vite(['resources/css/customer/login.css'])
 @endsection
 
+@section('preconnect')
+    <link rel="preconnect" href="https://challenges.cloudflare.com">
+@endsection
+
 @section('content')
     <h1 class="header_login">Login</h1>
 
@@ -27,10 +31,23 @@
             @enderror
         </div>
 
+        <div
+        class="cf-turnstile"
+        data-sitekey="{{ env('CLOUDFLARE_TURNSTILE_SITEKEY') }}"
+        data-theme="light"
+        data-size="normal"
+        data-callback="onSuccess"
+        ></div>
+
         <div class="login_button_container">
             <button type="submit" class="login_button">Login</button>
         </div>
 
         <p class="signup_redirect">Don't have an account? <a href="{{ route('signup') }}">Sign Up</a></p>
     </form>
+    <script
+        src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+        async
+        defer
+    ></script>
 @endsection

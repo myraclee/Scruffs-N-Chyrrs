@@ -6,6 +6,9 @@
 
 @section('page_js')
     @vite(['resources/js/tnc.js', 'resources/js/signup_validation.js'])
+@endsection
+
+@section('preconnect')
     <link rel="preconnect" href="https://challenges.cloudflare.com">
 @endsection
 
