@@ -50,7 +50,8 @@ let products_list = [];
 let products_edit_id = null;
 let products_has_cover = false;
 let products_main_file = null;
-let products_price_files = [];
+let products_price_files = [];  // New image files being added
+let products_price_kept_ids = [];  // Existing image IDs to keep (from database)
 let products_notes_files = [];
 
 // ================= INITIALIZATION =================
@@ -196,9 +197,13 @@ function createPriceBox(existingSrc = null) {
     return null;
 }
 
-function buildFilledPriceWrapper(src, file = null) {
+function buildFilledPriceWrapper(src, file = null, existingImageId = null) {
     const wrapper = document.createElement("div");
     wrapper.className = "products_price_box_wrapper";
+    // Store the image ID on the wrapper for reference
+    if (existingImageId !== null) {
+        wrapper.dataset.priceImageId = existingImageId;
+    }
 
     const box = document.createElement("div");
     box.className = "products_price_box";
@@ -213,9 +218,16 @@ function buildFilledPriceWrapper(src, file = null) {
     removeBtn.className = "products_button_remove";
     removeBtn.type = "button";
     removeBtn.onclick = () => {
+        // If it's a new file (uploaded), remove from files array
         if (file) {
             products_price_files = products_price_files.filter(
                 (f) => f !== file,
+            );
+        }
+        // If it's an existing DB image, remove from kept IDs
+        if (existingImageId !== null) {
+            products_price_kept_ids = products_price_kept_ids.filter(
+                (id) => id !== existingImageId,
             );
         }
         wrapper.remove();
@@ -390,8 +402,14 @@ products_save_btn.addEventListener("click", async () => {
             formData.append("cover_image", products_main_file);
         }
 
+        // Add new price image files
         products_price_files.forEach((file, index) => {
             formData.append(`price_images[${index}]`, file);
+        });
+
+        // Add IDs of existing images to keep
+        products_price_kept_ids.forEach((id, index) => {
+            formData.append(`existing_price_image_ids[${index}]`, id);
         });
 
         products_notes_files.forEach((file, index) => {
@@ -440,14 +458,18 @@ async function editProduct(productId) {
         products_has_cover = true;
     }
 
-    // Restore price images
+    // Restore price images from database
     products_price_images_wrapper.innerHTML = "";
-    products_price_files = [];
+    products_price_files = [];  // Clear new files array
+    products_price_kept_ids = [];  // Track which existing images to keep
     if (product.price_images && product.price_images.length > 0) {
         product.price_images.forEach((priceImage) => {
             const imagePath = priceImage.image_path || priceImage.path;
+            const imageId = priceImage.id;
+            // Add the image ID to the kept list (user can remove it later)
+            products_price_kept_ids.push(imageId);
             products_price_images_wrapper.appendChild(
-                buildFilledPriceWrapper(`/storage/${imagePath}`),
+                buildFilledPriceWrapper(`/storage/${imagePath}`, null, imageId),
             );
         });
     }
@@ -555,6 +577,7 @@ function products_reset_modal() {
 
     products_price_images_wrapper.innerHTML = "";
     products_price_files = [];
+    products_price_kept_ids = [];
     products_cover_error.textContent = "";
     products_prices_error.textContent = "";
 

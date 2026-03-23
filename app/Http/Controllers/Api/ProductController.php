@@ -92,11 +92,12 @@ class ProductController extends Controller
 
     /**
      * Get a single product with its price images.
-     * GET /api/products/{id}
+     * GET /api/products/{productId}
      */
-    public function show(Product $product): JsonResponse
+    public function show($productId): JsonResponse
     {
         try {
+            $product = Product::findOrFail($productId);
             return response()->json([
                 'success' => true,
                 'data' => $product->load('priceImages'),
@@ -112,17 +113,20 @@ class ProductController extends Controller
 
     /**
      * Update a product.
-     * PUT /api/products/{id}
+     * PUT /api/products/{productId}
      */
-    public function update(Request $request, Product $product): JsonResponse
+    public function update(Request $request, $productId): JsonResponse
     {
         try {
+            $product = Product::findOrFail($productId);
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'description' => 'nullable|string',
                 'cover_image' => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
                 'price_images' => 'nullable|array',
                 'price_images.*' => 'required|image|mimes:png,jpg,jpeg|max:5120',
+                'existing_price_image_ids' => 'nullable|array',
+                'existing_price_image_ids.*' => 'integer',
             ]);
 
             if ($request->hasFile('cover_image')) {
@@ -140,21 +144,31 @@ class ProductController extends Controller
                 'cover_image_path' => $validated['cover_image_path'] ?? $product->cover_image_path,
             ]);
 
-            // Handle price images if provided
-            if ($request->hasFile('price_images')) {
-                // Delete old price images from storage and database
-                foreach ($product->priceImages as $priceImage) {
+            // Handle selective price image management
+            // Get list of image IDs to keep (from frontend)
+            $existingKeptIds = $request->input('existing_price_image_ids', []);
+            $existingKeptIds = array_map('intval', $existingKeptIds);  // Ensure all are integers
+
+            // Delete price images that are NOT in the keep list
+            foreach ($product->priceImages as $priceImage) {
+                if (!in_array($priceImage->id, $existingKeptIds)) {
                     Storage::disk('public')->delete($priceImage->image_path);
                     $priceImage->delete();
                 }
+            }
 
-                // Store new price images
+            // Create new price images if provided
+            if ($request->hasFile('price_images')) {
+                // Get the current max sort_order to continue sequence
+                $maxSortOrder = $product->priceImages()
+                    ->max('sort_order') ?? -1;
+
                 foreach ($request->file('price_images') as $index => $image) {
                     $path = $image->store('products/prices', 'public');
                     ProductPriceImage::create([
                         'product_id' => $product->id,
                         'image_path' => $path,
-                        'sort_order' => $index,
+                        'sort_order' => $maxSortOrder + $index + 1,
                     ]);
                 }
             }
@@ -181,11 +195,12 @@ class ProductController extends Controller
 
     /**
      * Delete a product and all its associated images.
-     * DELETE /api/products/{id}
+     * DELETE /api/products/{productId}
      */
-    public function destroy(Product $product): JsonResponse
+    public function destroy($productId): JsonResponse
     {
         try {
+            $product = Product::findOrFail($productId);
             // Delete cover image
             if ($product->cover_image_path) {
                 Storage::disk('public')->delete($product->cover_image_path);
