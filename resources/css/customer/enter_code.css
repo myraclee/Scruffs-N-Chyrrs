@@ -1,5 +1,5 @@
 .header_enter_code {
-    font-family: 'SuperDream', sans-serif;
+    font-family: "SuperDream", sans-serif;
     font-size: 3.5rem;
     color: #6b3282;
     text-align: center;
@@ -8,7 +8,7 @@
 }
 
 .enter_code_description {
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     color: #8a5da1;
     text-align: center;
     margin-bottom: 40px;
@@ -34,25 +34,26 @@ form {
 }
 
 .code_container label {
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     color: #6b3282;
     margin-bottom: 8px;
-    font-size: 1rem;
-    font-weight: 600;
+    font-size: 20px;
+    font-weight: 100;
 }
 
 .code_input {
-    padding: 12px 20px;
-    border-radius: 50px;
-    border: 2px solid #c6a4e3;
-    font-family: 'Coolvetica', sans-serif;
-    font-size: 1.8rem;
-    color: #6b3282;
     text-align: center;
     letter-spacing: 8px;
-    outline: none;
-    transition: border-color 0.3s ease;
     width: 250px;
+
+    height: 50px;
+    border-radius: 30px;
+    border: 2px solid transparent;
+    box-shadow: 0 0 10px 1px rgba(0, 0, 0, 0.12);
+    padding-left: 20px;
+    padding-right: 20px;
+    font-size: 15px;
+    outline: #6b3282;
 }
 
 .code_input:focus {
@@ -78,16 +79,18 @@ form {
     color: #fff0da;
     border: none;
     border-radius: 50px;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 1.1rem;
     cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
+    transition:
+        background-color 0.3s ease,
+        transform 0.2s ease;
     box-shadow: 0 4px 10px rgba(107, 50, 130, 0.3);
 }
 
 .code_button:hover {
-    background-color: #5a2a70;
-    transform: translateY(-2px);
+    background-color: #451c52;
+    transform: scale(1.05);
 }
 
 .code_button:active {
@@ -95,7 +98,7 @@ form {
 }
 
 .resend_text {
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     color: #6b3282;
     text-align: center;
     margin-top: 15px;
@@ -103,15 +106,14 @@ form {
 }
 
 .resend_text a {
-    color: #6b3282;
     text-decoration: none;
-    font-weight: 600;
-    border-bottom: 2px solid #c6a4e3;
-    transition: border-color 0.3s ease;
+    color: #359bf4;
 }
 
 .resend_text a:hover {
-    border-bottom-color: #6b3282;
+    color: #0072d6;
+    transition: 0.2s;
+    text-decoration: underline;
 }
 
 /* MOBILE RESPONSIVENESS */

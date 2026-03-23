@@ -32,7 +32,7 @@
                    name="code"
                    class="code_input" 
                    maxlength="6" 
-                   placeholder="A1B2C3" 
+                   placeholder="XXXXXX" 
                    style="text-transform: uppercase;" 
                    value="{{ old('code') }}"
                    required>
