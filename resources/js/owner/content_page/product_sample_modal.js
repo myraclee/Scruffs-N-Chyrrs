@@ -274,7 +274,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const removeBtn = document.createElement('button');
             removeBtn.textContent = 'Remove';
-            removeBtn.onclick = () => {
+            removeBtn.onclick = async () => {
+                // If this is an existing image (has id), delete it from API
+                if (imgObj.id) {
+                    try {
+                        await ProductSampleAPI.deleteImage(imgObj.id);
+                        Toast.success('Image removed');
+                    } catch (error) {
+                        Toast.error('Failed to remove image');
+                        return;
+                    }
+                }
+
+                // Remove from local array regardless
                 tempSample.images.splice(index, 1);
                 renderGrid();
             };

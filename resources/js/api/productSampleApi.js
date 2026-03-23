@@ -140,20 +140,35 @@ class ProductSampleAPI {
         formData.append('_token', this.getCsrfToken());
       }
 
+      // Add method spoofing for PUT with FormData (Laravel requirement)
+      if (!formData.has('_method')) {
+        formData.append('_method', 'PUT');
+      }
+
       const response = await fetch(`${this.baseUrl}/${id}`, {
-        method: 'PUT',
+        method: 'POST',  // Use POST with _method=PUT for multipart/form-data
         body: formData,
         headers: {
           'X-CSRF-TOKEN': this.getCsrfToken(),
-          Accept: 'application/json'
+          'Accept': 'application/json'
         }
       });
 
       const result = await response.json();
 
       if (!response.ok) {
-        const errorMsg = result.message || result.error || 'Failed to update sample';
-        throw new Error(errorMsg);
+        // Extract detailed error messages
+        let detailedErrors = '';
+        if (result.errors && typeof result.errors === 'object') {
+          detailedErrors = Object.entries(result.errors)
+            .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
+            .join(' | ');
+        }
+
+        const errorMsg = detailedErrors || result.message || result.error || 'Failed to update sample';
+        const error = new Error(errorMsg);
+        error.validationErrors = result.errors;
+        throw error;
       }
 
       if (result.success) {
@@ -162,7 +177,6 @@ class ProductSampleAPI {
         throw new Error(result.message || 'Unexpected error updating sample');
       }
     } catch (error) {
-      console.error('Error updating product sample:', error);
       throw error;
     } finally {
       this.isLoading = false;
@@ -197,7 +211,40 @@ class ProductSampleAPI {
         throw new Error(result.message || 'Unexpected error deleting sample');
       }
     } catch (error) {
-      console.error('Error deleting product sample:', error);
+      throw error;
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  /**
+   * Delete a single product sample image
+   * @param {number} imageId - The product sample image ID
+   * @returns {Promise<void>}
+   */
+  async deleteImage(imageId) {
+    try {
+      this.isLoading = true;
+
+      const response = await fetch(`${this.baseUrl}/images/${imageId}`, {
+        method: 'DELETE',
+        headers: {
+          'X-CSRF-TOKEN': this.getCsrfToken(),
+          Accept: 'application/json'
+        }
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        const errorMsg = result.message || result.error || 'Failed to delete image';
+        throw new Error(errorMsg);
+      }
+
+      if (!result.success) {
+        throw new Error(result.message || 'Unexpected error deleting image');
+      }
+    } catch (error) {
       throw error;
     } finally {
       this.isLoading = false;

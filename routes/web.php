@@ -81,6 +81,7 @@ Route::prefix('api/product-samples')->group(function () {
     Route::get('{productSample}', [ProductSampleController::class, 'show']);
     Route::put('{productSample}', [ProductSampleController::class, 'update']);
     Route::delete('{productSample}', [ProductSampleController::class, 'destroy']);
+    Route::delete('images/{productSampleImage}', [ProductSampleController::class, 'destroyImage']);
 });
 
 Route::prefix('api/order-templates')->group(function () {
