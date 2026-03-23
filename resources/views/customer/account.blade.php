@@ -38,63 +38,57 @@
 </div>
 
         <div class="account_orders_section">
-            <div class="account_orders_section">
             
-            {{-- Calculate the number of orders --}}
-            @php
-                $orderCount = count(Auth::user()->orders ?? []);
-            @endphp
+            {{-- ADMIN VIEW: Shows only if the user is the owner --}}
+            @if(Auth::check() && Auth::user()->isOwner())
+                <h2>Shop Management 👑</h2>
+                
+                <div class="admin_order_prompt">
+                    <p class="admin_prompt_text">Time to bring some imagination to life! Head over to your dashboard to manage incoming customer orders.</p>
+                    
+            <a href="{{ route('owner.orders') }}" class="admin_dash_btn">Go to Order Management</a>
 
-            <h2>
-                My Orders 
-                @if ($orderCount === 0)
-                    (╥_╥)
-                @elseif ($orderCount <= 2)
-                    (^-^)
-                @else
-                    (>o<)
-                @endif
-            </h2>
-            
-            <div class="orders_list">
-                
-                {{-- 🚀 BACKEND DEV (AARON): Replace Auth::user()->orders with the actual relationship/variable --}}
-                @forelse (Auth::user()->orders ?? [] as $order)
-                    <div class="order_card">
-                        <div class="order_header">
-                            <span class="order_id">Order #{{ $order->id ?? '0000' }}</span>
-                            <span class="order_date">{{ $order->created_at ? $order->created_at->format('F d, Y') : 'Date Pending' }}</span>
-                        </div>
-                        <div class="order_details">
-                            <p><strong>Items:</strong> 
-                                {{-- Aaron: Loop through order items or use an items summary attribute here --}}
-                                {{ $order->items_summary ?? 'Your lovely items' }}
-                            </p>
-                            <p><strong>Total:</strong> Php {{ number_format($order->total_amount ?? 0, 2) }}</p>
-                        </div>
-                        
-                        <div class="order_status status_{{ strtolower($order->status ?? 'pending') }}">
-                            {{ ucfirst($order->status ?? 'Pending') }}
-                        </div>
-                    </div>
-                
-                @empty
-                    <div class="empty_orders">
-                        <p class="no_orders_text">Oops! You haven't ordered anything yet~ ( ´ ▽ ` )</p>
-                        <p class="no_orders_subtext">Time to bring your imagination to life!</p>
-                    </div>
-                @endforelse
-                
-            </div>
-        </div>
+            {{-- CUSTOMER VIEW: Shows for regular users --}}
+            @else
+                @php
+                    $orderCount = count(Auth::user()->orders ?? []);
+                @endphp
 
-        <div class="account_actions">
-            <a href="{{ route('edit-profile') }}" class="action_btn edit_btn">Edit Profile</a>
-            <a href="{{ route('change-password') }}" class="action_btn change_password_btn">Change Password</a>
-            <form method="POST" action="{{ route('logout') }}" style="display: inline;">
-                @csrf
-                <button type="submit" class="action_btn logout_btn">Logout</button>
-            </form>
+                <h2>
+                    My Orders 
+                    @if ($orderCount === 0)
+                        T_T
+                    @elseif ($orderCount <= 2)
+                        (^-^)
+                    @else
+                        >o<
+                    @endif
+                </h2>
+                
+                <div class="orders_list">
+                    @forelse (Auth::user()->orders ?? [] as $order)
+                        <div class="order_card">
+                            <div class="order_header">
+                                <span class="order_id">Order #{{ $order->id ?? '0000' }}</span>
+                                <span class="order_date">{{ $order->created_at ? $order->created_at->format('F d, Y') : 'Date Pending' }}</span>
+                            </div>
+                            <div class="order_details">
+                                <p><strong>Items:</strong> {{ $order->items_summary ?? 'Your lovely items' }}</p>
+                                <p><strong>Total:</strong> Php {{ number_format($order->total_amount ?? 0, 2) }}</p>
+                            </div>
+                            
+                            <div class="order_status status_{{ strtolower($order->status ?? 'pending') }}">
+                                {{ ucfirst($order->status ?? 'Pending') }}
+                            </div>
+                        </div>
+                    @empty
+                        <div class="empty_orders">
+                            <p class="no_orders_text">Oops! You haven't ordered anything yet~ ( ´ ▽ ` )</p>
+                            <p class="no_orders_subtext">Time to bring your imagination to life!</p>
+                        </div>
+                    @endforelse
+                </div>
+            @endif
+
         </div>
-    </div>
 @endsection
