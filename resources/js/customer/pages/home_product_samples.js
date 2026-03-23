@@ -58,6 +58,11 @@ async function loadProductSamples() {
                 </div>
             `;
 
+      // Add click listener to open modal
+      sampleCard.addEventListener('click', () => {
+        window.openSampleModal(sample);
+      });
+
       container.appendChild(sampleCard);
     });
 

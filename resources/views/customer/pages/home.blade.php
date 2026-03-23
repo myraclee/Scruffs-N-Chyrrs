@@ -3,6 +3,7 @@
 @section('page_css')
 @vite(['resources/css/customer/pages/home.css'])
 @vite(['resources/css/customer/pages/home_images.css'])
+@vite(['resources/css/customer/pages/product_sample_modal.css'])
 @endsection
 
 @section('content')
@@ -88,9 +89,35 @@
 
         <div class="home_page_product_samples"></div>
     </div>
+
+    <!-- Product Sample Gallery Modal -->
+    <div id="sampleGalleryModal" class="sample_gallery_overlay">
+        <div class="sample_gallery_modal">
+            <button class="sample_gallery_close_btn" title="Close gallery">&times;</button>
+            <button class="sample_gallery_fullscreen_btn" title="Toggle fullscreen">⛶</button>
+            
+            <div class="sample_gallery_header">
+                <h2 class="sample_gallery_title">Product Sample</h2>
+                <p class="sample_gallery_description"></p>
+            </div>
+            
+            <div class="sample_gallery_main_container">
+                <div class="sample_gallery_main_image_wrapper">
+                    <img class="sample_gallery_main_image" src="" alt="Product sample image" />
+                </div>
+            </div>
+            
+            <div class="sample_gallery_thumbnails_section">
+                <span class="sample_gallery_thumbnails_label">Images</span>
+                <div class="sample_gallery_thumbnails_grid" id="sampleThumbnailGrid"></div>
+            </div>
+        </div>
+    </div>
+
 @endsection
 
 @section('page_js')
+@vite('resources/js/customer/pages/product_sample_modal.js')
 @vite('resources/js/customer/pages/home_product_samples.js')
 @vite('resources/js/customer/pages/home_images_slideshow.js')
 @show
