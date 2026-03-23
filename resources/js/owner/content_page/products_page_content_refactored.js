@@ -41,19 +41,6 @@ const products_delete_confirm_modal = document.getElementById(
 const products_confirm_delete_btn = document.getElementById(
     "products_confirm_delete_btn",
 );
-const products_price_viewer_modal = document.getElementById(
-    "products_price_viewer_modal",
-);
-const products_price_viewer_image = document.getElementById(
-    "products_price_viewer_image",
-);
-const products_prev_price_image = document.getElementById(
-    "products_prev_price_image",
-);
-const products_next_price_image = document.getElementById(
-    "products_next_price_image",
-);
-const products_viewer_title = document.getElementById("products_viewer_title");
 const products_title_error = document.getElementById("products_title_error");
 const products_cover_error = document.getElementById("products_cover_error");
 const products_prices_error = document.getElementById("products_prices_error");
@@ -61,7 +48,6 @@ const products_prices_error = document.getElementById("products_prices_error");
 // ================= STATE =================
 let products_list = [];
 let products_edit_id = null;
-let products_current_viewer_index = 0;
 let products_has_cover = false;
 let products_main_file = null;
 let products_price_files = [];
@@ -337,7 +323,6 @@ products_add_btn.addEventListener("click", () => {
 window.addEventListener("click", (e) => {
     if (
         e.target === products_modal ||
-        e.target === products_price_viewer_modal ||
         e.target === products_delete_confirm_modal
     ) {
         e.target.style.display = "none";
@@ -531,8 +516,6 @@ function renderProducts() {
         img.className = "products_card_image";
         img.src = `/storage/${product.cover_image_path}`;
         img.alt = product.name;
-        img.style.cursor = "pointer";
-        img.onclick = () => products_view_price_images(product.id);
 
         const infoDiv = document.createElement("div");
         infoDiv.className = "products_card_info";
@@ -551,42 +534,6 @@ function renderProducts() {
         products_container.appendChild(card);
     });
 }
-
-// ================= VIEW PRODUCT PRICE IMAGES =================
-function products_view_price_images(productId) {
-    const product = products_list.find((p) => p.id === productId);
-    if (!product || !product.price_images || !product.price_images.length) {
-        Toast.info("No price images to display");
-        return;
-    }
-    products_current_viewer_index = 0;
-    products_viewer_title.textContent = `${product.name} - Price Images`;
-    updatePriceImageViewer(product.price_images);
-    products_price_viewer_modal.style.display = "flex";
-}
-
-function updatePriceImageViewer(priceImages) {
-    if (!priceImages.length) return;
-    const currentImage = priceImages[products_current_viewer_index];
-    products_price_viewer_image.src = `/storage/${currentImage.image_path}`;
-}
-
-products_prev_price_image.addEventListener("click", () => {
-    const product = products_list.find((p) => p.id === products_edit_id);
-    if (!product || !product.price_images) return;
-    products_current_viewer_index =
-        (products_current_viewer_index - 1 + product.price_images.length) %
-        product.price_images.length;
-    updatePriceImageViewer(product.price_images);
-});
-
-products_next_price_image.addEventListener("click", () => {
-    const product = products_list.find((p) => p.id === products_edit_id);
-    if (!product || !product.price_images) return;
-    products_current_viewer_index =
-        (products_current_viewer_index + 1) % product.price_images.length;
-    updatePriceImageViewer(product.price_images);
-});
 
 // ================= RESET MODAL =================
 function products_reset_modal() {

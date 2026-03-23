@@ -50,15 +50,10 @@
     width: 160px;
     background-color: #fff7ec;
     border: 2px solid #682c7a;
-    cursor: pointer;
     transition: transform 0.2s ease;
     border-radius: 20px;
     overflow: hidden;
     padding: 8px;
-}
-
-.products_card:hover {
-    transform: scale(1.05);
 }
 
 .products_card_image {
@@ -395,6 +390,11 @@
     align-self: end;
 }
 
+.products_button_edit:hover {
+    background-color: #4c1c5b;
+    transition: 0.3s ease;
+}
+
 .products_button_save {
     border: none;
     padding: 8px 14px;
@@ -527,53 +527,8 @@
 .products_small_text {
     font-family: Coolvetica;
     font-size: 12px;
-    color: #999;
+    color: #c83333;
     margin: 0;
-}
-
-/* ================= PRICE VIEWER MODAL ================= */
-#products_price_viewer_modal .products_modal_content {
-    width: 600px;
-    height: 850px;
-    max-width: 90%;
-    max-height: 90%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-#products_price_viewer_modal img {
-    max-width: 90%;
-    max-height: 90%;
-    object-fit: contain;
-}
-
-.products_carousel_btn {
-    background: rgba(0, 0, 0, 0.5);
-    color: white;
-    border: none;
-    padding: 10px;
-    font-size: 24px;
-    border-radius: 50%;
-    cursor: pointer;
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    transition: background-color 0.2s ease;
-}
-
-.products_carousel_btn:hover {
-    background: rgba(0, 0, 0, 0.75);
-}
-
-#products_prev_price_image {
-    left: 10px;
-}
-#products_next_price_image {
-    right: 10px;
 }
 
 /* ================= RESPONSIVE ================= */
@@ -593,10 +548,6 @@
     #products_main_image_preview {
         width: 100px;
         height: 100px;
-    }
-    #products_price_viewer_modal .products_modal_content {
-        width: 90%;
-        height: 80%;
     }
     .products_notes_upload_box {
         width: 90px;
