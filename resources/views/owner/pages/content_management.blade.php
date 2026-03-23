@@ -83,7 +83,7 @@
 
     </section>
 
-    {{-- ===================== PRODUCTS ===================== --}}
+{{-- ===================== PRODUCTS ===================== --}}
     <section class="content_section" id="products">
         <div class="products_page">
             <h1>Products</h1>
@@ -129,15 +129,6 @@
                 <p>Do you wish to delete the selected product?</p>
                 <button id="products_confirm_delete_btn" class="products_button_confirm_delete">Delete Product</button>
                 <p class="products_small_text">This process cannot be undone</p>
-            </div>
-        </div>
-
-        <div id="products_price_viewer_modal" class="products_modal">
-            <div class="products_modal_content">
-                <h3 id="products_viewer_title"></h3>
-                <button id="products_prev_price_image" class="products_carousel_btn">&lt;</button>
-                <img id="products_price_viewer_image" src="" alt="Price Image" />
-                <button id="products_next_price_image" class="products_carousel_btn">&gt;</button>
             </div>
         </div>
     </section>

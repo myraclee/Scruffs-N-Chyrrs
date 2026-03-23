@@ -30,7 +30,7 @@
             <h2>PRINT YOUR<br><span class="heading_accent">IMAGINATION</span></h2>
             <p>Bring your vision into ink with Scruffs&amp;Chyrrs — your friendly printing service for stickers, pins, prints, and more.</p>
             <div class="hero_buttons">
-                <button onclick="window.location='{{ route('products') }}'">View Products</button>
+                <a href="{{ route('products') }}" class="hero_ghost_btn">View Products</a>
                 <a href="{{ route('aboutus') }}" class="hero_ghost_btn">About Us</a>
             </div>
         </div>

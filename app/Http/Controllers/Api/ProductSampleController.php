@@ -12,7 +12,7 @@ class ProductSampleController extends Controller
 {
     /**
      * Get all product samples with their images
-     * 
+     *
      * @return \Illuminate\Http\JsonResponse
      */
     public function index()
@@ -21,7 +21,7 @@ class ProductSampleController extends Controller
             $samples = ProductSample::with('images')
                 ->orderBy('created_at', 'desc')
                 ->get();
-            
+
             return response()->json([
                 'success' => true,
                 'data' => $samples,
@@ -38,7 +38,7 @@ class ProductSampleController extends Controller
 
     /**
      * Get a single product sample with its images
-     * 
+     *
      * @param \App\Models\ProductSample $productSample
      * @return \Illuminate\Http\JsonResponse
      */
@@ -46,7 +46,7 @@ class ProductSampleController extends Controller
     {
         try {
             $productSample->load('images');
-            
+
             return response()->json([
                 'success' => true,
                 'data' => $productSample,
@@ -63,7 +63,7 @@ class ProductSampleController extends Controller
 
     /**
      * Create a new product sample with images
-     * 
+     *
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
@@ -88,7 +88,7 @@ class ProductSampleController extends Controller
                 foreach ($request->file('images') as $imageFile) {
                     // Store the image in public storage under product_samples/{id}/
                     $path = $imageFile->store("product_samples/{$productSample->id}", 'public');
-                    
+
                     if (!$path) {
                         throw new \Exception('Failed to store image file');
                     }
@@ -99,7 +99,7 @@ class ProductSampleController extends Controller
                         'image_path' => $path,
                         'sort_order' => $sortOrder,
                     ]);
-                    
+
                     $sortOrder++;
                 }
             }
@@ -129,7 +129,7 @@ class ProductSampleController extends Controller
 
     /**
      * Update an existing product sample and its images
-     * 
+     *
      * @param \Illuminate\Http\Request $request
      * @param \App\Models\ProductSample $productSample
      * @return \Illuminate\Http\JsonResponse
@@ -152,11 +152,11 @@ class ProductSampleController extends Controller
             // Handle new image uploads
             if ($request->hasFile('images')) {
                 $sortOrder = $productSample->images()->max('sort_order') + 1 ?? 0;
-                
+
                 foreach ($request->file('images') as $imageFile) {
                     // Store the image
                     $path = $imageFile->store("product_samples/{$productSample->id}", 'public');
-                    
+
                     if (!$path) {
                         throw new \Exception('Failed to store image file');
                     }
@@ -167,7 +167,7 @@ class ProductSampleController extends Controller
                         'image_path' => $path,
                         'sort_order' => $sortOrder,
                     ]);
-                    
+
                     $sortOrder++;
                 }
             }
@@ -197,7 +197,7 @@ class ProductSampleController extends Controller
 
     /**
      * Delete a product sample and all its images
-     * 
+     *
      * @param \App\Models\ProductSample $productSample
      * @return \Illuminate\Http\JsonResponse
      */
@@ -228,6 +228,36 @@ class ProductSampleController extends Controller
             return response()->json([
                 'success' => false,
                 'error' => 'Failed to delete product sample',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete a single product sample image
+     *
+     * @param \App\Models\ProductSampleImage $productSampleImage
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function destroyImage(ProductSampleImage $productSampleImage)
+    {
+        try {
+            // Delete the file from storage
+            if (Storage::disk('public')->exists($productSampleImage->image_path)) {
+                Storage::disk('public')->delete($productSampleImage->image_path);
+            }
+
+            // Delete the database record
+            $productSampleImage->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Product sample image deleted successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to delete image',
                 'message' => $e->getMessage()
             ], 500);
         }

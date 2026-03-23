@@ -23,6 +23,8 @@ export default defineConfig({
                 'resources/css/customer/pages/aboutus.css',
                 'resources/css/customer/pages/faqs.css',
                 'resources/css/customer/pages/products.css',
+                'resources/css/customer/pages/home.css',
+                'resources/css/customer/pages/home_images.css',
                 'resources/css/owner/parts/sidenav.css',
                 'resources/css/owner/pages/content_management/content_management.css',
                 'resources/css/owner/pages/inventory.css',
