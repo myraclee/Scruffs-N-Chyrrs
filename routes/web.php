@@ -17,6 +17,10 @@ Route::get('/products', function () {
     return view('customer.pages.products');
 })->name('products');
 
+Route::get('/products/{product}', function (App\Models\Product $product) {
+    return view('customer.pages.product-detail', compact('product'));
+})->name('product.detail');
+
 Route::get('/faqs', function () {
     return view('customer.pages.faqs');
 })->name('faqs');
@@ -94,23 +98,23 @@ Route::prefix('api/order-templates')->group(function () {
 
 // FAQ ROUTES - Public read, auth required for write operations
 Route::prefix('api/faqs')->group(function () {
-    Route::get('/', [FaqController::class, 'index']); 
-    Route::post('/', [FaqController::class, 'store'])->middleware('auth'); 
-    Route::put('{faq}', [FaqController::class, 'update'])->middleware('auth'); 
-    Route::delete('{faq}', [FaqController::class, 'destroy'])->middleware('auth'); 
-    Route::post('/reorder', [FaqController::class, 'reorder'])->middleware('auth'); 
-    Route::get('/admin/index', [FaqController::class, 'adminIndex'])->middleware('auth'); 
+    Route::get('/', [FaqController::class, 'index']);
+    Route::post('/', [FaqController::class, 'store'])->middleware('auth');
+    Route::put('{faq}', [FaqController::class, 'update'])->middleware('auth');
+    Route::delete('{faq}', [FaqController::class, 'destroy'])->middleware('auth');
+    Route::post('/reorder', [FaqController::class, 'reorder'])->middleware('auth');
+    Route::get('/admin/index', [FaqController::class, 'adminIndex'])->middleware('auth');
 });
 
 // OWNER ROUTES
 Route::middleware(['auth', 'owner'])->group(function () {
-    
+
     // THE UPDATED DASHBOARD ROUTE!
     Route::get('/owner/pages/dashboard', function () {
         $launchYear = 2026;
-        $currentYear = now()->year; 
-        $availableYears = range($launchYear, $currentYear); 
-        
+        $currentYear = now()->year;
+        $availableYears = range($launchYear, $currentYear);
+
         return view('owner.pages.dashboard', compact('availableYears', 'currentYear'));
     })->name('owner.dashboard');
 

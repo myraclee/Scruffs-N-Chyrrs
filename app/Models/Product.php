@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Str;
 
 /**
  * @property int $id
@@ -27,9 +28,38 @@ class Product extends Model
      */
     protected $fillable = [
         'name',
+        'slug',
         'description',
         'cover_image_path',
     ];
+
+    /**
+     * Boot the model and set up observers/event listeners.
+     */
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (!$model->slug) {
+                $model->slug = Str::slug($model->name);
+            }
+        });
+
+        static::updating(function ($model) {
+            if ($model->isDirty('name') && !$model->isDirty('slug')) {
+                $model->slug = Str::slug($model->name);
+            }
+        });
+    }
+
+    /**
+     * Get the route key for implicit route binding.
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
 
     /**
      * Get the price images for the product.
