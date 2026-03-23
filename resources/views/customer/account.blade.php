@@ -87,8 +87,15 @@
                             <p class="no_orders_subtext">Time to bring your imagination to life!</p>
                         </div>
                     @endforelse
-                </div>
-            @endif
-
+                </div> @endif
+            
+            @if(Auth::check() && Auth::user()->isOwner())
+                </div> @endif
+            
+        </div> <div class="account_action_buttons" style="margin-top: 30px; display: flex; gap: 15px; justify-content: center;">
+            <a href="{{ route('edit-profile') }}" class="edit_btn">Edit Profile</a>
+            <a href="{{ route('change-password') }}" class="password_btn">Change Password</a>
         </div>
+
+    </div>
 @endsection

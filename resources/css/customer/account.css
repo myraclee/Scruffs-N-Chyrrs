@@ -275,6 +275,51 @@
     transform: translateY(-2px); /* Gives it a satisfying little "lift" when hovered */
 }
 
+/* --- Bottom Action Buttons --- */
+.account_action_buttons {
+    margin-top: 30px; 
+    display: flex; 
+    gap: 15px; 
+    justify-content: center;
+    padding-bottom: 40px; /* Gives the bottom of the page some breathing room */
+}
+
+.account_action_buttons a {
+    display: inline-block;
+    padding: 12px 25px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-family: "Coolvetica", sans-serif;
+    font-size: 16px;
+    letter-spacing: 1px;
+    transition: all 0.2s ease;
+}
+
+/* Primary Button Style */
+.edit_btn {
+    background-color: #682c7a;
+    color: white;
+    box-shadow: 0 4px 10px rgba(104, 44, 122, 0.3);
+}
+
+.edit_btn:hover {
+    background-color: #a15fb5;
+    transform: translateY(-2px);
+}
+
+/* Secondary Button Style - Darkened */
+.password_btn {
+    background-color: #c7ae9c; /* A nice, sleek dark gray */
+    color: white;
+    border: none; /* Removes the outline completely */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Adds a subtle shadow to match the other button */
+}
+
+.password_btn:hover {
+    background-color: #e0cfbe; /* Gets slightly darker when hovered */
+    transform: translateY(-2px);
+}
+
 @media screen and (max-width: 768px) {
     .account_container {
         padding: 20px;
