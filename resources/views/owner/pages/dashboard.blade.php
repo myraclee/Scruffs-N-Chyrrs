@@ -60,11 +60,12 @@
     <div class="charts_header_container">
         <h2 class="section_title" style="margin: 0;">Charts</h2>
         <select id="yearSelector" class="year_dropdown" onchange="updateAllCharts()">
-            <option value="2026" selected>2026</option>
-            <option value="2027">2027</option>
-            <option value="2028">2028</option>
-            <option value="2029">2029</option>
-            <option value="2030">2030</option>
+            {{-- Dynamically loop through the years --}}
+            @foreach($availableYears as $year)
+                <option value="{{ $year }}" {{ $year == $currentYear ? 'selected' : '' }}>
+                    {{ $year }}
+                </option>
+            @endforeach
         </select>
     </div>
 
@@ -141,8 +142,12 @@
         };
 
         // --- Initialize Charts with default 2026 data ---
-        const currentYear = "2026";
-        const currentMonthIndex = 2; // March
+        const currentYear = document.getElementById('yearSelector').value;
+        const currentMonthIndex = document.getElementById('monthSelector').value; 
+
+        // 🛡️ THE FAILSAFE: If the year doesn't exist in our fake data yet, give it empty arrays instead of crashing!
+        const initialRevenue = chartData[currentYear] ? chartData[currentYear].monthly_revenue : [];
+        const initialSales = chartData[currentYear] ? chartData[currentYear].monthly_sales_categories[currentMonthIndex] : [];
 
         // 1. Monthly Revenue Bar Chart
         const revCtx = document.getElementById('revenueChart').getContext('2d');
@@ -152,7 +157,7 @@
                 labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
                 datasets: [{
                     label: 'Revenue (Php)',
-                    data: chartData[currentYear].monthly_revenue, 
+                    data: initialRevenue, /* <--- Uses the safe data */
                     backgroundColor: [
                         '#DCBAE6', '#9659A7', '#DCBAE6', '#9659A7', '#DCBAE6', '#9659A7',
                         '#DCBAE6', '#9659A7', '#DCBAE6', '#9659A7', '#DCBAE6', '#9659A7'
@@ -176,7 +181,7 @@
             data: {
                 labels: ['Stickers', 'Button Pins', 'Posters', 'Business Cards', 'Photocards'],
                 datasets: [{
-                    data: chartData[currentYear].monthly_sales_categories[currentMonthIndex],
+                    data: initialSales, /* <--- Uses the safe data */
                     backgroundColor: ['#9659A7', '#DCBAE6', '#FFF2D9', '#F4D6D2', '#CDBAA7'],
                     borderWidth: 0
                 }]

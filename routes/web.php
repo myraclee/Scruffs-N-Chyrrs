@@ -94,18 +94,24 @@ Route::prefix('api/order-templates')->group(function () {
 
 // FAQ ROUTES - Public read, auth required for write operations
 Route::prefix('api/faqs')->group(function () {
-    Route::get('/', [FaqController::class, 'index']); // Public - get active FAQs
-    Route::post('/', [FaqController::class, 'store'])->middleware('auth'); // Auth required
-    Route::put('{faq}', [FaqController::class, 'update'])->middleware('auth'); // Auth required
-    Route::delete('{faq}', [FaqController::class, 'destroy'])->middleware('auth'); // Auth required
-    Route::post('/reorder', [FaqController::class, 'reorder'])->middleware('auth'); // Auth required
-    Route::get('/admin/index', [FaqController::class, 'adminIndex'])->middleware('auth'); // Admin only - get all FAQs
+    Route::get('/', [FaqController::class, 'index']); 
+    Route::post('/', [FaqController::class, 'store'])->middleware('auth'); 
+    Route::put('{faq}', [FaqController::class, 'update'])->middleware('auth'); 
+    Route::delete('{faq}', [FaqController::class, 'destroy'])->middleware('auth'); 
+    Route::post('/reorder', [FaqController::class, 'reorder'])->middleware('auth'); 
+    Route::get('/admin/index', [FaqController::class, 'adminIndex'])->middleware('auth'); 
 });
 
 // OWNER ROUTES
 Route::middleware(['auth', 'owner'])->group(function () {
+    
+    // THE UPDATED DASHBOARD ROUTE!
     Route::get('/owner/pages/dashboard', function () {
-        return view('owner.pages.dashboard');
+        $launchYear = 2026;
+        $currentYear = now()->year; 
+        $availableYears = range($launchYear, $currentYear); 
+        
+        return view('owner.pages.dashboard', compact('availableYears', 'currentYear'));
     })->name('owner.dashboard');
 
     Route::get('/owner/pages/inventory', function () {
