@@ -15,7 +15,11 @@
         @endif
 
         <div class="account_info_section">
-            <h2>Account Information</h2>
+            <div class="info_header">
+                <h2>Account Information</h2>
+                <a href="{{ route('edit-profile') }}" class="edit_link_btn">Edit</a>
+            </div>
+            
             <div class="info_grid">
                 <div class="info_item">
                     <label>First Name</label>
@@ -33,9 +37,14 @@
                     <label>Phone Number</label>
                     <p>{{ Auth::user()->contact_number ?? 'Not provided' }}</p>
                 </div>
-            </div>
-        </div>
-</div>
+                
+                <div class="info_item">
+                    <label>Password</label>
+                    <p style="letter-spacing: 2px; font-size: 18px;">••••••••••••</p>
+                </div>
+            </div> </div> <div class="account_action_buttons" style="display: flex; justify-content: center; margin-top: -20px; margin-bottom: 30px;">
+            <a href="{{ route('change-password') }}" class="password_btn">Change Password</a>
+        </div>        
 
         <div class="account_orders_section">
             
@@ -91,11 +100,5 @@
             
             @if(Auth::check() && Auth::user()->isOwner())
                 </div> @endif
-            
-        </div> <div class="account_action_buttons" style="margin-top: 30px; display: flex; gap: 15px; justify-content: center;">
-            <a href="{{ route('edit-profile') }}" class="edit_btn">Edit Profile</a>
-            <a href="{{ route('change-password') }}" class="password_btn">Change Password</a>
-        </div>
-
     </div>
 @endsection

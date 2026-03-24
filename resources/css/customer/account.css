@@ -13,11 +13,11 @@
 }
 
 .account_info_section {
-    background: #fff7ec;
-    padding: 30px;
-    border-radius: 30px;
-    margin-bottom: 30px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    background-color: #fffdfa;
+    padding: 30px 40px;
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    margin-bottom: 40px;
 }
 
 .account_info_section h2 {
@@ -28,18 +28,61 @@
     font-size: 1.5rem;
 }
 
-.info_grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
+.info_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
 }
 
+.info_header h2 {
+    color: #682c7a; /* Deep purple */
+    font-size: 24px;
+    margin: 0;
+}
+
+.edit_link_btn {
+    color: #00bfff; /* Bright blue from your mockup */
+    font-family: "Coolvetica", sans-serif;
+    font-size: 20px;
+    text-decoration: none;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.edit_link_btn:hover {
+    color: #0099cc;
+    transform: scale(1.05);
+}
+
+/* The 2x2 Grid */
+.info_grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Two equal columns */
+    gap: 20px 30px; /* 20px vertical gap, 30px horizontal gap */
+}
+
+/* The Pill-Shaped Input Displays */
 .info_item {
-    padding: 15px;
-    background: #fffdfa;
-    border-radius: 30px;
-    border-left: 3px solid #6b3282;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    background-color: white;
+    padding: 15px 20px;
+    border-radius: 50px; /* Gives the perfect pill shape */
+    border-left: 4px solid #682c7a; /* The purple accent line */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.info_item label {
+    display: block;
+    color: #682c7a;
+    font-family: "Coolvetica", sans-serif;
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.info_item p {
+    font-family: Arial, sans-serif;
+    color: #333;
+    font-size: 15px;
+    margin: 0;
 }
 
 .info_item label {
@@ -234,7 +277,7 @@
     padding: 20px 0;
 }
 
-/* --- Admin Dashboard Prompt --- */
+/* --- Admin Dashboard --- */
 .admin_order_prompt {
     text-align: center;
     padding: 40px 20px;
@@ -295,28 +338,16 @@
     transition: all 0.2s ease;
 }
 
-/* Primary Button Style */
-.edit_btn {
-    background-color: #682c7a;
-    color: white;
-    box-shadow: 0 4px 10px rgba(104, 44, 122, 0.3);
-}
-
-.edit_btn:hover {
-    background-color: #a15fb5;
-    transform: translateY(-2px);
-}
-
-/* Secondary Button Style - Darkened */
+/* Change Password */
 .password_btn {
-    background-color: #c7ae9c; /* A nice, sleek dark gray */
+    background-color: #c7ae9c; 
     color: white;
-    border: none; /* Removes the outline completely */
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Adds a subtle shadow to match the other button */
+    border: none;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .password_btn:hover {
-    background-color: #e0cfbe; /* Gets slightly darker when hovered */
+    background-color: #e0cfbe;
     transform: translateY(-2px);
 }
 
@@ -340,13 +371,22 @@
 
     .action_btn {
         width: 100%;
-        max-width: 250px; /* Stops them from touching the edges */
+        max-width: 250px;
         padding: 12px 20px;
-        margin: 0 auto; /* Keeps them perfectly centered */
+        margin: 0 auto;
     }
-}
 
-/* --- Mobile Order Adjustments --- */
+    /* Account Info Mobile Stack */
+    .account_info_section {
+        padding: 25px 20px; /* Slightly less padding on small screens */
+    }
+
+    .info_grid {
+        grid-template-columns: 1fr; /* Forces 1 single column! */
+        gap: 15px; 
+    }
+
+    /* --- Mobile Order Adjustments --- */
     .account_orders_section {
         padding: 20px;
     }
@@ -359,3 +399,8 @@
     .order_card {
         padding: 15px; /* Slightly tighter padding for smaller screens */
     }
+}
+
+
+
+    
