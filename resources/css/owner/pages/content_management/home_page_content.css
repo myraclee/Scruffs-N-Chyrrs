@@ -54,11 +54,11 @@
     color: #fff7ec;
 
     cursor: pointer;
+    transition: transform 0.2s ease;
 }
 
 .edit_home_images:hover {
     transform: scale(1.05);
-    transition: 0.2s ease;
 }
 
 .home_images_count {
@@ -131,8 +131,8 @@
 }
 
 .product_sample_container_name h3 {
-    font-family: SuperDream;
-    font-size: 18px;
+    font-family: Coolvetica;
+    font-size: 16px;
     color: #682c7a;
 
     overflow: hidden;
@@ -140,31 +140,31 @@
     word-wrap: break-word;
     text-align: center;
 
-    width: 130px;
+    width: 150px;
     margin-bottom: 10px;
 }
 
 .product_sample_main_container button {
-    border: none;
+    border: #682c7a solid 2px;
     outline: none;
 
     width: 60px;
     height: 25px;
 
-    background-color: #682c7a;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    background-color: #fff7ec;
     border-radius: 30px;
 
     font-family: Coolvetica;
     font-size: 12px;
-    color: #fff7ec;
+    color: #682c7a;
 
     cursor: pointer;
 }
 
 .product_sample_main_container button:hover {
-    background-color: #4c1c5b;
+    background-color: #682c7a;
     transition: 0.3s ease;
+    color: #fff7ec;
 }
 
 .add_sample {
@@ -185,11 +185,11 @@
     color: #fff7ec;
 
     cursor: pointer;
+    transition: transform 0.2s ease;
 }
 
 .add_sample:hover {
     transform: scale(1.05);
-    transition: 0.2s ease;
 }
 
 /* MODALS */

@@ -8,6 +8,7 @@ let products = [];
 let editingProductId = null;
 let pendingDeleteId = null;
 let isLoading = false;
+let currentTab = "details"; // "details" | "pricing" | "additional_fees"
 
 // ==================== MODAL ====================
 
@@ -18,7 +19,7 @@ document
     .addEventListener("click", () => {
         editingProductId = null;
         document.getElementById("templateModalTitle").textContent =
-            "Add New Template";
+            "Add New Order Template";
         document.getElementById("deleteProductBtn").classList.add("btn_hidden");
         openModal();
     });
@@ -173,7 +174,10 @@ function createSpecRow() {
     optName.className = "product_option_name";
     const nameInput = document.createElement("input");
     nameInput.type = "text";
-    nameInput.addEventListener("input", () => clearError(nameInput));
+    nameInput.addEventListener("input", () => {
+        clearError(nameInput);
+        updateTabLockStates();
+    });
     optName.appendChild(nameInput);
 
     const actionsWrap = document.createElement("div");
@@ -192,19 +196,19 @@ function createSpecRow() {
     );
 
     addSvg.addEventListener("click", () => {
-        // parentElement is now specInputsDiv
         const wrapper = row.parentElement;
         row.after(createSpecRow());
         refreshSpecButtons(wrapper);
+        updateTabLockStates();
     });
     delSvg.addEventListener("click", () => {
         const wrapper = row.parentElement;
         if (wrapper.querySelectorAll(".spec_input_row").length <= 1) return;
         row.remove();
         refreshSpecButtons(wrapper);
+        updateTabLockStates();
     });
 
-    // Delete is always first (left), then Add
     actionsRow.appendChild(delSvg);
     actionsRow.appendChild(addSvg);
     actionsWrap.appendChild(actionsRow);
@@ -252,19 +256,20 @@ function createOptionContainer(index) {
     const input = document.createElement("input");
     input.type = "text";
     input.className = "product_option_input";
-    input.addEventListener("input", () => clearError(input));
+    input.addEventListener("input", () => {
+        clearError(input);
+        updateTabLockStates();
+    });
     labelWrap.appendChild(lbl);
     labelWrap.appendChild(input);
 
     const specWrapper = document.createElement("div");
     specWrapper.className = "spec_rows_wrapper";
 
-    // Header row lives in its own div — gets the top margin
     const specHeaderDiv = document.createElement("div");
     specHeaderDiv.className = "spec_header_div";
     specHeaderDiv.appendChild(createSpecLabelRow());
 
-    // Input rows live in their own div — no gap between siblings
     const specInputsDiv = document.createElement("div");
     specInputsDiv.className = "spec_inputs_div";
     specInputsDiv.appendChild(createSpecRow());
@@ -291,12 +296,14 @@ function createOptionContainer(index) {
         container.after(createOptionContainer(getAllOptions().length + 1));
         refreshOptionButtons();
         renumberOptions();
+        updateTabLockStates();
     });
     delBtn.addEventListener("click", () => {
         if (getAllOptions().length <= 1) return;
         container.remove();
         refreshOptionButtons();
         renumberOptions();
+        updateTabLockStates();
     });
 
     actions.appendChild(delBtn);
@@ -328,34 +335,120 @@ function renumberOptions() {
     });
 }
 
-// ==================== TABS & VALIDATION ====================
+// ==================== SILENT VALIDATORS (no error display) ====================
+
+function isDetailsValid() {
+    const nameSelect = document.getElementById("productName");
+    if (!nameSelect.value || !nameSelect.value.trim()) return false;
+    for (const opt of getAllOptions()) {
+        const labelInput = opt.querySelector(".product_option_input");
+        if (!labelInput.value.trim()) return false;
+        for (const row of opt.querySelectorAll(".spec_input_row")) {
+            const typeInput = row.querySelector(".product_option_name input");
+            if (!typeInput.value.trim()) return false;
+        }
+    }
+    return true;
+}
+
+function isPricingValid() {
+    const inputs = document.querySelectorAll(".combination_price_input");
+    if (inputs.length === 0) return false;
+    for (const input of inputs) {
+        const val = input.value.trim();
+        if (!val || isNaN(parseFloat(val))) return false;
+    }
+    return true;
+}
+
+// ==================== TAB LOCK STATE ====================
+
+function updateTabLockStates() {
+    const detailsOk = isDetailsValid();
+    const pricingOk = detailsOk && isPricingValid();
+
+    document
+        .getElementById("tab_pricing")
+        .classList.toggle("tab_locked", !detailsOk);
+    document
+        .getElementById("tab_additional_fees")
+        .classList.toggle("tab_locked", !pricingOk);
+}
+
+// ==================== TABS & NAVIGATION ====================
 
 function setupTabs() {
-    document
-        .getElementById("tab_details")
-        .addEventListener("click", () => switchTab("details"));
+    document.getElementById("tab_details").addEventListener("click", () => {
+        switchTab("details");
+    });
+
     document.getElementById("tab_pricing").addEventListener("click", () => {
-        if (!validateProductDetails()) return;
+        if (!isDetailsValid()) {
+            validateProductDetails(); // show field errors
+            return;
+        }
         switchTab("pricing");
         generateCombinations();
     });
+
+    document
+        .getElementById("tab_additional_fees")
+        .addEventListener("click", () => {
+            if (!isDetailsValid()) {
+                validateProductDetails();
+                switchTab("details");
+                return;
+            }
+            if (!isPricingValid()) {
+                switchTab("pricing");
+                validatePricing();
+                toast.error("Please fill in all combination prices.");
+                return;
+            }
+            switchTab("additional_fees");
+        });
 }
 
 function switchTab(tab) {
-    const isDetails = tab === "details";
+    currentTab = tab;
+    const allTabs = ["details", "pricing", "additional_fees"];
+    allTabs.forEach((t) => {
+        document
+            .getElementById(`tab_${t}`)
+            .classList.toggle("modal_tab_active", t === tab);
+        document
+            .getElementById(`panel_${t}`)
+            .classList.toggle("modal_panel_hidden", t !== tab);
+    });
+
+    const isAdditional = tab === "additional_fees";
     document
-        .getElementById("tab_details")
-        .classList.toggle("modal_tab_active", isDetails);
+        .getElementById("nextBtn")
+        .classList.toggle("btn_hidden", isAdditional);
     document
-        .getElementById("tab_pricing")
-        .classList.toggle("modal_tab_active", !isDetails);
-    document
-        .getElementById("panel_details")
-        .classList.toggle("modal_panel_hidden", !isDetails);
-    document
-        .getElementById("panel_pricing")
-        .classList.toggle("modal_panel_hidden", isDetails);
+        .querySelector(".save_product")
+        .classList.toggle("btn_hidden", !isAdditional);
+
+    updateTabLockStates();
 }
+
+function setupNextButton() {
+    document.getElementById("nextBtn").addEventListener("click", () => {
+        if (currentTab === "details") {
+            if (!validateProductDetails()) return;
+            switchTab("pricing");
+            generateCombinations();
+        } else if (currentTab === "pricing") {
+            if (!validatePricing()) {
+                toast.error("Please fill in all combination prices.");
+                return;
+            }
+            switchTab("additional_fees");
+        }
+    });
+}
+
+// ==================== VALIDATION (with error display) ====================
 
 function validateProductDetails() {
     let valid = true;
@@ -383,6 +476,8 @@ function validateProductDetails() {
             } else clearError(typeInput);
         });
     });
+
+    updateTabLockStates();
     return valid;
 }
 
@@ -397,6 +492,7 @@ function validatePricing() {
             input.classList.remove("input_error");
         }
     });
+    updateTabLockStates();
     return valid;
 }
 
@@ -454,48 +550,49 @@ function generateCombinations() {
             priceInput.value = priceInput.value
                 .replace(/[^0-9.]/g, "")
                 .replace(/(\..*?)\..*/g, "$1");
-            if (priceInput.value.trim()) {
+            if (priceInput.value.trim())
                 priceInput.classList.remove("input_error");
-            }
+            updateTabLockStates();
         });
 
-        if (savedData[labelText]) {
-            priceInput.value = savedData[labelText].price;
-        }
+        if (savedData[labelText]) priceInput.value = savedData[labelText].price;
 
         row.appendChild(label);
         row.appendChild(priceInput);
         container.appendChild(row);
     });
+
+    updateTabLockStates();
 }
 
 // ==================== DISCOUNT ROWS ====================
+
+function setDiscountSectionVisible(show) {
+    document
+        .getElementById("discountHeaderRow")
+        .classList.toggle("hidden", !show);
+    document
+        .getElementById("discountRowsWrapper")
+        .classList.toggle("hidden", !show);
+}
 
 function createDiscountRow() {
     const row = document.createElement("div");
     row.className = "discount_row";
 
-    const qtyWrap = document.createElement("div");
-    qtyWrap.className = "product_discount_quantity";
-    const qtyLbl = document.createElement("label");
-    qtyLbl.textContent = "Min. Quantity (≥)";
     const qtyInput = document.createElement("input");
     qtyInput.type = "text";
     qtyInput.inputMode = "numeric";
+    qtyInput.className = "discount_qty_input";
+    qtyInput.placeholder = "e.g. 50";
     enforceNumeric(qtyInput);
-    qtyWrap.appendChild(qtyLbl);
-    qtyWrap.appendChild(qtyInput);
 
-    const priceWrap = document.createElement("div");
-    priceWrap.className = "product_discount_print";
-    const priceLbl = document.createElement("label");
-    priceLbl.textContent = "Price Reduction / pc";
     const priceInput = document.createElement("input");
     priceInput.type = "text";
     priceInput.inputMode = "decimal";
+    priceInput.className = "discount_price_input";
+    priceInput.placeholder = "0.00";
     enforceNumeric(priceInput);
-    priceWrap.appendChild(priceLbl);
-    priceWrap.appendChild(priceInput);
 
     const actionsWrap = document.createElement("div");
     actionsWrap.className = "discount_row_actions";
@@ -523,8 +620,9 @@ function createDiscountRow() {
 
     actionsWrap.appendChild(addSvg);
     actionsWrap.appendChild(delSvg);
-    row.appendChild(qtyWrap);
-    row.appendChild(priceWrap);
+
+    row.appendChild(qtyInput);
+    row.appendChild(priceInput);
     row.appendChild(actionsWrap);
     return row;
 }
@@ -548,15 +646,37 @@ function setupDiscount() {
     const wrapper = document.getElementById("discountRowsWrapper");
     checkbox.addEventListener("change", () => {
         if (checkbox.checked) {
-            wrapper.classList.remove("hidden");
+            setDiscountSectionVisible(true);
             if (wrapper.querySelectorAll(".discount_row").length === 0) {
                 wrapper.appendChild(createDiscountRow());
                 refreshDiscountButtons(wrapper);
             }
         } else {
-            wrapper.classList.add("hidden");
+            setDiscountSectionVisible(false);
         }
     });
+}
+
+// ==================== MINIMUM ORDER ====================
+
+function setupMinOrder() {
+    const checkbox = document.getElementById("applyMinOrder");
+    const wrapper = document.getElementById("minOrderWrapper");
+    checkbox.addEventListener("change", () => {
+        wrapper.classList.toggle("hidden", !checkbox.checked);
+    });
+    enforceNumeric(document.getElementById("minOrderQty"));
+}
+
+// ==================== LAYOUT FEE ====================
+
+function setupLayoutFee() {
+    const checkbox = document.getElementById("applyLayoutFee");
+    const wrapper = document.getElementById("layoutFeeWrapper");
+    checkbox.addEventListener("change", () => {
+        wrapper.classList.toggle("hidden", !checkbox.checked);
+    });
+    enforceNumeric(document.getElementById("layoutFeeAmount"));
 }
 
 // ==================== COLLECT DATA ====================
@@ -591,13 +711,28 @@ function collectProductData() {
     const discountRows = Array.from(
         document.querySelectorAll(".discount_row"),
     ).map((row) => ({
-        qty: row.querySelector(".product_discount_quantity input").value.trim(),
-        reduction: row
-            .querySelector(".product_discount_print input")
-            .value.trim(),
+        qty: row.querySelector(".discount_qty_input").value.trim(),
+        reduction: row.querySelector(".discount_price_input").value.trim(),
     }));
 
-    return { options, combinations, discountEnabled, discountRows };
+    const minOrderEnabled = document.getElementById("applyMinOrder").checked;
+    const minOrderQty = document.getElementById("minOrderQty").value.trim();
+
+    const layoutFeeEnabled = document.getElementById("applyLayoutFee").checked;
+    const layoutFeeAmount = document
+        .getElementById("layoutFeeAmount")
+        .value.trim();
+
+    return {
+        options,
+        combinations,
+        discountEnabled,
+        discountRows,
+        minOrderEnabled,
+        minOrderQty,
+        layoutFeeEnabled,
+        layoutFeeAmount,
+    };
 }
 
 // ==================== SAVE ====================
@@ -658,18 +793,24 @@ function setupSaveButton() {
                                   position: idx,
                               }))
                             : [],
+                    min_order:
+                        data.minOrderEnabled && data.minOrderQty
+                            ? parseInt(data.minOrderQty) || null
+                            : null,
+                    layout_fee:
+                        data.layoutFeeEnabled && data.layoutFeeAmount
+                            ? parseFloat(data.layoutFeeAmount) || null
+                            : null,
                 };
 
-                let result;
                 if (editingProductId !== null) {
-                    result = await orderTemplateApi.updateOrderTemplate(
+                    await orderTemplateApi.updateOrderTemplate(
                         editingProductId,
                         payload,
                     );
                     toast.success("Order template updated successfully");
                 } else {
-                    result =
-                        await orderTemplateApi.createOrderTemplate(payload);
+                    await orderTemplateApi.createOrderTemplate(payload);
                     toast.success("Order template created successfully");
                 }
 
@@ -704,17 +845,14 @@ function setupDeleteButton() {
         .getElementById("deleteConfirmProceedBtn")
         .addEventListener("click", async () => {
             if (pendingDeleteId === null) return;
-
             if (isLoading) return;
             isLoading = true;
 
             try {
                 await orderTemplateApi.deleteOrderTemplate(pendingDeleteId);
                 toast.success("Order template deleted successfully");
-
                 pendingDeleteId = null;
                 confirmOverlay.classList.remove("active");
-
                 await loadOrderTemplates();
                 resetModal();
                 closeModal();
@@ -845,7 +983,8 @@ function openEditModal(templateId) {
     if (!template) return;
     editingProductId = templateId;
 
-    document.getElementById("templateModalTitle").textContent = "Edit Template";
+    document.getElementById("templateModalTitle").textContent =
+        "Edit Order Template";
     document.getElementById("deleteProductBtn").classList.remove("btn_hidden");
 
     const nameSelect = document.getElementById("productName");
@@ -858,9 +997,7 @@ function openEditModal(templateId) {
         wrapper.appendChild(container);
         container.querySelector(".product_option_input").value = opt.label;
 
-        const specWrapper = container.querySelector(".spec_rows_wrapper");
-        // Target only the inputs div — not the header div
-        const specInputsDiv = specWrapper.querySelector(".spec_inputs_div");
+        const specInputsDiv = container.querySelector(".spec_inputs_div");
         specInputsDiv
             .querySelectorAll(".spec_input_row")
             .forEach((r) => r.remove());
@@ -877,6 +1014,7 @@ function openEditModal(templateId) {
     });
     refreshOptionButtons();
 
+    // Pricing combinations
     const combContainer = document.getElementById("pricingCombinations");
     combContainer.innerHTML = "";
     template.pricings.forEach((pricing) => {
@@ -893,42 +1031,72 @@ function openEditModal(templateId) {
             priceInput.value = priceInput.value
                 .replace(/[^0-9.]/g, "")
                 .replace(/(\..*?)\..*/g, "$1");
-            if (priceInput.value.trim()) {
+            if (priceInput.value.trim())
                 priceInput.classList.remove("input_error");
-            }
+            updateTabLockStates();
         });
         row.appendChild(label);
         row.appendChild(priceInput);
         combContainer.appendChild(row);
     });
 
+    // Bulk discount
     const checkbox = document.getElementById("applyProductDiscount");
     const hasDiscounts = template.discounts && template.discounts.length > 0;
     checkbox.checked = hasDiscounts;
     const discountWrapper = document.getElementById("discountRowsWrapper");
     discountWrapper.innerHTML = "";
     if (hasDiscounts) {
-        discountWrapper.classList.remove("hidden");
+        setDiscountSectionVisible(true);
         template.discounts.forEach((discount) => {
             const row = createDiscountRow();
-            row.querySelector(".product_discount_quantity input").value =
+            row.querySelector(".discount_qty_input").value =
                 discount.min_quantity;
-            row.querySelector(".product_discount_print input").value =
+            row.querySelector(".discount_price_input").value =
                 discount.price_reduction;
             discountWrapper.appendChild(row);
         });
         refreshDiscountButtons(discountWrapper);
     } else {
-        discountWrapper.classList.add("hidden");
+        setDiscountSectionVisible(false);
     }
 
-    switchTab("details");
+    // Min order
+    const applyMinOrder = document.getElementById("applyMinOrder");
+    const minOrderWrapper = document.getElementById("minOrderWrapper");
+    if (template.min_order != null) {
+        applyMinOrder.checked = true;
+        minOrderWrapper.classList.remove("hidden");
+        document.getElementById("minOrderQty").value = template.min_order;
+    } else {
+        applyMinOrder.checked = false;
+        minOrderWrapper.classList.add("hidden");
+        document.getElementById("minOrderQty").value = "";
+    }
+
+    // Layout fee
+    const applyLayoutFee = document.getElementById("applyLayoutFee");
+    const layoutFeeWrapper = document.getElementById("layoutFeeWrapper");
+    if (template.layout_fee != null) {
+        applyLayoutFee.checked = true;
+        layoutFeeWrapper.classList.remove("hidden");
+        document.getElementById("layoutFeeAmount").value = template.layout_fee;
+    } else {
+        applyLayoutFee.checked = false;
+        layoutFeeWrapper.classList.add("hidden");
+        document.getElementById("layoutFeeAmount").value = "";
+    }
+
+    // Clear stale errors
     document
         .querySelectorAll(".input_error")
         .forEach((el) => el.classList.remove("input_error"));
     document
         .querySelectorAll(".input_error_msg")
         .forEach((el) => el.classList.add("hidden"));
+
+    switchTab("details");
+    updateTabLockStates(); // Unlock tabs that are already filled
     openModal();
 }
 
@@ -1009,42 +1177,65 @@ function resetModal() {
     nameSelect.value = "";
     editingProductId = null;
     document.getElementById("templateModalTitle").textContent =
-        "Add New Template";
+        "Add New Order Template";
     document.getElementById("deleteProductBtn").classList.add("btn_hidden");
-    switchTab("details");
+
     document
         .querySelectorAll(".input_error")
         .forEach((el) => el.classList.remove("input_error"));
     document
         .querySelectorAll(".input_error_msg")
         .forEach((el) => el.classList.add("hidden"));
+
+    // Reset discount
     document.getElementById("applyProductDiscount").checked = false;
     const discountWrapper = document.getElementById("discountRowsWrapper");
-    discountWrapper.classList.add("hidden");
     discountWrapper.innerHTML = "";
+    setDiscountSectionVisible(false);
+
+    // Reset min order
+    document.getElementById("applyMinOrder").checked = false;
+    document.getElementById("minOrderWrapper").classList.add("hidden");
+    document.getElementById("minOrderQty").value = "";
+
+    // Reset layout fee
+    document.getElementById("applyLayoutFee").checked = false;
+    document.getElementById("layoutFeeWrapper").classList.add("hidden");
+    document.getElementById("layoutFeeAmount").value = "";
+
     const wrapper = getOptionsWrapper();
     wrapper.innerHTML = "";
     wrapper.appendChild(createOptionContainer(1));
     refreshOptionButtons();
     document.getElementById("pricingCombinations").innerHTML = "";
+
+    switchTab("details");
+    updateTabLockStates();
 }
 
 // ==================== INIT ====================
 
 function initModal() {
     const nameSelect = document.getElementById("productName");
-    nameSelect.addEventListener("change", () => clearError(nameSelect));
+    nameSelect.addEventListener("change", () => {
+        clearError(nameSelect);
+        updateTabLockStates();
+    });
 
     getOptionsWrapper().appendChild(createOptionContainer(1));
     refreshOptionButtons();
     setupTabs();
+    setupNextButton();
     setupDiscount();
+    setupMinOrder();
+    setupLayoutFee();
     setupCancelButton();
     setupSaveButton();
     setupDeleteButton();
 
     loadProductNamesFromAPI();
     loadOrderTemplates();
+    updateTabLockStates();
 }
 
 document.addEventListener("DOMContentLoaded", initModal);

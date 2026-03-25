@@ -56,7 +56,7 @@
                     <h2>Add Sample Products</h2>
                     <p class="add_sample_description">Display your product samples!</p>
                     <h3>Sample Title</h3>
-                    <input type="text" id="sampleNameInput" placeholder="Enter product sample name" maxlength="30"/>
+                    <input type="text" id="sampleNameInput" placeholder="Enter product sample name" maxlength="60"/>
                     <p class="sample_name_error" id="sampleNameError">Sample name is required.</p>
                     <h3>Sample Images</h3>
                     <div class="sample_image_grid" id="sampleImageGrid"></div>
@@ -98,10 +98,10 @@
                 <h2 id="products_modal_title">Add Product</h2>
                 <p>Display your products and its price list!</p>
                 <label>Product Name</label>
-                <input type="text" id="products_title_input" class="products_title_input" placeholder="Enter product name" />
+                <input type="text" id="products_title_input" class="products_title_input" placeholder="Enter product name" maxlength="60"/>
                 <span id="products_title_error" class="products_error_message"></span>
                 <label>Product Description</label>
-                <textarea id="products_description_input" class="products_description_input" placeholder="Enter product description (optional)" rows="3"></textarea>
+                <textarea id="products_description_input" class="products_description_input" placeholder="Enter product description (optional)" maxlength="200" rows="3"></textarea>
                 <label>Main Cover Image</label>
                 <div id="products_main_image_wrapper">
                     <div id="products_main_add_box" class="products_add_box">+</div>
@@ -133,7 +133,7 @@
         </div>
     </section>
 
-    {{-- ===================== ORDER TEMPLATE ===================== --}}
+  {{-- ===================== ORDER TEMPLATE ===================== --}}
     <section class="content_section" id="ordertemplate">
 
         {{-- Order Templates --}}
@@ -150,9 +150,11 @@
 
                 <div class="modal_tabs">
                     <button class="modal_tab modal_tab_active" id="tab_details" type="button">Product Details</button>
-                    <button class="modal_tab" id="tab_pricing" type="button">Pricing</button>
+                    <button class="modal_tab tab_locked" id="tab_pricing" type="button">Pricing</button>
+                    <button class="modal_tab tab_locked" id="tab_additional_fees" type="button">Additional Fees</button>
                 </div>
 
+                {{-- ---- Panel: Product Details ---- --}}
                 <div class="modal_panel" id="panel_details">
                     <div class="product_information">
                         <label for="productName">Product Name</label>
@@ -163,26 +165,68 @@
                     <div id="productOptionsWrapper"></div>
                 </div>
 
+                {{-- ---- Panel: Pricing ---- --}}
                 <div class="modal_panel modal_panel_hidden" id="panel_pricing">
                     <div class="pricing_combinations_header">
                         <span class="pricing_col_combo">Combination</span>
-                        <span class="pricing_col_price">Price</span>
+                        <span class="pricing_col_price">Price (₱)</span>
                     </div>
                     <div id="pricingCombinations" class="pricing_combinations"></div>
+                </div>
+
+                {{-- ---- Panel: Additional Fees ---- --}}
+                <div class="modal_panel modal_panel_hidden" id="panel_additional_fees">
+
+                    {{-- Bulk Discount --}}
                     <div class="product_discount">
                         <div class="product_discount_checkbox">
                             <label class="product_discount_header">Apply Bulk Discount?</label>
                             <input type="checkbox" id="applyProductDiscount" class="apply_discount_checkbox">
                         </div>
+                        <div class="discount_header_row hidden" id="discountHeaderRow">
+                            <span class="discount_col_label">Min. Quantity</span>
+                            <span class="discount_col_label">Reduction per Piece</span>
+                            <span class="discount_col_actions_spacer"></span>
+                        </div>
                         <div id="discountRowsWrapper" class="discount_rows_wrapper hidden"></div>
+                    </div>
+
+                    {{-- Minimum Order --}}
+                    <div class="product_min_order">
+                        <div class="product_min_order_checkbox">
+                            <label>Apply Minimum Order?</label>
+                            <input type="checkbox" id="applyMinOrder" class="apply_discount_checkbox">
+                        </div>
+                        <div id="minOrderWrapper" class="min_order_wrapper hidden">
+                            <div class="min_order_field">
+                                <label for="minOrderQty">Minimum Quantity</label>
+                                <input type="text" id="minOrderQty" inputmode="numeric" placeholder="e.g. 50" class="min_order_input">
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Layout Fee --}}
+                    <div class="product_layout_fee">
+                        <div class="product_layout_fee_checkbox">
+                            <label>Apply Layout Fee?</label>
+                            <input type="checkbox" id="applyLayoutFee" class="apply_discount_checkbox">
+                        </div>
+                        <div id="layoutFeeWrapper" class="layout_fee_wrapper hidden">
+                            <div class="layout_fee_field">
+                                <label for="layoutFeeAmount">Layout Fee (₱)</label>
+                                <input type="text" id="layoutFeeAmount" inputmode="decimal" placeholder="0.00" class="layout_fee_input">
+                            </div>
+                        </div>
                     </div>
                 </div>
 
+                {{-- ---- Action Bar ---- --}}
                 <div class="product_order_actions">
                     <button class="delete_product_modal_btn btn_hidden" id="deleteProductBtn" type="button">Delete</button>
                     <div class="product_order_actions_right">
                         <button class="cancel_product" type="button">Cancel</button>
-                        <button class="save_product" type="button">Save</button>
+                        <button class="next_product" id="nextBtn" type="button">Next →</button>
+                        <button class="save_product btn_hidden" type="button">Save</button>
                     </div>
                 </div>
             </div>

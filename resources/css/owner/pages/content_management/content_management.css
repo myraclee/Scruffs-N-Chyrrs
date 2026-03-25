@@ -31,6 +31,7 @@
     cursor: pointer;
 
     margin-bottom: 20px;
+    transition: transform 0.2s ease;
 }
 
 .content_option.active {
