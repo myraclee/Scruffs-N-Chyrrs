@@ -47,8 +47,27 @@
             "npm run build"
         ],
         "dev": [
+            "@php artisan route:clear",
+            "@php artisan config:clear",
+            "@php artisan view:clear",
             "Composer\\Config::disableProcessTimeout",
             "npx concurrently -c \"#93c5fd,#c4b5fd,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"npm run dev\" --names='server,queue,vite'"
+        ],
+        "clear": [
+            "@php artisan route:clear",
+            "@php artisan config:clear",
+            "@php artisan view:clear"
+        ],
+        "reset": [
+            "@php artisan route:clear",
+            "@php artisan config:clear",
+            "@php artisan view:clear",
+            "composer install",
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
+            "@php artisan storage:link",
+            "@php artisan migrate --force",
+            "npm install",
+            "npm run build"
         ],
         "test": [
             "@php artisan config:clear --ansi",
