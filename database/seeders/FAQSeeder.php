@@ -16,6 +16,7 @@ class FAQSeeder extends Seeder
             // General Questions
             [
                 'category' => 'General Questions',
+                'category_id' => 1,
                 'question' => 'What products does Scruffs&Chyrrs offer?',
                 'answer' => 'We specialize in merchandise manufacturing for student artists and creators. Our services include:
 
@@ -29,6 +30,7 @@ All products are manufactured with attention to detail and quality at affordable
             ],
             [
                 'category' => 'General Questions',
+                'category_id' => 1,
                 'question' => 'What is the minimum order quantity?',
                 'answer' => 'Our minimum order quantities are designed to be beginner-friendly for student artists. Typically, we require:
 
@@ -42,6 +44,7 @@ Contact us for special requests or bulk orders.',
             ],
             [
                 'category' => 'General Questions',
+                'category_id' => 1,
                 'question' => 'What file formats do you accept for artwork?',
                 'answer' => 'We accept the following file formats for your artwork:
 
@@ -55,11 +58,12 @@ Contact us for special requests or bulk orders.',
             ],
             [
                 'category' => 'General Questions',
+                'category_id' => 1,
                 'question' => 'How long does production take?',
-                'answer' => 'Our typical production timeline is **5–7 business days** from the time your order is confirmed and final files are approved. This includes:
+                'answer' => 'Our typical production timeline is **5-7 business days** from the time your order is confirmed and final files are approved. This includes:
 
-• File review and quality check (1–2 days)
-• Production and printing (3–4 days)
+• File review and quality check (1-2 days)
+• Production and printing (3-4 days)
 • Quality assurance and packaging (1 day)
 
 Rush orders may be available upon request for an additional fee.',
@@ -68,17 +72,19 @@ Rush orders may be available upon request for an additional fee.',
             // Shipping & Orders
             [
                 'category' => 'Shipping & Orders',
+                'category_id' => 2,
                 'question' => 'Do you ship nationwide?',
                 'answer' => 'Yes, we ship nationwide from our location in **Cainta, Rizal**. We partner with reliable courier services to ensure your orders arrive safely and on time.
 
-• **Metro Manila & nearby areas:** 2–3 business days (extra fee may apply)
-• **Provincial areas:** 4–7 business days
+• **Metro Manila & nearby areas:** 2-3 business days (extra fee may apply)
+• **Provincial areas:** 4-7 business days
 
 Shipping costs will be calculated based on your location and order weight. We\'ll provide a quote before finalizing your order.',
                 'sort_order' => 5,
             ],
             [
                 'category' => 'Shipping & Orders',
+                'category_id' => 2,
                 'question' => 'What payment methods do you accept?',
                 'answer' => 'We accept multiple payment methods for your convenience:
 
@@ -91,6 +97,7 @@ Payment must be completed before production begins. Proof of Payment or E-Receip
             ],
             [
                 'category' => 'Shipping & Orders',
+                'category_id' => 2,
                 'question' => 'How do I place an order?',
                 'answer' => 'Placing an order with us is easy:
 
@@ -105,6 +112,7 @@ Payment must be completed before production begins. Proof of Payment or E-Receip
             // Customization & Finishes
             [
                 'category' => 'Customization & Finishes',
+                'category_id' => 3,
                 'question' => 'What lamination options are available for stickers?',
                 'answer' => 'We offer a variety of lamination finishes to match your design aesthetic:
 
@@ -119,6 +127,7 @@ Each finish can be combined with different sticker types (die-cut, kiss-cut) for
             ],
             [
                 'category' => 'Customization & Finishes',
+                'category_id' => 3,
                 'question' => 'Can I request a custom size or shape?',
                 'answer' => 'Absolutely! We pride ourselves on custom manufacturing. Whether you want a unique size or special shape, we can accommodate your vision. Custom cuts are available for:
 
@@ -132,18 +141,20 @@ Custom requests may have slightly longer production times and potentially differ
             // Pricing & Discounts
             [
                 'category' => 'Pricing & Discounts',
+                'category_id' => 4,
                 'question' => 'Do you offer discounts for bulk orders?',
                 'answer' => 'Yes! We believe in supporting student artists with affordable pricing. Our bulk discount structure includes:
 
-• **Small orders (50–100 units):** Base pricing
-• **Medium orders (101–250 units):** 5–10% discount
-• **Large orders (251+ units):** 10–15% discount
+• **Small orders (50-100 units):** Base pricing
+• **Medium orders (101-250 units):** 5-10% discount
+• **Large orders (251+ units):** 10-15% discount
 
 For very large orders or special requests, contact us directly for a customized quote.',
                 'sort_order' => 10,
             ],
             [
                 'category' => 'Pricing & Discounts',
+                'category_id' => 4,
                 'question' => 'Are there any hidden costs?',
                 'answer' => 'No! We believe in transparent pricing. Our quotes include:
 
@@ -157,7 +168,15 @@ For very large orders or special requests, contact us directly for a customized 
         ];
 
         foreach ($faqs as $faq) {
-            FAQ::create($faq);
+            FAQ::updateOrCreate(
+                [
+                    'category' => $faq['category'],
+                    'question' => $faq['question'],
+                    'answer' => $faq['answer'],
+                    'sort_order' => $faq['sort_order']
+                ],
+                $faq
+            );
         }
     }
 }

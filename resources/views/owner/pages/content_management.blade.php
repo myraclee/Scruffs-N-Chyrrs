@@ -316,16 +316,16 @@
             </div>
         </div>
 
-        {{-- Rush Fee Delete Confirmation Modal (still closes on outside click — intentional) --}}
-        <div class="modal_overlay" id="rushDeleteConfirmOverlay">
-            <div class="delete_confirm_box">
-                <p class="delete_msg">Do you wish to delete<br>this rush fee?</p>
-                <button class="template_delete_btn_large" id="rushDeleteConfirmBtn" type="button">Delete Rush Fee</button>
-                <small class="delete_subtext">This process cannot be undone</small>
-                <button class="rush_delete_cancel_link" id="rushDeleteCancelBtn" type="button">Cancel</button>
+            {{-- Delete Confirmation Modal --}}
+            <div class="modal_overlay" id="rushDeleteConfirmOverlay">
+                <div class="delete_confirm_box">
+                    <p class="delete_msg">Do you wish to delete<br>this rush fee?</p>
+                    <button class="template_delete_btn_large" id="rushDeleteConfirmBtn" type="button">Delete Rush Fee</button>
+                    <small class="delete_subtext">This process cannot be undone</small>
+                    <button class="rush_delete_cancel_link" id="rushDeleteCancelBtn" type="button">Cancel</button>
+                </div>
             </div>
         </div>
-    </div>
 
 </section>
 
@@ -337,3 +337,5 @@
 @vite('resources/js/owner/content_page/products_page_content_refactored.js')
 @vite('resources/js/owner/content_page/order_template.js')
 @vite('resources/js/owner/content_page/rush_fees.js')
+@vite('resources/js/owner/content_page/faq_management.js')
+@vite(['resources/css/owner/pages/content_management/faq_management.css'])
