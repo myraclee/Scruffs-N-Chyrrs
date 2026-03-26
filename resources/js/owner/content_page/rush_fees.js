@@ -79,9 +79,11 @@ function closeRushModal() {
     editingRushIndex = null;
 }
 
-rushModalOverlay.addEventListener("click", (e) => {
-    if (e.target === rushModalOverlay) closeRushModal();
-});
+/*
+ * Change #2: Clicking outside the rush fee modal no longer closes it.
+ * The modal can only be closed via the Cancel button.
+ * The delete CONFIRMATION modal still closes on outside click (see below).
+ */
 
 // ==================== DELETE CONFIRM MODAL ====================
 
@@ -95,6 +97,7 @@ function closeDeleteConfirm() {
     rushDeleteOverlay.classList.remove("active");
 }
 
+// Delete confirm modal still closes on outside click — intentional
 rushDeleteOverlay.addEventListener("click", (e) => {
     if (e.target === rushDeleteOverlay) closeDeleteConfirm();
 });
@@ -379,7 +382,7 @@ function initRushFees() {
         .getElementById("rushSaveBtn")
         .addEventListener("click", saveRushFee);
 
-    // Cancel
+    // Cancel — only way to close the rush fee modal
     document
         .getElementById("rushCancelBtn")
         .addEventListener("click", closeRushModal);

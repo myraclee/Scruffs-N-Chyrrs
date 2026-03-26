@@ -31,9 +31,11 @@ function closeModal() {
     modalOverlay.classList.remove("active");
 }
 
-modalOverlay.addEventListener("click", (e) => {
-    if (e.target === modalOverlay) closeModal();
-});
+/*
+ * Change #4: Outside-area click no longer closes the template modal.
+ * The modal can only be closed via the Cancel button.
+ * (The delete confirmation modal still closes on outside click — see setupDeleteButton.)
+ */
 
 // ==================== SVG HELPER ====================
 
@@ -496,6 +498,59 @@ function validatePricing() {
     return valid;
 }
 
+// ==================== ADDITIONAL FEES VALIDATION ====================
+
+/*
+ * Change #5: If a checkbox in Additional Fees is enabled but its
+ * associated text input is empty, block save and highlight the field.
+ * Discount rows are individually checked; min order and layout fee
+ * use the existing setError helper.
+ */
+function validateAdditionalFees() {
+    let valid = true;
+
+    if (document.getElementById("applyProductDiscount").checked) {
+        document.querySelectorAll(".discount_row").forEach((row) => {
+            const qty = row.querySelector(".discount_qty_input");
+            const price = row.querySelector(".discount_price_input");
+            if (!qty.value.trim()) {
+                qty.classList.add("input_error");
+                valid = false;
+            } else {
+                qty.classList.remove("input_error");
+            }
+            if (!price.value.trim()) {
+                price.classList.add("input_error");
+                valid = false;
+            } else {
+                price.classList.remove("input_error");
+            }
+        });
+    }
+
+    if (document.getElementById("applyMinOrder").checked) {
+        const input = document.getElementById("minOrderQty");
+        if (!input.value.trim()) {
+            setError(input, "Minimum quantity is required.");
+            valid = false;
+        } else {
+            clearError(input);
+        }
+    }
+
+    if (document.getElementById("applyLayoutFee").checked) {
+        const input = document.getElementById("layoutFeeAmount");
+        if (!input.value.trim()) {
+            setError(input, "Layout fee amount is required.");
+            valid = false;
+        } else {
+            clearError(input);
+        }
+    }
+
+    return valid;
+}
+
 // ==================== PRICING COMBINATIONS ====================
 
 function cartesian(arrays) {
@@ -576,6 +631,13 @@ function setDiscountSectionVisible(show) {
         .classList.toggle("hidden", !show);
 }
 
+/*
+ * Row layout: [qty input 100px] [price input 100px] [actions 44px]
+ * The actions wrapper has a FIXED width holding both icons side-by-side.
+ * Hidden icons use visibility:hidden (not display:none) so the wrapper
+ * never changes size — rows always stay perfectly aligned.
+ * Order inside the wrapper: [delete icon] [add icon]
+ */
 function createDiscountRow() {
     const row = document.createElement("div");
     row.className = "discount_row";
@@ -586,6 +648,9 @@ function createDiscountRow() {
     qtyInput.className = "discount_qty_input";
     qtyInput.placeholder = "e.g. 50";
     enforceNumeric(qtyInput);
+    qtyInput.addEventListener("input", () =>
+        qtyInput.classList.remove("input_error"),
+    );
 
     const priceInput = document.createElement("input");
     priceInput.type = "text";
@@ -593,33 +658,37 @@ function createDiscountRow() {
     priceInput.className = "discount_price_input";
     priceInput.placeholder = "0.00";
     enforceNumeric(priceInput);
+    priceInput.addEventListener("input", () =>
+        priceInput.classList.remove("input_error"),
+    );
 
+    // Fixed-width wrapper keeps both icons together and preserves column width
     const actionsWrap = document.createElement("div");
     actionsWrap.className = "discount_row_actions";
 
-    const addSvg = createSVG(
-        "add_discount_row_svg btn_hidden",
-        "M444-288h72v-156h156v-72H516v-156h-72v156H288v72h156v156Zm36.28 192Q401-96 331-126t-122.5-82.5Q156-261 126-330.96t-30-149.5Q96-560 126-629.5q30-69.5 82.5-122T330.96-834q69.96-30 149.5-30t149.04 30q69.5 30 122 82.5T834-629.28q30 69.73 30 149Q864-401 834-331t-82.5 122.5Q699-156 629.28-126q-69.73 30-149 30Zm-.28-72q130 0 221-91t91-221q0-130-91-221t-221-91q-130 0-221 91t-91 221q0 130 91 221t221 91Zm0-312Z",
-    );
-
     const delSvg = createSVG(
-        "delete_discount_row_svg btn_hidden",
+        "delete_discount_row_svg",
         "m339-288 141-141 141 141 51-51-141-141 141-141-51-51-141 141-141-141-51 51 141 141-141 141 51 51ZM480-96q-79 0-149-30t-122.5-82.5Q156-261 126-331T96-480q0-80 30-149.5t82.5-122Q261-804 331-834t149-30q80 0 149.5 30t122 82.5Q804-699 834-629.5T864-480q0 79-30 149t-82.5 122.5Q699-156 629.5-126T480-96Zm0-72q130 0 221-91t91-221q0-130-91-221t-221-91q-130 0-221 91t-91 221q0 130 91 221t221 91Zm0-312Z",
     );
 
-    addSvg.addEventListener("click", () => {
-        row.after(createDiscountRow());
-        refreshDiscountButtons(row.parentElement);
-    });
+    const addSvg = createSVG(
+        "add_discount_row_svg",
+        "M444-288h72v-156h156v-72H516v-156h-72v156H288v72h156v156Zm36.28 192Q401-96 331-126t-122.5-82.5Q156-261 126-330.96t-30-149.5Q96-560 126-629.5q30-69.5 82.5-122T330.96-834q69.96-30 149.5-30t149.04 30q69.5 30 122 82.5T834-629.28q30 69.73 30 149Q864-401 834-331t-82.5 122.5Q699-156 629.28-126q-69.73 30-149 30Zm-.28-72q130 0 221-91t91-221q0-130-91-221t-221-91q-130 0-221 91t-91 221q0 130 91 221t221 91Zm0-312Z",
+    );
+
     delSvg.addEventListener("click", () => {
         const wrapper = row.parentElement;
         if (wrapper.querySelectorAll(".discount_row").length <= 1) return;
         row.remove();
         refreshDiscountButtons(wrapper);
     });
+    addSvg.addEventListener("click", () => {
+        row.after(createDiscountRow());
+        refreshDiscountButtons(row.parentElement);
+    });
 
-    actionsWrap.appendChild(addSvg);
     actionsWrap.appendChild(delSvg);
+    actionsWrap.appendChild(addSvg);
 
     row.appendChild(qtyInput);
     row.appendChild(priceInput);
@@ -629,15 +698,22 @@ function createDiscountRow() {
 
 function refreshDiscountButtons(wrapper) {
     const rows = Array.from(wrapper.querySelectorAll(".discount_row"));
+    const isSingle = rows.length <= 1;
+
     rows.forEach((row, i) => {
-        row.querySelector(".add_discount_row_svg").classList.toggle(
-            "btn_hidden",
-            i !== rows.length - 1,
-        );
-        row.querySelector(".delete_discount_row_svg").classList.toggle(
-            "btn_hidden",
-            rows.length <= 1,
-        );
+        const addSvg = row.querySelector(".add_discount_row_svg");
+        const delSvg = row.querySelector(".delete_discount_row_svg");
+
+        // Add icon: only the last row shows it.
+        // Use visibility:hidden (not display:none) on non-last rows so the
+        // right-side slot stays reserved and columns don't shift.
+        addSvg.classList.toggle("discount_icon_hidden", i !== rows.length - 1);
+
+        // Delete icon:
+        // - Single row → display:none so it takes up zero space, letting the
+        //   add icon slide left into that same position.
+        // - Multiple rows → always fully visible.
+        delSvg.classList.toggle("discount_del_gone", isSingle);
     });
 }
 
@@ -665,7 +741,10 @@ function setupMinOrder() {
     checkbox.addEventListener("change", () => {
         wrapper.classList.toggle("hidden", !checkbox.checked);
     });
-    enforceNumeric(document.getElementById("minOrderQty"));
+    const minInput = document.getElementById("minOrderQty");
+    enforceNumeric(minInput);
+    // Clear validation error as the user types
+    minInput.addEventListener("input", () => clearError(minInput));
 }
 
 // ==================== LAYOUT FEE ====================
@@ -676,7 +755,10 @@ function setupLayoutFee() {
     checkbox.addEventListener("change", () => {
         wrapper.classList.toggle("hidden", !checkbox.checked);
     });
-    enforceNumeric(document.getElementById("layoutFeeAmount"));
+    const layoutInput = document.getElementById("layoutFeeAmount");
+    enforceNumeric(layoutInput);
+    // Clear validation error as the user types
+    layoutInput.addEventListener("input", () => clearError(layoutInput));
 }
 
 // ==================== COLLECT DATA ====================
@@ -751,6 +833,15 @@ function setupSaveButton() {
             if (!validatePricing()) {
                 switchTab("pricing");
                 toast.error("Please fill in all combination prices.");
+                return;
+            }
+
+            // Change #5: Validate additional fees before saving
+            if (!validateAdditionalFees()) {
+                switchTab("additional_fees");
+                toast.error(
+                    "Please fill in all required additional fee fields.",
+                );
                 return;
             }
 
@@ -864,6 +955,10 @@ function setupDeleteButton() {
             }
         });
 
+    /*
+     * Change #4 note: The delete CONFIRMATION modal still closes on
+     * outside click — this is intentional per the requirement.
+     */
     confirmOverlay.addEventListener("click", (e) => {
         if (e.target === confirmOverlay) {
             pendingDeleteId = null;
@@ -901,6 +996,11 @@ function renderProducts() {
     );
 }
 
+/*
+ * Change #1: Cards no longer open a detail modal on click.
+ * All additional fee info (bulk discount, min order, layout fee)
+ * is now displayed inline at the bottom of each card.
+ */
 function createProductCard(template) {
     const card = document.createElement("div");
     card.className = "product_card";
@@ -962,6 +1062,61 @@ function createProductCard(template) {
     updateCardPrice();
     card.appendChild(priceDiv);
 
+    // ---- Additional fee summary (inline, replaces detail modal) ----
+    const feeSummary = document.createElement("div");
+    feeSummary.className = "product_card_fee_summary";
+
+    const makeFeeLine = (text) => {
+        const p = document.createElement("p");
+        p.className = "product_card_fee_line";
+        p.textContent = text;
+        return p;
+    };
+
+    // Bulk Discount — template.discounts is an array (may be empty or absent)
+    const discounts = Array.isArray(template.discounts)
+        ? template.discounts
+        : [];
+    if (discounts.length > 0) {
+        const tiers = discounts
+            .map((d) => {
+                const qty = parseInt(d.min_quantity ?? d.qty ?? 0);
+                const reduction = parseFloat(
+                    d.price_reduction ?? d.reduction ?? 0,
+                );
+                return `Min. ${qty}, -₱${reduction.toFixed(2)}`;
+            })
+            .join(" | ");
+        feeSummary.appendChild(makeFeeLine(`Bulk Discount: ${tiers}`));
+    } else {
+        feeSummary.appendChild(makeFeeLine("Bulk Discount: None"));
+    }
+
+    // Minimum Order — may be a number, a numeric string, or null/undefined
+    const rawMin = template.min_order ?? template.minOrder ?? null;
+    const minOrder = rawMin != null ? parseInt(rawMin) : null;
+    feeSummary.appendChild(
+        makeFeeLine(
+            minOrder != null && !isNaN(minOrder)
+                ? `Minimum Order: ${minOrder}`
+                : "Minimum Order: None",
+        ),
+    );
+
+    // Layout Fee — may be a number, a numeric string, or null/undefined
+    const rawFee = template.layout_fee ?? template.layoutFee ?? null;
+    const layoutFee = rawFee != null ? parseFloat(rawFee) : null;
+    feeSummary.appendChild(
+        makeFeeLine(
+            layoutFee != null && !isNaN(layoutFee)
+                ? `Layout Fee: ₱${layoutFee.toFixed(2)}`
+                : "Layout Fee: None",
+        ),
+    );
+
+    card.appendChild(feeSummary);
+
+    // Edit button
     const editBtn = document.createElement("button");
     editBtn.className = "product_card_edit_btn";
     editBtn.textContent = "Edit";
@@ -972,7 +1127,7 @@ function createProductCard(template) {
     });
     card.appendChild(editBtn);
 
-    card.addEventListener("click", () => openDetailModal(template.id));
+    // No click-to-open-detail listener — Change #1
     return card;
 }
 
@@ -1096,71 +1251,8 @@ function openEditModal(templateId) {
         .forEach((el) => el.classList.add("hidden"));
 
     switchTab("details");
-    updateTabLockStates(); // Unlock tabs that are already filled
+    updateTabLockStates();
     openModal();
-}
-
-// ==================== DETAIL MODAL ====================
-
-const detailOverlay = document.getElementById("detailModalOverlay");
-
-document.getElementById("detailCloseBtn").addEventListener("click", () => {
-    detailOverlay.classList.remove("active");
-});
-detailOverlay.addEventListener("click", (e) => {
-    if (e.target === detailOverlay) detailOverlay.classList.remove("active");
-});
-
-function openDetailModal(templateId) {
-    const template = products.find((p) => p.id === templateId);
-    if (!template) return;
-
-    document.getElementById("detailProductName").textContent =
-        template.product.name;
-
-    const optContainer = document.getElementById("detailOptionsContainer");
-    optContainer.innerHTML = "";
-    const selects = [];
-
-    template.options.forEach((opt) => {
-        const wrap = document.createElement("div");
-        wrap.className = "detail_option_wrap";
-        const lbl = document.createElement("label");
-        lbl.className = "detail_option_label";
-        lbl.textContent = opt.label;
-        const selectWrap = document.createElement("div");
-        selectWrap.className = "select_wrapper";
-        const select = document.createElement("select");
-        select.className = "detail_select";
-        opt.option_types
-            .filter((s) => s.is_available)
-            .forEach((optType) => {
-                const option = document.createElement("option");
-                option.value = optType.type_name;
-                option.textContent = optType.type_name;
-                select.appendChild(option);
-            });
-        selects.push(select);
-        selectWrap.appendChild(select);
-        wrap.appendChild(lbl);
-        wrap.appendChild(selectWrap);
-        optContainer.appendChild(wrap);
-    });
-
-    const priceEl = document.getElementById("detailPriceValue");
-
-    function updateDetailPrice() {
-        const key = selects.map((s) => s.value).join(" | ");
-        const pricing = template.pricings.find(
-            (p) => p.combination_key === key,
-        );
-        const price = pricing?.price;
-        priceEl.textContent = price ? `₱${parseFloat(price).toFixed(2)}` : "—";
-    }
-    selects.forEach((s) => s.addEventListener("change", updateDetailPrice));
-    updateDetailPrice();
-
-    detailOverlay.classList.add("active");
 }
 
 // ==================== CANCEL ====================
@@ -1196,12 +1288,16 @@ function resetModal() {
     // Reset min order
     document.getElementById("applyMinOrder").checked = false;
     document.getElementById("minOrderWrapper").classList.add("hidden");
-    document.getElementById("minOrderQty").value = "";
+    const minInput = document.getElementById("minOrderQty");
+    minInput.value = "";
+    clearError(minInput);
 
     // Reset layout fee
     document.getElementById("applyLayoutFee").checked = false;
     document.getElementById("layoutFeeWrapper").classList.add("hidden");
-    document.getElementById("layoutFeeAmount").value = "";
+    const layoutInput = document.getElementById("layoutFeeAmount");
+    layoutInput.value = "";
+    clearError(layoutInput);
 
     const wrapper = getOptionsWrapper();
     wrapper.innerHTML = "";

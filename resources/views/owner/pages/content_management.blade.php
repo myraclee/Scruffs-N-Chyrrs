@@ -133,191 +133,201 @@
         </div>
     </section>
 
-  {{-- ===================== ORDER TEMPLATE ===================== --}}
-    <section class="content_section" id="ordertemplate">
+ {{-- ===================== ORDER TEMPLATE ===================== --}}
+<section class="content_section" id="ordertemplate">
 
-        {{-- Order Templates --}}
-        <h2 class="order_template_header">Order Template</h2>
-        <p class="empty_order_template" id="emptyOrderTemplate">No order templates made yet.</p>
-        <div id="productCardsContainer" class="product_cards_container"></div>
-        <button id="open_add_template_btn" class="add_template_button">Add New Template</button>
+    {{-- Order Templates --}}
+    <h2 class="order_template_header">Order Template</h2>
+    <p class="empty_order_template" id="emptyOrderTemplate">No order templates made yet.</p>
+    <div id="productCardsContainer" class="product_cards_container"></div>
+    <button id="open_add_template_btn" class="add_template_button">Add New Template</button>
 
-        {{-- Add / Edit Template Modal --}}
-        <div class="add_template_modal" id="templateModalOverlay">
-            <div class="add_template_modal_box" id="templateModal">
-                <h2 class="modal_title" id="templateModalTitle">Add New Template</h2>
-                <p class="order_description">Sell your products!</p>
+    {{-- Add / Edit Template Modal --}}
+    {{--
+        Change #4: The overlay click-to-close listener has been removed from
+        the JS. This modal can only be closed via the Cancel button.
+    --}}
+    <div class="add_template_modal" id="templateModalOverlay">
+        <div class="add_template_modal_box" id="templateModal">
+            <h2 class="modal_title" id="templateModalTitle">Add New Template</h2>
+            <p class="order_description">Sell your products!</p>
 
-                <div class="modal_tabs">
-                    <button class="modal_tab modal_tab_active" id="tab_details" type="button">Product Details</button>
-                    <button class="modal_tab tab_locked" id="tab_pricing" type="button">Pricing</button>
-                    <button class="modal_tab tab_locked" id="tab_additional_fees" type="button">Additional Fees</button>
-                </div>
+            <div class="modal_tabs">
+                <button class="modal_tab modal_tab_active" id="tab_details" type="button">Product Details</button>
+                <button class="modal_tab tab_locked" id="tab_pricing" type="button">Pricing</button>
+                <button class="modal_tab tab_locked" id="tab_additional_fees" type="button">Additional Fees</button>
+            </div>
 
-                {{-- ---- Panel: Product Details ---- --}}
-                <div class="modal_panel" id="panel_details">
-                    <div class="product_information">
-                        <label for="productName">Product Name</label>
-                        <div class="select_wrapper">
-                            <select id="productName" class="product_name_select"></select>
-                        </div>
-                    </div>
-                    <div id="productOptionsWrapper"></div>
-                </div>
-
-                {{-- ---- Panel: Pricing ---- --}}
-                <div class="modal_panel modal_panel_hidden" id="panel_pricing">
-                    <div class="pricing_combinations_header">
-                        <span class="pricing_col_combo">Combination</span>
-                        <span class="pricing_col_price">Price (₱)</span>
-                    </div>
-                    <div id="pricingCombinations" class="pricing_combinations"></div>
-                </div>
-
-                {{-- ---- Panel: Additional Fees ---- --}}
-                <div class="modal_panel modal_panel_hidden" id="panel_additional_fees">
-
-                    {{-- Bulk Discount --}}
-                    <div class="product_discount">
-                        <div class="product_discount_checkbox">
-                            <label class="product_discount_header">Apply Bulk Discount?</label>
-                            <input type="checkbox" id="applyProductDiscount" class="apply_discount_checkbox">
-                        </div>
-                        <div class="discount_header_row hidden" id="discountHeaderRow">
-                            <span class="discount_col_label">Min. Quantity</span>
-                            <span class="discount_col_label">Reduction per Piece</span>
-                            <span class="discount_col_actions_spacer"></span>
-                        </div>
-                        <div id="discountRowsWrapper" class="discount_rows_wrapper hidden"></div>
-                    </div>
-
-                    {{-- Minimum Order --}}
-                    <div class="product_min_order">
-                        <div class="product_min_order_checkbox">
-                            <label>Apply Minimum Order?</label>
-                            <input type="checkbox" id="applyMinOrder" class="apply_discount_checkbox">
-                        </div>
-                        <div id="minOrderWrapper" class="min_order_wrapper hidden">
-                            <div class="min_order_field">
-                                <label for="minOrderQty">Minimum Quantity</label>
-                                <input type="text" id="minOrderQty" inputmode="numeric" placeholder="e.g. 50" class="min_order_input">
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Layout Fee --}}
-                    <div class="product_layout_fee">
-                        <div class="product_layout_fee_checkbox">
-                            <label>Apply Layout Fee?</label>
-                            <input type="checkbox" id="applyLayoutFee" class="apply_discount_checkbox">
-                        </div>
-                        <div id="layoutFeeWrapper" class="layout_fee_wrapper hidden">
-                            <div class="layout_fee_field">
-                                <label for="layoutFeeAmount">Layout Fee (₱)</label>
-                                <input type="text" id="layoutFeeAmount" inputmode="decimal" placeholder="0.00" class="layout_fee_input">
-                            </div>
-                        </div>
+            {{-- ---- Panel: Product Details ---- --}}
+            <div class="modal_panel" id="panel_details">
+                <div class="product_information">
+                    <label for="productName">Product Name</label>
+                    <div class="select_wrapper">
+                        <select id="productName" class="product_name_select"></select>
                     </div>
                 </div>
+                <div id="productOptionsWrapper"></div>
+            </div>
 
-                {{-- ---- Action Bar ---- --}}
-                <div class="product_order_actions">
-                    <button class="delete_product_modal_btn btn_hidden" id="deleteProductBtn" type="button">Delete</button>
-                    <div class="product_order_actions_right">
-                        <button class="cancel_product" type="button">Cancel</button>
-                        <button class="next_product" id="nextBtn" type="button">Next →</button>
-                        <button class="save_product btn_hidden" type="button">Save</button>
+            {{-- ---- Panel: Pricing ---- --}}
+            <div class="modal_panel modal_panel_hidden" id="panel_pricing">
+                <div class="pricing_combinations_header">
+                    <span class="pricing_col_combo">Combination</span>
+                    <span class="pricing_col_price">Price (₱)</span>
+                </div>
+                <div id="pricingCombinations" class="pricing_combinations"></div>
+            </div>
+
+            {{-- ---- Panel: Additional Fees ---- --}}
+            {{--
+                Change #2: All inputs and their labels are centered via CSS.
+                Change #5: Save is blocked until enabled fields have values.
+            --}}
+            <div class="modal_panel modal_panel_hidden" id="panel_additional_fees">
+
+                {{-- Bulk Discount --}}
+                <div class="product_discount">
+                    <div class="product_discount_checkbox">
+                        <label class="product_discount_header">Apply Bulk Discount?</label>
+                        <input type="checkbox" id="applyProductDiscount" class="apply_discount_checkbox">
+                    </div>
+                    {{--
+                        Header mirrors each row exactly:
+                        [qty label 100px] [price label 100px] [44px spacer = actions wrapper]
+                        One trailing spacer only — rows are justify-content:center so
+                        the labels naturally land over their matching inputs.
+                    --}}
+                    <div class="discount_header_row hidden" id="discountHeaderRow">
+                        <span class="discount_col_label">Min. Quantity</span>
+                        <span class="discount_col_label">Reduction per Piece</span>
+                        <span class="discount_col_actions_spacer"></span>
+                    </div>
+                    <div id="discountRowsWrapper" class="discount_rows_wrapper hidden"></div>
+                </div>
+
+                {{-- Minimum Order --}}
+                <div class="product_min_order">
+                    <div class="product_min_order_checkbox">
+                        <label>Apply Minimum Order?</label>
+                        <input type="checkbox" id="applyMinOrder" class="apply_discount_checkbox">
+                    </div>
+                    <div id="minOrderWrapper" class="min_order_wrapper hidden">
+                        <div class="min_order_field">
+                            <label for="minOrderQty">Minimum Quantity</label>
+                            <input type="text" id="minOrderQty" inputmode="numeric" placeholder="e.g. 50" class="min_order_input">
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Layout Fee --}}
+                <div class="product_layout_fee">
+                    <div class="product_layout_fee_checkbox">
+                        <label>Apply Layout Fee?</label>
+                        <input type="checkbox" id="applyLayoutFee" class="apply_discount_checkbox">
+                    </div>
+                    <div id="layoutFeeWrapper" class="layout_fee_wrapper hidden">
+                        <div class="layout_fee_field">
+                            <label for="layoutFeeAmount">Layout Fee (₱)</label>
+                            <input type="text" id="layoutFeeAmount" inputmode="decimal" placeholder="0.00" class="layout_fee_input">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- ---- Action Bar ---- --}}
+            <div class="product_order_actions">
+                <button class="delete_product_modal_btn btn_hidden" id="deleteProductBtn" type="button">Delete</button>
+                <div class="product_order_actions_right">
+                    <button class="cancel_product" type="button">Cancel</button>
+                    <button class="next_product" id="nextBtn" type="button">Next →</button>
+                    <button class="save_product btn_hidden" type="button">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{--
+        Change #1: The detail modal has been removed entirely.
+        Additional fee info is now displayed inline on each product card.
+    --}}
+
+    {{-- Delete Confirmation Modal (still closes on outside click — intentional) --}}
+    <div class="modal_overlay" id="deleteTemplateModalOverlay">
+        <div class="delete_confirm_box template_delete_box">
+            <p class="delete_msg">Do you wish to delete the<br>selected template?</p>
+            <button class="template_delete_btn_large" id="deleteConfirmProceedBtn" type="button">Delete Template</button>
+            <small class="delete_subtext">This process cannot be undone</small>
+        </div>
+    </div>
+
+    {{-- ---- Rush Fees ---- --}}
+    <div class="rush_fees_section">
+        <h2 class="rush_fees_section_header">Rush Fees</h2>
+
+        {{-- Cards display --}}
+        <p class="rush_fees_empty" id="rushFeesEmpty">No rush fees added yet.</p>
+        <div class="rush_fees_cards_container" id="rushFeesCardsContainer"></div>
+
+        <button class="add_rush_fee_btn" id="addRushFeeBtn" type="button">Add Rush Fee</button>
+
+        {{--
+            Add / Edit Rush Fee Modal
+            Change #4: The outside-click close behaviour must also be removed
+            from the rush fees JS file (not included here). Remove any
+            rushFeeModalOverlay click listener that calls closeModal/hide in
+            that file, mirroring what was done for templateModalOverlay above.
+        --}}
+        <div class="rush_fees_modal" id="rushFeeModalOverlay">
+            <div class="rush_fees_modal_box">
+                <h2 class="rush_modal_title" id="rushModalTitle">Add Rush Fee</h2>
+                <p class="rush_modal_description">Set the price range, timeframes, and fees.</p>
+
+                {{-- Price Range --}}
+                <div class="rush_range_section">
+                    <label class="rush_field_label">Price Range Label</label>
+                    <input type="text" id="rushRangeLabel" class="rush_range_label_input"
+                           placeholder='e.g. "Below ₱3,000"' />
+
+                    <div class="rush_range_amounts_row">
+                        <input type="text" id="rushRangeMin" class="rush_range_amount_input" placeholder="Min (₱)" />
+                        <span class="rush_range_separator">–</span>
+                        <input type="text" id="rushRangeMax" class="rush_range_amount_input" placeholder="Max (₱, blank = ∞)" />
+                    </div>
+                </div>
+
+                {{-- Timeframe rows --}}
+                <div class="rush_timeframes_section">
+                    <div class="rush_tf_col_headers">
+                        <span>Timeframe</span>
+                        <span>% Added to Total</span>
+                    </div>
+                    <div id="rushTimeframeRows" class="rush_tf_rows"></div>
+                    <button type="button" id="rushAddTimeframeBtn" class="rush_add_row_btn">Add Timeframe</button>
+                </div>
+
+                {{-- Actions --}}
+                <div class="rush_modal_actions">
+                    <button class="rush_delete_modal_btn btn_hidden" id="rushDeleteBtn" type="button">Delete</button>
+                    <div class="rush_modal_actions_right">
+                        <button class="rush_cancel_btn" id="rushCancelBtn" type="button">Cancel</button>
+                        <button class="rush_save_btn" id="rushSaveBtn" type="button">Save</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- Detail Modal --}}
-        <div class="detail_modal" id="detailModalOverlay">
-            <div class="detail_modal_box">
-                <h2 class="detail_modal_name" id="detailProductName"></h2>
-                <div id="detailOptionsContainer" class="detail_options_container"></div>
-                <div class="detail_price_row">
-                    <span class="detail_price_label">Price</span>
-                    <span class="detail_price_value" id="detailPriceValue">—</span>
-                </div>
-                <div class="detail_actions">
-                    <button class="detail_close_btn" id="detailCloseBtn" type="button">Close</button>
-                </div>
-            </div>
-        </div>
-
-        {{-- Delete Confirmation Modal --}}
-        <div class="modal_overlay" id="deleteTemplateModalOverlay">
-            <div class="delete_confirm_box template_delete_box">
-                <p class="delete_msg">Do you wish to delete the<br>selected template?</p>
-                <button class="template_delete_btn_large" id="deleteConfirmProceedBtn" type="button">Delete Template</button>
+        {{-- Rush Fee Delete Confirmation Modal (still closes on outside click — intentional) --}}
+        <div class="modal_overlay" id="rushDeleteConfirmOverlay">
+            <div class="delete_confirm_box">
+                <p class="delete_msg">Do you wish to delete<br>this rush fee?</p>
+                <button class="template_delete_btn_large" id="rushDeleteConfirmBtn" type="button">Delete Rush Fee</button>
                 <small class="delete_subtext">This process cannot be undone</small>
+                <button class="rush_delete_cancel_link" id="rushDeleteCancelBtn" type="button">Cancel</button>
             </div>
         </div>
+    </div>
 
-        {{-- ---- Rush Fees ---- --}}
-        <div class="rush_fees_section">
-            <h2 class="rush_fees_section_header">Rush Fees</h2>
-
-            {{-- Cards display --}}
-            <p class="rush_fees_empty" id="rushFeesEmpty">No rush fees added yet.</p>
-            <div class="rush_fees_cards_container" id="rushFeesCardsContainer"></div>
-
-            <button class="add_rush_fee_btn" id="addRushFeeBtn" type="button">Add Rush Fee</button>
-
-            {{-- Add / Edit Rush Fee Modal --}}
-            <div class="rush_fees_modal" id="rushFeeModalOverlay">
-                <div class="rush_fees_modal_box">
-                    <h2 class="rush_modal_title" id="rushModalTitle">Add Rush Fee</h2>
-                    <p class="rush_modal_description">Set the price range, timeframes, and fees.</p>
-
-                    {{-- Price Range --}}
-                    <div class="rush_range_section">
-                        <label class="rush_field_label">Price Range Label</label>
-                        <input type="text" id="rushRangeLabel" class="rush_range_label_input"
-                               placeholder='e.g. "Below ₱3,000"' />
-
-                        <div class="rush_range_amounts_row">
-                            <input type="text" id="rushRangeMin" class="rush_range_amount_input" placeholder="Min (₱)" />
-                            <span class="rush_range_separator">–</span>
-                            <input type="text" id="rushRangeMax" class="rush_range_amount_input" placeholder="Max (₱, blank = ∞)" />
-                        </div>
-                    </div>
-
-                    {{-- Timeframe rows --}}
-                    <div class="rush_timeframes_section">
-                        <div class="rush_tf_col_headers">
-                            <span>Timeframe</span>
-                            <span>% Added to Total</span>
-                        </div>
-                        <div id="rushTimeframeRows" class="rush_tf_rows"></div>
-                        <button type="button" id="rushAddTimeframeBtn" class="rush_add_row_btn">Add Timeframe</button>
-                    </div>
-
-                    {{-- Actions --}}
-                    <div class="rush_modal_actions">
-                        <button class="rush_delete_modal_btn btn_hidden" id="rushDeleteBtn" type="button">Delete</button>
-                        <div class="rush_modal_actions_right">
-                            <button class="rush_cancel_btn" id="rushCancelBtn" type="button">Cancel</button>
-                            <button class="rush_save_btn" id="rushSaveBtn" type="button">Save</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Delete Confirmation Modal --}}
-            <div class="modal_overlay" id="rushDeleteConfirmOverlay">
-                <div class="delete_confirm_box">
-                    <p class="delete_msg">Do you wish to delete<br>this rush fee?</p>
-                    <button class="template_delete_btn_large" id="rushDeleteConfirmBtn" type="button">Delete Rush Fee</button>
-                    <small class="delete_subtext">This process cannot be undone</small>
-                    <button class="rush_delete_cancel_link" id="rushDeleteCancelBtn" type="button">Cancel</button>
-                </div>
-            </div>
-        </div>
-
-    </section>
+</section>
 
 @endsection
 

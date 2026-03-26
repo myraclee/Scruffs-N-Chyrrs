@@ -11,7 +11,7 @@
 
 /* UNIVERSAL*/
 body {
-    background: #FFF7EC;
+    background: #fff7ec;
     display: flex;
     flex-direction: column;
     overflow-x: hidden;
@@ -31,7 +31,7 @@ body {
 /* Firefox */
 * {
     scrollbar-width: thin;
-    scrollbar-color: transparent transparent;
+    scrollbar-color: #682c7a rgba(232, 213, 240, 0.5);
 }
 
 /* Chrome / Edge / Safari */
@@ -52,9 +52,9 @@ body {
 
 /* SHOW scrollbar on hover */
 *:hover {
-    scrollbar-color: #682C7A transparent;
+    scrollbar-color: #682c7a transparent;
 }
 
 *:hover::-webkit-scrollbar-thumb {
-    background-color: #682C7A;
+    background-color: #682c7a;
 }

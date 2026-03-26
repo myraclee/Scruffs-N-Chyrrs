@@ -27,6 +27,7 @@
     height: 150px;
     border-radius: 20px;
     object-fit: cover;
+    border: #682c7a 2px solid;
 }
 
 .home_edit {
@@ -115,11 +116,13 @@
 
 .product_sample_container img {
     margin-top: 10px;
-    height: 130px;
-    width: 130px;
+    height: 140px;
+    width: 140px;
     object-fit: cover;
 
     margin-bottom: 15px;
+    border: #682c7a 2px solid;
+    border-radius: 10px;
 }
 
 .product_sample_container_name {

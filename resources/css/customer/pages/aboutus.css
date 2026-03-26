@@ -461,12 +461,14 @@
 
 .aboutus_why {
     width: 100%;
-    padding: 70px 40px 80px;
+    padding-top: 100px;
+    padding-bottom: 100px;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 44px;
+    background-color: #dcbae6;
 }
 
 .aboutus_why_header {
@@ -557,6 +559,14 @@
     line-height: 1.7;
     margin: 0;
     opacity: 0.88;
+}
+
+.footer_wave {
+    background-color: #dcbae6;
+}
+
+.upper_body {
+    margin-bottom: -100px;
 }
 
 /* =============================================

@@ -557,17 +557,15 @@ select:focus {
 
 /* ==================== DISCOUNT HEADER ROW ==================== */
 
-/*
- * Column header labels sit above the input rows.
- * Widths match the inputs and action column exactly so they align.
- */
-.discount_header_row {
+*/ .discount_header_row {
     display: flex;
     flex-direction: row;
     align-items: center;
     gap: 12px;
     margin-bottom: 4px;
     padding: 0 2px;
+    justify-content: center;
+    margin-left: 50px;
 }
 
 .discount_col_label {
@@ -580,7 +578,7 @@ select:focus {
 }
 
 .discount_col_actions_spacer {
-    width: 44px; /* 2 × 20px icon + 4px gap */
+    width: 44px;
     flex-shrink: 0;
 }
 
@@ -590,18 +588,16 @@ select:focus {
     display: flex;
     flex-direction: column;
     gap: 6px;
+    align-items: center;
+    margin-left: 50px;
 }
 
-/*
- * Each row: [qty input] [price input] [add icon] [del icon]
- * All elements are vertically centred so the icons sit flush
- * with the middle of the input fields.
- */
 .discount_row {
     display: flex;
     flex-direction: row;
     align-items: center;
     gap: 12px;
+    justify-content: center;
 }
 
 .discount_qty_input,
@@ -624,18 +620,39 @@ select:focus {
     border-color: #4c1c5b;
 }
 
+/* Fixed-width container — holds delete icon then add icon side-by-side */
 .discount_row_actions {
     display: flex;
     flex-direction: row;
     align-items: center;
     gap: 4px;
     flex-shrink: 0;
+    width: 44px; /* 20px + 4px gap + 20px */
+}
+
+/*
+ * Visibility-based hide: the icon is invisible but still occupies space.
+ * This is what keeps rows aligned — unlike display:none which collapses the space.
+ */
+.discount_icon_hidden {
+    visibility: hidden;
+    pointer-events: none;
+}
+
+/*
+ * Used on the delete icon when there is only one row.
+ * display:none collapses the icon's space entirely so the add icon
+ * slides left into the delete icon's usual position.
+ */
+.discount_del_gone {
+    display: none !important;
 }
 
 .add_discount_row_svg {
     fill: #682c7a;
     border-radius: 50%;
     cursor: pointer;
+    flex-shrink: 0;
     transition:
         fill 0.2s ease,
         background-color 0.2s ease;
@@ -650,6 +667,7 @@ select:focus {
     fill: #c83333;
     border-radius: 50%;
     cursor: pointer;
+    flex-shrink: 0;
     transition:
         fill 0.2s ease,
         background-color 0.2s ease;
@@ -684,18 +702,22 @@ select:focus {
 
 .min_order_wrapper {
     margin-top: 12px;
+    display: flex;
+    justify-content: center;
 }
 
 .min_order_field {
     display: flex;
     flex-direction: column;
     gap: 6px;
+    align-items: center;
 }
 
 .min_order_field label {
     font-family: Coolvetica;
     font-size: 14px;
     color: #682c7a;
+    text-align: center;
 }
 
 .min_order_input {
@@ -706,6 +728,7 @@ select:focus {
     padding: 0 16px;
     font-size: 14px;
     box-sizing: border-box;
+    text-align: center;
     transition: border-color 0.2s ease;
 }
 
@@ -739,12 +762,15 @@ select:focus {
 .layout_fee_wrapper {
     margin-top: 12px;
     margin-bottom: 5px;
+    display: flex;
+    justify-content: center;
 }
 
 .layout_fee_field {
     display: flex;
     flex-direction: column;
     gap: 6px;
+    align-items: center;
     margin-bottom: 6px;
 }
 
@@ -752,6 +778,7 @@ select:focus {
     font-family: Coolvetica;
     font-size: 14px;
     color: #682c7a;
+    text-align: center;
 }
 
 .layout_fee_input {
@@ -762,6 +789,7 @@ select:focus {
     padding: 0 16px;
     font-size: 14px;
     box-sizing: border-box;
+    text-align: center;
     transition: border-color 0.2s ease;
 }
 
@@ -957,6 +985,10 @@ select:focus {
 
 /* ==================== PRODUCT CARD ==================== */
 
+/*
+ * Cards are no longer clickable to open a detail modal.
+ * cursor is default; hover no longer implies click action.
+ */
 .product_card {
     background: #fff7ec;
     border: 2px solid #682c7a;
@@ -966,17 +998,10 @@ select:focus {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    cursor: pointer;
+    cursor: default;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transition:
-        transform 0.2s ease,
-        box-shadow 0.2s ease;
     box-sizing: border-box;
-}
-
-.product_card:hover {
-    transform: scale(1.04);
-    box-shadow: 0 8px 24px rgba(104, 44, 122, 0.2);
+    transition: box-shadow 0.2s ease;
 }
 
 .product_card_name {
@@ -1041,6 +1066,33 @@ select:focus {
     font-weight: bold;
 }
 
+/* ==================== PRODUCT CARD FEE SUMMARY ==================== */
+
+/*
+ * Replaces the detail modal — all additional fee info is now
+ * shown inline at the bottom of each product card.
+ */
+.product_card_fee_summary {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    border-top: 1px solid #e8d5f0;
+    padding-top: 8px;
+}
+
+.product_card_fee_line {
+    font-family: Coolvetica;
+    font-size: 11px;
+    color: #682c7a;
+    margin: 0;
+    word-break: break-word;
+    white-space: normal;
+    line-height: 1.4;
+    opacity: 0.85;
+}
+
+/* ==================== PRODUCT CARD EDIT BUTTON ==================== */
+
 .product_card_edit_btn {
     border: 2px solid #682c7a;
     border-radius: 30px;
@@ -1060,152 +1112,6 @@ select:focus {
 .product_card_edit_btn:hover {
     background-color: #682c7a;
     color: #fff7ec;
-}
-
-/* ==================== DETAIL MODAL ==================== */
-
-.detail_modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.45);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    padding: 20px;
-    box-sizing: border-box;
-}
-
-.detail_modal.active {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-}
-
-.detail_modal_box {
-    background: #fff7ec;
-    width: 480px;
-    padding: 35px;
-    border-radius: 30px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
-    max-height: 85vh;
-    overflow-y: auto;
-    box-sizing: border-box;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-}
-
-.detail_modal_box::-webkit-scrollbar {
-    display: none;
-}
-
-.detail_modal_name {
-    font-family: SuperDream;
-    font-size: 26px;
-    color: #682c7a;
-    text-align: center;
-    margin-bottom: 15px;
-    padding-bottom: 15px;
-    border-bottom: 2px solid #682c7a;
-    word-break: break-word;
-    white-space: normal;
-    line-height: 1.3;
-}
-
-.detail_options_container {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding-bottom: 15px;
-    border-bottom: 2px solid #682c7a;
-    margin-bottom: 15px;
-}
-
-.detail_option_wrap {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.detail_option_label {
-    font-family: Coolvetica;
-    font-size: 14px;
-    color: #682c7a;
-}
-
-.detail_select {
-    width: 100%;
-    height: 40px;
-    border: 2px solid #682c7a;
-    border-radius: 30px;
-    background-color: white;
-    font-size: 14px;
-    color: #333;
-    padding-left: 16px;
-    padding-right: 36px;
-    cursor: pointer;
-    appearance: none;
-    transition:
-        border-color 0.2s ease,
-        background-color 0.2s ease;
-}
-
-.detail_select:hover {
-    background-color: #f5eafa;
-    border-color: #4c1c5b;
-}
-
-.detail_select:focus {
-    outline: none;
-    border-color: #4c1c5b;
-}
-
-.detail_price_row {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    padding-bottom: 15px;
-    border-bottom: 2px solid #682c7a;
-    margin-bottom: 15px;
-}
-
-.detail_price_label {
-    font-family: Coolvetica;
-    font-size: 16px;
-    color: #682c7a;
-}
-
-.detail_price_value {
-    font-family: Coolvetica;
-    font-size: 22px;
-    color: #682c7a;
-}
-
-.detail_actions {
-    display: flex;
-    justify-content: flex-end;
-}
-
-.detail_close_btn {
-    border: none;
-    padding: 8px 14px;
-    width: 90px;
-    height: 35px;
-    background: #999999;
-    border-radius: 30px;
-    font-family: Coolvetica;
-    font-size: 15px;
-    color: #fff7ec;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-}
-
-.detail_close_btn:hover {
-    transform: scale(1.05);
 }
 
 /* ==================== DELETE TEMPLATE MODAL ==================== */
@@ -1528,7 +1434,7 @@ select:focus {
 
 .rush_field_label {
     font-family: Coolvetica;
-    font-size: 16px;
+    font-size: 20px;
     color: #682c7a;
 }
 
@@ -1538,9 +1444,7 @@ select:focus {
     border: 2px solid #682c7a;
     border-radius: 30px;
     padding: 0 16px;
-    font-family: Coolvetica;
     font-size: 14px;
-    color: #333;
     box-sizing: border-box;
 }
 
@@ -1562,10 +1466,8 @@ select:focus {
     border: 2px solid #682c7a;
     border-radius: 30px;
     padding: 0 14px;
-    font-family: Coolvetica;
     font-size: 13px;
     text-align: center;
-    color: #333;
 }
 
 .rush_range_amount_input:focus {
@@ -1605,6 +1507,10 @@ select:focus {
 }
 
 .rush_tf_col_headers span:first-child {
+    font-size: 20px;
+}
+
+.rush_tf_col_headers span:first-child {
     flex: 1;
 }
 
@@ -1634,9 +1540,7 @@ select:focus {
     border: 2px solid #682c7a;
     border-radius: 30px;
     padding: 0 12px;
-    font-family: Coolvetica;
     font-size: 13px;
-    color: #333;
 }
 
 .rush_timeframe_input:focus {
@@ -1660,9 +1564,7 @@ select:focus {
     border: 2px solid #682c7a;
     border-radius: 20px;
     text-align: center;
-    font-family: Coolvetica;
     font-size: 13px;
-    color: #333;
 }
 
 .rush_pct_input:focus {
