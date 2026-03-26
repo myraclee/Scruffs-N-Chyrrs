@@ -1,0 +1,217 @@
+/* Rush Fees Page Styles */
+
+/* ===== OPENING SECTION ===== */
+.rush_fees_opening {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 10%;
+    text-align: center;
+    gap: 20px;
+}
+
+.rush_fees_opening h1 {
+    font-family: SuperDream;
+    font-size: 50px;
+    color: #682c7a;
+    margin: 0;
+}
+
+/* ===== RUSH FEES CONTAINER ===== */
+.rush_fees_container {
+    padding: 60px 10%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 50vh;
+}
+
+#rushFeesTableWrapper {
+    max-width: 900px;
+    width: 100%;
+}
+
+/* ===== RUSH FEES TABLE ===== */
+.rush_fees_table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.rush_fees_table thead {
+    background: #682c7a;
+    color: white;
+}
+
+.rush_fees_table th {
+    padding: 16px;
+    text-align: left;
+    font-family: Coolvetica;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.rush_fees_table tbody tr {
+    border-bottom: 1px solid #e8e8e8;
+    transition: background-color 0.2s ease;
+}
+
+.rush_fees_table tbody tr:hover {
+    background-color: #fff7ec;
+}
+
+.rush_fees_table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.rush_fees_table td {
+    padding: 14px 16px;
+    font-family: Coolvetica;
+    font-size: 15px;
+    color: #312e2e;
+}
+
+/* ===== PRICE RANGE CELL ===== */
+.rush_fee_range {
+    font-weight: 600;
+    color: #682c7a;
+    min-width: 120px;
+}
+
+/* ===== TIMEFRAME ROWS (NESTED) ===== */
+.rush_fee_timeframe_row {
+    background-color: #fafafa;
+}
+
+.rush_fee_timeframe_row td {
+    padding: 12px 16px 12px 32px;
+    font-size: 14px;
+}
+
+.timeframe_label {
+    color: #555;
+    font-weight: 500;
+}
+
+.timeframe_percentage {
+    color: #d84315;
+    font-weight: 600;
+}
+
+/* ===== EMPTY STATE ===== */
+.rush_fees_empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: #999;
+}
+
+.rush_fees_empty h2 {
+    font-family: Coolvetica;
+    font-size: 18px;
+    color: #682c7a;
+    margin-top: 0;
+}
+
+.rush_fees_empty p {
+    font-family: Coolvetica;
+    font-size: 14px;
+    margin: 10px 0;
+}
+
+/* ===== LOADING STATE ===== */
+.rush_fees_loading {
+    text-align: center;
+    padding: 40px 20px;
+    color: #682c7a;
+    font-family: Coolvetica;
+    font-size: 16px;
+}
+
+/* Skeleton loader animation */
+.rush_fees_skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.skeleton_row {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    height: 20px;
+    border-radius: 4px;
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+    .rush_fees_opening {
+        padding: 40px 5%;
+    }
+
+    .rush_fees_opening h1 {
+        font-size: 35px;
+    }
+
+    .rush_fees_container {
+        padding: 40px 5%;
+    }
+
+    .rush_fees_table th,
+    .rush_fees_table td {
+        padding: 12px 8px;
+        font-size: 13px;
+    }
+
+    .rush_fees_table tbody tr td {
+        font-size: 13px;
+    }
+
+    .rush_fee_timeframe_row td {
+        padding: 10px 8px 10px 20px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .rush_fees_opening {
+        padding: 30px 3%;
+    }
+
+    .rush_fees_opening h1 {
+        font-size: 28px;
+    }
+
+    .rush_fees_container {
+        padding: 30px 3%;
+    }
+
+    .rush_fees_table th,
+    .rush_fees_table td {
+        padding: 10px 6px;
+        font-size: 12px;
+    }
+
+    .rush_fee_range {
+        min-width: 80px;
+    }
+
+    .rush_fee_timeframe_row td {
+        padding: 8px 6px 8px 16px;
+        font-size: 11px;
+    }
+}

@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\HomeImageController;
 use App\Http\Controllers\Api\ProductSampleController;
 use App\Http\Controllers\Api\OrderTemplateController;
 use App\Http\Controllers\Api\FaqController;
+use App\Http\Controllers\Api\RushFeeController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -24,6 +25,10 @@ Route::get('/products/{product}', function (App\Models\Product $product) {
 Route::get('/faqs', function () {
     return view('customer.pages.faqs');
 })->name('faqs');
+
+Route::get('/rush', function () {
+    return view('customer.pages.rush_fees');
+})->name('rush');
 
 Route::get('/aboutus', function () {
     return view('customer.pages.aboutus');
@@ -104,6 +109,16 @@ Route::prefix('api/faqs')->group(function () {
     Route::delete('{faq}', [FaqController::class, 'destroy'])->middleware('auth');
     Route::post('/reorder', [FaqController::class, 'reorder'])->middleware('auth');
     Route::get('/admin/index', [FaqController::class, 'adminIndex'])->middleware('auth');
+});
+
+// RUSH FEES ROUTES - Public read, owner auth required for write operations
+Route::prefix('api/rush-fees')->group(function () {
+    Route::get('/', [RushFeeController::class, 'index']);
+    Route::post('/', [RushFeeController::class, 'store'])->middleware(['auth', 'owner']);
+    Route::put('{rushFee}', [RushFeeController::class, 'update'])->middleware(['auth', 'owner']);
+    Route::delete('{rushFee}', [RushFeeController::class, 'destroy'])->middleware(['auth', 'owner']);
+    Route::patch('{rushFee}/reorder-timeframes', [RushFeeController::class, 'reorderTimeframes'])->middleware(['auth', 'owner']);
+    Route::get('/admin/index', [RushFeeController::class, 'adminIndex'])->middleware(['auth', 'owner']);
 });
 
 // OWNER ROUTES

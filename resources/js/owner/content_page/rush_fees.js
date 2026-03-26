@@ -1,11 +1,12 @@
 // ==================== RUSH FEES ====================
 import toast from "../../utils/toast.js";
+import rushFeeApi from "../../api/rushFeeApi.js";
 
 // ==================== STATE ====================
-// rushFees = [{ id?, label, min, max, timeframes: [{ label, percentage }] }]
+// rushFees = [{ id, label, min_price, max_price, timeframes: [{ id?, label, percentage }] }]
 
 let rushFees = [];
-let editingRushIndex = null; // null = adding new, number = editing existing
+let editingRushId = null; // null = adding new, number = editing existing ID
 let pendingDeleteIndex = null;
 let isRushLoading = false;
 
@@ -34,19 +35,25 @@ let draftFee = null;
 function buildDraftFromIndex(idx) {
     const src = rushFees[idx];
     return {
+        id: src.id,
         label: src.label,
-        min: src.min,
-        max: src.max,
-        timeframes: src.timeframes.map((tf) => ({ ...tf })),
+        min_price: src.min_price,
+        max_price: src.max_price,
+        timeframes: src.timeframes.map((tf) => ({
+            id: tf.id,
+            label: tf.label ?? "",
+            percentage: String(tf.percentage ?? "")
+        })),
     };
 }
 
 function freshDraft() {
     return {
+        id: null,
         label: "",
-        min: null,
-        max: null,
-        timeframes: [{ label: "", percentage: "" }],
+        min_price: null,
+        max_price: null,
+        timeframes: [{ id: null, label: "", percentage: "" }],
     };
 }
 
@@ -56,7 +63,7 @@ const rushModalOverlay = document.getElementById("rushFeeModalOverlay");
 const rushDeleteOverlay = document.getElementById("rushDeleteConfirmOverlay");
 
 function openAddModal() {
-    editingRushIndex = null;
+    editingRushId = null;
     draftFee = freshDraft();
     document.getElementById("rushModalTitle").textContent = "Add Rush Fee";
     document.getElementById("rushDeleteBtn").classList.add("btn_hidden");
@@ -65,7 +72,7 @@ function openAddModal() {
 }
 
 function openEditModal(idx) {
-    editingRushIndex = idx;
+    editingRushId = rushFees[idx].id;
     draftFee = buildDraftFromIndex(idx);
     document.getElementById("rushModalTitle").textContent = "Edit Rush Fee";
     document.getElementById("rushDeleteBtn").classList.remove("btn_hidden");
@@ -76,7 +83,7 @@ function openEditModal(idx) {
 function closeRushModal() {
     rushModalOverlay.classList.remove("active");
     draftFee = null;
-    editingRushIndex = null;
+    editingRushId = null;
 }
 
 /*
@@ -108,9 +115,9 @@ function renderRushModalForm() {
     // Range label
     document.getElementById("rushRangeLabel").value = draftFee.label;
     document.getElementById("rushRangeMin").value =
-        draftFee.min !== null ? draftFee.min : "";
+        draftFee.min_price !== null ? draftFee.min_price : "";
     document.getElementById("rushRangeMax").value =
-        draftFee.max !== null ? draftFee.max : "";
+        draftFee.max_price !== null ? draftFee.max_price : "";
 
     // Timeframe rows
     renderTimeframeRows();
@@ -178,23 +185,11 @@ function renderTimeframeRows() {
 
 async function loadRushFees() {
     try {
-        const response = await fetch("/api/rush-fees", {
-            headers: { Accept: "application/json" },
-        });
-        if (!response.ok) return;
-        const data = await response.json();
-        rushFees = (data.rush_fees ?? []).map((r) => ({
-            label: r.label ?? "",
-            min: r.min ?? null,
-            max: r.max ?? null,
-            timeframes: (r.timeframes ?? []).map((tf) => ({
-                label: tf.label ?? "",
-                percentage: String(tf.percentage ?? ""),
-            })),
-        }));
+        rushFees = await rushFeeApi.getAllRushFeesAdmin();
         renderRushDisplay();
     } catch (err) {
         console.warn("Rush fees: could not load.", err);
+        toast.error("Failed to load rush fees");
     }
 }
 
@@ -205,36 +200,31 @@ async function saveRushFee() {
     isRushLoading = true;
 
     try {
-        // Commit draft into rushFees
-        if (editingRushIndex === null) {
-            rushFees.push({ ...draftFee });
+        const payload = {
+            label: draftFee.label,
+            min_price: Number(draftFee.min_price),
+            max_price: Number(draftFee.max_price),
+            timeframes: draftFee.timeframes.map((tf) => ({
+                label: tf.label,
+                percentage: Number(tf.percentage),
+            })),
+        };
+
+        if (editingRushId === null) {
+            // Create new
+            await rushFeeApi.createRushFee(payload);
+            toast.success("Rush fee added successfully");
         } else {
-            rushFees[editingRushIndex] = { ...draftFee };
+            // Update existing
+            await rushFeeApi.updateRushFee(editingRushId, payload);
+            toast.success("Rush fee updated successfully");
         }
 
-        const response = await fetch("/api/rush-fees", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Accept: "application/json",
-            },
-            body: JSON.stringify({ rush_fees: rushFees }),
-        });
-
-        if (!response.ok) throw new Error("Failed to save rush fee");
-
-        toast.success(
-            editingRushIndex === null
-                ? "Rush fee added successfully"
-                : "Rush fee updated successfully",
-        );
         await loadRushFees();
         closeRushModal();
     } catch (error) {
         console.error("Error saving rush fee:", error);
         toast.error(error.message || "Failed to save rush fee");
-        // Roll back optimistic push if needed
-        if (editingRushIndex === null) rushFees.pop();
     } finally {
         isRushLoading = false;
     }
@@ -247,18 +237,8 @@ async function deleteRushFee(idx) {
     isRushLoading = true;
 
     try {
-        rushFees.splice(idx, 1);
-
-        const response = await fetch("/api/rush-fees", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Accept: "application/json",
-            },
-            body: JSON.stringify({ rush_fees: rushFees }),
-        });
-
-        if (!response.ok) throw new Error("Failed to delete rush fee");
+        const rushFeeId = rushFees[idx].id;
+        await rushFeeApi.deleteRushFee(rushFeeId);
 
         toast.success("Rush fee deleted successfully");
         closeDeleteConfirm();
@@ -351,20 +331,20 @@ function initRushFees() {
         .getElementById("addRushFeeBtn")
         .addEventListener("click", openAddModal);
 
-    // Modal form field listeners (range label / min / max)
+    // Modal form field listeners (range label / min_price / max_price)
     document.getElementById("rushRangeLabel").addEventListener("input", (e) => {
         if (draftFee) draftFee.label = e.target.value;
     });
     document.getElementById("rushRangeMin").addEventListener("input", (e) => {
         e.target.value = e.target.value.replace(/[^0-9]/g, "");
         if (draftFee)
-            draftFee.min =
+            draftFee.min_price =
                 e.target.value === "" ? null : parseInt(e.target.value);
     });
     document.getElementById("rushRangeMax").addEventListener("input", (e) => {
         e.target.value = e.target.value.replace(/[^0-9]/g, "");
         if (draftFee)
-            draftFee.max =
+            draftFee.max_price =
                 e.target.value === "" ? null : parseInt(e.target.value);
     });
 
@@ -389,8 +369,10 @@ function initRushFees() {
 
     // Delete button (inside edit modal — opens confirmation)
     document.getElementById("rushDeleteBtn").addEventListener("click", () => {
-        if (editingRushIndex === null) return;
-        openDeleteConfirm(editingRushIndex);
+        if (editingRushId === null) return;
+        // Find the index in the array
+        const idx = rushFees.findIndex((r) => r.id === editingRushId);
+        if (idx !== -1) openDeleteConfirm(idx);
     });
 
     // Delete confirm — proceed
