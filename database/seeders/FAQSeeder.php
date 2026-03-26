@@ -157,7 +157,10 @@ For very large orders or special requests, contact us directly for a customized 
         ];
 
         foreach ($faqs as $faq) {
-            FAQ::create($faq);
+            FAQ::updateOrCreate(
+                ['category' => $faq['category'], 'question' => $faq['question']],
+                $faq
+            );
         }
     }
 }
