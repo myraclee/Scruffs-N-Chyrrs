@@ -56,19 +56,6 @@ function renderFaqAccordion() {
       container.appendChild(faqItem);
     });
   });
-
-  // Add contact section at the end
-  const contactSection = document.createElement('div');
-  contactSection.className = 'faqs_contact_section';
-  contactSection.style.marginTop = '40px';
-  contactSection.innerHTML = `
-    <p>Didn't find the answer you're looking for? <strong>Contact us directly!</strong></p>
-    <p>
-      Location: <strong>Cainta, Rizal</strong><br>
-      We're here to help make your merchandise dreams a reality.
-    </p>
-  `;
-  container.appendChild(contactSection);
 }
 
 // ================= CREATE FAQ ITEM =================
