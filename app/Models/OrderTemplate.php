@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property int $id
@@ -57,5 +58,21 @@ class OrderTemplate extends Model
     public function discounts(): HasMany
     {
         return $this->hasMany(OrderTemplateDiscount::class)->orderBy('position');
+    }
+
+    /**
+     * Get the minimum order for this order template.
+     */
+    public function minOrder(): HasOne
+    {
+        return $this->hasOne(OrderTemplateMinOrder::class);
+    }
+
+    /**
+     * Get the layout fee for this order template.
+     */
+    public function layoutFee(): HasOne
+    {
+        return $this->hasOne(OrderTemplateLayoutFee::class);
     }
 }

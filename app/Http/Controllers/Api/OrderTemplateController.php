@@ -8,6 +8,8 @@ use App\Models\OrderTemplateOption;
 use App\Models\OrderTemplateOptionType;
 use App\Models\OrderTemplatePricing;
 use App\Models\OrderTemplateDiscount;
+use App\Models\OrderTemplateMinOrder;
+use App\Models\OrderTemplateLayoutFee;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -26,6 +28,8 @@ class OrderTemplateController extends Controller
                 'options.optionTypes',
                 'pricings',
                 'discounts',
+                'minOrder',
+                'layoutFee',
             ])->orderBy('created_at', 'desc')->get();
 
             return response()->json([
@@ -64,6 +68,8 @@ class OrderTemplateController extends Controller
                 'discounts.*.min_quantity' => 'required_with:discounts|integer|min:1',
                 'discounts.*.price_reduction' => 'required_with:discounts|numeric|min:0',
                 'discounts.*.position' => 'required_with:discounts|integer|min:0',
+                'min_order' => 'nullable|integer|min:1',
+                'layout_fee' => 'nullable|numeric|min:0',
             ]);
 
             $template = DB::transaction(function () use ($validated) {
@@ -111,13 +117,29 @@ class OrderTemplateController extends Controller
                     }
                 }
 
+                // Create minimum order if provided
+                if (!empty($validated['min_order'])) {
+                    OrderTemplateMinOrder::create([
+                        'order_template_id' => $template->id,
+                        'min_quantity' => $validated['min_order'],
+                    ]);
+                }
+
+                // Create layout fee if provided
+                if (!empty($validated['layout_fee'])) {
+                    OrderTemplateLayoutFee::create([
+                        'order_template_id' => $template->id,
+                        'fee_amount' => $validated['layout_fee'],
+                    ]);
+                }
+
                 return $template;
             });
 
             return response()->json([
                 'success' => true,
                 'message' => 'Order template created successfully',
-                'data' => $template->load(['product', 'options.optionTypes', 'pricings', 'discounts']),
+                'data' => $template->load(['product', 'options.optionTypes', 'pricings', 'discounts', 'minOrder', 'layoutFee']),
             ], 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
@@ -141,7 +163,7 @@ class OrderTemplateController extends Controller
     public function show(OrderTemplate $orderTemplate): JsonResponse
     {
         try {
-            $template = $orderTemplate->load(['product', 'options.optionTypes', 'pricings', 'discounts']);
+            $template = $orderTemplate->load(['product', 'options.optionTypes', 'pricings', 'discounts', 'minOrder', 'layoutFee']);
 
             return response()->json([
                 'success' => true,
@@ -179,6 +201,8 @@ class OrderTemplateController extends Controller
                 'discounts.*.min_quantity' => 'required_with:discounts|integer|min:1',
                 'discounts.*.price_reduction' => 'required_with:discounts|numeric|min:0',
                 'discounts.*.position' => 'required_with:discounts|integer|min:0',
+                'min_order' => 'nullable|integer|min:1',
+                'layout_fee' => 'nullable|numeric|min:0',
             ]);
 
             $updated = DB::transaction(function () use ($validated, $orderTemplate) {
@@ -191,6 +215,8 @@ class OrderTemplateController extends Controller
                 $orderTemplate->options()->delete(); // Cascades to option types
                 $orderTemplate->pricings()->delete();
                 $orderTemplate->discounts()->delete();
+                $orderTemplate->minOrder()->delete();
+                $orderTemplate->layoutFee()->delete();
 
                 // Create new options and their types
                 foreach ($validated['options'] as $optionData) {
@@ -231,13 +257,29 @@ class OrderTemplateController extends Controller
                     }
                 }
 
+                // Create minimum order if provided
+                if (!empty($validated['min_order'])) {
+                    OrderTemplateMinOrder::create([
+                        'order_template_id' => $orderTemplate->id,
+                        'min_quantity' => $validated['min_order'],
+                    ]);
+                }
+
+                // Create layout fee if provided
+                if (!empty($validated['layout_fee'])) {
+                    OrderTemplateLayoutFee::create([
+                        'order_template_id' => $orderTemplate->id,
+                        'fee_amount' => $validated['layout_fee'],
+                    ]);
+                }
+
                 return $orderTemplate;
             });
 
             return response()->json([
                 'success' => true,
                 'message' => 'Order template updated successfully',
-                'data' => $updated->load(['product', 'options.optionTypes', 'pricings', 'discounts']),
+                'data' => $updated->load(['product', 'options.optionTypes', 'pricings', 'discounts', 'minOrder', 'layoutFee']),
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([

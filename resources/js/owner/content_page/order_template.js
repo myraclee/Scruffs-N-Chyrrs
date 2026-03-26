@@ -878,11 +878,11 @@ function setupSaveButton() {
                     discounts:
                         data.discountEnabled && data.discountRows.length > 0
                             ? data.discountRows.map((row, idx) => ({
-                                  min_quantity: parseInt(row.qty) || 0,
-                                  price_reduction:
-                                      parseFloat(row.reduction) || 0,
-                                  position: idx,
-                              }))
+                                min_quantity: parseInt(row.qty) || 0,
+                                price_reduction:
+                                    parseFloat(row.reduction) || 0,
+                                position: idx,
+                            }))
                             : [],
                     min_order:
                         data.minOrderEnabled && data.minOrderQty
@@ -1092,9 +1092,15 @@ function createProductCard(template) {
         feeSummary.appendChild(makeFeeLine("Bulk Discount: None"));
     }
 
-    // Minimum Order — may be a number, a numeric string, or null/undefined
-    const rawMin = template.min_order ?? template.minOrder ?? null;
-    const minOrder = rawMin != null ? parseInt(rawMin) : null;
+    // Minimum Order — may be an object with min_quantity, a number, a string, or null/undefined
+    let minOrder = null;
+    const minOrderData = template.min_order ?? template.minOrder ?? null;
+    if (minOrderData != null) {
+        // If it's an object with min_quantity property, extract that; otherwise treat as value
+        minOrder = typeof minOrderData === 'object' && minOrderData.min_quantity != null
+            ? parseInt(minOrderData.min_quantity)
+            : parseInt(minOrderData);
+    }
     feeSummary.appendChild(
         makeFeeLine(
             minOrder != null && !isNaN(minOrder)
@@ -1103,9 +1109,15 @@ function createProductCard(template) {
         ),
     );
 
-    // Layout Fee — may be a number, a numeric string, or null/undefined
-    const rawFee = template.layout_fee ?? template.layoutFee ?? null;
-    const layoutFee = rawFee != null ? parseFloat(rawFee) : null;
+    // Layout Fee — may be an object with fee_amount, a number, a string, or null/undefined
+    let layoutFee = null;
+    const layoutFeeData = template.layout_fee ?? template.layoutFee ?? null;
+    if (layoutFeeData != null) {
+        // If it's an object with fee_amount property, extract that; otherwise treat as value
+        layoutFee = typeof layoutFeeData === 'object' && layoutFeeData.fee_amount != null
+            ? parseFloat(layoutFeeData.fee_amount)
+            : parseFloat(layoutFeeData);
+    }
     feeSummary.appendChild(
         makeFeeLine(
             layoutFee != null && !isNaN(layoutFee)
@@ -1219,10 +1231,15 @@ function openEditModal(templateId) {
     // Min order
     const applyMinOrder = document.getElementById("applyMinOrder");
     const minOrderWrapper = document.getElementById("minOrderWrapper");
-    if (template.min_order != null) {
+    const minOrderData = template.min_order ?? template.minOrder ?? null;
+    if (minOrderData != null) {
         applyMinOrder.checked = true;
         minOrderWrapper.classList.remove("hidden");
-        document.getElementById("minOrderQty").value = template.min_order;
+        // Extract min_quantity from object if needed
+        const minQtyValue = typeof minOrderData === 'object' && minOrderData.min_quantity != null
+            ? minOrderData.min_quantity
+            : minOrderData;
+        document.getElementById("minOrderQty").value = minQtyValue;
     } else {
         applyMinOrder.checked = false;
         minOrderWrapper.classList.add("hidden");
@@ -1232,10 +1249,15 @@ function openEditModal(templateId) {
     // Layout fee
     const applyLayoutFee = document.getElementById("applyLayoutFee");
     const layoutFeeWrapper = document.getElementById("layoutFeeWrapper");
-    if (template.layout_fee != null) {
+    const layoutFeeData = template.layout_fee ?? template.layoutFee ?? null;
+    if (layoutFeeData != null) {
         applyLayoutFee.checked = true;
         layoutFeeWrapper.classList.remove("hidden");
-        document.getElementById("layoutFeeAmount").value = template.layout_fee;
+        // Extract fee_amount from object if needed
+        const feeAmountValue = typeof layoutFeeData === 'object' && layoutFeeData.fee_amount != null
+            ? layoutFeeData.fee_amount
+            : layoutFeeData;
+        document.getElementById("layoutFeeAmount").value = feeAmountValue;
     } else {
         applyLayoutFee.checked = false;
         layoutFeeWrapper.classList.add("hidden");
