@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Str;
 
@@ -67,6 +68,14 @@ class Product extends Model
     public function priceImages(): HasMany
     {
         return $this->hasMany(ProductPriceImage::class)->orderBy('sort_order');
+    }
+
+    /**
+     * Get the order template for this product.
+     */
+    public function orderTemplate(): HasOne
+    {
+        return $this->hasOne(OrderTemplate::class);
     }
 
     /**

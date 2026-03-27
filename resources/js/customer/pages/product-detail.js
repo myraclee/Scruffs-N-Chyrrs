@@ -2,7 +2,12 @@
  * Product Detail Page Script
  * Displays product price images in a responsive FIFO 2-column grid
  * Features: Skeleton loaders, fade-in animations, responsive layout
+ * Also manages the order modal for customer ordering
  */
+
+// ================= IMPORTS =================
+import { openOrderModal } from './order_modal.js';
+import Toast from '/resources/js/utils/toast.js';
 
 // ================= STATE & ELEMENTS =================
 
@@ -26,11 +31,14 @@ function initializeProductDetail() {
     try {
         // Get product data from data attribute
         const productData = container.getAttribute("data-product");
+        
+        if (!productData) {
+            throw new Error("Missing data-product attribute on container");
+        }
+        
         product = JSON.parse(productData);
+        
         priceImages = product.price_images || [];
-
-        console.log("Product loaded:", product);
-        console.log("Price images:", priceImages);
 
         // Set up event listeners
         setupEventListeners();
@@ -40,10 +48,15 @@ function initializeProductDetail() {
 
         // Load price images
         loadAndRenderPriceImages();
+
+        // Enable Order Now button
+        if (orderNowBtn) {
+            orderNowBtn.disabled = false;
+        }
     } catch (error) {
         console.error("Error initializing product detail:", error);
         gallery.innerHTML =
-            '<div class="price_image_error_text">Unable to load product information.</div>';
+            '<div class="price_image_error_text">Unable to load product information. Check console for details.</div>';
     }
 }
 
@@ -51,14 +64,49 @@ function initializeProductDetail() {
  * Set up event listeners for navigation and buttons
  */
 function setupEventListeners() {
-    // Back button
-    backBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        window.history.back();
-    });
+    try {
+        // Back button - FIRST priority
+        if (backBtn) {
+            backBtn.addEventListener("click", (e) => {
+                e.preventDefault();
+                window.history.back();
+            });
+        }
+    } catch (backButtonError) {
+        console.error("Error attaching back button listener:", backButtonError);
+    }
 
-    // Breadcrumb link (already navigates via href, so no extra listener needed)
-    // Order Now button remains disabled as it's a placeholder
+    // Order Now button - SECOND priority (won't block back button if it fails)
+    try {
+        if (orderNowBtn) {
+            orderNowBtn.addEventListener("click", async (e) => {
+                e.preventDefault();
+                
+                try {
+                    const authMeta = document.querySelector('meta[name="user-authenticated"]');
+                    
+                    const isAuthenticated = authMeta?.getAttribute('content') === 'true';
+                    
+                    if (!isAuthenticated) {
+                        Toast.warning('Please login or create an account to place an order');
+                        setTimeout(() => {
+                            window.location.href = '/login';
+                        }, 1500);
+                        return;
+                    }
+
+                    // Open order modal for this product
+                    const productId = container.getAttribute('data-product-id');
+                    await openOrderModal(parseInt(productId));
+                } catch (modalError) {
+                    console.error("Error in Order Now handler:", modalError);
+                    Toast.error('Error opening order modal. Please try again.');
+                }
+            }, { once: false });
+        }
+    } catch (orderButtonError) {
+        console.error("Error attaching Order Now button listener:", orderButtonError);
+    }
 }
 
 /**
@@ -88,7 +136,6 @@ async function loadAndRenderPriceImages() {
             '<div class="price_image_error_text">No price images available for this product.</div>';
         return;
     }
-
     gallery.innerHTML = "";
 
     // Create array to track grid positions
@@ -96,34 +143,43 @@ async function loadAndRenderPriceImages() {
 
     // Create all image elements first
     priceImages.forEach((image, index) => {
-        const wrapper = document.createElement("div");
-        wrapper.className = "price_image_wrapper loading";
-        wrapper.style.animationDelay = `${index * 0.1}s`;
+        try {
+            const wrapper = document.createElement("div");
+            wrapper.className = "price_image_wrapper loading";
+            wrapper.style.animationDelay = `${index * 0.1}s`;
 
-        const img = document.createElement("img");
-        img.alt = `${product.name} - Price List ${index + 1}`;
-        img.loading = "lazy";
+            const img = document.createElement("img");
+            img.alt = `${product.name} - Price List ${index + 1}`;
+            img.loading = "lazy";
 
-        // Handle image loading
-        img.addEventListener("load", () => {
-            wrapper.classList.remove("loading");
-            img.style.animation = "fadeIn 0.6s ease both";
-        });
+            // Handle image loading
+            img.addEventListener("load", () => {
+                wrapper.classList.remove("loading");
+                img.style.animation = "fadeIn 0.6s ease both";
+            });
 
-        img.addEventListener("error", () => {
-            wrapper.classList.add("error");
-            wrapper.innerHTML =
-                '<div class="price_image_error_text">Image failed to load</div>';
-        });
+            img.addEventListener("error", () => {
+                console.error("Failed to load price image:", img.src);
+                wrapper.classList.add("error");
+                wrapper.innerHTML =
+                    '<div class="price_image_error_text">Image failed to load</div>';
+            });
 
-        // Set image source (construct path from storage)
-        const imagePath = image.image_path.startsWith("/")
-            ? image.image_path
-            : `/storage/${image.image_path}`;
-        img.src = imagePath;
+            // Set image source (construct path from storage)
+            if (!image.image_path) {
+                throw new Error("image_path is missing from price image object");
+            }
 
-        wrapper.appendChild(img);
-        imageElements.push({ wrapper, order: image.sort_order || index });
+            const imagePath = image.image_path.startsWith("/")
+                ? image.image_path
+                : `/storage/${image.image_path}`;
+            img.src = imagePath;
+
+            wrapper.appendChild(img);
+            imageElements.push({ wrapper, order: image.sort_order || index });
+        } catch (itemError) {
+            console.error("Error processing price image:", itemError);
+        }
     });
 
     // Sort by sort_order if available

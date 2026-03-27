@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\OrderTemplateController;
 use App\Http\Controllers\Api\FaqController;
 use App\Http\Controllers\Api\FAQCategoryController;
 use App\Http\Controllers\Api\RushFeeController;
+use App\Http\Controllers\Api\CustomerOrderController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -100,6 +101,12 @@ Route::prefix('api/order-templates')->group(function () {
     Route::get('{orderTemplate}', [OrderTemplateController::class, 'show']);
     Route::put('{orderTemplate}', [OrderTemplateController::class, 'update']);
     Route::delete('{orderTemplate}', [OrderTemplateController::class, 'destroy']);
+});
+
+// CUSTOMER ORDERS ROUTES - Public read for templates, auth required for POST
+Route::prefix('api/customer-orders')->group(function () {
+    Route::get('product/{productId}/template', [CustomerOrderController::class, 'getProductOrderTemplate']);
+    Route::post('/', [CustomerOrderController::class, 'store'])->middleware('auth');
 });
 
 // FAQ ROUTES - Public read, auth required for write operations
