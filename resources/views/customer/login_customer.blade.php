@@ -16,19 +16,21 @@
 
         <div class="login_container">
             <label for="email">Email</label>
-            <input class="login_textbox" type="email" id="email" name="email" placeholder="email@address.com" value="{{ old('email') }}" required>
-            </div>
+            <input class="login_textbox" type="email" id="email" name="email" placeholder="email@address.com" value="{{ old('email') }}" required
+                   @error('email') style="border: 1px solid red;" @enderror>
+            
+            @error('email')
+                <span style="color: red; font-family: Coolvetica; font-size: 14px; display: block; margin-top: 4px;">{{ $message }}</span>
+            @enderror
+        </div>
 
         <div class="login_container">
             <label for="password">Password</label>
-            <input class="login_textbox" type="password" id="password" name="password" placeholder="Enter your password" required>
+            <input class="login_textbox" type="password" id="password" name="password" placeholder="Enter your password" required
+                   @error('password') style="border: 1px solid red;" @enderror>
             
-            @error('email')
-                <span style="color: red; font-family: Coolvetica; font-size: 14px; display: block;">{{ $message }}</span>
-            @enderror
-
             @error('password')
-                <span style="color: red; font-family: Coolvetica; font-size: 14px; display: block;">{{ $message }}</span>
+                <span style="color: red; font-family: Coolvetica; font-size: 14px; display: block; margin-top: 4px;">{{ $message }}</span>
             @enderror
 
             <p class="forgot_password"><a href="{{ route('reset-password') }}">Forgot your password?</a></p>
