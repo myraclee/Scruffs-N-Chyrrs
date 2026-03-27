@@ -13,9 +13,6 @@
                     <li class="{{ request()->routeIs('products') ? 'active' : '' }}">
                         <a href="{{ route('products') }}">Products</a>
                     </li>
-                    <li class="{{ request()->routeIs('rush') ? 'active' : '' }}">
-                        <a href="{{ route('rush') }}">Rush Fees</a>
-                    </li>
                     <li class="{{ request()->routeIs('aboutus') ? 'active' : '' }}">
                         <a href="{{ route('aboutus') }}">About Us</a>
                     </li>

@@ -7,6 +7,12 @@
 @section('content')
 
     {{-- ===== HERO — WHO WE ARE ===== --}}
+
+    <div class="aboutus_main_header">
+        <h1>About Us</h1>
+        <p>Get to know us, Scuffs&Cheers!</p>
+    </div>
+    
     <section class="aboutus_hero">
 
         {{-- Scattered sparkles outside the box --}}
