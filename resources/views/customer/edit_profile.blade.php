@@ -10,7 +10,15 @@
 
 @section('content')
     <div class="edit_profile_container">
-        <h1 class="edit_profile_header">Edit Profile</h1>
+        <span class="star star_tr">✦</span>
+        <span class="star star_br">✦</span>
+        <span class="star star_bl">✦</span>
+        <span class="star star_tl">✦</span>
+        <div class="edit_section_heading">
+        <span class="edit_section_spark">✦</span>
+        <h2 class="edit_section_title">Change Password</h2>
+        <span class="edit_section_line"></span>
+    </div>
 
         @if($errors->any())
             <div class="alert alert_error">

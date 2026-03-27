@@ -10,18 +10,15 @@
 
 @section('content')
     <div class="change_password_container">
-        <h1 class="change_password_header">Change Password</h1>
-
-        @if($errors->any())
-            <div class="alert alert_error">
-                <p><strong>Please fix the following errors:</strong></p>
-                <ul>
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
+        <span class="star star_tr">✦</span>
+        <span class="star star_br">✦</span>
+        <span class="star star_bl">✦</span>
+        <span class="star star_tl">✦</span>
+        <div class="change_section_heading">
+        <span class="change_section_spark">✦</span>
+        <h2 class="change_section_title">Change Password</h2>
+        <span class="change_section_line"></span>
+    </div>
 
         <form method="POST" action="{{ route('update-password') }}" class="change_password_form">
             @csrf

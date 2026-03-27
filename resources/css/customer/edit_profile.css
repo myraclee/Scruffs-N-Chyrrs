@@ -7,15 +7,104 @@
     background-color: #fff7ec;
     border-radius: 30px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    border: 2px #6b3282 solid;
+    position: relative;
+
+    animation: acct_fade_up 0.4s var(--delay, 0s)
+        cubic-bezier(0.34, 1.4, 0.64, 1) both;
 }
 
-.edit_profile_header {
+.star {
+    position: absolute;
+    font-size: 20px;
+    color: #682c7a;
+    line-height: 1;
+    pointer-events: none;
+}
+
+.star_tl {
+    top: -13px;
+    left: -13px;
+    animation: twinkle 2.4s ease-in-out infinite;
+    animation-delay: 0s;
+}
+
+.star_tr {
+    top: -13px;
+    right: -13px;
+    animation: twinkle 2.4s ease-in-out infinite;
+    animation-delay: 0.6s;
+}
+
+.star_bl {
+    bottom: -13px;
+    left: -13px;
+    animation: twinkle 2.4s ease-in-out infinite;
+    animation-delay: 1.2s;
+}
+
+.star_br {
+    bottom: -13px;
+    right: -13px;
+    animation: twinkle 2.4s ease-in-out infinite;
+    animation-delay: 1.8s;
+}
+
+@keyframes twinkle {
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+    }
+    20% {
+        opacity: 0.15;
+        transform: scale(0.55) rotate(30deg);
+    }
+    40% {
+        opacity: 0.9;
+        transform: scale(1.1) rotate(-10deg);
+    }
+    60% {
+        opacity: 0.2;
+        transform: scale(0.6) rotate(25deg);
+    }
+    80% {
+        opacity: 1;
+        transform: scale(1.05) rotate(-5deg);
+    }
+}
+
+.edit_section_heading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+    animation: acct_fade_up 0.5s 0.05s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+    margin-bottom: 35px;
+}
+
+.edit_section_spark {
+    font-size: 16px;
+    color: #682c7a;
+    flex-shrink: 0;
+    filter: drop-shadow(0 0 5px rgba(180, 136, 204, 0.6));
+    animation: acct_spark_drift 5s ease-in-out infinite 0.4s;
+}
+
+.edit_section_title {
     font-family: "SuperDream", sans-serif;
-    font-size: 32px;
-    color: #6b3282;
-    margin-bottom: 30px;
-    text-align: center;
-    font-weight: 600;
+    font-size: 30px;
+    color: #682c7a;
+    margin: 0;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.edit_section_line {
+    flex: 1;
+    height: 1.5px;
+    background: linear-gradient(90deg, rgba(104, 44, 122, 0.35), transparent);
+    border-radius: 2px;
 }
 
 .edit_profile_form {
@@ -28,6 +117,9 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+
+    animation: acct_fade_up 0.7s var(--delay, 0s)
+        cubic-bezier(0.34, 1.4, 0.64, 1) both;
 }
 
 .form_group label {
@@ -101,6 +193,9 @@
     gap: 12px;
     justify-content: center;
     margin-top: 30px;
+
+    animation: acct_fade_up 0.9s var(--delay, 0s)
+        cubic-bezier(0.34, 1.4, 0.64, 1) both;
 }
 
 .action_btn {
@@ -177,4 +272,15 @@
 .form_input.input_error {
     border-color: #d32f2f !important;
     background-color: #ffebee !important;
+}
+
+@keyframes acct_fade_up {
+    from {
+        opacity: 0;
+        transform: translateY(18px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
