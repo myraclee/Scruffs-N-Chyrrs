@@ -1712,6 +1712,360 @@ select:focus {
 .rush_save_btn:hover {
     transform: scale(1.05);
 }
+/* =============================================
+   RUSH FEES — IMAGE UPLOAD WIDGET (modal)
+   + REDESIGNED DISPLAY CARDS (main page)
+   Append to your admin rush_fees CSS file.
+   ============================================= */
+
+/* ==================== DISPLAY CARDS OVERRIDES ==================== */
+/* These replace the table-based card layout */
+
+.rush_fees_cards_container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 15px;
+}
+
+.rush_fee_card {
+    background: #fff7ec;
+    border: 2px solid #682c7a;
+    border-radius: 18px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    width: 220px; /* compact card width */
+    box-shadow: 0 4px 14px rgba(104, 44, 122, 0.1);
+    flex-shrink: 0;
+    transition:
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+.rush_fee_card:hover {
+    box-shadow: 0 8px 24px rgba(104, 44, 122, 0.18);
+    transform: translateY(-2px);
+}
+
+/* ---- A4-proportioned image area (210:297 ≈ 1:1.414) ---- */
+.rush_card_img_area {
+    width: 100%;
+    /* A4 aspect ratio on a 220px wide card ≈ 311px tall — too tall.
+       Use a fixed height instead so cards stay compact. */
+    height: 180px;
+    background: #f5ece0;
+    border-bottom: 2px solid rgba(104, 44, 122, 0.2);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.rush_card_img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* show full A4 without cropping */
+    display: block;
+    background: #f5ece0;
+    padding: 6px;
+    box-sizing: border-box;
+}
+
+/* Placeholder when no image uploaded */
+.rush_card_img_placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    height: 100%;
+    color: rgba(104, 44, 122, 0.35);
+}
+
+.rush_card_no_img_svg {
+    fill: rgba(104, 44, 122, 0.3);
+}
+
+.rush_card_img_placeholder span {
+    font-family: "Coolvetica", sans-serif;
+    font-size: 11px;
+    color: rgba(104, 44, 122, 0.4);
+}
+
+/* ---- Card text body ---- */
+.rush_card_body {
+    padding: 12px 14px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+}
+
+.rush_card_range_label {
+    font-family: "Coolvetica", sans-serif;
+    font-size: 15px;
+    color: #682c7a;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.3;
+    word-break: break-word;
+}
+
+.rush_card_tf_label {
+    font-family: "Coolvetica", sans-serif;
+    font-size: 11px;
+    color: rgba(104, 44, 122, 0.55);
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+/* ---- Timeframe dropdown ---- */
+.rush_card_select_wrap {
+    position: relative;
+}
+
+/* Custom arrow */
+.rush_card_select_wrap::after {
+    content: "";
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid #682c7a;
+    pointer-events: none;
+}
+
+.rush_card_select {
+    width: 100%;
+    height: 32px;
+    padding: 0 30px 0 12px;
+    border: 1.5px solid rgba(104, 44, 122, 0.4);
+    border-radius: 20px;
+    background: #fffcf8;
+    font-family: "Coolvetica", sans-serif;
+    font-size: 12px;
+    color: #312e2e;
+    appearance: none;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease;
+    /* Truncate long option text */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.rush_card_select:hover {
+    border-color: #682c7a;
+    background: #f5e8ff;
+}
+
+.rush_card_select:focus {
+    outline: none;
+    border-color: #682c7a;
+    box-shadow: 0 0 0 3px rgba(104, 44, 122, 0.1);
+}
+
+/* ---- Edit button at bottom ---- */
+.rush_card_edit_btn {
+    border: none;
+    background: transparent;
+    border-top: 1.5px solid rgba(104, 44, 122, 0.2);
+    height: 34px;
+    font-family: "Coolvetica", sans-serif;
+    font-size: 13px;
+    color: #682c7a;
+    cursor: pointer;
+    width: 100%;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
+    flex-shrink: 0;
+}
+
+.rush_card_edit_btn:hover {
+    background: #682c7a;
+    color: #fff7ec;
+}
+
+/* ==================== IMAGE UPLOAD WIDGET (modal) ==================== */
+
+.rush_image_upload_section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px 0 10px;
+    border-top: 1.5px dashed rgba(104, 44, 122, 0.22);
+    margin-top: 6px;
+}
+
+.rush_image_upload_header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+}
+
+.rush_image_upload_hint {
+    font-family: "Coolvetica", sans-serif;
+    font-size: 12px;
+    color: rgba(104, 44, 122, 0.5);
+}
+
+/* Hidden native file input */
+.rush_image_file_input {
+    display: none;
+}
+
+/* A4 drop zone — 210:297, capped at 220px wide inside the modal */
+.rush_image_dropzone {
+    position: relative;
+    width: 100%;
+    max-width: 220px;
+    aspect-ratio: 210 / 297;
+    align-self: center;
+
+    background: #fff7ec;
+    border: 2px dashed #b488cc;
+    border-radius: 12px;
+    cursor: pointer;
+    overflow: hidden;
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+    outline: none;
+}
+
+.rush_image_dropzone:hover,
+.rush_image_dropzone:focus-visible {
+    border-color: #682c7a;
+    background: #f5e8ff;
+    box-shadow: 0 0 0 4px rgba(104, 44, 122, 0.08);
+}
+
+.rush_image_dropzone--drag_over {
+    border-color: #682c7a;
+    background: #ecdcf7;
+    box-shadow: 0 0 0 4px rgba(104, 44, 122, 0.12);
+}
+
+/* Placeholder */
+.rush_image_placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.rush_image_dropzone--has_image .rush_image_placeholder {
+    opacity: 0;
+}
+
+.rush_upload_icon {
+    fill: #b488cc;
+    transition:
+        fill 0.2s ease,
+        transform 0.2s ease;
+}
+
+.rush_image_dropzone:hover .rush_upload_icon,
+.rush_image_dropzone--drag_over .rush_upload_icon {
+    fill: #682c7a;
+    transform: translateY(-3px);
+}
+
+.rush_image_placeholder_text {
+    font-family: "Coolvetica", sans-serif;
+    font-size: 12px;
+    color: #b488cc;
+    text-align: center;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.rush_image_placeholder_text span {
+    font-size: 11px;
+    color: rgba(180, 136, 204, 0.65);
+}
+
+.rush_image_dropzone:hover .rush_image_placeholder_text,
+.rush_image_dropzone--drag_over .rush_image_placeholder_text {
+    color: #682c7a;
+}
+
+/* Preview */
+.rush_image_preview {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+    padding: 5px;
+    box-sizing: border-box;
+    background: #fff7ec;
+}
+
+.rush_image_dropzone--has_image .rush_image_preview {
+    opacity: 1;
+}
+
+/* Remove button */
+.rush_image_remove_btn {
+    position: absolute;
+    top: 7px;
+    right: 7px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1.5px solid #682c7a;
+    background: #fff7ec;
+    color: #682c7a;
+    font-size: 11px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: scale(0.7);
+    transition:
+        opacity 0.2s ease,
+        transform 0.2s ease,
+        background 0.2s ease,
+        color 0.2s ease;
+    z-index: 2;
+}
+
+.rush_image_dropzone--has_image .rush_image_remove_btn {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.rush_image_remove_btn:hover {
+    background: #682c7a;
+    color: #fff7ec;
+    transform: scale(1.1);
+}
 
 /* ==================== MEDIA QUERIES ==================== */
 

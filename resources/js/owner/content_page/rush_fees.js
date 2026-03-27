@@ -1,14 +1,14 @@
 // ==================== RUSH FEES ====================
 import toast from "../../utils/toast.js";
-import rushFeeApi from "../../api/rushFeeApi.js";
 
 // ==================== STATE ====================
-// rushFees = [{ id, label, min_price, max_price, timeframes: [{ id?, label, percentage }] }]
+// rushFees = [{ id?, label, min, max, timeframes: [{ label, percentage }], image_url? }]
 
 let rushFees = [];
-let editingRushId = null; // null = adding new, number = editing existing ID
+let editingRushIndex = null;
 let pendingDeleteIndex = null;
 let isRushLoading = false;
+let pendingImageFile = null; // File chosen in the current modal session
 
 // ==================== SVG HELPER ====================
 
@@ -29,31 +29,26 @@ const DEL_PATH =
 
 // ==================== MODAL STATE ====================
 
-// Working copy — user edits this, only committed on Save
 let draftFee = null;
 
 function buildDraftFromIndex(idx) {
     const src = rushFees[idx];
     return {
-        id: src.id,
         label: src.label,
-        min_price: src.min_price,
-        max_price: src.max_price,
-        timeframes: src.timeframes.map((tf) => ({
-            id: tf.id,
-            label: tf.label ?? "",
-            percentage: String(tf.percentage ?? "")
-        })),
+        min: src.min,
+        max: src.max,
+        timeframes: src.timeframes.map((tf) => ({ ...tf })),
+        image_url: src.image_url ?? null,
     };
 }
 
 function freshDraft() {
     return {
-        id: null,
         label: "",
-        min_price: null,
-        max_price: null,
-        timeframes: [{ id: null, label: "", percentage: "" }],
+        min: null,
+        max: null,
+        timeframes: [{ label: "", percentage: "" }],
+        image_url: null,
     };
 }
 
@@ -63,8 +58,9 @@ const rushModalOverlay = document.getElementById("rushFeeModalOverlay");
 const rushDeleteOverlay = document.getElementById("rushDeleteConfirmOverlay");
 
 function openAddModal() {
-    editingRushId = null;
+    editingRushIndex = null;
     draftFee = freshDraft();
+    pendingImageFile = null;
     document.getElementById("rushModalTitle").textContent = "Add Rush Fee";
     document.getElementById("rushDeleteBtn").classList.add("btn_hidden");
     renderRushModalForm();
@@ -72,8 +68,9 @@ function openAddModal() {
 }
 
 function openEditModal(idx) {
-    editingRushId = rushFees[idx].id;
+    editingRushIndex = idx;
     draftFee = buildDraftFromIndex(idx);
+    pendingImageFile = null;
     document.getElementById("rushModalTitle").textContent = "Edit Rush Fee";
     document.getElementById("rushDeleteBtn").classList.remove("btn_hidden");
     renderRushModalForm();
@@ -83,14 +80,9 @@ function openEditModal(idx) {
 function closeRushModal() {
     rushModalOverlay.classList.remove("active");
     draftFee = null;
-    editingRushId = null;
+    editingRushIndex = null;
+    pendingImageFile = null;
 }
-
-/*
- * Change #2: Clicking outside the rush fee modal no longer closes it.
- * The modal can only be closed via the Cancel button.
- * The delete CONFIRMATION modal still closes on outside click (see below).
- */
 
 // ==================== DELETE CONFIRM MODAL ====================
 
@@ -104,23 +96,188 @@ function closeDeleteConfirm() {
     rushDeleteOverlay.classList.remove("active");
 }
 
-// Delete confirm modal still closes on outside click — intentional
 rushDeleteOverlay.addEventListener("click", (e) => {
     if (e.target === rushDeleteOverlay) closeDeleteConfirm();
 });
 
+// ==================== IMAGE UPLOAD WIDGET ====================
+
+/**
+ * Build the A4 image upload section and inject it into the modal.
+ * One image max. PNG / JPG only.
+ */
+function buildImageUploadSection() {
+    const section = document.createElement("div");
+    section.className = "rush_image_upload_section";
+
+    // Label row
+    const headerRow = document.createElement("div");
+    headerRow.className = "rush_image_upload_header";
+
+    const labelEl = document.createElement("span");
+    labelEl.className = "rush_field_label";
+    labelEl.textContent = "Reference Sheet";
+
+    const hintEl = document.createElement("span");
+    hintEl.className = "rush_image_upload_hint";
+    hintEl.textContent = "PNG or JPG · A4 size";
+
+    headerRow.appendChild(labelEl);
+    headerRow.appendChild(hintEl);
+    section.appendChild(headerRow);
+
+    // Drop zone — A4 aspect ratio (210 : 297)
+    const dropZone = document.createElement("div");
+    dropZone.className = "rush_image_dropzone";
+    dropZone.setAttribute("role", "button");
+    dropZone.setAttribute("tabindex", "0");
+    dropZone.setAttribute("aria-label", "Upload reference sheet image");
+
+    // Placeholder shown when no image is set
+    const placeholder = document.createElement("div");
+    placeholder.className = "rush_image_placeholder";
+
+    const uploadIcon = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "svg",
+    );
+    uploadIcon.setAttribute("class", "rush_upload_icon");
+    uploadIcon.setAttribute("viewBox", "0 -960 960 960");
+    uploadIcon.setAttribute("height", "36px");
+    uploadIcon.setAttribute("width", "36px");
+    const uploadPath = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "path",
+    );
+    uploadPath.setAttribute(
+        "d",
+        "M440-320v-326L336-542l-56-58 200-200 200 200-56 58-104-104v326h-80ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z",
+    );
+    uploadIcon.appendChild(uploadPath);
+
+    const placeholderText = document.createElement("p");
+    placeholderText.className = "rush_image_placeholder_text";
+    placeholderText.innerHTML =
+        "Click or drag & drop<br><span>to upload an image</span>";
+
+    placeholder.appendChild(uploadIcon);
+    placeholder.appendChild(placeholderText);
+
+    // Preview
+    const preview = document.createElement("img");
+    preview.className = "rush_image_preview";
+    preview.alt = "Reference sheet preview";
+
+    // Remove button
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "rush_image_remove_btn";
+    removeBtn.setAttribute("aria-label", "Remove image");
+    removeBtn.textContent = "✕";
+
+    dropZone.appendChild(placeholder);
+    dropZone.appendChild(preview);
+    dropZone.appendChild(removeBtn);
+
+    // Hidden file input
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = "image/png, image/jpeg";
+    fileInput.className = "rush_image_file_input";
+    fileInput.setAttribute("aria-hidden", "true");
+
+    section.appendChild(dropZone);
+    section.appendChild(fileInput);
+
+    // ---- Helpers ----
+    function showPreview(src) {
+        preview.src = src;
+        dropZone.classList.add("rush_image_dropzone--has_image");
+    }
+
+    function clearPreview() {
+        preview.src = "";
+        dropZone.classList.remove("rush_image_dropzone--has_image");
+        pendingImageFile = null;
+        if (draftFee) draftFee.image_url = null;
+        fileInput.value = "";
+    }
+
+    function handleFile(file) {
+        if (!file) return;
+        if (!["image/png", "image/jpeg"].includes(file.type)) {
+            toast.error("Only PNG and JPG images are allowed.");
+            return;
+        }
+        pendingImageFile = file;
+        const reader = new FileReader();
+        reader.onload = (e) => showPreview(e.target.result);
+        reader.readAsDataURL(file);
+    }
+
+    // Restore existing image on edit open
+    if (draftFee?.image_url) {
+        showPreview(draftFee.image_url);
+    }
+
+    dropZone.addEventListener("click", (e) => {
+        if (e.target === removeBtn) return;
+        fileInput.click();
+    });
+    dropZone.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            fileInput.click();
+        }
+    });
+
+    removeBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        clearPreview();
+    });
+
+    fileInput.addEventListener("change", () => {
+        handleFile(fileInput.files[0] ?? null);
+    });
+
+    dropZone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropZone.classList.add("rush_image_dropzone--drag_over");
+    });
+    dropZone.addEventListener("dragleave", () => {
+        dropZone.classList.remove("rush_image_dropzone--drag_over");
+    });
+    dropZone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropZone.classList.remove("rush_image_dropzone--drag_over");
+        handleFile(e.dataTransfer.files[0] ?? null);
+    });
+
+    return section;
+}
+
 // ==================== RENDER FORM ====================
 
 function renderRushModalForm() {
-    // Range label
     document.getElementById("rushRangeLabel").value = draftFee.label;
     document.getElementById("rushRangeMin").value =
-        draftFee.min_price !== null ? draftFee.min_price : "";
+        draftFee.min !== null ? draftFee.min : "";
     document.getElementById("rushRangeMax").value =
-        draftFee.max_price !== null ? draftFee.max_price : "";
+        draftFee.max !== null ? draftFee.max : "";
 
-    // Timeframe rows
     renderTimeframeRows();
+
+    // Inject image upload — remove stale instance first
+    const existing = document.getElementById("rushImageUploadSection");
+    if (existing) existing.remove();
+
+    const uploadSection = buildImageUploadSection();
+    uploadSection.id = "rushImageUploadSection";
+
+    const actionsBar = document.querySelector(".rush_modal_actions");
+    if (actionsBar) {
+        actionsBar.parentElement.insertBefore(uploadSection, actionsBar);
+    }
 }
 
 function renderTimeframeRows() {
@@ -162,7 +319,6 @@ function renderTimeframeRows() {
         pctWrap.appendChild(pctInput);
         pctWrap.appendChild(pctSym);
 
-        // Delete row SVG — only show when there's more than one row
         const delSvg = createRushSVG("rush_del_svg", DEL_PATH);
         delSvg.title = "Remove row";
         if (draftFee.timeframes.length <= 1) {
@@ -185,11 +341,24 @@ function renderTimeframeRows() {
 
 async function loadRushFees() {
     try {
-        rushFees = await rushFeeApi.getAllRushFeesAdmin();
+        const response = await fetch("/api/rush-fees", {
+            headers: { Accept: "application/json" },
+        });
+        if (!response.ok) return;
+        const data = await response.json();
+        rushFees = (data.rush_fees ?? []).map((r) => ({
+            label: r.label ?? "",
+            min: r.min ?? null,
+            max: r.max ?? null,
+            timeframes: (r.timeframes ?? []).map((tf) => ({
+                label: tf.label ?? "",
+                percentage: String(tf.percentage ?? ""),
+            })),
+            image_url: r.image_url ?? null,
+        }));
         renderRushDisplay();
     } catch (err) {
         console.warn("Rush fees: could not load.", err);
-        toast.error("Failed to load rush fees");
     }
 }
 
@@ -200,31 +369,49 @@ async function saveRushFee() {
     isRushLoading = true;
 
     try {
-        const payload = {
-            label: draftFee.label,
-            min_price: Number(draftFee.min_price),
-            max_price: Number(draftFee.max_price),
-            timeframes: draftFee.timeframes.map((tf) => ({
-                label: tf.label,
-                percentage: Number(tf.percentage),
-            })),
-        };
+        // Upload new image first if one was chosen
+        if (pendingImageFile) {
+            const formData = new FormData();
+            formData.append("image", pendingImageFile);
 
-        if (editingRushId === null) {
-            // Create new
-            await rushFeeApi.createRushFee(payload);
-            toast.success("Rush fee added successfully");
-        } else {
-            // Update existing
-            await rushFeeApi.updateRushFee(editingRushId, payload);
-            toast.success("Rush fee updated successfully");
+            const imgResponse = await fetch("/api/rush-fees/upload-image", {
+                method: "POST",
+                body: formData,
+            });
+
+            if (!imgResponse.ok) throw new Error("Failed to upload image");
+            const imgData = await imgResponse.json();
+            draftFee.image_url = imgData.image_url ?? null;
         }
 
+        if (editingRushIndex === null) {
+            rushFees.push({ ...draftFee });
+        } else {
+            rushFees[editingRushIndex] = { ...draftFee };
+        }
+
+        const response = await fetch("/api/rush-fees", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+            },
+            body: JSON.stringify({ rush_fees: rushFees }),
+        });
+
+        if (!response.ok) throw new Error("Failed to save rush fee");
+
+        toast.success(
+            editingRushIndex === null
+                ? "Rush fee added successfully"
+                : "Rush fee updated successfully",
+        );
         await loadRushFees();
         closeRushModal();
     } catch (error) {
         console.error("Error saving rush fee:", error);
         toast.error(error.message || "Failed to save rush fee");
+        if (editingRushIndex === null) rushFees.pop();
     } finally {
         isRushLoading = false;
     }
@@ -237,8 +424,18 @@ async function deleteRushFee(idx) {
     isRushLoading = true;
 
     try {
-        const rushFeeId = rushFees[idx].id;
-        await rushFeeApi.deleteRushFee(rushFeeId);
+        rushFees.splice(idx, 1);
+
+        const response = await fetch("/api/rush-fees", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+            },
+            body: JSON.stringify({ rush_fees: rushFees }),
+        });
+
+        if (!response.ok) throw new Error("Failed to delete rush fee");
 
         toast.success("Rush fee deleted successfully");
         closeDeleteConfirm();
@@ -271,47 +468,90 @@ function renderRushDisplay() {
         const card = document.createElement("div");
         card.className = "rush_fee_card";
 
-        // Table
-        const table = document.createElement("table");
-        table.className = "rush_display_table";
+        // ---- Image area (A4 proportioned) ----
+        const imgArea = document.createElement("div");
+        imgArea.className = "rush_card_img_area";
 
-        const thead = document.createElement("thead");
-        const colRow = document.createElement("tr");
+        if (range.image_url) {
+            const img = document.createElement("img");
+            img.src = range.image_url;
+            img.alt = `${range.label || "Rush fee"} reference`;
+            img.className = "rush_card_img";
+            imgArea.appendChild(img);
+        } else {
+            const noImg = document.createElement("div");
+            noImg.className = "rush_card_img_placeholder";
 
-        const tfTh = document.createElement("th");
-        tfTh.className = "rush_display_col_header";
-        tfTh.textContent = range.label || "—";
+            // Image icon
+            const noImgSvg = document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "svg",
+            );
+            noImgSvg.setAttribute("viewBox", "0 -960 960 960");
+            noImgSvg.setAttribute("height", "26px");
+            noImgSvg.setAttribute("width", "26px");
+            noImgSvg.setAttribute("class", "rush_card_no_img_svg");
+            const noImgPath = document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "path",
+            );
+            noImgPath.setAttribute(
+                "d",
+                "M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm40-80h480L570-480 450-320l-90-120-120 160Zm-40 80v-560 560Z",
+            );
+            noImgSvg.appendChild(noImgPath);
 
-        const pctTh = document.createElement("th");
-        pctTh.className = "rush_display_col_header rush_display_col_pct";
-        pctTh.textContent = "Fee";
+            const noImgLabel = document.createElement("span");
+            noImgLabel.textContent = "No image uploaded";
 
-        colRow.appendChild(tfTh);
-        colRow.appendChild(pctTh);
-        thead.appendChild(colRow);
-        table.appendChild(thead);
+            noImg.appendChild(noImgSvg);
+            noImg.appendChild(noImgLabel);
+            imgArea.appendChild(noImg);
+        }
 
-        const tbody = document.createElement("tbody");
-        (range.timeframes ?? []).forEach((tf) => {
-            const tr = document.createElement("tr");
+        card.appendChild(imgArea);
 
-            const tdTf = document.createElement("td");
-            tdTf.className = "rush_display_tf";
-            tdTf.textContent = tf.label || "—";
+        // ---- Card body ----
+        const body = document.createElement("div");
+        body.className = "rush_card_body";
 
-            const tdPct = document.createElement("td");
-            tdPct.className = "rush_display_pct";
-            tdPct.textContent = tf.percentage ? `+${tf.percentage}%` : "—";
+        // Price range label
+        const rangeLabel = document.createElement("p");
+        rangeLabel.className = "rush_card_range_label";
+        rangeLabel.textContent = range.label || "—";
+        body.appendChild(rangeLabel);
 
-            tr.appendChild(tdTf);
-            tr.appendChild(tdPct);
-            tbody.appendChild(tr);
-        });
+        // Timeframe dropdown
+        if (range.timeframes && range.timeframes.length > 0) {
+            const tfLabel = document.createElement("span");
+            tfLabel.className = "rush_card_tf_label";
+            tfLabel.textContent = "Timeframe & fee";
+            body.appendChild(tfLabel);
 
-        table.appendChild(tbody);
-        card.appendChild(table);
+            const selectWrap = document.createElement("div");
+            selectWrap.className = "rush_card_select_wrap";
 
-        // Edit button below the table
+            const select = document.createElement("select");
+            select.className = "rush_card_select";
+            select.setAttribute("aria-label", "Timeframe options");
+
+            range.timeframes.forEach((tf) => {
+                const opt = document.createElement("option");
+                const pct = tf.percentage
+                    ? `+${tf.percentage}% added to total`
+                    : "—";
+                const tfText = tf.label || "—";
+                opt.textContent = `${tfText}  ·  ${pct}`;
+                select.appendChild(opt);
+            });
+
+            selectWrap.appendChild(select);
+            body.appendChild(selectWrap);
+        }
+
+        card.appendChild(body);
+
+        // ---- Edit button ----
         const editBtn = document.createElement("button");
         editBtn.type = "button";
         editBtn.className = "rush_card_edit_btn";
@@ -326,29 +566,26 @@ function renderRushDisplay() {
 // ==================== INIT ====================
 
 function initRushFees() {
-    // Add rush fee button
     document
         .getElementById("addRushFeeBtn")
         .addEventListener("click", openAddModal);
 
-    // Modal form field listeners (range label / min_price / max_price)
     document.getElementById("rushRangeLabel").addEventListener("input", (e) => {
         if (draftFee) draftFee.label = e.target.value;
     });
     document.getElementById("rushRangeMin").addEventListener("input", (e) => {
         e.target.value = e.target.value.replace(/[^0-9]/g, "");
         if (draftFee)
-            draftFee.min_price =
+            draftFee.min =
                 e.target.value === "" ? null : parseInt(e.target.value);
     });
     document.getElementById("rushRangeMax").addEventListener("input", (e) => {
         e.target.value = e.target.value.replace(/[^0-9]/g, "");
         if (draftFee)
-            draftFee.max_price =
+            draftFee.max =
                 e.target.value === "" ? null : parseInt(e.target.value);
     });
 
-    // Add timeframe row
     document
         .getElementById("rushAddTimeframeBtn")
         .addEventListener("click", () => {
@@ -357,25 +594,19 @@ function initRushFees() {
             renderTimeframeRows();
         });
 
-    // Save
     document
         .getElementById("rushSaveBtn")
         .addEventListener("click", saveRushFee);
 
-    // Cancel — only way to close the rush fee modal
     document
         .getElementById("rushCancelBtn")
         .addEventListener("click", closeRushModal);
 
-    // Delete button (inside edit modal — opens confirmation)
     document.getElementById("rushDeleteBtn").addEventListener("click", () => {
-        if (editingRushId === null) return;
-        // Find the index in the array
-        const idx = rushFees.findIndex((r) => r.id === editingRushId);
-        if (idx !== -1) openDeleteConfirm(idx);
+        if (editingRushIndex === null) return;
+        openDeleteConfirm(editingRushIndex);
     });
 
-    // Delete confirm — proceed
     document
         .getElementById("rushDeleteConfirmBtn")
         .addEventListener("click", async () => {
@@ -383,7 +614,6 @@ function initRushFees() {
             await deleteRushFee(pendingDeleteIndex);
         });
 
-    // Delete confirm — cancel
     document
         .getElementById("rushDeleteCancelBtn")
         .addEventListener("click", closeDeleteConfirm);
