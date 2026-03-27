@@ -5,6 +5,7 @@
 
 // ================= IMPORTS =================
 import FaqAPI from '../../api/faqApi.js';
+import ManageCategoriesAPI from '../../api/manage_categories_api.js';
 import Toast from '../../utils/toast.js';
 
 // ================= STATE =================
@@ -31,7 +32,14 @@ const deleteFaqConfirmBtn = document.getElementById('deleteFaqConfirmBtn');
 
 // ================= INITIALIZATION =================
 document.addEventListener('DOMContentLoaded', async () => {
+  await populateCategoryDropdown();
   loadFaqs();
+});
+
+// Listen for category changes from ManageCategoriesModal
+window.addEventListener('categoriesChanged', async () => {
+  await populateCategoryDropdown();
+  Toast.info('Categories updated');
 });
 
 addFaqBtn.addEventListener('click', () => {
@@ -171,13 +179,37 @@ function truncateText(text, maxLength) {
   return text;
 }
 
+// ================= POPULATE CATEGORY DROPDOWN =================
+async function populateCategoryDropdown() {
+  try {
+    const categories = await ManageCategoriesAPI.getAllCategories();
+
+    // Clear existing options (keep the empty placeholder)
+    const existingOptions = Array.from(faqCategorySelect.options);
+    for (let i = existingOptions.length - 1; i >= 1; i--) {
+      faqCategorySelect.removeChild(faqCategorySelect.options[i]);
+    }
+
+    // Add categories from API
+    categories.forEach((category) => {
+      const option = document.createElement('option');
+      option.value = category.id;
+      option.textContent = category.name;
+      faqCategorySelect.appendChild(option);
+    });
+  } catch (error) {
+    console.error('Error populating category dropdown:', error);
+    Toast.error('Failed to load categories');
+  }
+}
+
 // ================= OPEN FAQ MODAL =================
 function openFaqModal(faq = null) {
   editingFaqId = faq ? faq.id : null;
 
   if (faq) {
     faqModalTitle.textContent = 'Edit FAQ';
-    faqCategorySelect.value = faq.category;
+    faqCategorySelect.value = faq.faq_category_id || '';
     faqQuestionInput.value = faq.question;
     faqAnswerInput.value = faq.answer;
     deleteFaqBtn.classList.remove('btn_hidden');
@@ -212,7 +244,7 @@ async function saveFaq() {
   }
 
   const faqData = {
-    category: faqCategorySelect.value,
+    faq_category_id: parseInt(faqCategorySelect.value),
     question: faqQuestionInput.value,
     answer: faqAnswerInput.value,
     is_active: true,

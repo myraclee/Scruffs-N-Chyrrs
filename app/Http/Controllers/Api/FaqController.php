@@ -17,8 +17,11 @@ class FaqController extends Controller
     public function index(): JsonResponse
     {
         $faqs = FAQ::active()
+            ->with('categoryRelation')
             ->get()
-            ->groupBy('category')
+            ->groupBy(function ($faq) {
+                return $faq->categoryRelation->name ?? 'Uncategorized';
+            })
             ->map(function ($items) {
                 return $items->values();
             });
@@ -37,8 +40,11 @@ class FaqController extends Controller
     public function adminIndex(): JsonResponse
     {
         $faqs = FAQ::orderBy('sort_order')
+            ->with('categoryRelation')
             ->get()
-            ->groupBy('category')
+            ->groupBy(function ($faq) {
+                return $faq->categoryRelation->name ?? 'Uncategorized';
+            })
             ->map(function ($items) {
                 return $items->values();
             });
@@ -58,7 +64,7 @@ class FaqController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'category' => 'required|string|max:255',
+            'faq_category_id' => 'required|integer|exists:faq_categories,id',
             'question' => 'required|string|max:255',
             'answer' => 'required|string',
             'sort_order' => 'nullable|integer|min:0',
@@ -67,7 +73,7 @@ class FaqController extends Controller
 
         // Determine sort_order if not provided
         if (!isset($validated['sort_order'])) {
-            $maxSort = FAQ::where('category', $validated['category'])->max('sort_order');
+            $maxSort = FAQ::where('faq_category_id', $validated['faq_category_id'])->max('sort_order');
             $validated['sort_order'] = ($maxSort ?? 0) + 1;
         }
 
@@ -90,7 +96,7 @@ class FaqController extends Controller
     public function update(Request $request, FAQ $faq): JsonResponse
     {
         $validated = $request->validate([
-            'category' => 'nullable|string|max:255',
+            'faq_category_id' => 'nullable|integer|exists:faq_categories,id',
             'question' => 'nullable|string|max:255',
             'answer' => 'nullable|string',
             'sort_order' => 'nullable|integer|min:0',

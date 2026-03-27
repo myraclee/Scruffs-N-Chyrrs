@@ -1,0 +1,464 @@
+/* ==================== MANAGE CATEGORIES MODAL STYLES ==================== */
+
+/* FAQ Actions Row (Button Container) */
+.faq_actions_row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.manage_categories_button,
+.add_faq_button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-family: Coolvetica;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.manage_categories_button {
+    background: #682c7a;
+    color: white;
+}
+
+.manage_categories_button:hover {
+    background: #5a2470;
+    transform: translateY(-2px);
+}
+
+.add_faq_button {
+    background: #4caf50;
+    color: white;
+}
+
+.add_faq_button:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+}
+
+/* Modal Overlay */
+#manageCategoriesOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    z-index: 999;
+    transition: opacity 0.3s ease;
+    opacity: 0;
+}
+
+#manageCategoriesOverlay.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+}
+
+/* Modal Container */
+#manageCategoriesModal {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    max-width: 700px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 30px;
+    display: none;
+    flex-direction: column;
+}
+
+#manageCategoriesModal.active {
+    display: flex;
+}
+
+/* Modal Close Button */
+.close_manage_categories_modal {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 32px;
+    color: #999;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+}
+
+.close_manage_categories_modal:hover {
+    color: #d32f2f;
+}
+
+/* Modal Header */
+.manage_categories_header {
+    font-family: SuperDream;
+    font-size: 24px;
+    color: #682c7a;
+    margin: 0 0 25px 0;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+/* ==================== CATEGORY FORM ==================== */
+
+#categoryForm {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.form_group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form_group label {
+    font-family: Coolvetica;
+    font-size: 14px;
+    font-weight: bold;
+    color: #682c7a;
+    margin: 0;
+}
+
+.form_group input {
+    padding: 10px 12px;
+    border: 1px solid #e0d8d0;
+    border-radius: 6px;
+    font-family: Coolvetica;
+    font-size: 14px;
+    color: #333;
+    transition: all 0.2s ease;
+}
+
+.form_group input:focus {
+    outline: none;
+    border-color: #682c7a;
+    box-shadow: 0 0 0 3px rgba(104, 44, 122, 0.1);
+}
+
+.form_group input.input_error {
+    border-color: #d32f2f;
+    box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1);
+}
+
+.field_error {
+    font-family: Coolvetica;
+    font-size: 12px;
+    color: #d32f2f;
+    margin-top: -4px;
+}
+
+.field_error.hidden {
+    display: none;
+}
+
+/* Sort Order Input Specific */
+#sortOrderInput {
+    max-width: 150px;
+}
+
+/* Form Actions */
+.form_actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 10px;
+}
+
+.submit_btn,
+.cancel_btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 6px;
+    font-family: Coolvetica;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.submit_btn {
+    background: #682c7a;
+    color: white;
+}
+
+.submit_btn:hover {
+    background: #5a2470;
+    transform: translateY(-2px);
+}
+
+.cancel_btn {
+    background: #f0f0f0;
+    color: #333;
+}
+
+.cancel_btn:hover {
+    background: #e0e0e0;
+}
+
+/* ==================== CATEGORY TABLE ==================== */
+
+.categories_section {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.categories_header {
+    font-family: Coolvetica;
+    font-size: 16px;
+    font-weight: bold;
+    color: #682c7a;
+    margin: 0;
+}
+
+.categories_table_wrapper {
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid #e0d8d0;
+}
+
+.categories_table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+.categories_table thead {
+    background: #f9f9f9;
+    border-bottom: 2px solid #e0d8d0;
+}
+
+.categories_table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-family: Coolvetica;
+    font-size: 13px;
+    font-weight: bold;
+    color: #682c7a;
+}
+
+.categories_table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    font-family: Coolvetica;
+    font-size: 14px;
+    color: #333;
+}
+
+.categories_table tbody tr:hover {
+    background: #fafaf8;
+}
+
+.category_name {
+    font-weight: 500;
+}
+
+.category_sort_order {
+    text-align: center;
+    width: 100px;
+    background: #fff7ec;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.category_actions {
+    text-align: right;
+    width: 150px;
+}
+
+/* ==================== ACTION BUTTONS ==================== */
+
+.action_btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    font-family: Coolvetica;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-left: 6px;
+}
+
+.edit_btn {
+    background: #682c7a;
+    color: white;
+}
+
+.edit_btn:hover {
+    background: #5a2470;
+    transform: translateY(-1px);
+}
+
+.delete_btn {
+    background: #f44336;
+    color: white;
+}
+
+.delete_btn:hover {
+    background: #d32f2f;
+    transform: translateY(-1px);
+}
+
+/* ==================== DELETE CONFIRMATION MODAL ==================== */
+
+#deleteCategoryConfirmOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: none;
+    z-index: 1001;
+    align-items: center;
+    justify-content: center;
+}
+
+#deleteCategoryConfirmOverlay.active {
+    display: flex;
+}
+
+.delete_confirmation_modal {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+
+.delete_confirmation_title {
+    font-family: SuperDream;
+    font-size: 20px;
+    color: #d32f2f;
+    margin: 0 0 15px 0;
+}
+
+#deleteCategoryConfirmMessage {
+    font-family: Coolvetica;
+    font-size: 14px;
+    color: #666;
+    margin: 0 0 25px 0;
+    line-height: 1.5;
+}
+
+.delete_confirmation_actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.confirm_delete_btn,
+.cancel_delete_btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 6px;
+    font-family: Coolvetica;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.confirm_delete_btn {
+    background: #d32f2f;
+    color: white;
+}
+
+.confirm_delete_btn:hover {
+    background: #b71c1c;
+}
+
+.cancel_delete_btn {
+    background: #f0f0f0;
+    color: #333;
+}
+
+.cancel_delete_btn:hover {
+    background: #e0e0e0;
+}
+
+/* ==================== RESPONSIVE DESIGN ==================== */
+
+@media (max-width: 768px) {
+    #manageCategoriesModal {
+        width: 95%;
+        max-height: 95vh;
+        padding: 20px;
+    }
+
+    .manage_categories_header {
+        font-size: 20px;
+    }
+
+    .categories_table {
+        font-size: 12px;
+    }
+
+    .categories_table th,
+    .categories_table td {
+        padding: 10px 8px;
+    }
+
+    .action_btn {
+        padding: 5px 10px;
+        font-size: 11px;
+        margin-left: 4px;
+    }
+
+    .form_actions,
+    .delete_confirmation_actions {
+        flex-direction: column;
+    }
+
+    .submit_btn,
+    .cancel_btn,
+    .confirm_delete_btn,
+    .cancel_delete_btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    #manageCategoriesModal {
+        width: 98%;
+        padding: 15px;
+    }
+
+    .manage_categories_header {
+        font-size: 18px;
+        margin-bottom: 15px;
+    }
+
+    .form_group input {
+        font-size: 13px;
+    }
+
+    #sortOrderInput {
+        max-width: 100%;
+    }
+
+    .categories_table_wrapper {
+        font-size: 12px;
+    }
+
+    .action_btn {
+        padding: 4px 8px;
+        font-size: 10px;
+    }
+}

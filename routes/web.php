@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\HomeImageController;
 use App\Http\Controllers\Api\ProductSampleController;
 use App\Http\Controllers\Api\OrderTemplateController;
 use App\Http\Controllers\Api\FaqController;
+use App\Http\Controllers\Api\FAQCategoryController;
 use App\Http\Controllers\Api\RushFeeController;
 use Illuminate\Support\Facades\Route;
 
@@ -109,6 +110,14 @@ Route::prefix('api/faqs')->group(function () {
     Route::delete('{faq}', [FaqController::class, 'destroy'])->middleware('auth');
     Route::post('/reorder', [FaqController::class, 'reorder'])->middleware('auth');
     Route::get('/admin/index', [FaqController::class, 'adminIndex'])->middleware('auth');
+});
+
+// FAQ CATEGORIES ROUTES - Owner auth required for all operations
+Route::prefix('api/faq-categories')->middleware(['auth', 'owner'])->group(function () {
+    Route::get('/', [FAQCategoryController::class, 'index']);
+    Route::post('/', [FAQCategoryController::class, 'store']);
+    Route::put('{faqCategory}', [FAQCategoryController::class, 'update']);
+    Route::delete('{faqCategory}', [FAQCategoryController::class, 'destroy']);
 });
 
 // RUSH FEES ROUTES - Public read, owner auth required for write operations

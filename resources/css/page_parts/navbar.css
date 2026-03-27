@@ -15,7 +15,7 @@
 .label_name {
     height: 90px;
     position: absolute;
-    top: -50px;
+    top: -3.75rem; /* Adjusted to perfectly center the logo above the pill */
     left: 50%; /* Keeps it perfectly centered */
     transform: translateX(-50%); /* Adjusts for its own width */
     z-index: 10;
@@ -26,12 +26,12 @@
     display: flex;
     flex-direction: row;
     /* BACK TO ORIGINAL: Spreads bunny left, links middle, icon right */
-    justify-content: space-between; 
+    justify-content: space-between;
     align-items: center;
 
     /* THE FIX: Caps at 1200px, but fluidly shrinks on smaller screens */
     max-width: 1200px;
-    width: 90%; 
+    width: 90%;
     margin: 0 auto;
     box-sizing: border-box;
     height: 80px;
@@ -78,7 +78,7 @@
 }
 
 .nav_list li.active a::after {
-    content: "★";
+    content: '★';
     font-size: 14px;
     color: #682c7a;
     position: absolute;
@@ -98,7 +98,7 @@ a:hover .person_icon {
 
 /* NAVBAR POPUP*/
 .account_wrapper {
-    position: relative; 
+    position: relative;
     display: flex;
     align-items: center;
 }
@@ -117,13 +117,13 @@ a:hover .person_icon {
     justify-content: center;
 
     top: calc(100% + 15px);
-    
+
     /* THE SLEDGEHAMMER FIX */
     right: -30px;
 
-    width: 200px; 
-    height: auto; 
-    padding: 10px 0; 
+    width: 200px;
+    height: auto;
+    padding: 10px 0;
 
     background-color: #fff7ec;
     box-shadow: 5px 5px 15px rgba(165, 165, 165, 0.3);
@@ -140,7 +140,7 @@ a:hover .person_icon {
     flex-direction: row;
     justify-content: space-between; /* Spreads text to the left, SVG to the right */
     align-items: center;
-    
+
     width: 100%;
     padding: 12px 20px;
     box-sizing: border-box;
@@ -165,7 +165,6 @@ a:hover .person_icon {
     fill: #682c7a;
 }
 
-
 /* ==========================================
    NAVBAR MOBILE & TABLET RESPONSIVENESS
    ========================================== */
@@ -177,82 +176,82 @@ a:hover .person_icon {
         padding-left: 20px;
         padding-right: 20px;
     }
-    .nav_list { 
-        gap: 30px; 
-    } 
+    .nav_list {
+        gap: 30px;
+    }
     .nav_list a {
-        font-size: 20px; 
+        font-size: 20px;
     }
     /* Minor tweak so the popup aligns with the smaller 20px tablet padding */
     .account_popup {
-        right: -25px !important; 
+        right: -25px !important;
     }
 }
 
 /* 2. Mobile Phones (e.g., iPhones - up to 600px) */
 @media screen and (max-width: 600px) {
     .nav_horizontal {
-        height: auto; 
-        width: 95%; 
-        padding: 45px 15px 15px 15px; 
-        flex-direction: row; 
-        flex-wrap: wrap; 
-        justify-content: center; 
-        align-items: center;
-        border-radius: 25px; 
-        gap: 12px; 
-    }
-    
-    .orange_logo { 
-        display: none; 
-    }
-    
-    .nav_list {
-        gap: 12px; 
+        height: auto;
+        width: 95%;
+        padding: 45px 15px 15px 15px;
+        flex-direction: row;
+        flex-wrap: wrap;
         justify-content: center;
-        flex-wrap: wrap; 
-        width: auto; 
+        align-items: center;
+        border-radius: 25px;
+        gap: 12px;
+    }
+
+    .orange_logo {
+        display: none;
+    }
+
+    .nav_list {
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+        width: auto;
         margin: 0;
     }
 
     /* THE FIX: Bigger text on mobile! */
-    .nav_list a { 
-        font-size: 16px; 
+    .nav_list a {
+        font-size: 16px;
     }
-    
+
     /* Slightly bigger active star to match the new text size */
-    .nav_list li.active a::after { 
-        font-size: 12px; 
-        bottom: -10px; 
+    .nav_list li.active a::after {
+        font-size: 12px;
+        bottom: -10px;
     }
-    
-    .person_icon { 
-        width: 26px; 
-        height: 26px; 
+
+    .person_icon {
+        width: 26px;
+        height: 26px;
     }
-    
-    .label_name { 
-        height: 60px; 
-        top: -30px; 
+
+    .label_name {
+        height: 60px;
+        top: -30px;
     }
 
     /* --- THE BULLETPROOF POPUP FIX --- */
     .account_popup {
         width: 170px; /* Gives the text inside a bit more breathing room */
-        
+
         /* Snaps the right edge of the popup to the exact right edge of the icon */
         right: 5 !important;
-        transform: none !important; 
+        transform: none !important;
     }
 
     /* Bumped up the popup text slightly too! */
     .popup_item {
-        font-size: 15px; 
-        padding: 10px 15px; 
+        font-size: 15px;
+        padding: 10px 15px;
     }
 
     .popup_item svg {
-        height: 18px; 
+        height: 18px;
         width: 18px;
     }
 }

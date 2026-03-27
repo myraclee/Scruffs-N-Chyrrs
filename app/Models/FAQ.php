@@ -5,16 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
- * @property string $category
+ * @property int $faq_category_id
  * @property string $question
  * @property string $answer
  * @property int $sort_order
  * @property bool $is_active
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
+ * @property-read FAQCategory $category
  */
 class FAQ extends Model
 {
@@ -34,7 +36,7 @@ class FAQ extends Model
      * @var list<string>
      */
     protected $fillable = [
-        'category',
+        'faq_category_id',
         'question',
         'answer',
         'sort_order',
@@ -51,6 +53,14 @@ class FAQ extends Model
     ];
 
     /**
+     * Get the category this FAQ belongs to.
+     */
+    public function categoryRelation(): BelongsTo
+    {
+        return $this->belongsTo(FAQCategory::class, 'faq_category_id');
+    }
+
+    /**
      * Scope to get only active FAQs.
      */
     public function scopeActive(Builder $query): Builder
@@ -59,10 +69,10 @@ class FAQ extends Model
     }
 
     /**
-     * Scope to get FAQs by category.
+     * Scope to get FAQs by category ID.
      */
-    public function scopeByCategory(Builder $query, string $category): Builder
+    public function scopeByCategory(Builder $query, int $categoryId): Builder
     {
-        return $query->where('category', $category);
+        return $query->where('faq_category_id', $categoryId);
     }
 }

@@ -13,10 +13,9 @@ class FAQSeeder extends Seeder
     public function run(): void
     {
         $faqs = [
-            // General Questions
+            // General Questions (category_id = 1)
             [
-                'category' => 'General Questions',
-                'category_id' => 1,
+                'faq_category_id' => 1,
                 'question' => 'What products does Scruffs&Chyrrs offer?',
                 'answer' => 'We specialize in merchandise manufacturing for student artists and creators. Our services include:
 
@@ -27,10 +26,10 @@ class FAQSeeder extends Seeder
 
 All products are manufactured with attention to detail and quality at affordable prices.',
                 'sort_order' => 1,
+                'is_active' => true,
             ],
             [
-                'category' => 'General Questions',
-                'category_id' => 1,
+                'faq_category_id' => 1,
                 'question' => 'What is the minimum order quantity?',
                 'answer' => 'Our minimum order quantities are designed to be beginner-friendly for student artists. Typically, we require:
 
@@ -41,10 +40,10 @@ All products are manufactured with attention to detail and quality at affordable
 
 Contact us for special requests or bulk orders.',
                 'sort_order' => 2,
+                'is_active' => true,
             ],
             [
-                'category' => 'General Questions',
-                'category_id' => 1,
+                'faq_category_id' => 1,
                 'question' => 'What file formats do you accept for artwork?',
                 'answer' => 'We accept the following file formats for your artwork:
 
@@ -55,10 +54,10 @@ Contact us for special requests or bulk orders.',
 
 **Important:** Please ensure your artwork is at least 300 DPI for the best print quality.',
                 'sort_order' => 3,
+                'is_active' => true,
             ],
             [
-                'category' => 'General Questions',
-                'category_id' => 1,
+                'faq_category_id' => 1,
                 'question' => 'How long does production take?',
                 'answer' => 'Our typical production timeline is **5-7 business days** from the time your order is confirmed and final files are approved. This includes:
 
@@ -68,11 +67,11 @@ Contact us for special requests or bulk orders.',
 
 Rush orders may be available upon request for an additional fee.',
                 'sort_order' => 4,
+                'is_active' => true,
             ],
-            // Shipping & Orders
+            // Shipping & Orders (category_id = 2)
             [
-                'category' => 'Shipping & Orders',
-                'category_id' => 2,
+                'faq_category_id' => 2,
                 'question' => 'Do you ship nationwide?',
                 'answer' => 'Yes, we ship nationwide from our location in **Cainta, Rizal**. We partner with reliable courier services to ensure your orders arrive safely and on time.
 
@@ -81,10 +80,10 @@ Rush orders may be available upon request for an additional fee.',
 
 Shipping costs will be calculated based on your location and order weight. We\'ll provide a quote before finalizing your order.',
                 'sort_order' => 5,
+                'is_active' => true,
             ],
             [
-                'category' => 'Shipping & Orders',
-                'category_id' => 2,
+                'faq_category_id' => 2,
                 'question' => 'What payment methods do you accept?',
                 'answer' => 'We accept multiple payment methods for your convenience:
 
@@ -94,10 +93,10 @@ Shipping costs will be calculated based on your location and order weight. We\'l
 
 Payment must be completed before production begins. Proof of Payment or E-Receipt must be uploaded after payment has been made.',
                 'sort_order' => 6,
+                'is_active' => true,
             ],
             [
-                'category' => 'Shipping & Orders',
-                'category_id' => 2,
+                'faq_category_id' => 2,
                 'question' => 'How do I place an order?',
                 'answer' => 'Placing an order with us is easy:
 
@@ -108,11 +107,11 @@ Payment must be completed before production begins. Proof of Payment or E-Receip
 5. **Make payment** — Complete payment to start production
 6. **Receive your order** — Your merchandise will be delivered to you',
                 'sort_order' => 7,
+                'is_active' => true,
             ],
-            // Customization & Finishes
+            // Customization & Finishes (category_id = 3)
             [
-                'category' => 'Customization & Finishes',
-                'category_id' => 3,
+                'faq_category_id' => 3,
                 'question' => 'What lamination options are available for stickers?',
                 'answer' => 'We offer a variety of lamination finishes to match your design aesthetic:
 
@@ -124,10 +123,10 @@ Payment must be completed before production begins. Proof of Payment or E-Receip
 
 Each finish can be combined with different sticker types (die-cut, kiss-cut) for maximum customization.',
                 'sort_order' => 8,
+                'is_active' => true,
             ],
             [
-                'category' => 'Customization & Finishes',
-                'category_id' => 3,
+                'faq_category_id' => 3,
                 'question' => 'Can I request a custom size or shape?',
                 'answer' => 'Absolutely! We pride ourselves on custom manufacturing. Whether you want a unique size or special shape, we can accommodate your vision. Custom cuts are available for:
 
@@ -137,11 +136,11 @@ Each finish can be combined with different sticker types (die-cut, kiss-cut) for
 
 Custom requests may have slightly longer production times and potentially different pricing. Contact us for a personalized quote.',
                 'sort_order' => 9,
+                'is_active' => true,
             ],
-            // Pricing & Discounts
+            // Pricing & Discounts (category_id = 4)
             [
-                'category' => 'Pricing & Discounts',
-                'category_id' => 4,
+                'faq_category_id' => 4,
                 'question' => 'Do you offer discounts for bulk orders?',
                 'answer' => 'Yes! We believe in supporting student artists with affordable pricing. Our bulk discount structure includes:
 
@@ -151,10 +150,10 @@ Custom requests may have slightly longer production times and potentially differ
 
 For very large orders or special requests, contact us directly for a customized quote.',
                 'sort_order' => 10,
+                'is_active' => true,
             ],
             [
-                'category' => 'Pricing & Discounts',
-                'category_id' => 4,
+                'faq_category_id' => 4,
                 'question' => 'Are there any hidden costs?',
                 'answer' => 'No! We believe in transparent pricing. Our quotes include:
 
@@ -164,19 +163,16 @@ For very large orders or special requests, contact us directly for a customized 
 
 **Any additional costs** (rush orders, custom designs, special finishes) will be clearly communicated before you confirm your order.',
                 'sort_order' => 11,
+                'is_active' => true,
             ],
         ];
 
+        // Clear existing FAQs to avoid duplicates
+        FAQ::truncate();
+
+        // Insert all FAQs
         foreach ($faqs as $faq) {
-            FAQ::updateOrCreate(
-                [
-                    'category' => $faq['category'],
-                    'question' => $faq['question'],
-                    'answer' => $faq['answer'],
-                    'sort_order' => $faq['sort_order']
-                ],
-                $faq
-            );
+            FAQ::create($faq);
         }
     }
 }

@@ -5,6 +5,7 @@
 @vite(['resources/css/owner/pages/content_management/home_page_content.css'])
 @vite(['resources/css/owner/pages/content_management/products_page_content.css'])
 @vite(['resources/css/owner/pages/content_management/order_template.css'])
+@vite(['resources/css/owner/pages/content_management/manage_categories.css'])
 @endsection
 
 @section('content')
@@ -335,7 +336,71 @@
         <p class="empty_faqs" id="emptyFaqsText">No FAQs available yet.</p>
         <div id="faqsContainer" class="faqs_container"></div>
 
-        <button id="add_faq_btn" class="add_faq_button">Add FAQ</button>
+        <div class="faq_actions_row">
+            <button id="add_faq_btn" class="add_faq_button">Add FAQ</button>
+            <button id="addCategoryBtn" class="manage_categories_button">Manage Categories</button>
+        </div>
+
+        {{-- Manage Categories Modal --}}
+        <div id="manageCategoriesOverlay" class="modal_overlay">
+            <div id="manageCategoriesModal" class="manage_categories_modal">
+                <button class="close_manage_categories_modal" id="closeCategoryModal">&times;</button>
+                <h2 class="manage_categories_header">Manage Categories</h2>
+                
+                {{-- Category Form --}}
+                <form id="categoryForm">
+                    <div class="form_group">
+                        <label for="categoryNameInput">Category Name</label>
+                        <input type="text" id="categoryNameInput" placeholder="Enter category name" maxlength="255" required />
+                        <span class="field_error hidden"></span>
+                    </div>
+                    <div class="form_group">
+                        <label for="sortOrderInput">Sort Order (1-99)</label>
+                        <input type="text" id="sortOrderInput" placeholder="Enter sort order" inputmode="numeric" required />
+                        <span class="field_error hidden"></span>
+                    </div>
+                    <div class="form_actions">
+                        <button type="button" class="cancel_btn" id="closeCategoryFormBtn">Cancel</button>
+                        <button type="submit" class="submit_btn">Save Category</button>
+                    </div>
+                </form>
+
+                {{-- Categories List --}}
+                <div class="categories_section">
+                    <h3 class="categories_header">Existing Categories</h3>
+                    <div class="categories_table_wrapper">
+                        <table class="categories_table">
+                            <thead>
+                                <tr>
+                                    <th>Category Name</th>
+                                    <th>Sort Order</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="categoryTableBody">
+                                <tr>
+                                    <td colspan="3" style="text-align: center; padding: 20px; color: #999;">
+                                        Loading categories...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Delete Category Confirmation Modal --}}
+        <div id="deleteCategoryConfirmOverlay" class="modal_overlay">
+            <div class="delete_confirmation_modal">
+                <h3 class="delete_confirmation_title">Delete Category</h3>
+                <p id="deleteCategoryConfirmMessage">Are you sure?</p>
+                <div class="delete_confirmation_actions">
+                    <button class="cancel_delete_btn" id="deleteCategoryConfirmNo">Cancel</button>
+                    <button class="confirm_delete_btn" id="deleteCategoryConfirmYes">Delete</button>
+                </div>
+            </div>
+        </div>
 
         {{-- Add / Edit FAQ Modal --}}
         <div class="add_faq_modal" id="faqModalOverlay">
@@ -390,5 +455,6 @@
 @vite('resources/js/owner/content_page/products_page_content_refactored.js')
 @vite('resources/js/owner/content_page/order_template.js')
 @vite('resources/js/owner/content_page/rush_fees.js')
+@vite('resources/js/owner/content_page/manage_categories_modal.js')
 @vite('resources/js/owner/content_page/faq_management.js')
 @vite(['resources/css/owner/pages/content_management/faq_management.css'])
