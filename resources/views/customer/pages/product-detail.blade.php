@@ -1,11 +1,11 @@
 @extends('layouts.customer_layout')
 
 @section('page_css')
-@vite(['resources/css/customer/pages/product-detail.css'])
+@vite(['resources/css/customer/pages/product-detail.css', 'resources/css/customer/pages/order_modal.css'])
 @endsection
 
 @section('page_js')
-@vite('resources/js/customer/pages/product-detail.js')
+@vite(['resources/js/customer/pages/product-detail.js', 'resources/js/customer/pages/order_modal.js'])
 @endsection
 
 @section('content')
@@ -40,4 +40,7 @@
         </div>
 
     </div>
+
+    {{-- ORDER MODAL COMPONENT --}}
+    @include('customer.pages.order_modal')
 @endsection
