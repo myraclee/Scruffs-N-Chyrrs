@@ -15,15 +15,15 @@
         <p>Explore our collection of high-quality merchandise for your creative journey.</p>
     </div>
 
-    <div class="rushfee_section">
-        <button class="rushfee_button">View Rush Fees</button>
-        <p>Need it sooner? Rush fees let you prioritize your order for faster processing.</p>
-    </div>
-
     <div class="products_section">
         <div class="products_grid" id="productsGrid">
             <p style="text-align: center; color: #999; padding: 40px; grid-column: 1 / -1;">Loading products...</p>
         </div>
+    </div>
+
+     <div class="rushfee_section">
+        <a href="{{ route('rush')}}"><span>View Rush Fees</span></a>
+        <p>Need it sooner? Rush fees let you prioritize your order for faster processing.</p>
     </div>
 
 @endsection

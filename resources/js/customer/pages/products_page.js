@@ -4,53 +4,56 @@
  * Navigates to product detail page on click
  */
 
-import ProductAPI from '/resources/js/api/productApi.js';
+import ProductAPI from "/resources/js/api/productApi.js";
 
 // ================= STATE =================
 let products = [];
 
 // ================= DOM ELEMENTS =================
-const productsGrid = document.getElementById('productsGrid');
+const productsGrid = document.getElementById("productsGrid");
 
 // ================= INITIALIZATION =================
-document.addEventListener('DOMContentLoaded', async () => {
-  await loadAndRenderProducts();
+document.addEventListener("DOMContentLoaded", async () => {
+    await loadAndRenderProducts();
 });
 
 /**
  * Load products from API and render them
  */
 async function loadAndRenderProducts() {
-  try {
-    productsGrid.innerHTML = '<p style="text-align: center; color: #999; padding: 40px; grid-column: 1 / -1; font-family: Coolvetica;">Loading products...</p>';
+    try {
+        productsGrid.innerHTML =
+            '<p style="text-align: center; color: #999; padding: 40px; grid-column: 1 / -1; font-family: Coolvetica;">Loading products...</p>';
 
-    const productsData = await ProductAPI.getAllProducts();
-    products = productsData || [];
+        const productsData = await ProductAPI.getAllProducts();
+        products = productsData || [];
 
-    console.log('Loaded products from API:', products);
+        console.log("Loaded products from API:", products);
 
-    if (!products || products.length === 0) {
-      productsGrid.innerHTML = '<div class="products_empty_state">No products available yet. Check back soon!</div>';
-      return;
+        if (!products || products.length === 0) {
+            productsGrid.innerHTML =
+                '<div class="products_empty_state">No products available yet. Check back soon!</div>';
+            return;
+        }
+
+        renderProducts();
+    } catch (error) {
+        console.error("Error loading products:", error);
+        productsGrid.innerHTML =
+            '<div class="products_empty_state">Unable to load products. Please try again later.</div>';
     }
-
-    renderProducts();
-  } catch (error) {
-    console.error('Error loading products:', error);
-    productsGrid.innerHTML = '<div class="products_empty_state">Unable to load products. Please try again later.</div>';
-  }
 }
 
 /**
  * Render all products as cards in the grid
  */
 function renderProducts() {
-  productsGrid.innerHTML = '';
+    productsGrid.innerHTML = "";
 
-  products.forEach((product, index) => {
-    const card = createProductCard(product, index);
-    productsGrid.appendChild(card);
-  });
+    products.forEach((product, index) => {
+        const card = createProductCard(product, index);
+        productsGrid.appendChild(card);
+    });
 }
 
 /**
@@ -60,34 +63,38 @@ function renderProducts() {
  * @returns {HTMLElement} Product card element
  */
 function createProductCard(product, index) {
-  const card = document.createElement('div');
-  card.className = 'product_card';
+    const card = document.createElement("div");
+    card.className = "product_card";
 
-  // Alternate rotation for visual interest (same as home page)
-  card.style.setProperty('--card-rotation', index % 2 === 0 ? '-2deg' : '2deg');
+    // Alternate rotation for visual interest (same as home page)
+    card.style.setProperty(
+        "--card-rotation",
+        index % 2 === 0 ? "-2deg" : "2deg",
+    );
 
-  const imageUrl = product.cover_image_path
-    ? `/storage/${product.cover_image_path}`
-    : '/images/placeholder.png';
+    const imageUrl = product.cover_image_path
+        ? `/storage/${product.cover_image_path}`
+        : "/images/placeholder.png";
 
-  const description = product.description ? product.description.substring(0, 50) : '';
+    const description = product.description
+        ? product.description.substring(0, 50)
+        : "";
 
-  card.innerHTML = `
+    card.innerHTML = `
         <div class="product_card_image">
             <img src="${imageUrl}" alt="${product.name}" loading="lazy" />
         </div>
         <div class="product_card_info">
             <h3>${product.name}</h3>
-            ${description ? `<p class="product_card_description">${description}${product.description.length > 50 ? '...' : ''}</p>` : ''}
         </div>
     `;
 
-  // Add click listener to navigate to product detail page
-  card.addEventListener('click', () => {
-    navigateToProductDetail(product);
-  });
+    // Add click listener to navigate to product detail page
+    card.addEventListener("click", () => {
+        navigateToProductDetail(product);
+    });
 
-  return card;
+    return card;
 }
 
 /**
@@ -95,9 +102,9 @@ function createProductCard(product, index) {
  * @param {Object} product - Product data
  */
 function navigateToProductDetail(product) {
-  // Use product slug if available, fallback to generating slug from name
-  const slug = product.slug || generateSlug(product.name);
-  window.location.href = `/products/${slug}`;
+    // Use product slug if available, fallback to generating slug from name
+    const slug = product.slug || generateSlug(product.name);
+    window.location.href = `/products/${slug}`;
 }
 
 /**
@@ -106,10 +113,10 @@ function navigateToProductDetail(product) {
  * @returns {string} URL-safe slug
  */
 function generateSlug(name) {
-  return name
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, '') // Remove special characters
-    .replace(/\s+/g, '-') // Replace spaces with hyphens
-    .replace(/-+/g, '-'); // Replace multiple hyphens with single hyphen
+    return name
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, "") // Remove special characters
+        .replace(/\s+/g, "-") // Replace spaces with hyphens
+        .replace(/-+/g, "-"); // Replace multiple hyphens with single hyphen
 }
