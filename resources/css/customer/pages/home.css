@@ -981,4 +981,14 @@
     .c3 {
         display: none;
     }
+
+    .product_sample_info h3 {
+        font-size: 15px;
+        width: 160px;
+        height: 70px;
+    }
+
+    .product_sample_card {
+        padding: 10px 10px 20px;
+    }
 }
