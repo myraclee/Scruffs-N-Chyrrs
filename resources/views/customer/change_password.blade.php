@@ -20,7 +20,7 @@
         <span class="change_section_line"></span>
     </div>
 
-        <form method="POST" action="{{ route('update-password') }}" class="change_password_form">
+        <form method="POST" action="{{ route('update-password') }}" class="change_password_form" novalidate>
             @csrf
 
             <div class="form_group">
@@ -72,4 +72,19 @@
             </div>
         </form>
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.querySelector(".change_password_form");
+            if (form) {
+                form.addEventListener("submit", function(event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault(); 
+                        event.stopPropagation();
+                    }
+                    form.classList.add("was-validated");
+                }, false);
+            }
+        });
+    </script>
 @endsection
