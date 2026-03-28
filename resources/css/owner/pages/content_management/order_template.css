@@ -1905,20 +1905,15 @@ select:focus {
     flex-direction: column;
     gap: 8px;
     padding: 16px 0 10px;
-    border-top: 1.5px dashed rgba(104, 44, 122, 0.22);
-    margin-top: 6px;
+    border-bottom: 2px solid #682c7a;
+    padding-bottom: 20px;
+    position: relative;
 }
 
 .rush_image_upload_header {
     display: flex;
     align-items: baseline;
     gap: 10px;
-}
-
-.rush_image_upload_hint {
-    font-family: "Coolvetica", sans-serif;
-    font-size: 12px;
-    color: rgba(104, 44, 122, 0.5);
 }
 
 /* Hidden native file input */
@@ -1929,13 +1924,13 @@ select:focus {
 /* A4 drop zone — 210:297, capped at 220px wide inside the modal */
 .rush_image_dropzone {
     position: relative;
-    width: 100%;
-    max-width: 220px;
+    width: 170px;
+    height: 240px;
     aspect-ratio: 210 / 297;
     align-self: center;
 
     background: #fff7ec;
-    border: 2px dashed #b488cc;
+    border: 2px solid #682c7a;
     border-radius: 12px;
     cursor: pointer;
     overflow: hidden;
@@ -1949,64 +1944,21 @@ select:focus {
 .rush_image_dropzone:hover,
 .rush_image_dropzone:focus-visible {
     border-color: #682c7a;
-    background: #f5e8ff;
-    box-shadow: 0 0 0 4px rgba(104, 44, 122, 0.08);
+    background: #dcbae6;
 }
 
-.rush_image_dropzone--drag_over {
-    border-color: #682c7a;
-    background: #ecdcf7;
-    box-shadow: 0 0 0 4px rgba(104, 44, 122, 0.12);
-}
-
-/* Placeholder */
 .rush_image_placeholder {
-    position: absolute;
-    inset: 0;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    padding: 16px;
-    pointer-events: none;
-    transition: opacity 0.2s ease;
+    height: 100%;
 }
 
-.rush_image_dropzone--has_image .rush_image_placeholder {
-    opacity: 0;
-}
-
-.rush_upload_icon {
-    fill: #b488cc;
-    transition:
-        fill 0.2s ease,
-        transform 0.2s ease;
-}
-
-.rush_image_dropzone:hover .rush_upload_icon,
-.rush_image_dropzone--drag_over .rush_upload_icon {
-    fill: #682c7a;
-    transform: translateY(-3px);
-}
-
-.rush_image_placeholder_text {
-    font-family: "Coolvetica", sans-serif;
-    font-size: 12px;
-    color: #b488cc;
-    text-align: center;
-    line-height: 1.5;
-    margin: 0;
-}
-
-.rush_image_placeholder_text span {
-    font-size: 11px;
-    color: rgba(180, 136, 204, 0.65);
-}
-
-.rush_image_dropzone:hover .rush_image_placeholder_text,
-.rush_image_dropzone--drag_over .rush_image_placeholder_text {
+.rush_image_plus {
+    font-size: 40px;
     color: #682c7a;
+    font-weight: 300;
+    pointer-events: none;
 }
 
 /* Preview */
@@ -2015,12 +1967,10 @@ select:focus {
     inset: 0;
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: cover;
     display: block;
     opacity: 0;
-    transition: opacity 0.25s ease;
     pointer-events: none;
-    padding: 5px;
     box-sizing: border-box;
     background: #fff7ec;
 }
@@ -2029,44 +1979,42 @@ select:focus {
     opacity: 1;
 }
 
-/* Remove button */
-.rush_image_remove_btn {
-    position: absolute;
-    top: 7px;
-    right: 7px;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    border: 1.5px solid #682c7a;
-    background: #fff7ec;
-    color: #682c7a;
-    font-size: 11px;
-    line-height: 1;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transform: scale(0.7);
-    transition:
-        opacity 0.2s ease,
-        transform 0.2s ease,
-        background 0.2s ease,
-        color 0.2s ease;
-    z-index: 2;
+.rush_image_dropzone--has_image .rush_image_placeholder {
+    display: none;
 }
 
-.rush_image_dropzone--has_image .rush_image_remove_btn {
+/* Remove button */
+.rush_image_remove_btn {
+    background-color: #c83333;
+    border-radius: 30px;
+    border: none;
+
+    color: #fff7ec;
+    font-family: Coolvetica;
+    font-size: 12px;
+
+    width: 60px;
+    height: 25px;
+
+    cursor: pointer;
+    text-align: center;
+    align-self: center;
+
+    opacity: 0;
+    text-decoration: none;
+}
+
+.rush_image_upload_section
+    .rush_image_dropzone--has_image
+    ~ .rush_image_remove_btn {
     opacity: 1;
-    transform: scale(1);
 }
 
 .rush_image_remove_btn:hover {
-    background: #682c7a;
-    color: #fff7ec;
-    transform: scale(1.1);
+    text-decoration: none;
+    background-color: #8d0e0e;
+    transition: 0.2s ease;
 }
-
 /* ==================== MEDIA QUERIES ==================== */
 
 @media (max-width: 600px) {

@@ -116,14 +116,9 @@ function buildImageUploadSection() {
 
     const labelEl = document.createElement("span");
     labelEl.className = "rush_field_label";
-    labelEl.textContent = "Reference Sheet";
-
-    const hintEl = document.createElement("span");
-    hintEl.className = "rush_image_upload_hint";
-    hintEl.textContent = "PNG or JPG · A4 size";
+    labelEl.textContent = "Pricing Image";
 
     headerRow.appendChild(labelEl);
-    headerRow.appendChild(hintEl);
     section.appendChild(headerRow);
 
     // Drop zone — A4 aspect ratio (210 : 297)
@@ -137,31 +132,11 @@ function buildImageUploadSection() {
     const placeholder = document.createElement("div");
     placeholder.className = "rush_image_placeholder";
 
-    const uploadIcon = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "svg",
-    );
-    uploadIcon.setAttribute("class", "rush_upload_icon");
-    uploadIcon.setAttribute("viewBox", "0 -960 960 960");
-    uploadIcon.setAttribute("height", "36px");
-    uploadIcon.setAttribute("width", "36px");
-    const uploadPath = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "path",
-    );
-    uploadPath.setAttribute(
-        "d",
-        "M440-320v-326L336-542l-56-58 200-200 200 200-56 58-104-104v326h-80ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z",
-    );
-    uploadIcon.appendChild(uploadPath);
+    const plus = document.createElement("span");
+    plus.className = "rush_image_plus";
+    plus.textContent = "+";
 
-    const placeholderText = document.createElement("p");
-    placeholderText.className = "rush_image_placeholder_text";
-    placeholderText.innerHTML =
-        "Click or drag & drop<br><span>to upload an image</span>";
-
-    placeholder.appendChild(uploadIcon);
-    placeholder.appendChild(placeholderText);
+    placeholder.appendChild(plus);
 
     // Preview
     const preview = document.createElement("img");
@@ -173,11 +148,10 @@ function buildImageUploadSection() {
     removeBtn.type = "button";
     removeBtn.className = "rush_image_remove_btn";
     removeBtn.setAttribute("aria-label", "Remove image");
-    removeBtn.textContent = "✕";
+    removeBtn.textContent = "Remove";
 
     dropZone.appendChild(placeholder);
     dropZone.appendChild(preview);
-    dropZone.appendChild(removeBtn);
 
     // Hidden file input
     const fileInput = document.createElement("input");
@@ -193,6 +167,7 @@ function buildImageUploadSection() {
     function showPreview(src) {
         preview.src = src;
         dropZone.classList.add("rush_image_dropzone--has_image");
+        addRemoveButton();
     }
 
     function clearPreview() {
@@ -201,6 +176,8 @@ function buildImageUploadSection() {
         pendingImageFile = null;
         if (draftFee) draftFee.image_url = null;
         fileInput.value = "";
+
+        removeRemoveButton();
     }
 
     function handleFile(file) {
@@ -222,8 +199,13 @@ function buildImageUploadSection() {
 
     dropZone.addEventListener("click", (e) => {
         if (e.target === removeBtn) return;
+
+        if (dropZone.classList.contains("rush_image_dropzone--has_image"))
+            return;
+
         fileInput.click();
     });
+
     dropZone.addEventListener("keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
@@ -240,18 +222,17 @@ function buildImageUploadSection() {
         handleFile(fileInput.files[0] ?? null);
     });
 
-    dropZone.addEventListener("dragover", (e) => {
-        e.preventDefault();
-        dropZone.classList.add("rush_image_dropzone--drag_over");
-    });
-    dropZone.addEventListener("dragleave", () => {
-        dropZone.classList.remove("rush_image_dropzone--drag_over");
-    });
-    dropZone.addEventListener("drop", (e) => {
-        e.preventDefault();
-        dropZone.classList.remove("rush_image_dropzone--drag_over");
-        handleFile(e.dataTransfer.files[0] ?? null);
-    });
+    function addRemoveButton() {
+        if (!section.contains(removeBtn)) {
+            section.appendChild(removeBtn);
+        }
+    }
+
+    function removeRemoveButton() {
+        if (section.contains(removeBtn)) {
+            removeBtn.remove();
+        }
+    }
 
     return section;
 }
@@ -274,9 +255,12 @@ function renderRushModalForm() {
     const uploadSection = buildImageUploadSection();
     uploadSection.id = "rushImageUploadSection";
 
-    const actionsBar = document.querySelector(".rush_modal_actions");
-    if (actionsBar) {
-        actionsBar.parentElement.insertBefore(uploadSection, actionsBar);
+    const priceRangeSection = document.querySelector(".rush_range_section");
+    if (priceRangeSection) {
+        priceRangeSection.parentElement.insertBefore(
+            uploadSection,
+            priceRangeSection,
+        );
     }
 }
 
