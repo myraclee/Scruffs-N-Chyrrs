@@ -1,8 +1,8 @@
-/* ==================== FAQ MANAGEMENT ==================== */
+/* ==================== FAQ MANAGEMENT - MAIN SECTION ==================== */
 
 .faqs_header {
-    font-family: SuperDream;
-    font-size: 28px;
+    font-family: Coolvetica;
+    font-size: 30px;
     color: #682c7a;
     margin-bottom: 30px;
     margin-top: 0;
@@ -11,134 +11,574 @@
 .empty_faqs {
     text-align: center;
     font-size: 16px;
-    color: #999;
+    color: #999999;
     padding: 40px 20px;
     display: none;
+    font-family: Coolvetica;
 }
 
 .faqs_container {
     display: flex;
     flex-direction: column;
-    gap: 30px;
+    gap: 20px;
     margin-bottom: 30px;
 }
 
-/* ==================== CATEGORY GROUP ==================== */
+/* ==================== ACTION BUTTONS ROW ==================== */
 
-.faq_category_group {
+.faq_actions_row {
     display: flex;
-    flex-direction: column;
-    gap: 15px;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
 }
 
-.faq_category_header {
+.manage_categories_button {
+    background: #682c7a;
+    color: #fff7ec;
     font-family: Coolvetica;
-    font-size: 18px;
-    font-weight: bold;
-    color: #682c7a;
-    margin: 0;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #f0f0f0;
+    font-size: 15px;
+    border: none;
+    border-radius: 30px;
+    width: 160px;
+    height: 35px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: transform 0.2s ease;
 }
 
-.faq_list {
+.manage_categories_button:hover {
+    transform: scale(1.05);
+}
+
+.add_faq_button {
+    background: #682c7a;
+    color: #fff7ec;
+    font-family: Coolvetica;
+    font-size: 15px;
+    border: none;
+    border-radius: 30px;
+    width: 90px;
+    height: 35px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.add_faq_button:hover {
+    transform: scale(1.05);
+}
+
+/* ==================== CATEGORY BOXES ==================== */
+
+.category_box {
+    background: #fff7ec;
+    border-radius: 20px;
+    border: 2px solid #682c7a;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    max-height: 400px;
+}
+
+.category_box_header {
+    background: #682c7a;
+    color: #fff7ec;
+    padding: 18px 24px;
+    font-family: Coolvetica;
+    font-size: 20px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.category_sparkle {
+    font-size: 16px;
+    opacity: 0.7;
+    animation: sparkleTwinkle 1.8s infinite ease-in-out;
+}
+
+@keyframes sparkleTwinkle {
+    0%,
+    100% {
+        opacity: 0.3;
+        transform: scale(0.8) rotate(0deg);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.3) rotate(20deg);
+    }
+}
+
+.category_box_content {
+    padding: 20px 24px;
+    max-height: 340px;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.category_box_content::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+}
+
+.category_box_empty {
+    text-align: center;
+    color: #999999;
+    font-family: Coolvetica;
+    font-size: 15px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    margin: 0;
+}
+
+/* ==================== FAQ ACCORDION IN CATEGORY BOX ==================== */
+
+.category_box_faq_list {
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
 
-/* ==================== FAQ CARD ==================== */
-
-.faq_card {
-    background: #fff7ec;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+.faq_accordion_item {
+    background: #fffcf8;
+    border: 2px solid #682c7a;
+    border-radius: 25px;
+    overflow: hidden;
     transition: all 0.3s ease;
-    border: 1px solid #f0e8e0;
 }
 
-.faq_card:hover {
-    box-shadow: 0 4px 12px rgba(104, 44, 122, 0.12);
-    border-color: #e0d8d0;
+.faq_accordion_item:hover {
+    box-shadow: 0 2px 8px rgba(104, 44, 122, 0.1);
 }
 
-.faq_card_question {
+.faq_accordion_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 17px;
+    cursor: pointer;
+    background: #fffcf8;
+    transition: background 0.2s ease;
+}
+
+.faq_accordion_question {
     font-family: Coolvetica;
-    font-size: 16px;
-    font-weight: bold;
+    font-size: 17px;
+    font-weight: 100;
     color: #682c7a;
-    margin: 0 0 10px 0;
+    flex: 1;
+    margin-right: 12px;
 }
 
-.faq_card_answer_preview {
+.faq_accordion_toggle {
+    background: none;
+    border: none;
+    color: #682c7a;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 4px 8px;
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+}
+
+.faq_accordion_item.active .faq_accordion_toggle {
+    transform: rotate(180deg);
+}
+
+.faq_accordion_answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    background: #fffcf8;
+}
+
+.faq_accordion_item.active .faq_accordion_answer {
+    max-height: 500px;
+    border-top: 1px solid #682c7a;
+}
+
+.faq_accordion_answer_text {
+    padding: 14px 16px;
+    margin: 0;
     font-family: Coolvetica;
     font-size: 14px;
-    color: #666;
-    margin: 0 0 15px 0;
-    line-height: 1.5;
+    color: #333;
+    line-height: 1.6;
 }
 
-.faq_card_actions {
+.faq_edit_container {
     display: flex;
+    justify-content: flex-end;
+    background-color: #fffcf8;
+}
+
+.faq_item_edit_btn {
+    margin: 0 16px 14px 16px;
+    height: 30px;
+    width: 70px;
+    border: none;
+    background-color: #682c7a;
+    color: #fff7ec;
+    border-radius: 30px;
+    font-family: Coolvetica;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.faq_item_edit_btn:hover {
+    background-color: #4c1c5b;
+}
+
+/* ==================== MODAL OVERLAY (SHARED) ==================== */
+
+.modal_overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    z-index: 999;
+    transition: opacity 0.3s ease;
+    opacity: 0;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal_overlay.active {
+    display: flex;
+    opacity: 1;
+}
+
+/* ==================== MANAGE CATEGORIES MODAL ==================== */
+
+.manage_categories_modal {
+    background: #fff7ec;
+    border-radius: 30px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    max-width: 700px;
+    width: 70%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 40px;
+    display: none;
+    flex-direction: column;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.manage_categories_modal::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+}
+
+.manage_categories_modal.active {
+    display: flex;
+}
+
+.manage_categories_header {
+    font-family: SuperDream;
+    font-size: 30px;
+    color: #682c7a;
+
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.manage_categories_description {
+    font-family: Coolvetica;
+    font-size: 13px;
+    color: #682c7a;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+/* ==================== CATEGORY FORM ==================== */
+
+#categoryForm {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form_group {
+    display: flex;
+    flex-direction: column;
     gap: 10px;
+}
+
+.form_group label {
+    font-family: Coolvetica;
+    font-size: 20px;
+    color: #682c7a;
+}
+
+.form_group input {
+    width: 100%;
+    height: 40px;
+    padding-left: 20px;
+    padding-right: 20px;
+    box-sizing: border-box;
+    border-radius: 30px;
+    border: 2px solid #682c7a;
+    font-size: 15px;
+}
+
+.form_group input:focus {
+    outline: none;
+    border-color: #4c1c5b;
+}
+
+.form_group input.input_error {
+    border-color: #c83333;
+    box-shadow: 0 0 0 3px rgba(200, 51, 51, 0.1);
+}
+
+.field_error {
+    font-family: Coolvetica;
+    font-size: 12px;
+    color: #c83333;
+    margin-top: -4px;
+}
+
+.field_error.hidden {
+    display: none;
+}
+
+#sortOrderInput {
+    max-width: 150px;
+}
+
+/* ==================== CATEGORIES TABLE ==================== */
+
+.categories_section {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.categories_header {
+    font-family: Coolvetica;
+    font-size: 20px;
+    color: #682c7a;
+    font-weight: 100;
+}
+
+.categories_table_wrapper {
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 2px solid #682c7a;
+}
+
+.categories_table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+.categories_table thead {
+    background: #682c7a;
+}
+
+.categories_table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-family: Coolvetica;
+    font-size: 15px;
+    font-weight: normal;
+    color: #fff7ec;
+}
+
+.sort_header,
+.actions_header {
+    text-align: center !important;
+}
+
+.categories_table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
+}
+
+.categories_table tbody tr:hover {
+    background: #fafaf8;
+}
+
+.categories_table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.category_sort_order {
+    text-align: center;
+    width: 100px;
+    font-size: 14px;
+}
+
+.category_actions {
+    text-align: right;
+    width: 150px;
+}
+
+/* ==================== TABLE ACTION BUTTONS ==================== */
+
+.action_btn {
+    height: 25px;
+    width: 50px;
+    border: none;
+    border-radius: 30px;
+    font-family: Coolvetica;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-left: 6px;
+}
+
+.edit_btn {
+    background: #682c7a;
+    color: #fff7ec;
+}
+
+.edit_btn:hover {
+    background: #4c1c5b;
+    transform: scale(1.05);
+}
+
+.delete_btn {
+    background: #c83333;
+    color: #fff7ec;
+}
+
+.delete_btn:hover {
+    background: #8d0e0e;
+    transform: scale(1.05);
+}
+
+/* ==================== FORM ACTIONS (BOTTOM BUTTONS) ==================== */
+
+.form_actions {
+    display: flex;
+    gap: 12px;
     justify-content: flex-end;
 }
 
-.faq_card_edit_btn,
-.faq_card_delete_btn {
-    padding: 8px 16px;
+.submit_btn,
+.cancel_btn {
+    padding: 8px 14px;
     border: none;
-    border-radius: 4px;
+    border-radius: 30px;
     font-family: Coolvetica;
-    font-size: 13px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    width: 90px;
+    height: 35px;
+}
+
+.submit_btn {
+    border: none;
+    padding: 8px 14px;
+    width: 90px;
+    height: 35px;
+    background: #682c7a;
+    border-radius: 30px;
+    font-family: Coolvetica;
+    font-size: 15px;
+    color: #fff7ec;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.submit_btn:hover {
+    transform: scale(1.05);
+}
+
+.cancel_btn {
+    border: none;
+    padding: 8px 14px;
+    width: 90px;
+    height: 35px;
+    background: #999999;
+    border-radius: 30px;
+    font-family: Coolvetica;
+    font-size: 15px;
+    color: #fff7ec;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.cancel_btn:hover {
+    transform: scale(1.05);
+}
+
+/* ==================== DELETE CATEGORY CONFIRMATION MODAL ==================== */
+
+.delete_confirmation_modal {
+    background: #fff7ec;
+    border-radius: 24px;
+    padding: 35px 30px;
+    width: 300px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+
+.delete_confirmation_title {
+    font-family: SuperDream;
+    font-size: 20px;
+    color: #c83333;
+    margin: 0 0 15px 0;
+}
+
+#deleteCategoryConfirmMessage {
+    font-family: Coolvetica;
+    font-size: 14px;
+    color: #666;
+    margin: 0 0 25px 0;
+    line-height: 1.5;
+}
+
+.delete_confirmation_actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.confirm_delete_btn,
+.cancel_delete_btn {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 30px;
+    font-family: Coolvetica;
+    font-size: 14px;
     font-weight: bold;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease;
+    width: 90px;
+    height: 35px;
 }
 
-.faq_card_edit_btn {
-    background: #682c7a;
-    color: white;
+.confirm_delete_btn {
+    background: #c83333;
+    color: #fff7ec;
 }
 
-.faq_card_edit_btn:hover {
-    background: #4c1c5b;
-    transform: translateY(-2px);
+.confirm_delete_btn:hover {
+    background: #8d0e0e;
+    transform: scale(1.05);
 }
 
-.faq_card_delete_btn {
-    color: #f0f0f0;
-    background: #d32f2f;
+.cancel_delete_btn {
+    background: #999999;
+    color: #fff7ec;
 }
 
-.faq_card_delete_btn:hover {
-    background: #e0e0e0;
-    transform: translateY(-2px);
+.cancel_delete_btn:hover {
+    transform: scale(1.05);
 }
 
-/* ==================== ADD FAQ BUTTON ==================== */
-
-.add_faq_button {
-    background: #682c7a;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 6px;
-    font-family: Coolvetica;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.add_faq_button:hover {
-    background: #4c1c5b;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(104, 44, 122, 0.2);
-}
-
-/* ==================== FAQ MODAL ==================== */
+/* ==================== ADD/EDIT FAQ MODAL ==================== */
 
 .add_faq_modal {
     display: none;
@@ -158,38 +598,43 @@
 }
 
 .add_faq_modal_box {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-    max-width: 600px;
-    width: 90%;
+    background: #fff7ec;
+    border-radius: 30px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+    max-width: 650px;
+    width: 92%;
     max-height: 90vh;
     overflow-y: auto;
-    padding: 30px;
+    padding: 40px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.add_faq_modal_box::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
 }
 
 .add_faq_modal_box .modal_title {
     font-family: SuperDream;
-    font-size: 24px;
+    font-size: 30px;
     color: #682c7a;
-    margin: 0 0 5px 0;
+    text-align: center;
+    margin-bottom: 15px;
 }
 
 .add_faq_modal_box .faq_description {
     font-family: Coolvetica;
-    font-size: 14px;
-    color: #999;
-    margin: 0 0 20px 0;
+    font-size: 13px;
+    color: #682c7a;
+    text-align: center;
+    margin-bottom: 15px;
 }
 
 .add_faq_modal_box label {
-    display: block;
     font-family: Coolvetica;
-    font-size: 13px;
-    font-weight: bold;
+    font-size: 20px;
     color: #682c7a;
-    margin-top: 15px;
-    margin-bottom: 8px;
 }
 
 .add_faq_modal_box label:first-of-type {
@@ -200,72 +645,102 @@
     position: relative;
 }
 
+.add_faq_modal_box .select_wrapper::after {
+    content: "";
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid #682c7a;
+    pointer-events: none;
+}
+
 .add_faq_modal_box select,
 .add_faq_modal_box input,
 .add_faq_modal_box textarea {
     width: 100%;
-    padding: 10px 12px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-family: Coolvetica;
-    font-size: 14px;
+    padding: 12px 14px;
+    border: 2px solid #682c7a;
+    border-radius: 30px;
+    font-size: 15px;
     box-sizing: border-box;
-    transition: border-color 0.2s ease;
+    transition: all 0.3s ease;
+
+    margin-top: 10px;
+}
+
+.add_faq_modal_box select,
+.add_faq_modal_box input {
+    margin-bottom: 20px;
 }
 
 .add_faq_modal_box select:focus,
 .add_faq_modal_box input:focus,
 .add_faq_modal_box textarea:focus {
     outline: none;
-    border-color: #682c7a;
+    border-color: #4c1c5b;
     box-shadow: 0 0 0 3px rgba(104, 44, 122, 0.1);
 }
 
 .add_faq_modal_box textarea {
     resize: vertical;
-    font-family: 'Coolvetica', monospace;
+    min-height: 140px;
+    border-radius: 20px;
 }
 
-/* ==================== ERROR MESSAGES ==================== */
+.add_faq_modal_box select {
+    appearance: none;
+    cursor: pointer;
+    padding-right: 36px;
+}
+
+/* ==================== FAQ ERROR MESSAGES ==================== */
 
 .faq_error_message {
     display: block;
     font-family: Coolvetica;
-    font-size: 12px;
-    color: #d32f2f;
-    margin-top: 5px;
+    font-size: 13px;
+    color: #c83333;
+    margin-top: 6px;
+    font-weight: 500;
 }
 
 .faq_error_message.hidden {
     display: none;
 }
 
-/* ==================== MODAL ACTIONS ==================== */
+/* ==================== FAQ MODAL ACTIONS ==================== */
 
 .faq_modal_actions {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
-    margin-top: 25px;
-    gap: 10px;
+    margin-top: 28px;
+    gap: 12px;
 }
 
 .delete_faq_modal_btn {
-    background: #d32f2f;
-    color: white;
+    background: #c83333;
+    color: #fff7ec;
     border: none;
-    padding: 10px 20px;
-    border-radius: 4px;
+    padding: 8px 14px;
+    border-radius: 30px;
     font-family: Coolvetica;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.2s ease;
+    width: 90px;
+    height: 35px;
 }
 
 .delete_faq_modal_btn:not(.btn_hidden):hover {
-    background: #b32b2b;
-    transform: translateY(-2px);
+    background: #8d0e0e;
+    transform: scale(1.05);
 }
 
 .delete_faq_modal_btn.btn_hidden {
@@ -274,144 +749,236 @@
 
 .faq_modal_actions_right {
     display: flex;
-    gap: 10px;
+    gap: 12px;
 }
 
 .cancel_faq,
 .save_faq {
-    padding: 10px 24px;
+    padding: 8px 14px;
     border: none;
-    border-radius: 4px;
+    border-radius: 30px;
     font-family: Coolvetica;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: bold;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease;
+    width: 90px;
+    height: 35px;
 }
 
 .cancel_faq {
-    background: #f0f0f0;
-    color: #333;
+    border: none;
+    padding: 8px 14px;
+    width: 90px;
+    height: 35px;
+    background: #999999;
+    border-radius: 30px;
+    font-family: Coolvetica;
+    font-size: 15px;
+    color: #fff7ec;
+    cursor: pointer;
+    transition: transform 0.2s ease;
 }
 
 .cancel_faq:hover {
-    background: #e0e0e0;
+    transform: scale(1.05);
 }
 
 .save_faq {
+    border: none;
+    padding: 8px 14px;
+    width: 90px;
+    height: 35px;
     background: #682c7a;
-    color: white;
+    border-radius: 30px;
+    font-family: Coolvetica;
+    font-size: 15px;
+    color: #fff7ec;
+    cursor: pointer;
+    transition: transform 0.2s ease;
 }
 
 .save_faq:hover {
-    background: #4c1c5b;
-    transform: translateY(-2px);
+    transform: scale(1.05);
 }
 
-/* ==================== DELETE CONFIRMATION MODAL ==================== */
-
-.modal_overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 1001;
-    justify-content: center;
-    align-items: center;
+.save_faq:disabled {
+    background: #cccccc;
+    cursor: not-allowed;
+    transform: none;
 }
 
-.modal_overlay.active {
-    display: flex;
-}
+/* ==================== DELETE FAQ CONFIRMATION MODAL ==================== */
 
 .delete_confirm_box {
-    background: white;
-    border-radius: 12px;
-    padding: 30px;
-    max-width: 400px;
+    background: #fff7ec;
+    border-radius: 24px;
+    padding: 35px 30px;
+    width: 300px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     text-align: center;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
 }
 
 .delete_confirm_box.faq_delete_box .delete_msg {
     font-family: Coolvetica;
     font-size: 16px;
-    color: #333;
-    margin: 0 0 20px 0;
+    color: #682c7a;
+    margin: 0 0 24px 0;
     line-height: 1.6;
 }
 
 .faq_delete_btn_large {
-    background: #d32f2f;
-    color: white;
+    background: #c83333;
+    color: #fff7ec;
     border: none;
-    padding: 12px 30px;
-    border-radius: 4px;
+    padding: 8px 14px;
+    border-radius: 30px;
     font-family: Coolvetica;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: bold;
     cursor: pointer;
-    width: 100%;
-    margin-bottom: 12px;
+    width: 140px;
+    height: 34px;
+    margin-bottom: 14px;
     transition: all 0.2s ease;
 }
 
 .faq_delete_btn_large:hover {
-    background: #b32b2b;
-    transform: translateY(-2px);
+    background: #8d0e0e;
+    transform: scale(1.05);
 }
 
 .delete_confirm_box .delete_subtext {
     display: block;
     font-family: Coolvetica;
-    font-size: 12px;
+    font-size: 13px;
     color: #999;
 }
 
-/* ==================== RESPONSIVE ==================== */
+/* ==================== UTILITY CLASSES ==================== */
+
+.hidden {
+    display: none !important;
+}
+
+.btn_hidden {
+    display: none !important;
+}
+
+/* ==================== RESPONSIVE DESIGN ==================== */
 
 @media (max-width: 768px) {
-    .add_faq_modal_box {
+    .category_box {
+        max-height: 350px;
+    }
+
+    .category_box_header {
+        padding: 16px 20px;
+        font-size: 18px;
+    }
+
+    .category_box_content {
+        padding: 16px 20px;
+    }
+
+    .manage_categories_modal {
+        width: 95%;
+        max-height: 95vh;
         padding: 20px;
     }
 
-    .add_faq_modal_box .modal_title {
+    .manage_categories_header {
         font-size: 20px;
     }
 
-    .faq_card {
-        padding: 16px;
+    .add_faq_modal_box {
+        padding: 24px;
     }
 
-    .faq_card_question {
-        font-size: 15px;
+    .add_faq_modal_box .modal_title {
+        font-size: 22px;
     }
 
-    .faq_card_answer_preview {
-        font-size: 13px;
+    .categories_table th,
+    .categories_table td {
+        padding: 10px 8px;
     }
 
-    .faq_card_edit_btn,
-    .faq_card_delete_btn {
-        padding: 6px 12px;
-        font-size: 12px;
+    .action_btn {
+        padding: 5px 10px;
+        font-size: 11px;
+        margin-left: 4px;
+    }
+
+    .form_actions,
+    .delete_confirmation_actions {
+        flex-direction: column;
+    }
+
+    .submit_btn,
+    .cancel_btn,
+    .confirm_delete_btn,
+    .cancel_delete_btn,
+    .save_faq,
+    .cancel_faq {
+        width: 100%;
     }
 }
 
 @media (max-width: 480px) {
-    .faqs_container {
-        gap: 20px;
+    .faqs_header {
+        font-size: 24px;
     }
 
-    .faq_card_actions {
+    .category_box {
+        max-height: 320px;
+    }
+
+    .category_box_header {
+        padding: 14px 18px;
+        font-size: 17px;
+    }
+
+    .faq_accordion_question {
+        font-size: 14px;
+    }
+
+    .manage_categories_modal {
+        width: 98%;
+        padding: 15px;
+    }
+
+    .manage_categories_header {
+        font-size: 18px;
+        margin-bottom: 15px;
+    }
+
+    .form_group input {
+        font-size: 13px;
+    }
+
+    #sortOrderInput {
+        max-width: 100%;
+    }
+
+    .action_btn {
+        padding: 4px 8px;
+        font-size: 10px;
+        display: block;
+        margin: 4px 0 0 0;
+        width: 100%;
+    }
+
+    .category_actions {
+        width: auto;
+    }
+
+    .faq_actions_row {
         flex-direction: column;
     }
 
-    .faq_card_edit_btn,
-    .faq_card_delete_btn {
+    .manage_categories_button,
+    .add_faq_button {
         width: 100%;
     }
 }

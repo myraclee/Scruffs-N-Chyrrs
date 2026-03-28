@@ -192,12 +192,7 @@
                             <label class="product_discount_header">Apply Bulk Discount?</label>
                             <input type="checkbox" id="applyProductDiscount" class="apply_discount_checkbox">
                         </div>
-                        {{--
-                            Header mirrors each row exactly:
-                            [qty label 100px] [price label 100px] [44px spacer = actions wrapper]
-                            One trailing spacer only — rows are justify-content:center so
-                            the labels naturally land over their matching inputs.
-                        --}}
+           
                         <div class="discount_header_row hidden" id="discountHeaderRow">
                             <span class="discount_col_label">Min. Quantity</span>
                             <span class="discount_col_label">Reduction per Piece</span>
@@ -329,41 +324,36 @@
             </div>
     </section>
 
-    {{-- FAQs SECTION --}}
-    <section class="content_section" id="faqs">
-        <h2 class="faqs_header">Frequently Asked Questions</h2>
+   {{-- FAQs SECTION --}}
+<section class="content_section" id="faqs">
+    <h2 class="faqs_header">Frequently Asked Questions</h2>
 
-        <p class="empty_faqs" id="emptyFaqsText">No FAQs available yet.</p>
-        <div id="faqsContainer" class="faqs_container"></div>
+    <p class="empty_faqs" id="emptyFaqsText">No categories available yet.</p>
+    <div id="faqsContainer" class="faqs_container"></div>
 
-        <div class="faq_actions_row">
-            <button id="add_faq_btn" class="add_faq_button">Add FAQ</button>
-            <button id="addCategoryBtn" class="manage_categories_button">Manage Categories</button>
-        </div>
+    <div class="faq_actions_row">
+        <button id="addCategoryBtn" class="manage_categories_button">Manage Categories</button>
+        <button id="add_faq_btn" class="add_faq_button">Add FAQ</button>
+    </div>
 
-        {{-- Manage Categories Modal --}}
-        <div id="manageCategoriesOverlay" class="modal_overlay">
-            <div id="manageCategoriesModal" class="manage_categories_modal">
-                <button class="close_manage_categories_modal" id="closeCategoryModal">&times;</button>
-                <h2 class="manage_categories_header">Manage Categories</h2>
-                
-                {{-- Category Form --}}
-                <form id="categoryForm">
-                    <div class="form_group">
-                        <label for="categoryNameInput">Category Name</label>
-                        <input type="text" id="categoryNameInput" placeholder="Enter category name" maxlength="255" required />
-                        <span class="field_error hidden"></span>
-                    </div>
-                    <div class="form_group">
-                        <label for="sortOrderInput">Sort Order (1-99)</label>
-                        <input type="text" id="sortOrderInput" placeholder="Enter sort order" inputmode="numeric" required />
-                        <span class="field_error hidden"></span>
-                    </div>
-                    <div class="form_actions">
-                        <button type="button" class="cancel_btn" id="closeCategoryFormBtn">Cancel</button>
-                        <button type="submit" class="submit_btn">Save Category</button>
-                    </div>
-                </form>
+    {{-- Manage Categories Modal --}}
+    <div id="manageCategoriesOverlay" class="modal_overlay">
+        <div id="manageCategoriesModal" class="manage_categories_modal">
+            <h2 class="manage_categories_header">Manage Categories</h2>
+            <p class="manage_categories_description">Organize and manage your FAQ categories by grouping them together!</p>
+            
+            {{-- Category Form --}}
+            <form id="categoryForm">
+                <div class="form_group">
+                    <label for="categoryNameInput">Category Label</label>
+                    <input type="text" id="categoryNameInput" placeholder="Enter category label" maxlength="255" required />
+                    <span class="field_error hidden"></span>
+                </div>
+                <div class="form_group">
+                    <label for="sortOrderInput">Sort Order (1-99)</label>
+                    <input type="text" id="sortOrderInput" placeholder="Enter sort order" inputmode="numeric" required />
+                    <span class="field_error hidden"></span>
+                </div>
 
                 {{-- Categories List --}}
                 <div class="categories_section">
@@ -373,8 +363,8 @@
                             <thead>
                                 <tr>
                                     <th>Category Name</th>
-                                    <th>Sort Order</th>
-                                    <th>Actions</th>
+                                    <th class="sort_header">Sort Order</th>
+                                    <th class="actions_header">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="categoryTableBody">
@@ -387,66 +377,68 @@
                         </table>
                     </div>
                 </div>
+
+                <div class="form_actions">
+                    <button type="button" class="cancel_btn" id="closeCategoryFormBtn">Cancel</button>
+                    <button type="submit" class="submit_btn">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- Delete Category Confirmation Modal --}}
+    <div id="deleteCategoryConfirmOverlay" class="modal_overlay">
+        <div class="delete_confirmation_modal">
+            <h3 class="delete_confirmation_title">Delete Category</h3>
+            <p id="deleteCategoryConfirmMessage">Are you sure?</p>
+            <div class="delete_confirmation_actions">
+                <button class="cancel_delete_btn" id="deleteCategoryConfirmNo">Cancel</button>
+                <button class="confirm_delete_btn" id="deleteCategoryConfirmYes">Delete</button>
             </div>
         </div>
+    </div>
 
-        {{-- Delete Category Confirmation Modal --}}
-        <div id="deleteCategoryConfirmOverlay" class="modal_overlay">
-            <div class="delete_confirmation_modal">
-                <h3 class="delete_confirmation_title">Delete Category</h3>
-                <p id="deleteCategoryConfirmMessage">Are you sure?</p>
-                <div class="delete_confirmation_actions">
-                    <button class="cancel_delete_btn" id="deleteCategoryConfirmNo">Cancel</button>
-                    <button class="confirm_delete_btn" id="deleteCategoryConfirmYes">Delete</button>
+    {{-- Add / Edit FAQ Modal --}}
+    <div class="add_faq_modal" id="faqModalOverlay">
+        <div class="add_faq_modal_box" id="faqModal">
+            <h2 class="modal_title" id="faqModalTitle">Add New FAQ</h2>
+            <p class="faq_description">Manage your Frequently Asked Questions</p>
+
+            <label for="faqCategory">Category</label>
+            <div class="select_wrapper">
+                <select id="faqCategory" class="faq_category_select">
+                    <option value="">Select a category</option>
+                </select>
+            </div>
+            <span id="faqCategoryError" class="faq_error_message hidden">Category is required.</span>
+
+            <label for="faqQuestion">Question</label>
+            <input type="text" id="faqQuestion" class="faq_question_input" placeholder="Enter question" maxlength="255" />
+            <span id="faqQuestionError" class="faq_error_message hidden">Question is required.</span>
+
+            <label for="faqAnswer">Answer</label>
+            <textarea id="faqAnswer" class="faq_answer_input" placeholder="Enter answer" rows="6"></textarea>
+            <span id="faqAnswerError" class="faq_error_message hidden">Answer is required.</span>
+
+            <div class="faq_modal_actions">
+                <button class="delete_faq_modal_btn btn_hidden" id="deleteFaqBtn" type="button">Delete</button>
+                <div class="faq_modal_actions_right">
+                    <button class="cancel_faq" type="button">Cancel</button>
+                    <button class="save_faq" type="button">Save</button>
                 </div>
             </div>
         </div>
+    </div>
 
-        {{-- Add / Edit FAQ Modal --}}
-        <div class="add_faq_modal" id="faqModalOverlay">
-            <div class="add_faq_modal_box" id="faqModal">
-                <h2 class="modal_title" id="faqModalTitle">Add New FAQ</h2>
-                <p class="faq_description">Manage your Frequently Asked Questions</p>
-
-                <label for="faqCategory">Category</label>
-                <div class="select_wrapper">
-                    <select id="faqCategory" class="faq_category_select">
-                        <option value="">Select a category</option>
-                        <option value="General Questions">General Questions</option>
-                        <option value="Shipping & Orders">Shipping & Orders</option>
-                        <option value="Customization & Finishes">Customization & Finishes</option>
-                        <option value="Pricing & Discounts">Pricing & Discounts</option>
-                    </select>
-                </div>
-                <span id="faqCategoryError" class="faq_error_message hidden">Category is required.</span>
-
-                <label for="faqQuestion">Question</label>
-                <input type="text" id="faqQuestion" class="faq_question_input" placeholder="Enter question" maxlength="255" />
-                <span id="faqQuestionError" class="faq_error_message hidden">Question is required.</span>
-
-                <label for="faqAnswer">Answer</label>
-                <textarea id="faqAnswer" class="faq_answer_input" placeholder="Enter answer" rows="6"></textarea>
-                <span id="faqAnswerError" class="faq_error_message hidden">Answer is required.</span>
-
-                <div class="faq_modal_actions">
-                    <button class="delete_faq_modal_btn btn_hidden" id="deleteFaqBtn" type="button">Delete</button>
-                    <div class="faq_modal_actions_right">
-                        <button class="cancel_faq" type="button">Cancel</button>
-                        <button class="save_faq" type="button">Save</button>
-                    </div>
-                </div>
-            </div>
+    {{-- Delete Confirmation Modal --}}
+    <div class="modal_overlay" id="deleteFaqModalOverlay">
+        <div class="delete_confirm_box faq_delete_box">
+            <p class="delete_msg">Do you wish to delete the<br>selected FAQ?</p>
+            <button class="faq_delete_btn_large" id="deleteFaqConfirmBtn" type="button">Delete FAQ</button>
+            <small class="delete_subtext">This process cannot be undone</small>
         </div>
-
-        {{-- Delete Confirmation Modal --}}
-        <div class="modal_overlay" id="deleteFaqModalOverlay">
-            <div class="delete_confirm_box faq_delete_box">
-                <p class="delete_msg">Do you wish to delete the<br>selected FAQ?</p>
-                <button class="faq_delete_btn_large" id="deleteFaqConfirmBtn" type="button">Delete FAQ</button>
-                <small class="delete_subtext">This process cannot be undone</small>
-            </div>
-        </div>
-    </section>
+    </div>
+</section>
 @endsection
 
 @vite('resources/js/owner/content_page/main_content_page.js')
