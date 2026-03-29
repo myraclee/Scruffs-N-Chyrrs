@@ -227,7 +227,7 @@
     display: none;
     justify-content: center;
     align-items: center;
-    z-index: 1;
+    z-index: 999;
 }
 
 .edit_home_image_modal_box {

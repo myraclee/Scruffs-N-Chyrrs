@@ -69,10 +69,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     cancelBtn.addEventListener("click", closeModal);
 
-    modal.addEventListener("click", (e) => {
-        if (e.target === modal) closeModal();
-    });
-
     saveBtn.addEventListener("click", async () => {
         hideErrors();
 

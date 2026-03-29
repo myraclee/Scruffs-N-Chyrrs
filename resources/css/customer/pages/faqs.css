@@ -117,7 +117,7 @@
 
 /* Custom expand/collapse arrow */
 .faq_item details summary::after {
-    content: '▼';
+    content: "▼";
     font-size: 12px;
     color: #682c7a;
     transition: transform 0.3s ease;

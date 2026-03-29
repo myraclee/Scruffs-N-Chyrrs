@@ -50,8 +50,8 @@ let products_list = [];
 let products_edit_id = null;
 let products_has_cover = false;
 let products_main_file = null;
-let products_price_files = [];  // New image files being added
-let products_price_kept_ids = [];  // Existing image IDs to keep (from database)
+let products_price_files = []; // New image files being added
+let products_price_kept_ids = []; // Existing image IDs to keep (from database)
 let products_notes_files = [];
 
 // ================= INITIALIZATION =================
@@ -333,10 +333,7 @@ products_add_btn.addEventListener("click", () => {
 });
 
 window.addEventListener("click", (e) => {
-    if (
-        e.target === products_modal ||
-        e.target === products_delete_confirm_modal
-    ) {
+    if (e.target === products_delete_confirm_modal) {
         e.target.style.display = "none";
         if (e.target === products_modal) products_reset_modal();
     }
@@ -460,8 +457,8 @@ async function editProduct(productId) {
 
     // Restore price images from database
     products_price_images_wrapper.innerHTML = "";
-    products_price_files = [];  // Clear new files array
-    products_price_kept_ids = [];  // Track which existing images to keep
+    products_price_files = []; // Clear new files array
+    products_price_kept_ids = []; // Track which existing images to keep
     if (product.price_images && product.price_images.length > 0) {
         product.price_images.forEach((priceImage) => {
             const imagePath = priceImage.image_path || priceImage.path;
