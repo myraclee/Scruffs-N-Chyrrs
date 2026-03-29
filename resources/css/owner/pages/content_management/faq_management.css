@@ -91,6 +91,10 @@
     align-items: center;
 }
 
+.category_box_header span {
+    font-family: Coolvetica;
+}
+
 .category_sparkle {
     font-size: 16px;
     opacity: 0.7;
@@ -125,7 +129,6 @@
 .category_box_empty {
     text-align: center;
     color: #999999;
-    font-family: Coolvetica;
     font-size: 15px;
     padding-top: 20px;
     padding-bottom: 20px;
@@ -678,14 +681,6 @@
     margin-bottom: 20px;
 }
 
-.add_faq_modal_box select:focus,
-.add_faq_modal_box input:focus,
-.add_faq_modal_box textarea:focus {
-    outline: none;
-    border-color: #4c1c5b;
-    box-shadow: 0 0 0 3px rgba(104, 44, 122, 0.1);
-}
-
 .add_faq_modal_box textarea {
     resize: vertical;
     min-height: 140px;
@@ -750,20 +745,6 @@
 .faq_modal_actions_right {
     display: flex;
     gap: 12px;
-}
-
-.cancel_faq,
-.save_faq {
-    padding: 8px 14px;
-    border: none;
-    border-radius: 30px;
-    font-family: Coolvetica;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-    width: 90px;
-    height: 35px;
 }
 
 .cancel_faq {
