@@ -47,7 +47,7 @@ async function loadMaterialsAndProducts() {
   try {
     // Show loading state
     if (emptyInventoryRow) {
-      emptyInventoryRow.innerHTML = '<td colspan="3" class="text-center" style="padding: 60px; color: #682C7A;">Loading inventory...</td>';
+      emptyInventoryRow.innerHTML = '<td colspan="3" class="text-center" style="padding: 60px; color: #682C7A; font-style: italic;">Loading inventory...</td>';
     }
 
     const [materials, products] = await Promise.all([

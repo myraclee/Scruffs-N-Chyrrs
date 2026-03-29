@@ -23,14 +23,14 @@
         <div class="card low_stock">
             <h3>Low Stocks</h3>
             <div id="lowStockList">
-                <p class="empty_status" id="lowStockEmpty">Inventory levels are normal.</p>
+                <p class="empty_status" style="font-style: italic; opacity: 0.7;">Checking levels...</p>
             </div>
         </div>
         
         <div class="card out_of_stock">
             <h3>Out of Stock</h3>
             <div id="outOfStockList">
-                <p class="empty_status" id="outOfStockEmpty">All items are in stock.</p>
+                <p class="empty_status" style="font-style: italic; opacity: 0.7;">Checking levels...</p>
             </div>
         </div>
     </div>
