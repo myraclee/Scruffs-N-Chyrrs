@@ -1,10 +1,71 @@
+.header_animation {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.header_animation span {
+    font-size: 20px;
+    color: #682c7a;
+    animation: twinkle 2.4s ease-in-out infinite;
+}
+
+/* Base letters */
+.animated_header .letter {
+    display: inline-block;
+    font: inherit;
+    color: inherit;
+    opacity: 0;
+    transform: scale(0.3) translateY(20px);
+    animation: letterIn 0.3s ease forwards;
+    animation-delay: calc(var(--delay) * 0.03s);
+    /* allow glow to extend outside letter box */
+    position: relative;
+    filter: drop-shadow(0 0 12px rgba(104, 44, 122, 0.22));
+}
+
+/* Entrance animation */
+@keyframes letterIn {
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* twinkle */
+@keyframes twinkle {
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+    }
+    20% {
+        opacity: 0.06;
+        transform: scale(0.46) rotate(28deg);
+    }
+    42% {
+        opacity: 0.92;
+        transform: scale(1.1) rotate(-10deg);
+    }
+    62% {
+        opacity: 0.08;
+        transform: scale(0.5) rotate(22deg);
+    }
+    82% {
+        opacity: 1;
+        transform: scale(1.04) rotate(-4deg);
+    }
+}
+
 /* Typography & Core Colors */
 .page_title {
     font-family: SuperDream;
     font-size: 48px;
     color: #682c7a;
-    margin-bottom: 30px;
 }
+
 .text-center {
     text-align: center;
 }
@@ -234,7 +295,7 @@
 
 .cancel_btn,
 .save_btn {
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 18px;
     padding: 12px 30px;
     border: none;
@@ -265,52 +326,70 @@
 
 /* Tablets (iPad size) */
 @media (max-width: 1024px) {
-    .status_cards { gap: 15px; }
-    .card { padding: 15px 20px; min-width: 150px; }
+    .status_cards {
+        gap: 15px;
+    }
+    .card {
+        padding: 15px 20px;
+        min-width: 150px;
+    }
 }
 
 /* Mobile Phones */
 @media (max-width: 768px) {
     /* Title Adjustments */
-    .page_title { 
-        font-size: 38px; 
+    .page_title {
+        font-size: 38px;
         margin-top: 10px;
-        line-height: 1.1; 
+        line-height: 1.1;
     }
-    
+
     /* Stack the Status Cards */
-    .status_cards { 
-        flex-direction: column; 
-        gap: 15px; 
-        padding: 0 15px; 
+    .status_cards {
+        flex-direction: column;
+        gap: 15px;
+        padding: 0 15px;
     }
-    
+
     /* Responsive Table Wrapper */
-    .table_wrapper { 
-        margin: 0 15px 30px 15px; 
-        overflow-x: auto; 
+    .table_wrapper {
+        margin: 0 15px 30px 15px;
+        overflow-x: auto;
     }
-    .inventory_table th { font-size: 16px; padding: 12px 10px; }
-    .inventory_table td { font-size: 14px; padding: 12px 10px; }
-    
+    .inventory_table th {
+        font-size: 16px;
+        padding: 12px 10px;
+    }
+    .inventory_table td {
+        font-size: 14px;
+        padding: 12px 10px;
+    }
+
     /* Mobile Modal Fixes */
     .material_modal {
-        width: 90%; 
+        width: 90%;
         padding: 25px;
     }
-    .modal_title { font-size: 32px; }
-    
+    .modal_title {
+        font-size: 32px;
+    }
+
     .consumed_header {
         flex-direction: column;
         align-items: flex-start;
         gap: 8px;
     }
-    .consumed_note { text-align: left; }
-    
-    /* Stack Modal Buttons for easy thumb tapping */
-    .modal_actions { 
-        flex-direction: column; 
-        gap: 10px; 
+    .consumed_note {
+        text-align: left;
     }
-    .cancel_btn, .save_btn { width: 100%; } 
+
+    /* Stack Modal Buttons for easy thumb tapping */
+    .modal_actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .cancel_btn,
+    .save_btn {
+        width: 100%;
+    }
 }

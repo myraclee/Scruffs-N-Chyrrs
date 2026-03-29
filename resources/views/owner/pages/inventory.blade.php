@@ -13,7 +13,11 @@
 @endphp
 
 <div class="content_container">
-    <h1 class="page_title">Inventory Management</h1>
+     <div class="header_animation">
+        <span class="star">✦</span>
+        <h1 class="page_title animated_header" id="animatedHeader">Inventory Management</h1>
+        <span class="star">✦</span>
+    </div>
 
     <div class="status_cards">
         <div class="card low_stock">
@@ -120,4 +124,5 @@
 </div>
 
 @vite('resources/js/owner/inventory_refactored.js')
+@vite('resources/js/owner/animations.js')
 @endsection
