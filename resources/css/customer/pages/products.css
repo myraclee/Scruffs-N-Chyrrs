@@ -1,5 +1,29 @@
 /* Products Page Styles - Customer Facing */
 
+/* ===== KEYFRAME ANIMATIONS ===== */
+@keyframes pageFadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(28px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Fixes the missing animation for the dynamically loaded product cards */
+@keyframes cardIn {
+    from {
+        opacity: 0;
+        transform: translateY(40px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1) rotate(var(--card-rotation, var(--rot)));
+    }
+}
+
 /* ===== OPENING SECTION ===== */
 .products_opening {
     display: flex;
@@ -11,19 +35,29 @@
     gap: 20px;
 }
 
+/* Update your h1 to add the animation */
 .products_opening h1 {
     font-family: SuperDream;
     font-size: 50px;
     color: #682c7a;
     margin: 0;
+    
+    /* 🚀 NEW: Added Animation */
+    animation: pageFadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.1s;
 }
 
+/* Update your p to add the animation */
 .products_opening p {
     font-family: Coolvetica;
     font-size: 20px;
     color: #682c7a;
     margin: 0;
     line-height: 1.6;
+    
+    /* 🚀 NEW: Added Animation */
+    animation: pageFadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.25s;
 }
 
 /* ===== RUSH FEE ===== */
@@ -34,6 +68,10 @@
     justify-content: center;
     gap: 10px;
     margin-bottom: 50px;
+    
+    /* 🚀 NEW: Added Animation */
+    animation: pageFadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.4s;
 }
 
 .rushfee_section span {
@@ -264,16 +302,23 @@
     }
 
     .products_grid {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 25px;
+        /* Force a 2-column grid on phones so they don't get too squished */
+        grid-template-columns: repeat(2, 1fr); 
+        gap: 12px; /* Tighter gap for small screens */
+        padding: 0 10px;
     }
 
     .product_card {
-        width: 200px;
+        width: 100%; /* Lets it fill the 2-column grid perfectly */
+        padding: 8px;
+        padding-bottom: 20px;
+        /* Speed up the mobile animation so it feels snappy! */
+        animation-duration: 0.5s; 
     }
 
     .product_card_image {
-        height: 160px;
+        height: 140px; /* Slightly taller to keep the aspect ratio looking good */
+        margin-bottom: 8px;
     }
 
     .product_card_info h3 {

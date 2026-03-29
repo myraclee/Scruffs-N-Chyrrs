@@ -131,10 +131,23 @@ form {
     form {
         max-width: 100%;
         padding: 0 15px;
+        box-sizing: border-box;
+    }
+
+    /* 🚀 NEW: Make the container fill the available space */
+    .login_container {
+        width: 100%;
+    }
+
+    /* 🚀 NEW: Make the textbox flexible and prevent padding from breaking the width */
+    .login_textbox {
+        width: 100%;
+        box-sizing: border-box; 
     }
 
     .login_button {
         width: 100%;
         padding: 12px 20px;
+        box-sizing: border-box;
     }
 }

@@ -83,11 +83,11 @@
             <div class="signup_contact_container">
                 <label for="contact_number">Contact Number</label>
                 
-                <div style="position: relative; width: max-content;">
+                <div style="position: relative; width: 100%;">
                     <span style="position: absolute; left: 20px; top: 16px; font-family: Coolvetica, sans-serif; font-size: 15px; color: #333; pointer-events: none;">+63</span>
                     
                     <input class="signup_textbox" type="tel" id="contact_number" name="contact_number" placeholder="9123456789" value="{{ old('contact_number') }}" required maxlength="10" pattern="^9[0-9]{9}$"
-                           style="width: 320px; padding-left: 50px; @error('contact_number') border: 2px solid #d93025; @enderror">
+                           style="padding-left: 50px; @error('contact_number') border: 2px solid #d93025; @enderror">
                            
                     <span class="client_error">Please enter a 10-digit number starting with 9.</span>
                     @error('contact_number')

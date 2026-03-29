@@ -72,6 +72,8 @@ function createProductCard(product, index) {
         index % 2 === 0 ? "-2deg" : "2deg",
     );
 
+    card.style.animationDelay = `${0.3 + (index * 0.1)}s`;
+
     const imageUrl = product.cover_image_path
         ? `/storage/${product.cover_image_path}`
         : "/images/placeholder.png";
