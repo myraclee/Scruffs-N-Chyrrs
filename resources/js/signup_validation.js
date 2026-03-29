@@ -1,46 +1,38 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const form = document.querySelector('form[action*="signup"]');
+  const form = document.getElementById('custom_signup_form');
   const emailInput = document.getElementById('email');
   const contactInput = document.getElementById('contact_number');
   const passwordInput = document.getElementById('password');
   const confirmPasswordInput = document.getElementById('password_confirmation');
 
-  if (!form) return;
-
-  // Email validation function
-  function validateEmail(email) {
-    return email.includes('@');
+  if (!form) {
+      console.error("Validation Script Error: Could not find the signup form!");
+      return;
   }
 
-  // Phone validation function
+  // Strict email validation
+  function validateEmail(email) {
+    const re = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
+    return re.test(email);
+  }
+
+  // Phone validation function 
   function validatePhone(phone) {
-    return phone.startsWith('+639');
+    return /^9[0-9]{9}$/.test(phone);
   }
 
   // Password validation function
   function validatePassword(password) {
     const errors = [];
-
-    if (password.length < 8) {
-      errors.push('At least 8 characters');
-    }
-    if (!/[A-Z]/.test(password)) {
-      errors.push('At least 1 uppercase letter');
-    }
-    if (!/[a-z]/.test(password)) {
-      errors.push('At least 1 lowercase letter');
-    }
-    if (!/[0-9]/.test(password)) {
-      errors.push('At least 1 number');
-    }
-    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
-      errors.push('At least 1 symbol (!@#$%^&* etc.)');
-    }
-
+    if (password.length < 8) errors.push('At least 8 characters');
+    if (!/[A-Z]/.test(password)) errors.push('At least 1 uppercase letter');
+    if (!/[a-z]/.test(password)) errors.push('At least 1 lowercase letter');
+    if (!/[0-9]/.test(password)) errors.push('At least 1 number');
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) errors.push('At least 1 symbol (!@#$%^&* etc.)');
     return errors;
   }
 
-  // Show password validation hints
+  // Show password validation hints (Real-time by default)
   if (passwordInput) {
     passwordInput.addEventListener('input', () => {
       const password = passwordInput.value;
@@ -87,20 +79,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Validate email
     const email = emailInput.value.trim();
-    if (!validateEmail(email)) {
-      isValid = false;
-      showFieldError(emailInput, 'Email must contain an @ symbol');
+    if (email === '') {
+        isValid = false;
+        showFieldError(emailInput, 'Please enter a valid email address.');
+    } else if (!email.includes('@')) {
+        isValid = false;
+        showFieldError(emailInput, 'Email must contain an @ symbol.');
+    } else if (!validateEmail(email)) {
+        isValid = false;
+        showFieldError(emailInput, 'Please enter a valid email address.');
     } else {
-      clearFieldError(emailInput);
+        clearFieldError(emailInput);
     }
 
-    // Validate phone
+    // Validate phone 
     const phone = contactInput.value.trim();
-    if (!validatePhone(phone)) {
-      isValid = false;
-      showFieldError(contactInput, 'Phone number must start with +639');
+    if (phone === '') {
+        isValid = false;
+        showFieldError(contactInput, 'Please enter a 10-digit number starting with 9.');
+    } else if (!validatePhone(phone)) {
+        isValid = false;
+        showFieldError(contactInput, 'Phone number must be 10 digits and start with 9.');
     } else {
-      clearFieldError(contactInput);
+        clearFieldError(contactInput);
     }
 
     // Validate password
@@ -118,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmPassword = confirmPasswordInput.value;
     if (password !== confirmPassword) {
       isValid = false;
-      showFieldError(confirmPasswordInput, 'Passwords do not match');
+      showFieldError(confirmPasswordInput, 'Passwords do not match.');
     } else {
       clearFieldError(confirmPasswordInput);
     }
@@ -128,43 +129,63 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Real-time validation feedback
+  // CHANGED TO 'input': Real-time validation feedback exactly as you type
   if (emailInput) {
-    emailInput.addEventListener('blur', () => {
+    emailInput.addEventListener('input', () => {
       const email = emailInput.value.trim();
-      if (email && !validateEmail(email)) {
-        showFieldError(emailInput, 'Email must contain an @ symbol');
+      if (email === '') {
+          showFieldError(emailInput, 'Please enter a valid email address.');
+      } else if (!email.includes('@')) {
+          showFieldError(emailInput, 'Email must contain an @ symbol.');
+      } else if (!validateEmail(email)) {
+          showFieldError(emailInput, 'Please enter a valid email address.');
       } else {
-        clearFieldError(emailInput);
+          clearFieldError(emailInput);
       }
     });
   }
 
   if (contactInput) {
-    contactInput.addEventListener('blur', () => {
+    contactInput.addEventListener('input', () => {
       const phone = contactInput.value.trim();
-      if (phone && !validatePhone(phone)) {
-        showFieldError(contactInput, 'Phone number must start with +639');
+      if (phone === '') {
+          showFieldError(contactInput, 'Please enter a 10-digit number starting with 9.');
+      } else if (!validatePhone(phone)) {
+          showFieldError(contactInput, 'Phone number must be 10 digits and start with 9.');
       } else {
-        clearFieldError(contactInput);
+          clearFieldError(contactInput);
+      }
+    });
+  }
+
+  if (confirmPasswordInput) {
+    confirmPasswordInput.addEventListener('input', () => {
+      const password = passwordInput.value;
+      const confirmPassword = confirmPasswordInput.value;
+      if (confirmPassword !== '' && password !== confirmPassword) {
+          showFieldError(confirmPasswordInput, 'Passwords do not match.');
+      } else {
+          clearFieldError(confirmPasswordInput);
       }
     });
   }
 
   function showFieldError(field, message) {
-    let errorElement = field.parentElement.querySelector('.validation_error');
+    let errorElement = field.parentElement.querySelector('.validation_error') || field.parentElement.querySelector('.client_error');
     if (!errorElement) {
       errorElement = document.createElement('span');
       errorElement.className = 'validation_error';
       field.parentElement.appendChild(errorElement);
     }
+    errorElement.style.display = 'block';
     errorElement.textContent = message;
     field.style.borderColor = '#d32f2f';
   }
 
   function clearFieldError(field) {
-    const errorElement = field.parentElement.querySelector('.validation_error');
+    const errorElement = field.parentElement.querySelector('.validation_error') || field.parentElement.querySelector('.client_error');
     if (errorElement) {
+      errorElement.style.display = 'none';
       errorElement.textContent = '';
     }
     field.style.borderColor = '';
