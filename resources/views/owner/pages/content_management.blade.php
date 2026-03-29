@@ -388,13 +388,11 @@
 
     {{-- Delete Category Confirmation Modal --}}
     <div id="deleteCategoryConfirmOverlay" class="modal_overlay">
+
         <div class="delete_confirmation_modal">
-            <h3 class="delete_confirmation_title">Delete Category</h3>
-            <p id="deleteCategoryConfirmMessage">Are you sure?</p>
-            <div class="delete_confirmation_actions">
-                <button class="cancel_delete_btn" id="deleteCategoryConfirmNo">Cancel</button>
-                <button class="confirm_delete_btn" id="deleteCategoryConfirmYes">Delete</button>
-            </div>
+            <p class="delete_msg">Do you wish to delete the selected category?</p>
+            <button class="faq_delete_btn_large" id="deleteCategoryConfirmYes" type="button">Delete Category</button>
+            <small class="delete_subtext">This process will delete all FAQs under the category and cannot be undone.</small>
         </div>
     </div>
 
@@ -433,7 +431,7 @@
     {{-- Delete Confirmation Modal --}}
     <div class="modal_overlay" id="deleteFaqModalOverlay">
         <div class="delete_confirm_box faq_delete_box">
-            <p class="delete_msg">Do you wish to delete the<br>selected FAQ?</p>
+            <p class="delete_msg">Do you wish to delete the selected FAQ?</p>
             <button class="faq_delete_btn_large" id="deleteFaqConfirmBtn" type="button">Delete FAQ</button>
             <small class="delete_subtext">This process cannot be undone</small>
         </div>

@@ -522,8 +522,13 @@
     background: #fff7ec;
     border-radius: 24px;
     padding: 35px 30px;
-    width: 300px;
+    max-width: 340px;
+    width: 90%;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
     text-align: center;
 }
 
@@ -712,30 +717,38 @@
 
 .faq_modal_actions {
     display: flex;
-    justify-content: flex-end;
     align-items: center;
+    justify-content: space-between;
     margin-top: 28px;
+}
+
+.faq_modal_actions_right {
+    display: flex;
+
+    align-items: center;
     gap: 12px;
 }
 
 .delete_faq_modal_btn {
-    background: #c83333;
-    color: #fff7ec;
     border: none;
     padding: 8px 14px;
-    border-radius: 30px;
-    font-family: Coolvetica;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.2s ease;
     width: 90px;
     height: 35px;
+    background: #c83333;
+    border-radius: 30px;
+    font-family: Coolvetica;
+    font-size: 15px;
+    color: #fff7ec;
+    cursor: pointer;
+    margin-right: auto;
+    transition:
+        transform 0.2s ease,
+        background-color 0.2s ease;
 }
 
 .delete_faq_modal_btn:not(.btn_hidden):hover {
-    background: #8d0e0e;
     transform: scale(1.05);
+    background-color: #8d0e0e;
 }
 
 .delete_faq_modal_btn.btn_hidden {
@@ -745,6 +758,18 @@
 .faq_modal_actions_right {
     display: flex;
     gap: 12px;
+}
+
+.cancel_faq,
+.save_faq {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 30px;
+    font-family: Coolvetica;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    width: 90px;
+    height: 35px;
 }
 
 .cancel_faq {
@@ -794,7 +819,6 @@
 .delete_confirm_box {
     background: #fff7ec;
     border-radius: 24px;
-    padding: 35px 30px;
     width: 300px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     text-align: center;
@@ -804,24 +828,22 @@
     font-family: Coolvetica;
     font-size: 16px;
     color: #682c7a;
-    margin: 0 0 24px 0;
-    line-height: 1.6;
 }
 
 .faq_delete_btn_large {
-    background: #c83333;
+    width: 140px;
+    height: 36px;
+    background-color: #c83333;
     color: #fff7ec;
     border: none;
-    padding: 8px 14px;
+    outline: none;
     border-radius: 30px;
-    font-family: Coolvetica;
-    font-size: 15px;
-    font-weight: bold;
     cursor: pointer;
-    width: 140px;
-    height: 34px;
-    margin-bottom: 14px;
-    transition: all 0.2s ease;
+    font-family: Coolvetica;
+    font-size: 14px;
+    transition:
+        background-color 0.2s ease,
+        transform 0.2s ease;
 }
 
 .faq_delete_btn_large:hover {
@@ -833,7 +855,7 @@
     display: block;
     font-family: Coolvetica;
     font-size: 13px;
-    color: #999;
+    color: #c83333;
 }
 
 /* ==================== UTILITY CLASSES ==================== */

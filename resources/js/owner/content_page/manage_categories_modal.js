@@ -71,6 +71,12 @@ function setupEventListeners() {
 
     deleteConfirmYesBtn?.addEventListener("click", confirmDelete);
     deleteConfirmNoBtn?.addEventListener("click", cancelDelete);
+
+    deleteConfirmOverlay?.addEventListener("click", (e) => {
+        if (e.target === deleteConfirmOverlay) {
+            cancelDelete();
+        }
+    });
 }
 
 // ================= LOAD CATEGORIES =================

@@ -608,21 +608,23 @@
     font-family: Coolvetica;
     font-size: 18px;
     color: #682c7a;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 .delete_confirm_box button {
+    width: 140px;
+    height: 36px;
     background-color: #c83333;
     color: #fff7ec;
     border: none;
     outline: none;
-    padding: 10px 20px;
     border-radius: 30px;
     cursor: pointer;
     font-family: Coolvetica;
     font-size: 14px;
-
-    margin-bottom: 5px;
+    transition:
+        background-color 0.2s ease,
+        transform 0.2s ease;
 }
 
 .delete_confirm_box button:hover {
