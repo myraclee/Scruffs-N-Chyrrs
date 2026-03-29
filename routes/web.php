@@ -63,6 +63,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/account/update-password', [AuthController::class, 'updatePassword'])->name('update-password');
 });
 
+//View Order
+Route::middleware('auth')->group(function () {
+    Route::get('/account/orders', function () {
+        return view('customer.view_orders'); // your Blade for customers
+    })->name('customer.orders');
+});
+
 // API ROUTES - Products and Materials
 Route::prefix('api/products')->group(function () {
     Route::get('/', [ProductController::class, 'index']);
