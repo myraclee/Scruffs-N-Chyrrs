@@ -1,9 +1,26 @@
 /* =============================================
-   MY ACCOUNT PAGE
+   MY ACCOUNT PAGE - INFO ONLY
    Warm cream × deep purple × sparkle-heavy
    ============================================= */
 
-/* 12 sparks, varied sizes / positions / timings */
+/* Background Sparkles */
+.acct_sparkles_bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.acct_spark {
+    position: absolute;
+    color: rgba(104, 44, 122, 0.12);
+    animation: acct_spark_drift 6s ease-in-out infinite;
+    pointer-events: none;
+}
+
 .acct_spark.s1 {
     top: 5%;
     left: 4%;
@@ -11,6 +28,7 @@
     animation-duration: 5.5s;
     animation-delay: 0s;
 }
+
 .acct_spark.s2 {
     top: 12%;
     right: 7%;
@@ -18,6 +36,7 @@
     animation-duration: 7s;
     animation-delay: 1.2s;
 }
+
 .acct_spark.s3 {
     top: 22%;
     left: 9%;
@@ -25,6 +44,7 @@
     animation-duration: 6.2s;
     animation-delay: 0.6s;
 }
+
 .acct_spark.s4 {
     top: 35%;
     right: 3%;
@@ -32,6 +52,7 @@
     animation-duration: 5.8s;
     animation-delay: 2.4s;
 }
+
 .acct_spark.s5 {
     top: 48%;
     left: 2%;
@@ -39,6 +60,7 @@
     animation-duration: 6.8s;
     animation-delay: 0.3s;
 }
+
 .acct_spark.s6 {
     top: 58%;
     right: 9%;
@@ -46,6 +68,7 @@
     animation-duration: 5.2s;
     animation-delay: 1.8s;
 }
+
 .acct_spark.s7 {
     top: 68%;
     left: 7%;
@@ -53,6 +76,7 @@
     animation-duration: 7.4s;
     animation-delay: 3.1s;
 }
+
 .acct_spark.s8 {
     top: 77%;
     right: 4%;
@@ -60,6 +84,7 @@
     animation-duration: 6s;
     animation-delay: 0.9s;
 }
+
 .acct_spark.s9 {
     top: 86%;
     left: 12%;
@@ -67,6 +92,7 @@
     animation-duration: 5.6s;
     animation-delay: 2s;
 }
+
 .acct_spark.s10 {
     top: 92%;
     right: 14%;
@@ -74,6 +100,7 @@
     animation-duration: 6.4s;
     animation-delay: 1.5s;
 }
+
 .acct_spark.s11 {
     top: 28%;
     left: 94%;
@@ -81,6 +108,7 @@
     animation-duration: 7.1s;
     animation-delay: 4s;
 }
+
 .acct_spark.s12 {
     top: 70%;
     left: 90%;
@@ -90,7 +118,8 @@
 }
 
 @keyframes acct_spark_drift {
-    0% {
+    0%,
+    100% {
         opacity: 0;
         transform: translateY(0) rotate(0deg);
     }
@@ -106,14 +135,20 @@
         opacity: 0.6;
         transform: translateY(-6px) rotate(18deg);
     }
-    100% {
+}
+
+@keyframes acct_fade_up {
+    from {
         opacity: 0;
-        transform: translateY(0) rotate(0deg);
+        transform: translateY(18px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
     }
 }
 
-/* ==================== PAGE CONTAINER ==================== */
-
+/* Container */
 .account_container {
     position: relative;
     z-index: 1;
@@ -125,9 +160,7 @@
     gap: 28px;
 }
 
-/* ==================== WELCOME HEADER ==================== */
-/* No card/box — just a glowing centered header */
-
+/* Welcome Header */
 .acct_welcome {
     display: flex;
     align-items: center;
@@ -141,7 +174,7 @@
 .acct_welcome_spark_big {
     font-size: 32px;
     color: #682c7a;
-
+    filter: drop-shadow(0 0 8px rgba(220, 186, 230, 0.7));
     animation: acct_spark_drift 4s ease-in-out infinite 0.2s;
     flex-shrink: 0;
 }
@@ -175,12 +208,10 @@
     color: #682c7a;
     margin: 0;
     line-height: 1.15;
-    /* Soft purple text glow */
     filter: drop-shadow(0 0 12px rgba(104, 44, 122, 0.22));
 }
 
-/* ==================== FLASH MESSAGE ==================== */
-
+/* Flash Messages */
 .alert {
     display: flex;
     align-items: center;
@@ -190,6 +221,7 @@
     font-family: "Coolvetica", sans-serif;
     font-size: 14px;
     animation: acct_fade_up 0.4s ease both;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .alert_icon {
@@ -198,20 +230,18 @@
 }
 
 .alert_success {
-    background: #e8f5e9;
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
     border: 2px solid #4caf50;
     color: #2e7d32;
 }
 
 .alert_error {
-    background: #ffebee;
+    background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
     border: 2px solid #d32f2f;
     color: #c62828;
 }
 
-/* ==================== SECTION HEADINGS ==================== */
-/* "My Account" / "My Orders" separators */
-
+/* Section Heading */
 .acct_section_heading {
     display: flex;
     align-items: center;
@@ -244,8 +274,7 @@
     border-radius: 2px;
 }
 
-/* ==================== ACCOUNT INFO SECTION ==================== */
-
+/* Account Info Section */
 .account_info_section {
     background: #fff7ec;
     border: 2px solid #682c7a;
@@ -280,19 +309,17 @@
     border: 2px solid #682c7a;
     border-radius: 50px;
     padding: 5px 22px;
-    transition:
-        background 0.2s ease,
-        color 0.2s ease,
-        transform 0.2s ease,
-        box-shadow 0.2s ease;
+    transition: all 0.2s ease;
 }
 
 .edit_link_btn:hover {
     background: #682c7a;
     color: #fff7ec;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(104, 44, 122, 0.3);
 }
 
-/* ---- Info grid ---- */
+/* Info Grid */
 .info_grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -301,16 +328,13 @@
 
 .info_item {
     background: #fffcf8;
-    border-left: 4px solid #682c7a; /*2px solid #dcbae6*/
+    border-left: 4px solid #682c7a;
     border-radius: 50px;
     padding: 13px 18px;
     box-shadow: 0 2px 8px rgba(104, 44, 122, 0.06);
     animation: acct_fade_up 0.45s var(--delay, 0s)
         cubic-bezier(0.34, 1.4, 0.64, 1) both;
-    transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease,
-        transform 0.2s ease;
+    transition: all 0.2s ease;
 }
 
 .info_item:hover {
@@ -344,7 +368,7 @@
     color: #726b6b;
 }
 
-/* ---- Change Password footer ---- */
+/* Footer */
 .info_section_footer {
     display: flex;
     justify-content: flex-end;
@@ -364,280 +388,129 @@
     text-decoration: none;
     padding: 10px 26px;
     border-radius: 50px;
-    transition:
-        background 0.2s ease,
-        transform 0.2s ease,
-        box-shadow 0.2s ease;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 16px rgba(104, 44, 122, 0.3);
 }
 
 .password_btn:hover {
     background: #4c1c5b;
     color: #fff7ec;
-    transform: scale(1.05);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(104, 44, 122, 0.4);
 }
 
-.password_btn_spark {
-    font-size: 12px;
-    opacity: 0.75;
-    animation: acct_spark_drift 3s ease-in-out infinite;
+/* Quick Links Section */
+.quick_links_section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    animation: acct_fade_up 0.55s 0.15s cubic-bezier(0.34, 1.4, 0.64, 1) both;
 }
 
-/* ==================== ORDERS SECTION ==================== */
-
-.account_orders_section {
+.quick_link_card {
     background: #fff7ec;
     border: 2px solid #682c7a;
-    border-radius: 28px;
-    padding: 30px 34px 34px;
-    box-shadow:
-        0 6px 28px rgba(104, 44, 122, 0.09),
-        0 0 0 5px rgba(104, 44, 122, 0.04);
-    animation: acct_fade_up 0.55s 0.18s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+    border-radius: 20px;
+    padding: 24px 28px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 16px rgba(104, 44, 122, 0.08);
+    position: relative;
+    overflow: hidden;
 }
 
-.orders_section_header h3 {
-    font-family: "Coolvetica", sans-serif;
+.quick_link_card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(104, 44, 122, 0.05),
+        transparent
+    );
+    transition: left 0.5s;
+}
+
+.quick_link_card:hover::before {
+    left: 100%;
+}
+
+.quick_link_card:hover {
+    border-color: #682c7a;
+    box-shadow: 0 8px 24px rgba(104, 44, 122, 0.15);
+    transform: translateY(-4px);
+}
+
+.quick_link_icon {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, #f9f0ff 0%, #dcbae6 100%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
     color: #682c7a;
-    font-size: 25px;
-    font-weight: 400;
-    margin: 0 0 18px 0;
+    transition: all 0.3s ease;
 }
 
-.orders_count_label {
+.quick_link_card:hover .quick_link_icon {
+    background: linear-gradient(135deg, #682c7a 0%, #8a4a9e 100%);
+    color: white;
+    transform: scale(1.1) rotate(-5deg);
+}
+
+.admin_crown {
+    font-size: 28px;
+}
+
+.quick_link_content {
+    flex: 1;
+}
+
+.quick_link_content h4 {
+    font-family: "Coolvetica", sans-serif;
+    font-size: 20px;
+    color: #682c7a;
+    margin: 0 0 4px 0;
+    font-weight: 600;
+}
+
+.quick_link_content p {
     font-family: "Coolvetica", sans-serif;
     font-size: 14px;
     color: rgba(104, 44, 122, 0.6);
-    margin: 0 0 16px 0;
+    margin: 0;
 }
 
-.orders_count_label strong {
+.quick_link_arrow {
+    font-size: 24px;
     color: #682c7a;
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
 }
 
-/* ---- Order cards ---- */
-.orders_list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+.quick_link_card:hover .quick_link_arrow {
+    transform: translateX(6px);
 }
 
-.order_card {
-    position: relative;
-    background: #fffcf8;
-    border: 1.5px solid rgba(104, 44, 122, 0.22);
-    border-radius: 18px;
-    padding: 18px 20px 18px 26px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease,
-        transform 0.2s ease;
+.quick_link_card.admin_link {
+    background: linear-gradient(135deg, #fff7ec 0%, #f9f0ff 100%);
+    border-color: #8a4a9e;
 }
 
-.order_card:hover {
+.quick_link_card.admin_link:hover {
     border-color: #682c7a;
-    box-shadow: 0 6px 20px rgba(104, 44, 122, 0.11);
-    transform: translateY(-2px);
 }
 
-.order_card_accent {
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 5px;
-    background: linear-gradient(180deg, #682c7a 0%, #b488cc 100%);
-    border-radius: 18px 0 0 18px;
-}
-
-.order_header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-bottom: 8px;
-    border-bottom: 1px dashed rgba(104, 44, 122, 0.18);
-}
-
-.order_id {
-    font-family: "Coolvetica", sans-serif;
-    color: #682c7a;
-    font-size: 16px;
-}
-
-.order_date {
-    font-family: "Coolvetica", sans-serif;
-    color: rgba(104, 44, 122, 0.45);
-    font-size: 13px;
-}
-
-.order_details p {
-    font-family: "Coolvetica", sans-serif;
-    color: #312e2e;
-    font-size: 14px;
-    margin: 3px 0;
-}
-
-.order_details strong {
-    color: #682c7a;
-}
-
-.order_status {
-    font-family: "Coolvetica", sans-serif;
-    font-size: 13px;
-    padding: 4px 14px;
-    border-radius: 20px;
-    align-self: flex-start;
-}
-
-.status_pending {
-    background: #fff2d9;
-    color: #b88a00;
-    border: 1.5px solid #f4c430;
-}
-.status_completed {
-    background: #e8f5e9;
-    color: #2e7d32;
-    border: 1.5px solid #4caf50;
-}
-.status_processing {
-    background: #e8eafd;
-    color: #3949ab;
-    border: 1.5px solid #5c6bc0;
-}
-.status_cancelled {
-    background: #ffebee;
-    color: #c62828;
-    border: 1.5px solid #e57373;
-}
-
-/* ---- Empty state ---- */
-.empty_orders {
-    text-align: center;
-    padding: 44px 20px;
-    background: #fffcf8;
-    border: 2px dashed rgba(104, 44, 122, 0.22);
-    border-radius: 18px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-}
-
-.empty_orders_sparkles {
-    display: flex;
-    gap: 12px;
-    color: #dcbae6;
-    font-size: 14px;
-}
-
-.empty_orders_sparkles span:nth-child(1) {
-    animation: acct_spark_drift 4s ease-in-out infinite 0s;
-}
-.empty_orders_sparkles span:nth-child(2) {
-    animation: acct_spark_drift 4s ease-in-out infinite 0.8s;
-}
-.empty_orders_sparkles span:nth-child(3) {
-    animation: acct_spark_drift 4s ease-in-out infinite 1.6s;
-}
-
-.no_orders_text {
-    font-family: "Coolvetica", sans-serif;
-    color: #682c7a;
-    font-size: 19px;
-    margin: 0;
-}
-
-.no_orders_subtext {
-    font-family: "Coolvetica", sans-serif;
-    color: rgba(104, 44, 122, 0.45);
-    font-size: 13px;
-    margin: 0;
-}
-
-/* ==================== ADMIN SECTION ==================== */
-
-.admin_order_prompt {
-    position: relative;
-    text-align: center;
-    padding: 44px 24px;
-    background: #fffcf8;
-    border: 2px solid #682c7a;
-    border-radius: 18px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 18px;
-}
-
-.admin_prompt_sparkle {
-    position: absolute;
-    top: 16px;
-    right: 20px;
-    color: #682c7a;
-    font-size: 18px;
-    animation: acct_spark_drift 5s ease-in-out infinite;
-}
-
-.admin_prompt_text {
-    font-family: "Coolvetica", sans-serif;
-    color: #682c7a;
-    font-size: 15px;
-    margin: 0;
-    max-width: 380px;
-    line-height: 1.6;
-}
-
-.admin_dash_btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    background: #682c7a;
-    color: #fff7ec;
-    font-family: "Coolvetica", sans-serif;
-    font-size: 17px;
-    text-decoration: none;
-    padding: 14px 32px;
-    border-radius: 50px;
-    box-shadow: 0 6px 20px rgba(104, 44, 122, 0.35);
-    transition:
-        background 0.2s ease,
-        transform 0.2s ease,
-        box-shadow 0.2s ease;
-}
-
-.admin_dash_btn:hover {
-    background: #4c1c5b;
-    color: #fff7ec;
-    transform: scale(1.05);
-}
-
-.admin_btn_arrow {
-    font-size: 18px;
-    transition: transform 0.2s ease;
-}
-
-.admin_dash_btn:hover .admin_btn_arrow {
-    transform: translateX(4px);
-}
-
-/* ==================== SHARED ANIMATION ==================== */
-
-@keyframes acct_fade_up {
-    from {
-        opacity: 0;
-        transform: translateY(18px) scale(0.97);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-/* ==================== RESPONSIVE ==================== */
-
+/* Responsive */
 @media (max-width: 640px) {
     .account_container {
         padding: 32px 14px 80px;
@@ -647,12 +520,12 @@
     .account_header {
         font-size: 28px;
     }
+
     .acct_welcome_spark_big {
         font-size: 22px;
     }
 
-    .account_info_section,
-    .account_orders_section {
+    .account_info_section {
         padding: 22px 18px;
         border-radius: 20px;
     }
@@ -660,20 +533,24 @@
     .info_grid {
         grid-template-columns: 1fr;
     }
+
     .info_item--password {
         grid-column: 1;
     }
+
     .info_section_footer {
         justify-content: center;
     }
 
-    .order_header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 3px;
+    .quick_link_card {
+        padding: 20px;
     }
 
-    /* Fewer edge sparks on small screens */
+    .quick_link_icon {
+        width: 48px;
+        height: 48px;
+    }
+
     .acct_spark.s11,
     .acct_spark.s12 {
         display: none;
@@ -685,7 +562,18 @@
         flex-direction: column;
         gap: 8px;
     }
+
     .acct_section_title {
         font-size: 20px;
+    }
+
+    .quick_link_card {
+        flex-direction: column;
+        text-align: center;
+        gap: 16px;
+    }
+
+    .quick_link_content {
+        text-align: center;
     }
 }
