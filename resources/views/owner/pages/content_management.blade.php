@@ -9,7 +9,12 @@
 @endsection
 
 @section('content')
-    <h1 class="page_header">Content Management</h1>
+    <div class="header_animation">
+        <span class="star">✦</span>
+        <h1 class="page_header animated_header" id="animatedHeader">Content Management</h1>
+        <span class="star">✦</span>
+    </div>
+    
     <div class="content_pages">
         <button class="content_option" data-section="contentHomePage">Home Page</button>
         <button class="content_option" data-section="products">Products Page</button>
@@ -17,13 +22,16 @@
         <button class="content_option" data-section="faqs">FAQs</button>
     </div>
 
-    <hr>
 
     {{-- ===================== HOME PAGE ===================== --}}
     <section class="content_section" id="contentHomePage">
 
         <div class="content_homepage_images">
-            <h2>Home Page Images</h2>
+            <div class="header_separator">
+                <span class="acct_section_spark">✦</span>
+                <h2 class="content_header">Home Page Images</h2>
+                <span class="acct_section_line"></span>
+            </div>
             <p class="empty_home_images">No home page images uploaded yet.</p>
             <div class="home_images_uploads"></div>
             <div class="home_edit">
@@ -44,10 +52,14 @@
             </div>
         </div>
 
-        <hr>
 
         <div class="content_homepage_product">
-            <h2>Product Sample Images</h2>
+            <div class="header_separator">
+                <span class="acct_section_spark">✦</span>
+                <h2 class="content_header">Product Sample Images</h2>
+                <span class="acct_section_line"></span>
+            </div>
+
             <p class="empty_sample_images">No product sample images uploaded yet.</p>
             <div class="product_samples_wrapper"></div>
             <button class="add_sample">Add Sample</button>
@@ -87,7 +99,12 @@
 {{-- ===================== PRODUCTS ===================== --}}
     <section class="content_section" id="products">
         <div class="products_page">
-            <h1>Products</h1>
+            <div class="header_separator">
+                <span class="acct_section_spark">✦</span>
+                <h2 class="content_header">Products</h2>
+                <span class="acct_section_line"></span>
+            </div>
+
             <div id="products_container">
                 <p id="products_no_items_text">No products uploaded.</p>
             </div>
@@ -138,7 +155,12 @@
     <section class="content_section" id="ordertemplate">
 
         {{-- Order Templates --}}
-        <h2 class="order_template_header">Order Template</h2>
+            <div class="header_separator">
+                <span class="acct_section_spark">✦</span>
+                <h2 class="content_header">Order Template</h2>
+                <span class="acct_section_line"></span>
+            </div>
+
         <p class="empty_order_template" id="emptyOrderTemplate">No order templates made yet.</p>
         <div id="productCardsContainer" class="product_cards_container"></div>
         <button id="open_add_template_btn" class="add_template_button">Add New Template</button>
@@ -180,10 +202,7 @@
                 </div>
 
                 {{-- ---- Panel: Additional Fees ---- --}}
-                {{--
-                    Change #2: All inputs and their labels are centered via CSS.
-                    Change #5: Save is blocked until enabled fields have values.
-                --}}
+
                 <div class="modal_panel modal_panel_hidden" id="panel_additional_fees">
 
                     {{-- Bulk Discount --}}
@@ -242,11 +261,6 @@
             </div>
         </div>
 
-        {{--
-            Change #1: The detail modal has been removed entirely.
-            Additional fee info is now displayed inline on each product card.
-        --}}
-
         {{-- Delete Confirmation Modal (still closes on outside click — intentional) --}}
         <div class="modal_overlay" id="deleteTemplateModalOverlay">
             <div class="delete_confirm_box template_delete_box">
@@ -258,7 +272,11 @@
 
         {{-- ---- Rush Fees ---- --}}
         <div class="rush_fees_section">
-            <h2 class="rush_fees_section_header">Rush Fees</h2>
+            <div class="header_separator">
+                <span class="acct_section_spark">✦</span>
+                <h2 class="content_header">Rush Fees</h2>
+                <span class="acct_section_line"></span>
+            </div>
 
             {{-- Cards display --}}
             <p class="rush_fees_empty" id="rushFeesEmpty">No rush fees added yet.</p>
@@ -266,13 +284,6 @@
 
             <button class="add_rush_fee_btn" id="addRushFeeBtn" type="button">Add Rush Fee</button>
 
-            {{--
-                Add / Edit Rush Fee Modal
-                Change #4: The outside-click close behaviour must also be removed
-                from the rush fees JS file (not included here). Remove any
-                rushFeeModalOverlay click listener that calls closeModal/hide in
-                that file, mirroring what was done for templateModalOverlay above.
-            --}}
             <div class="rush_fees_modal" id="rushFeeModalOverlay">
                 <div class="rush_fees_modal_box">
                     <h2 class="rush_modal_title" id="rushModalTitle">Add Rush Fee</h2>
@@ -325,8 +336,13 @@
     </section>
 
    {{-- FAQs SECTION --}}
-<section class="content_section" id="faqs">
-    <h2 class="faqs_header">Frequently Asked Questions</h2>
+    <section class="content_section" id="faqs">
+
+            <div class="header_separator">
+                <span class="acct_section_spark">✦</span>
+                <h2 class="content_header">Frequently Asked Questions</h2>
+                <span class="acct_section_line"></span>
+            </div>
 
     <p class="empty_faqs" id="emptyFaqsText">No categories available yet.</p>
     <div id="faqsContainer" class="faqs_container"></div>
@@ -448,3 +464,4 @@
 @vite('resources/js/owner/content_page/manage_categories_modal.js')
 @vite('resources/js/owner/content_page/faq_management.js')
 @vite(['resources/css/owner/pages/content_management/faq_management.css'])
+@vite('resources/js/owner/animations.js')

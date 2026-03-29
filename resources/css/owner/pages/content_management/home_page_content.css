@@ -1,11 +1,33 @@
 /* HOME PAGE CONTENT */
 
-.content_homepage_images h2 {
+.header_separator {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    margin-top: 40px;
+}
+
+.acct_section_spark {
+    font-size: 16px;
+    color: #682c7a;
+    flex-shrink: 0;
+    filter: drop-shadow(0 0 5px rgba(180, 136, 204, 0.6));
+    animation: acct_spark_twinkle 2s infinite ease-in-out;
+}
+
+.acct_section_line {
+    flex: 1;
+    height: 1.5px;
+    background: linear-gradient(90deg, rgba(104, 44, 122, 0.35), transparent);
+    border-radius: 2px;
+}
+
+.content_header {
     font-family: Coolvetica;
     font-size: 30px;
     color: #682c7a;
-
-    margin-bottom: 20px;
 }
 
 /* Home Page Images */

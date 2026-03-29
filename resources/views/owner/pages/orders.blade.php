@@ -6,7 +6,11 @@
 
 @section('content')
 <div class="orders_container">
-    <h1 class="page_header">Order Management</h1>
+    <div class="header_animation">
+        <span class="star">✦</span>
+        <h1 class="page_header animated_header" id="animatedHeader">Order Management</h1>
+        <span class="star">✦</span>
+    </div>
 
     <div class="search_wrapper">
         <input type="text" class="search_input" placeholder="Search for orders">
@@ -467,4 +471,5 @@
         });
     });
 </script>
+@vite('resources/js/owner/animations.js')
 @endsection

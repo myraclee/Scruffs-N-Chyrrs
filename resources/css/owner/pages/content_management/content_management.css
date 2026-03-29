@@ -1,9 +1,68 @@
+.header_animation {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.header_animation span {
+    font-size: 20px;
+    color: #682c7a;
+    animation: twinkle 2.4s ease-in-out infinite;
+}
+
 .page_header {
     font-family: SuperDream;
     font-size: 50px;
     color: #682c7a;
+}
 
-    margin-bottom: 20px;
+/* Base letters */
+.animated_header .letter {
+    display: inline-block;
+    font: inherit;
+    color: inherit;
+    opacity: 0;
+    transform: scale(0.3) translateY(20px);
+    animation: letterIn 0.3s ease forwards;
+    animation-delay: calc(var(--delay) * 0.03s);
+    /* allow glow to extend outside letter box */
+    position: relative;
+    filter: drop-shadow(0 0 12px rgba(104, 44, 122, 0.22));
+}
+
+/* Entrance animation */
+@keyframes letterIn {
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* twinkle */
+@keyframes twinkle {
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+    }
+    20% {
+        opacity: 0.06;
+        transform: scale(0.46) rotate(28deg);
+    }
+    42% {
+        opacity: 0.92;
+        transform: scale(1.1) rotate(-10deg);
+    }
+    62% {
+        opacity: 0.08;
+        transform: scale(0.5) rotate(22deg);
+    }
+    82% {
+        opacity: 1;
+        transform: scale(1.04) rotate(-4deg);
+    }
 }
 
 /* Button Pages */
@@ -30,7 +89,6 @@
 
     cursor: pointer;
 
-    margin-bottom: 20px;
     transition: transform 0.2s ease;
 }
 
@@ -54,12 +112,25 @@
     display: block;
 }
 
-/* HR */
-hr {
-    margin-top: 30px;
-    margin-bottom: 30px;
-
-    border: 0;
-    border-top: 1px solid #682c7a;
-    height: 0;
+@keyframes acct_spark_twinkle {
+    0% {
+        opacity: 0.3;
+        transform: rotate(0deg);
+    }
+    25% {
+        opacity: 1;
+        transform: rotate(10deg);
+    }
+    50% {
+        opacity: 0.5;
+        transform: rotate(-5deg);
+    }
+    75% {
+        opacity: 1;
+        transform: rotate(5deg);
+    }
+    100% {
+        opacity: 0.3;
+        transform: rotate(0deg);
+    }
 }
