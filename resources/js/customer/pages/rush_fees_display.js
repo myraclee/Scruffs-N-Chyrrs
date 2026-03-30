@@ -155,33 +155,7 @@ function formatPercentage(percentage) {
 
 // ================= STATE RENDERERS =================
 function showLoadingState() {
-    // Show 3 skeleton cards while loading
-    const skeleton = document.createElement("div");
-    skeleton.className = "rush_fees_skeleton";
-
-    for (let i = 0; i < 3; i++) {
-        const skCard = document.createElement("div");
-        skCard.className = "skeleton_card";
-
-        skCard.innerHTML = `
-            <div class="skeleton_title_wrap">
-                <div class="skeleton_block skeleton_eyebrow"></div>
-                <div class="skeleton_block skeleton_title"></div>
-                <div class="skeleton_block skeleton_divider"></div>
-            </div>
-            <div class="skeleton_row_wrap">
-                <div class="skeleton_block skeleton_thead"></div>
-                <div class="skeleton_block skeleton_trow"></div>
-                <div class="skeleton_block skeleton_trow"></div>
-                <div class="skeleton_block skeleton_trow"></div>
-            </div>
-        `;
-
-        skeleton.appendChild(skCard);
-    }
-
     tableWrapper.innerHTML = "";
-    tableWrapper.appendChild(skeleton);
 }
 
 function showEmptyState() {
