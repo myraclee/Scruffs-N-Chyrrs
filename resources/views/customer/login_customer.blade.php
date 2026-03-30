@@ -4,6 +4,10 @@
 @vite(['resources/css/customer/login.css'])
 @endsection
 
+@section('page_js')
+@vite(['resources/js/customer/pages/login.js'])
+@endsection
+
 @section('preconnect')
     <link rel="preconnect" href="https://challenges.cloudflare.com">
 @endsection

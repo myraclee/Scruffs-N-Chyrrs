@@ -93,12 +93,14 @@ function setupEventListeners() {
                             authMeta?.getAttribute("content") === "true";
 
                         if (!isAuthenticated) {
-                            Toast.warning(
-                                "Please login or create an account to place an order",
+                            // 🚀 NEW: Pack the message in the browser's temporary storage
+                            sessionStorage.setItem(
+                                "auth_toast_message",
+                                "Please login or create an account to place an order.",
                             );
-                            setTimeout(() => {
-                                window.location.href = "/login";
-                            }, 1500);
+
+                            // Instantly redirect without waiting!
+                            window.location.href = "/login";
                             return;
                         }
 

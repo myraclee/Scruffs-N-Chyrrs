@@ -19,6 +19,8 @@ export default defineConfig({
 
                 "resources/css/owner/pages/content_management/order_template.css",
                 "resources/js/owner/content_page/order_template.js",
+
+                "resources/js/customer/pages/login.js",
             ],
             refresh: true,
         }),
