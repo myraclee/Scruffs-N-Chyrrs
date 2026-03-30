@@ -16,7 +16,7 @@
         <span class="star star_tl">✦</span>
         <div class="edit_section_heading">
         <span class="edit_section_spark">✦</span>
-        <h2 class="edit_section_title">Change Password</h2>
+        <h2 class="edit_section_title">Edit Profile</h2>
         <span class="edit_section_line"></span>
     </div>
 
