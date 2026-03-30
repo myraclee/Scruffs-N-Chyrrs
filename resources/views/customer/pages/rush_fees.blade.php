@@ -10,13 +10,39 @@
 
 @section('content')
 
-    <div class="rush_fees_opening">
-        <h1>Rush Fees</h1>
+    {{-- ===== BACK BUTTON ===== --}}
+    <div class="rush_fees_back_wrap">
+        <button class="rush_fees_back_btn" onclick="history.back()">
+            <svg xmlns="http://www.w3.org/2000/svg" height="18px" width="18px" viewBox="0 -960 960 960" fill="currentColor">
+                <path d="M400-80 0-480l400-400 71 71-329 329 329 329-71 71Z"/>
+            </svg>
+            Back
+        </button>
     </div>
 
+    {{-- ===== OPENING SECTION ===== --}}
+    <div class="rush_fees_opening">
+
+        {{-- Scattered sparkles --}}
+        <span class="deco_star deco_star_1">✦</span>
+        <span class="deco_star deco_star_2">✦</span>
+        <span class="deco_star deco_star_3">✦</span>
+        <span class="deco_star deco_star_4">✦</span>
+        <span class="deco_star deco_star_5">✦</span>
+        <span class="deco_star deco_star_6">✦</span>
+        <span class="deco_star deco_star_7">✦</span>
+        <span class="deco_star deco_star_8">✦</span>
+
+        <h1 class="rush_fees_title">Rush Fees</h1>
+        <p class="rush_fees_tagline">
+            You got a deadline? No problem! We'll get it done in record time!
+        </p>
+    </div>
+
+    {{-- ===== CONTENT ===== --}}
     <div class="rush_fees_container">
         <div id="rushFeesTableWrapper">
-            <!-- Table rendered dynamically by JavaScript -->
+            {{-- Table rendered dynamically by JavaScript --}}
         </div>
     </div>
 

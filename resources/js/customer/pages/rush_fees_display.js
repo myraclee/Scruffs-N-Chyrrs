@@ -1,6 +1,6 @@
 /**
  * Rush Fees Page - Dynamic Rendering
- * Fetches rush fees from API and renders table with nested timeframe rows
+ * Renders each price range as a styled card with a timeframe table inside.
  */
 
 // ================= IMPORTS =================
@@ -24,7 +24,7 @@ async function initRushFeesPage() {
         if (rushFees.length === 0) {
             showEmptyState();
         } else {
-            renderRushFeesTable();
+            renderRushFeeCards();
         }
     } catch (error) {
         console.error("Error initializing rush fees page:", error);
@@ -34,113 +34,118 @@ async function initRushFeesPage() {
 
 // ================= LOAD DATA =================
 async function loadRushFees() {
-    try {
-        rushFees = await rushFeeApi.getAllRushFees();
-    } catch (error) {
-        console.error("Error fetching rush fees:", error);
-        throw error;
-    }
+    rushFees = await rushFeeApi.getAllRushFees();
 }
 
-// ================= RENDER TABLE =================
-function renderRushFeesTable() {
+// ================= RENDER CARDS =================
+function renderRushFeeCards() {
     tableWrapper.innerHTML = "";
 
-    const table = document.createElement("table");
-    table.className = "rush_fees_table";
+    rushFees.forEach((rushFee, index) => {
+        const card = buildCard(rushFee, index);
+        tableWrapper.appendChild(card);
+    });
+}
 
-    // Table header
+function buildCard(rushFee, index) {
+    // ---- Outer card ----
+    const card = document.createElement("div");
+    card.className = "rush_fee_card";
+    card.style.animationDelay = `${0.1 + index * 0.12}s`;
+
+    // ---- Corner sparkles ----
+    ["tl", "tr", "bl", "br"].forEach((pos) => {
+        const star = document.createElement("span");
+        star.className = `card_star card_star_${pos}`;
+        star.textContent = "✦";
+        card.appendChild(star);
+    });
+
+    // ---- Card header (price range) ----
+    const header = document.createElement("div");
+    header.className = "rush_fee_card_header";
+
+    const eyebrow = document.createElement("p");
+    eyebrow.className = "range_eyebrow";
+
+    eyebrow.innerHTML = `
+        <span class="eyebrow_star">✦</span>
+        ${rushFee.label || "Price Range"}
+        <span class="eyebrow_star">✦</span>
+    `;
+    header.appendChild(eyebrow);
+
+    const rangeValue = document.createElement("p");
+    rangeValue.className = "range_value";
+
+    rangeValue.textContent = formatPriceRange(
+        rushFee.min_price,
+        rushFee.max_price,
+    );
+    header.appendChild(rangeValue);
+
+    card.appendChild(header);
+
+    // ---- Table ----
+    if (rushFee.timeframes && rushFee.timeframes.length > 0) {
+        const table = buildTable(rushFee.timeframes);
+        card.appendChild(table);
+    }
+
+    return card;
+}
+
+function buildTable(timeframes) {
+    const table = document.createElement("table");
+    table.className = "rush_fee_table";
+
+    // Header
     const thead = document.createElement("thead");
     const headerRow = document.createElement("tr");
 
-    const rangeTh = document.createElement("th");
-    rangeTh.textContent = "Price Range";
-    headerRow.appendChild(rangeTh);
+    const th1 = document.createElement("th");
+    th1.textContent = "Timeframe";
+    headerRow.appendChild(th1);
 
-    const timeframeTh = document.createElement("th");
-    timeframeTh.textContent = "Turnaround Time";
-    headerRow.appendChild(timeframeTh);
-
-    const feeTh = document.createElement("th");
-    feeTh.textContent = "Rush Fee";
-    headerRow.appendChild(feeTh);
+    const th2 = document.createElement("th");
+    th2.textContent = "Percentage Added to Total";
+    headerRow.appendChild(th2);
 
     thead.appendChild(headerRow);
     table.appendChild(thead);
 
-    // Table body
+    // Body
     const tbody = document.createElement("tbody");
 
-    rushFees.forEach((rushFee) => {
-        // Main rush fee row (first timeframe)
-        if (rushFee.timeframes && rushFee.timeframes.length > 0) {
-            const firstTimeframe = rushFee.timeframes[0];
+    timeframes.forEach((timeframe) => {
+        const row = document.createElement("tr");
 
-            // First row with price range
-            const firstRow = document.createElement("tr");
+        const tdLabel = document.createElement("td");
+        tdLabel.className = "td_timeframe";
+        tdLabel.textContent = timeframe.label || "—";
+        row.appendChild(tdLabel);
 
-            const rangeCell = document.createElement("td");
-            rangeCell.className = "rush_fee_range";
-            rangeCell.rowSpan = rushFee.timeframes.length;
-            rangeCell.textContent = formatPriceRange(
-                rushFee.min_price,
-                rushFee.max_price,
-            );
-            firstRow.appendChild(rangeCell);
+        const tdPct = document.createElement("td");
+        tdPct.className = "td_percentage";
+        tdPct.textContent = timeframe.percentage
+            ? `${formatPercentage(timeframe.percentage)}%`
+            : "—";
+        row.appendChild(tdPct);
 
-            const timeframeCell = document.createElement("td");
-            timeframeCell.className = "timeframe_label";
-            timeframeCell.textContent = firstTimeframe.label || "—";
-            firstRow.appendChild(timeframeCell);
-
-            const feeCell = document.createElement("td");
-            feeCell.className = "timeframe_percentage";
-            feeCell.textContent = firstTimeframe.percentage
-                ? `+${formatPercentage(firstTimeframe.percentage)}%`
-                : "—";
-            firstRow.appendChild(feeCell);
-
-            tbody.appendChild(firstRow);
-
-            // Additional timeframe rows
-            for (let i = 1; i < rushFee.timeframes.length; i++) {
-                const timeframe = rushFee.timeframes[i];
-                const row = document.createElement("tr");
-                row.className = "rush_fee_timeframe_row";
-
-                // Empty cell for price range (since we merged it above)
-                const emptyCell = document.createElement("td");
-                row.appendChild(emptyCell);
-
-                const tfCell = document.createElement("td");
-                tfCell.className = "timeframe_label";
-                tfCell.textContent = timeframe.label || "—";
-                row.appendChild(tfCell);
-
-                const pctCell = document.createElement("td");
-                pctCell.className = "timeframe_percentage";
-                pctCell.textContent = timeframe.percentage
-                    ? `+${formatPercentage(timeframe.percentage)}%`
-                    : "—";
-                row.appendChild(pctCell);
-
-                tbody.appendChild(row);
-            }
-        }
+        tbody.appendChild(row);
     });
 
     table.appendChild(tbody);
-    tableWrapper.appendChild(table);
+    return table;
 }
 
 // ================= FORMAT HELPERS =================
 function formatPriceRange(minPrice, maxPrice) {
-    if (!minPrice || !maxPrice) return "—";
-
+    if (!minPrice && !maxPrice) return "—";
+    if (!maxPrice) return `₱${parseFloat(minPrice).toFixed(0)}+`;
     const min = parseFloat(minPrice).toFixed(0);
     const max = parseFloat(maxPrice).toFixed(0);
-
-    return `₱${min} - ₱${max}`;
+    return `₱${min} – ₱${max}`;
 }
 
 function formatPercentage(percentage) {
@@ -150,26 +155,51 @@ function formatPercentage(percentage) {
 
 // ================= STATE RENDERERS =================
 function showLoadingState() {
-    tableWrapper.innerHTML =
-        '<div class="rush_fees_loading">Loading rush fees...</div>';
+    // Show 3 skeleton cards while loading
+    const skeleton = document.createElement("div");
+    skeleton.className = "rush_fees_skeleton";
+
+    for (let i = 0; i < 3; i++) {
+        const skCard = document.createElement("div");
+        skCard.className = "skeleton_card";
+
+        skCard.innerHTML = `
+            <div class="skeleton_title_wrap">
+                <div class="skeleton_block skeleton_eyebrow"></div>
+                <div class="skeleton_block skeleton_title"></div>
+                <div class="skeleton_block skeleton_divider"></div>
+            </div>
+            <div class="skeleton_row_wrap">
+                <div class="skeleton_block skeleton_thead"></div>
+                <div class="skeleton_block skeleton_trow"></div>
+                <div class="skeleton_block skeleton_trow"></div>
+                <div class="skeleton_block skeleton_trow"></div>
+            </div>
+        `;
+
+        skeleton.appendChild(skCard);
+    }
+
+    tableWrapper.innerHTML = "";
+    tableWrapper.appendChild(skeleton);
 }
 
 function showEmptyState() {
-    const emptyDiv = document.createElement("div");
-    emptyDiv.className = "rush_fees_empty";
-    emptyDiv.innerHTML = `
-        <h2>No Rush Fees Available</h2>
-        <p>Check back later for rush fee information.</p>
+    tableWrapper.innerHTML = `
+        <div class="rush_fees_empty">
+            <span class="empty_star">✦</span>
+            <h2>No Rush Fees Available</h2>
+            <p>Check back later for rush fee information.</p>
+        </div>
     `;
-    tableWrapper.appendChild(emptyDiv);
 }
 
 function showErrorState() {
-    const errorDiv = document.createElement("div");
-    errorDiv.className = "rush_fees_empty";
-    errorDiv.innerHTML = `
-        <h2>Error Loading Rush Fees</h2>
-        <p>We encountered an error loading rush fee information. Please try refreshing the page.</p>
+    tableWrapper.innerHTML = `
+        <div class="rush_fees_empty">
+            <span class="empty_star">✦</span>
+            <h2>Couldn't Load Rush Fees</h2>
+            <p>Something went wrong. Please try refreshing the page.</p>
+        </div>
     `;
-    tableWrapper.appendChild(errorDiv);
 }
