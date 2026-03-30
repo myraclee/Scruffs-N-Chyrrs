@@ -35,6 +35,7 @@ class RushFee extends Model
         'label',
         'min_price',
         'max_price',
+        'image_url',
     ];
 
     /**

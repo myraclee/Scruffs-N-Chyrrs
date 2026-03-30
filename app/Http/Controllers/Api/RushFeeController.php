@@ -26,6 +26,7 @@ class RushFeeController extends Controller
                     'label' => $fee->label,
                     'min_price' => $fee->min_price,
                     'max_price' => $fee->max_price,
+                    'image_url' => $fee->image_url,
                     'timeframes' => $fee->timeframes->sortBy('sort_order')->values(),
                 ];
             });
@@ -77,6 +78,7 @@ class RushFeeController extends Controller
                 'label' => 'required|string|max:255',
                 'min_price' => 'required|numeric|min:0',
                 'max_price' => 'required|numeric|min:0|gt:min_price',
+                'image_url' => 'required|string',
                 'timeframes' => 'required|array|min:1',
                 'timeframes.*.label' => 'required|string|max:255',
                 'timeframes.*.percentage' => 'required|numeric|min:0|max:100',
@@ -86,6 +88,7 @@ class RushFeeController extends Controller
                 'label' => $validated['label'],
                 'min_price' => $validated['min_price'],
                 'max_price' => $validated['max_price'],
+                'image_url' => $validated['image_url'] ?? null,
             ]);
 
             // Create timeframes
@@ -134,6 +137,7 @@ class RushFeeController extends Controller
                 'label' => 'nullable|string|max:255',
                 'min_price' => 'nullable|numeric|min:0',
                 'max_price' => 'nullable|numeric|min:0',
+                'image_url' => 'nullable|string',
                 'timeframes' => 'nullable|array|min:1',
                 'timeframes.*.id' => 'nullable|integer|exists:rush_fee_timeframes,id',
                 'timeframes.*.label' => 'required|string|max:255',
@@ -149,6 +153,9 @@ class RushFeeController extends Controller
             }
             if (isset($validated['max_price'])) {
                 $rushFee->max_price = $validated['max_price'];
+            }
+            if (isset($validated['image_url'])) {
+                 $rushFee->image_url = $validated['image_url'];
             }
             $rushFee->save();
 
@@ -265,6 +272,43 @@ class RushFeeController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to reorder timeframes',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+    /**
+     * Handle the image upload for rush fees
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function uploadImage(Request $request): JsonResponse
+    {
+        try {
+            // 1. Validate that it's actually an image and not too big (2MB limit here)
+            $request->validate([
+                'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
+
+            if ($request->hasFile('image')) {
+                $file = $request->file('image');
+                
+                // 2. Save the file to storage/app/public/rush_fees
+                $path = $file->store('rush_fees', 'public');
+                
+                // 3. Return the full URL so the frontend can display the preview
+                return response()->json([
+                    'success' => true,
+                    'image_url' => asset('storage/' . $path),
+                ]);
+            }
+
+            return response()->json(['success' => false, 'message' => 'No file uploaded'], 400);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Upload failed',
                 'error' => $e->getMessage(),
             ], 500);
         }

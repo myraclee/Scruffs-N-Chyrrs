@@ -2010,6 +2010,28 @@ select:focus {
     background-color: #8d0e0e;
     transition: 0.2s ease;
 }
+
+/* INPUT VALIDATIONS */
+.rush_input_error {
+    border-color: #c83333 !important;
+}
+
+/* The "This field is required" text */
+.rush_error_msg {
+    color: #c83333;
+    font-family: Coolvetica, sans-serif;
+    font-size: 11px;
+    margin-top: 4px;
+    display: block;
+}
+
+/* Center the error for the image dropzone */
+.rush_image_upload_section .rush_error_msg {
+    text-align: center;
+    width: 170px;
+    margin: 4px auto 0;
+}
+
 /* ==================== MEDIA QUERIES ==================== */
 
 @media (max-width: 600px) {

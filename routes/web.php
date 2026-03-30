@@ -137,6 +137,7 @@ Route::prefix('api/faq-categories')->middleware(['auth', 'owner'])->group(functi
 // RUSH FEES ROUTES - Public read, owner auth required for write operations
 Route::prefix('api/rush-fees')->group(function () {
     Route::get('/', [RushFeeController::class, 'index']);
+    Route::post('/upload-image', [RushFeeController::class, 'uploadImage'])->middleware(['auth', 'owner']);
     Route::post('/', [RushFeeController::class, 'store'])->middleware(['auth', 'owner']);
     Route::put('{rushFee}', [RushFeeController::class, 'update'])->middleware(['auth', 'owner']);
     Route::delete('{rushFee}', [RushFeeController::class, 'destroy'])->middleware(['auth', 'owner']);
