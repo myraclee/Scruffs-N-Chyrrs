@@ -878,11 +878,11 @@ function setupSaveButton() {
                     discounts:
                         data.discountEnabled && data.discountRows.length > 0
                             ? data.discountRows.map((row, idx) => ({
-                                min_quantity: parseInt(row.qty) || 0,
-                                price_reduction:
-                                    parseFloat(row.reduction) || 0,
-                                position: idx,
-                            }))
+                                  min_quantity: parseInt(row.qty) || 0,
+                                  price_reduction:
+                                      parseFloat(row.reduction) || 0,
+                                  position: idx,
+                              }))
                             : [],
                     min_order:
                         data.minOrderEnabled && data.minOrderQty
@@ -1097,9 +1097,11 @@ function createProductCard(template) {
     const minOrderData = template.min_order ?? template.minOrder ?? null;
     if (minOrderData != null) {
         // If it's an object with min_quantity property, extract that; otherwise treat as value
-        minOrder = typeof minOrderData === 'object' && minOrderData.min_quantity != null
-            ? parseInt(minOrderData.min_quantity)
-            : parseInt(minOrderData);
+        minOrder =
+            typeof minOrderData === "object" &&
+            minOrderData.min_quantity != null
+                ? parseInt(minOrderData.min_quantity)
+                : parseInt(minOrderData);
     }
     feeSummary.appendChild(
         makeFeeLine(
@@ -1114,9 +1116,11 @@ function createProductCard(template) {
     const layoutFeeData = template.layout_fee ?? template.layoutFee ?? null;
     if (layoutFeeData != null) {
         // If it's an object with fee_amount property, extract that; otherwise treat as value
-        layoutFee = typeof layoutFeeData === 'object' && layoutFeeData.fee_amount != null
-            ? parseFloat(layoutFeeData.fee_amount)
-            : parseFloat(layoutFeeData);
+        layoutFee =
+            typeof layoutFeeData === "object" &&
+            layoutFeeData.fee_amount != null
+                ? parseFloat(layoutFeeData.fee_amount)
+                : parseFloat(layoutFeeData);
     }
     feeSummary.appendChild(
         makeFeeLine(
@@ -1236,9 +1240,11 @@ function openEditModal(templateId) {
         applyMinOrder.checked = true;
         minOrderWrapper.classList.remove("hidden");
         // Extract min_quantity from object if needed
-        const minQtyValue = typeof minOrderData === 'object' && minOrderData.min_quantity != null
-            ? minOrderData.min_quantity
-            : minOrderData;
+        const minQtyValue =
+            typeof minOrderData === "object" &&
+            minOrderData.min_quantity != null
+                ? minOrderData.min_quantity
+                : minOrderData;
         document.getElementById("minOrderQty").value = minQtyValue;
     } else {
         applyMinOrder.checked = false;
@@ -1254,9 +1260,11 @@ function openEditModal(templateId) {
         applyLayoutFee.checked = true;
         layoutFeeWrapper.classList.remove("hidden");
         // Extract fee_amount from object if needed
-        const feeAmountValue = typeof layoutFeeData === 'object' && layoutFeeData.fee_amount != null
-            ? layoutFeeData.fee_amount
-            : layoutFeeData;
+        const feeAmountValue =
+            typeof layoutFeeData === "object" &&
+            layoutFeeData.fee_amount != null
+                ? layoutFeeData.fee_amount
+                : layoutFeeData;
         document.getElementById("layoutFeeAmount").value = feeAmountValue;
     } else {
         applyLayoutFee.checked = false;

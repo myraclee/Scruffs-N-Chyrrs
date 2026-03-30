@@ -6,8 +6,8 @@
  */
 
 // ================= IMPORTS =================
-import { openOrderModal } from './order_modal.js';
-import Toast from '/resources/js/utils/toast.js';
+import { openOrderModal } from "./order_modal.js";
+import Toast from "/resources/js/utils/toast.js";
 
 // ================= STATE & ELEMENTS =================
 
@@ -31,13 +31,13 @@ function initializeProductDetail() {
     try {
         // Get product data from data attribute
         const productData = container.getAttribute("data-product");
-        
+
         if (!productData) {
             throw new Error("Missing data-product attribute on container");
         }
-        
+
         product = JSON.parse(productData);
-        
+
         priceImages = product.price_images || [];
 
         // Set up event listeners
@@ -79,33 +79,51 @@ function setupEventListeners() {
     // Order Now button - SECOND priority (won't block back button if it fails)
     try {
         if (orderNowBtn) {
-            orderNowBtn.addEventListener("click", async (e) => {
-                e.preventDefault();
-                
-                try {
-                    const authMeta = document.querySelector('meta[name="user-authenticated"]');
-                    
-                    const isAuthenticated = authMeta?.getAttribute('content') === 'true';
-                    
-                    if (!isAuthenticated) {
-                        Toast.warning('Please login or create an account to place an order');
-                        setTimeout(() => {
-                            window.location.href = '/login';
-                        }, 1500);
-                        return;
-                    }
+            orderNowBtn.addEventListener(
+                "click",
+                async (e) => {
+                    e.preventDefault();
 
-                    // Open order modal for this product
-                    const productId = container.getAttribute('data-product-id');
-                    await openOrderModal(parseInt(productId));
-                } catch (modalError) {
-                    console.error("Error in Order Now handler:", modalError);
-                    Toast.error('Error opening order modal. Please try again.');
-                }
-            }, { once: false });
+                    try {
+                        const authMeta = document.querySelector(
+                            'meta[name="user-authenticated"]',
+                        );
+
+                        const isAuthenticated =
+                            authMeta?.getAttribute("content") === "true";
+
+                        if (!isAuthenticated) {
+                            Toast.warning(
+                                "Please login or create an account to place an order",
+                            );
+                            setTimeout(() => {
+                                window.location.href = "/login";
+                            }, 1500);
+                            return;
+                        }
+
+                        // Open order modal for this product
+                        const productId =
+                            container.getAttribute("data-product-id");
+                        await openOrderModal(parseInt(productId));
+                    } catch (modalError) {
+                        console.error(
+                            "Error in Order Now handler:",
+                            modalError,
+                        );
+                        Toast.error(
+                            "Error opening order modal. Please try again.",
+                        );
+                    }
+                },
+                { once: false },
+            );
         }
     } catch (orderButtonError) {
-        console.error("Error attaching Order Now button listener:", orderButtonError);
+        console.error(
+            "Error attaching Order Now button listener:",
+            orderButtonError,
+        );
     }
 }
 
@@ -167,7 +185,9 @@ async function loadAndRenderPriceImages() {
 
             // Set image source (construct path from storage)
             if (!image.image_path) {
-                throw new Error("image_path is missing from price image object");
+                throw new Error(
+                    "image_path is missing from price image object",
+                );
             }
 
             const imagePath = image.image_path.startsWith("/")

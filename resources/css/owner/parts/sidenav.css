@@ -320,20 +320,20 @@ nav {
     right: 0px; /* Tucked slightly to the right */
     background: transparent;
     border: none;
-    color: #682C7A;
+    color: #682c7a;
     cursor: pointer;
     z-index: 101;
     transition: color 0.2s ease;
-    
+
     /* Centers the new SVG icon */
-    display: flex; 
+    display: flex;
     align-items: center;
     justify-content: center;
     padding: 5px;
 }
 
 .close_sidenav:hover {
-    color: #A15FB5;
+    color: #a15fb5;
 }
 
 /* =============================================

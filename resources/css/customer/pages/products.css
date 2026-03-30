@@ -20,7 +20,8 @@
     }
     to {
         opacity: 1;
-        transform: translateY(0) scale(1) rotate(var(--card-rotation, var(--rot)));
+        transform: translateY(0) scale(1)
+            rotate(var(--card-rotation, var(--rot)));
     }
 }
 
@@ -41,7 +42,7 @@
     font-size: 50px;
     color: #682c7a;
     margin: 0;
-    
+
     /* 🚀 NEW: Added Animation */
     animation: pageFadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
     animation-delay: 0.1s;
@@ -54,7 +55,7 @@
     color: #682c7a;
     margin: 0;
     line-height: 1.6;
-    
+
     /* 🚀 NEW: Added Animation */
     animation: pageFadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
     animation-delay: 0.25s;
@@ -68,7 +69,7 @@
     justify-content: center;
     gap: 10px;
     margin-bottom: 50px;
-    
+
     /* 🚀 NEW: Added Animation */
     animation: pageFadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
     animation-delay: 0.4s;
@@ -303,7 +304,7 @@
 
     .products_grid {
         /* Force a 2-column grid on phones so they don't get too squished */
-        grid-template-columns: repeat(2, 1fr); 
+        grid-template-columns: repeat(2, 1fr);
         gap: 12px; /* Tighter gap for small screens */
         padding: 0 10px;
     }
@@ -313,7 +314,7 @@
         padding: 8px;
         padding-bottom: 20px;
         /* Speed up the mobile animation so it feels snappy! */
-        animation-duration: 0.5s; 
+        animation-duration: 0.5s;
     }
 
     .product_card_image {

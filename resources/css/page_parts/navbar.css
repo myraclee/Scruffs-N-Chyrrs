@@ -78,7 +78,7 @@
 }
 
 .nav_list li.active a::after {
-    content: '★';
+    content: "★";
     font-size: 14px;
     color: #682c7a;
     position: absolute;
