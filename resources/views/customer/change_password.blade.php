@@ -48,9 +48,9 @@
                 @error('new_password')
                     <span class="error_message">{{ $message }}</span>
                 @enderror
-                <div id="password_requirements" style="display: none; margin-top: 10px;">
-                    <p class="hint_label" style="font-family: Coolvetica; font-size: 13px; color: #682c7a; margin-bottom: 5px;">Password must contain:</p>
-                    <ul class="hints_list" style="font-family: sans-serif; font-size: 12px; color: #666; list-style-type: none; padding-left: 0; margin: 0; display: flex; flex-direction: column; gap: 4px;">
+                <div id="password_requirements" style="display: none; margin-top: 10px; margin-left: 10px;">
+                    <p class="hint_label" style="font-family: Coolvetica; font-size: 15px; color: #682c7a; margin-bottom: 5px; font-weight: bold;">Password must contain:</p>
+                    <ul class="hints_list" style="font-family: Coolvetica, sans-serif; font-size: 14px; color: #682c7a; list-style-type: none; padding-left: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; letter-spacing: 0.5px;">
                         <li id="req_length">✗ At least 8 characters</li>
                         <li id="req_upper">✗ An uppercase letter</li>
                         <li id="req_lower">✗ A lowercase letter</li>
