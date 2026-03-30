@@ -1,438 +1,350 @@
-/**
- * Product Samples Modal Management
- * Handles CRUD operations for product samples with images
- */
-import ProductSampleAPI from "../../api/productSampleApi.js";
-import Toast from "../../utils/toast.js";
+import ProductSampleAPI from '/resources/js/api/productSampleApi.js';
+import Toast from '/resources/js/utils/toast.js';
 
-document.addEventListener("DOMContentLoaded", async () => {
-    const addSampleBtn = document.querySelector(".add_sample");
-    const modal = document.getElementById("addSampleModal");
-    const deleteModal = document.getElementById("deleteConfirmModal");
+// ================= ELEMENTS =================
+const addSampleBtn = document.querySelector('.add_sample');
+const addSampleModal = document.getElementById('addSampleModal');
+const cancelSampleUpload = document.getElementById('cancelSampleUpload');
+const saveSampleUpload = document.getElementById('saveSampleUpload');
+const sampleNameInput = document.getElementById('sampleNameInput');
+const sampleNameError = document.getElementById('sampleNameError');
+const sampleImageGrid = document.getElementById('sampleImageGrid');
+const sampleImageError = document.getElementById('sampleImageError');
+const sampleImageCounter = document.getElementById('sampleImageCounter');
+const productSamplesWrapper = document.querySelector('.product_samples_wrapper');
+const emptySampleImagesText = document.querySelector('.empty_sample_images');
+const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+const confirmDeleteSample = document.getElementById('confirmDeleteSample');
 
-    const grid = document.getElementById("sampleImageGrid");
-    const counter = document.getElementById("sampleImageCounter");
-    const cancelBtn = document.getElementById("cancelSampleUpload");
-    const saveBtn = document.getElementById("saveSampleUpload");
-    const nameInput = document.getElementById("sampleNameInput");
+// ================= STATE =================
+const MAX_SAMPLE_IMAGES = 5;
+let currentSampleFiles = [];
+let existingSampleImages = [];
+let sampleList = [];
+let editSampleId = null;
+let sampleToDelete = null;
 
-    const nameError = document.getElementById("sampleNameError");
-    const imageError = document.getElementById("sampleImageError");
+// ================= INITIALIZATION =================
+document.addEventListener('DOMContentLoaded', async () => {
+    initSampleUploadBox();
+    await loadSamples();
+});
 
-    const confirmDeleteBtn = document.getElementById("confirmDeleteSample");
-
-    const emptyText = document.querySelector(".empty_sample_images");
-    const samplesWrapper = document.querySelector(".product_samples_wrapper");
-
-    const MAX = 5;
-
-    let samples = [];
-    let tempSample = null;
-    let editIndex = null;
-
-    // Load existing samples from API on page load
+async function loadSamples() {
     try {
-        const loadedSamples = await ProductSampleAPI.getAllSamples();
-        samples = loadedSamples.map((sample) => ({
-            id: sample.id,
-            name: sample.name,
-            description: sample.description,
-            images: (sample.images || []).map((img) => ({
-                id: img.id,
-                image_path: img.image_path,
-                preview: `/storage/${img.image_path}`,
-                sort_order: img.sort_order,
-            })),
-        }));
+        sampleList = await ProductSampleAPI.getAllSamples();
         renderSamples();
     } catch (error) {
-        console.error("Failed to load product samples:", error);
-        Toast.error("Failed to load product samples");
+        console.error('Error loading samples:', error);
+        Toast.error('Failed to load product samples');
+    }
+}
+
+// ================= VALIDATION =================
+function validateSampleForm() {
+    let isValid = true;
+    const sampleName = sampleNameInput.value.trim();
+
+    // Validate Title
+    if (!sampleName) {
+        sampleNameInput.classList.add('input_error_state');
+        sampleNameError.classList.remove('hidden');
+        isValid = false;
+    } else {
+        sampleNameInput.classList.remove('input_error_state');
+        sampleNameError.classList.add('hidden');
     }
 
-    addSampleBtn.addEventListener("click", () => {
-        tempSample = { id: null, name: "", description: "", images: [] };
-        editIndex = null;
-        nameInput.value = "";
-        hideErrors();
-        renderGrid();
-        modal.style.display = "flex";
-        removeDeleteButton();
-    });
-
-    function closeModal() {
-        modal.style.display = "none";
-        tempSample = null;
-        editIndex = null;
-        hideErrors();
+    // Validate Images
+    const totalImages = existingSampleImages.length + currentSampleFiles.length;
+    // Look specifically for our big box class
+    const addBox = sampleImageGrid.querySelector('.products_add_box');
+    
+    if (totalImages === 0) {
+        if (addBox) addBox.classList.add('image_box_error');
+        sampleImageError.classList.remove('hidden');
+        isValid = false;
+    } else {
+        if (addBox) addBox.classList.remove('image_box_error');
+        sampleImageError.classList.add('hidden');
     }
 
-    cancelBtn.addEventListener("click", closeModal);
+    return isValid;
+}
 
-    saveBtn.addEventListener("click", async () => {
-        hideErrors();
+sampleNameInput.addEventListener('input', () => {
+    sampleNameInput.classList.remove('input_error_state');
+    sampleNameError.classList.add('hidden');
+});
 
-        let valid = true;
+// ================= IMAGE GRID =================
+function updateSampleCounter() {
+    const total = existingSampleImages.length + currentSampleFiles.length;
+    sampleImageCounter.textContent = `${total} / ${MAX_SAMPLE_IMAGES} images selected`;
 
-        if (!nameInput.value.trim()) {
-            nameError.style.display = "block";
-            valid = false;
+    const addBox = sampleImageGrid.querySelector('.products_add_box');
+    if (addBox) {
+        addBox.style.display = total >= MAX_SAMPLE_IMAGES ? 'none' : 'flex';
+        // Clear error if we have images
+        if (total > 0) {
+            addBox.classList.remove('image_box_error');
+            sampleImageError.classList.add('hidden');
         }
+    }
+}
 
-        if (tempSample.images.length === 0) {
-            imageError.style.display = "block";
-            valid = false;
-        }
-
-        if (!valid) return;
-
-        try {
-            saveBtn.disabled = true;
-            saveBtn.textContent = "Saving...";
-
-            tempSample.name = nameInput.value.trim();
-
-            // Separate new images (without id) from existing ones
-            const newImages = tempSample.images.filter(
-                (img) => !img.id && img.file,
-            );
-
-            if (editIndex === null) {
-                // Create new sample
-                const formData = new FormData();
-                formData.append("name", tempSample.name);
-                formData.append("description", tempSample.description || "");
-
-                newImages.forEach((img, idx) => {
-                    formData.append(`images[${idx}]`, img.file);
-                });
-
-                const createdSample =
-                    await ProductSampleAPI.createSample(formData);
-                createdSample.images = createdSample.images.map((img) => ({
-                    id: img.id,
-                    image_path: img.image_path,
-                    preview: `/storage/${img.image_path}`,
-                    sort_order: img.sort_order,
-                }));
-                samples.push(createdSample);
-                Toast.success("Product sample created successfully!");
-            } else {
-                // Update existing sample
-                const sampleToUpdate = samples[editIndex];
-                const formData = new FormData();
-                formData.append("name", tempSample.name);
-                formData.append("description", tempSample.description || "");
-
-                newImages.forEach((img, idx) => {
-                    formData.append(`images[${idx}]`, img.file);
-                });
-
-                const updatedSample = await ProductSampleAPI.updateSample(
-                    sampleToUpdate.id,
-                    formData,
-                );
-                updatedSample.images = updatedSample.images.map((img) => ({
-                    id: img.id,
-                    image_path: img.image_path,
-                    preview: `/storage/${img.image_path}`,
-                    sort_order: img.sort_order,
-                }));
-                samples[editIndex] = updatedSample;
-                Toast.success("Product sample updated successfully!");
-            }
-
-            renderSamples();
-            closeModal();
-        } catch (error) {
-            console.error("Error saving product sample:", error);
-            Toast.error(error.message || "Failed to save product sample");
-        } finally {
-            saveBtn.disabled = false;
-            saveBtn.textContent = "Save";
-        }
-    });
-
-    function renderSamples() {
-        samplesWrapper.innerHTML = "";
-
-        if (samples.length === 0) {
-            emptyText.style.display = "block";
+function initSampleUploadBox() {
+    sampleImageGrid.innerHTML = '';
+    const addBox = document.createElement('div');
+    
+    // FIX: Using your official CSS class so it stays a big square!
+    addBox.className = 'products_add_box'; 
+    
+    addBox.textContent = '+';
+    addBox.onclick = () => {
+        const total = existingSampleImages.length + currentSampleFiles.length;
+        if (total >= MAX_SAMPLE_IMAGES) {
+            Toast.error(`Maximum ${MAX_SAMPLE_IMAGES} images allowed`);
             return;
         }
 
-        emptyText.style.display = "none";
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/png, image/jpeg, image/jpg';
+        input.multiple = true;
 
-        samples.forEach((sample, index) => {
-            const card = document.createElement("div");
-            card.className = "product_sample_main_container";
+        input.onchange = (e) => {
+            const files = Array.from(e.target.files);
+            const currentTotal = existingSampleImages.length + currentSampleFiles.length;
+            const allowedCount = MAX_SAMPLE_IMAGES - currentTotal;
+            const filesToAdd = files.slice(0, allowedCount);
 
-            const firstImagePreview =
-                sample.images.length > 0
-                    ? sample.images[0].preview
-                    : "/images/placeholder.png";
+            if (files.length > allowedCount) {
+                Toast.error(`You can only add ${allowedCount} more images`);
+            }
 
-            card.innerHTML = `
-                <div class="product_sample_container">
-                    <img src="${firstImagePreview}" alt="${sample.name}">
-                    <div class="product_sample_container_name">
-                        <h3>${sample.name}</h3>
-                    </div>
-                </div>
-                <button class="edit_sample">Edit</button>
-            `;
-
-            // Edit button opens the CRUD modal — stop propagation so card click doesn't also fire
-            card.querySelector(".edit_sample").addEventListener(
-                "click",
-                (e) => {
-                    e.stopPropagation();
-                    openEdit(index);
-                },
-            );
-
-            // Card click opens the gallery viewer
-            card.addEventListener("click", () => {
-                if (typeof window.openSampleGallery === "function") {
-                    window.openSampleGallery(sample);
-                }
-            });
-
-            samplesWrapper.appendChild(card);
-        });
-    }
-
-    function openEdit(index) {
-        editIndex = index;
-        tempSample = {
-            id: samples[index].id,
-            name: samples[index].name,
-            description: samples[index].description,
-            images: samples[index].images.map((img) => ({ ...img })),
-        };
-
-        nameInput.value = tempSample.name;
-        hideErrors();
-        renderGrid();
-        modal.style.display = "flex";
-
-        injectDeleteButton();
-    }
-
-    function removeDeleteButton() {
-        const deleteBtn = document.getElementById("deleteSampleUpload");
-        if (deleteBtn) {
-            deleteBtn.remove();
-        }
-    }
-
-    function injectDeleteButton() {
-        let deleteBtn = document.getElementById("deleteSampleUpload");
-
-        if (!deleteBtn) {
-            deleteBtn = document.createElement("button");
-            deleteBtn.className = "left_sample_actions";
-            deleteBtn.id = "deleteSampleUpload";
-            deleteBtn.textContent = "Delete";
-            deleteBtn.style.background = "#C83333";
-            deleteBtn.style.color = "#fff";
-
-            deleteBtn.onclick = () => {
-                deleteModal.style.display = "flex";
-            };
-
-            document.querySelector(".sample_image_actions").prepend(deleteBtn);
-        }
-    }
-
-    confirmDeleteBtn.addEventListener("click", async () => {
-        try {
-            confirmDeleteBtn.disabled = true;
-            confirmDeleteBtn.textContent = "Deleting...";
-
-            const sampleToDelete = samples[editIndex];
-            await ProductSampleAPI.deleteSample(sampleToDelete.id);
-
-            samples.splice(editIndex, 1);
-            renderSamples();
-            deleteModal.style.display = "none";
-            closeModal();
-            Toast.success("Product sample deleted successfully!");
-        } catch (error) {
-            console.error("Error deleting product sample:", error);
-            Toast.error(error.message || "Failed to delete product sample");
-        } finally {
-            confirmDeleteBtn.disabled = false;
-            confirmDeleteBtn.textContent = "Delete";
-        }
-    });
-
-    deleteModal.addEventListener("click", (e) => {
-        if (e.target === deleteModal) deleteModal.style.display = "none";
-    });
-
-    function renderGrid() {
-        grid.innerHTML = "";
-
-        tempSample.images.forEach((imgObj, index) => {
-            const wrapper = document.createElement("div");
-            wrapper.className = "sample_image_slot_wrapper";
-
-            const slot = document.createElement("div");
-            slot.className = "sample_image_slot";
-
-            const img = document.createElement("img");
-            img.src = imgObj.preview;
-            img.style.width = "100%";
-            img.style.height = "100%";
-            img.style.objectFit = "cover";
-
-            slot.appendChild(img);
-
-            const removeBtn = document.createElement("button");
-            removeBtn.textContent = "Remove";
-            removeBtn.onclick = async () => {
-                // If this is an existing image (has id), delete it from API
-                if (imgObj.id) {
-                    try {
-                        await ProductSampleAPI.deleteImage(imgObj.id);
-                        Toast.success("Image removed");
-                    } catch (error) {
-                        Toast.error("Failed to remove image");
-                        return;
-                    }
-                }
-
-                // Remove from local array regardless
-                tempSample.images.splice(index, 1);
-                renderGrid();
-            };
-
-            wrapper.append(slot, removeBtn);
-            grid.appendChild(wrapper);
-        });
-
-        if (tempSample.images.length < MAX) addPlusSlot();
-        counter.textContent = `${tempSample.images.length} / ${MAX} images selected`;
-    }
-
-    function addPlusSlot() {
-        const wrapper = document.createElement("div");
-        wrapper.className = "sample_image_slot_wrapper";
-
-        const slot = document.createElement("div");
-        slot.className = "sample_image_slot plus";
-
-        const input = document.createElement("input");
-        input.type = "file";
-        input.accept = ".png,.jpg,.jpeg,.gif,.webp";
-        input.hidden = true;
-
-        slot.onclick = () => input.click();
-
-        input.onchange = () => {
-            const file = input.files[0];
-            if (!file || tempSample.images.length >= MAX) return;
-
-            const reader = new FileReader();
-            reader.onload = () => {
-                tempSample.images.push({
-                    id: null,
-                    file: file,
-                    preview: reader.result,
+            filesToAdd.forEach(file => {
+                currentSampleFiles.push({
+                    id: Date.now() + Math.random(),
+                    file: file
                 });
-                renderGrid();
-            };
-            reader.readAsDataURL(file);
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const wrapper = buildSampleImageWrapper(event.target.result, true, currentSampleFiles[currentSampleFiles.length - 1].id);
+                    sampleImageGrid.insertBefore(wrapper, addBox);
+                };
+                reader.readAsDataURL(file);
+            });
+            updateSampleCounter();
         };
+        input.click();
+    };
+    sampleImageGrid.appendChild(addBox);
+    updateSampleCounter();
+}
 
-        wrapper.append(slot, input);
-        grid.appendChild(wrapper);
-    }
+function buildSampleImageWrapper(src, isNew, identifier) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'sample_image_wrapper';
 
-    function hideErrors() {
-        nameError.style.display = "none";
-        imageError.style.display = "none";
-    }
-});
+    const img = document.createElement('img');
+    img.src = src;
+    img.style.objectFit = "cover";
 
-// ===== GALLERY FUNCTIONALITY =====
-let currentGalleryIndex = 0;
-let currentGalleryImages = [];
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'remove_sample_image';
+    removeBtn.textContent = 'Remove';
+    removeBtn.onclick = () => {
+        if (isNew) {
+            currentSampleFiles = currentSampleFiles.filter(item => item.id !== identifier);
+        } else {
+            existingSampleImages = existingSampleImages.filter(item => item.id !== identifier);
+        }
+        wrapper.remove();
+        updateSampleCounter();
+    };
 
-// Function to open the gallery
-window.openSampleGallery = function (sample) {
-    if (!sample.images || !sample.images.length) return;
+    wrapper.appendChild(img);
+    wrapper.appendChild(removeBtn);
+    return wrapper;
+}
 
-    currentGalleryImages = sample.images;
-    currentGalleryIndex = 0;
+function populateSampleGrid() {
+    initSampleUploadBox();
+    const addBox = sampleImageGrid.querySelector('.products_add_box');
 
-    const modal = document.getElementById("sampleGalleryModal");
-    const mainImg = document.getElementById("sampleGalleryMainImage");
-    const title = document.getElementById("sampleGalleryTitle");
-    const desc = document.getElementById("sampleGalleryDescription");
-
-    title.textContent = sample.name;
-    desc.textContent = sample.description || "";
-    mainImg.src = currentGalleryImages[currentGalleryIndex].preview;
-
-    modal.style.display = "flex";
-
-    renderGalleryDots();
-};
-
-// Close gallery
-document
-    .getElementById("sampleGalleryCloseBtn")
-    .addEventListener("click", () => {
-        document.getElementById("sampleGalleryModal").style.display = "none";
-        currentGalleryImages = [];
+    existingSampleImages.forEach(img => {
+        const wrapper = buildSampleImageWrapper(`/storage/${img.image_path}`, false, img.id);
+        sampleImageGrid.insertBefore(wrapper, addBox);
     });
 
-// Prev / Next buttons
-document.getElementById("sampleGalleryPrev").addEventListener("click", () => {
-    if (!currentGalleryImages.length) return;
-    currentGalleryIndex =
-        (currentGalleryIndex - 1 + currentGalleryImages.length) %
-        currentGalleryImages.length;
-    document.getElementById("sampleGalleryMainImage").src =
-        currentGalleryImages[currentGalleryIndex].preview;
-    updateGalleryDots();
+    updateSampleCounter();
+}
+
+// ================= MODAL CONTROLS =================
+addSampleBtn.addEventListener('click', () => {
+    resetSampleModal();
+    document.querySelector('#addSampleModal h2').textContent = 'Add Sample Products';
+    addSampleModal.style.display = 'flex';
 });
 
-document.getElementById("sampleGalleryNext").addEventListener("click", () => {
-    if (!currentGalleryImages.length) return;
-    currentGalleryIndex =
-        (currentGalleryIndex + 1) % currentGalleryImages.length;
-    document.getElementById("sampleGalleryMainImage").src =
-        currentGalleryImages[currentGalleryIndex].preview;
-    updateGalleryDots();
+cancelSampleUpload.addEventListener('click', () => {
+    addSampleModal.style.display = 'none';
+    resetSampleModal();
 });
 
-// Render dot bar
-function renderGalleryDots() {
-    const dotBar = document.getElementById("sampleGalleryDotBar");
-    dotBar.innerHTML = "";
+function resetSampleModal() {
+    editSampleId = null;
+    sampleNameInput.value = '';
+    currentSampleFiles = [];
+    existingSampleImages = [];
+    
+    // Clear validation styling
+    sampleNameInput.classList.remove('input_error_state');
+    sampleNameError.classList.add('hidden');
+    sampleImageError.classList.add('hidden');
+    
+    initSampleUploadBox();
+}
 
-    currentGalleryImages.forEach((_, idx) => {
-        const dot = document.createElement("span");
-        dot.className = "gallery_dot";
-        if (idx === currentGalleryIndex) dot.classList.add("active");
+// ================= SAVE/UPDATE =================
+saveSampleUpload.addEventListener('click', async () => {
+    if (!validateSampleForm()) return;
 
-        dot.addEventListener("click", () => {
-            currentGalleryIndex = idx;
-            document.getElementById("sampleGalleryMainImage").src =
-                currentGalleryImages[currentGalleryIndex].preview;
-            updateGalleryDots();
+    saveSampleUpload.disabled = true;
+    saveSampleUpload.textContent = 'Saving...';
+
+    try {
+        const formData = new FormData();
+        formData.append('name', sampleNameInput.value.trim());
+
+        currentSampleFiles.forEach((item, index) => {
+            formData.append(`images[${index}]`, item.file);
         });
 
-        dotBar.appendChild(dot);
+        existingSampleImages.forEach((img, index) => {
+            formData.append(`existing_image_ids[${index}]`, img.id);
+        });
+
+        if (editSampleId) {
+            await ProductSampleAPI.updateSample(editSampleId, formData);
+            Toast.success('Product sample updated!');
+        } else {
+            await ProductSampleAPI.createSample(formData);
+            Toast.success('Product sample added!');
+        }
+
+        addSampleModal.style.display = 'none';
+        resetSampleModal();
+        await loadSamples();
+    } catch (error) {
+        console.error('Save error:', error);
+        Toast.error(error.message || 'Failed to save product sample');
+    } finally {
+        saveSampleUpload.disabled = false;
+        saveSampleUpload.textContent = 'Save';
+    }
+});
+
+// ================= RENDER =================
+function renderSamples() {
+    productSamplesWrapper.innerHTML = '';
+
+    if (!sampleList || sampleList.length === 0) {
+        emptySampleImagesText.style.display = 'block';
+        return;
+    }
+
+    emptySampleImagesText.style.display = 'none';
+
+    sampleList.forEach(sample => {
+        const card = document.createElement('div');
+        card.className = 'sample_card';
+
+        const imgContainer = document.createElement('div');
+        imgContainer.className = 'sample_card_image_container';
+
+        if (sample.images && sample.images.length > 0) {
+            const firstImage = sample.images[0];
+            const img = document.createElement('img');
+            img.src = `/storage/${firstImage.image_path}`;
+            img.alt = sample.name;
+            imgContainer.appendChild(img);
+
+            if (sample.images.length > 1) {
+                const countBadge = document.createElement('div');
+                countBadge.className = 'sample_image_count';
+                countBadge.textContent = `+${sample.images.length - 1}`;
+                imgContainer.appendChild(countBadge);
+            }
+        }
+
+        const title = document.createElement('h4');
+        title.className = 'sample_card_title';
+        title.textContent = sample.name;
+
+        const editBtn = document.createElement('button');
+        editBtn.className = 'edit_sample_btn';
+        editBtn.textContent = 'Edit';
+        editBtn.onclick = () => openEditModal(sample);
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete_sample_btn';
+        deleteBtn.textContent = 'Delete';
+        deleteBtn.onclick = () => confirmDelete(sample.id);
+
+        const actions = document.createElement('div');
+        actions.className = 'sample_card_actions';
+        actions.appendChild(editBtn);
+        actions.appendChild(deleteBtn);
+
+        card.appendChild(imgContainer);
+        card.appendChild(title);
+        card.appendChild(actions);
+
+        productSamplesWrapper.appendChild(card);
     });
 }
 
-function updateGalleryDots() {
-    const dots = document.querySelectorAll("#sampleGalleryDotBar .gallery_dot");
-    dots.forEach((dot, idx) => {
-        dot.classList.toggle("active", idx === currentGalleryIndex);
-    });
+function openEditModal(sample) {
+    resetSampleModal();
+    editSampleId = sample.id;
+    sampleNameInput.value = sample.name;
+    existingSampleImages = [...(sample.images || [])];
+    document.querySelector('#addSampleModal h2').textContent = 'Edit Sample Product';
+    populateSampleGrid();
+    addSampleModal.style.display = 'flex';
 }
+
+function confirmDelete(id) {
+    sampleToDelete = id;
+    deleteConfirmModal.style.display = 'flex';
+}
+
+confirmDeleteSample.addEventListener('click', async () => {
+    if (!sampleToDelete) return;
+
+    confirmDeleteSample.disabled = true;
+    confirmDeleteSample.textContent = 'Deleting...';
+
+    try {
+        await ProductSampleAPI.deleteSample(sampleToDelete);
+        Toast.success('Product sample deleted');
+        deleteConfirmModal.style.display = 'none';
+        sampleToDelete = null;
+        await loadSamples();
+    } catch (error) {
+        console.error('Delete error:', error);
+        Toast.error(error.message || 'Failed to delete sample');
+    } finally {
+        confirmDeleteSample.disabled = false;
+        confirmDeleteSample.textContent = 'Delete Sample';
+    }
+});
+
+document.querySelector('.delete_confirm_modal').addEventListener('click', (e) => {
+    if (e.target.className === 'delete_confirm_modal') {
+        deleteConfirmModal.style.display = 'none';
+        sampleToDelete = null;
+    }
+});

@@ -3,16 +3,13 @@ import toast from "../../utils/toast.js";
 import rushApi from "../../api/rushFeeApi.js";
 
 // ==================== STATE ====================
-// rushFees = [{ id?, label, min, max, timeframes: [{ label, percentage }], image_url? }]
-
 let rushFees = [];
 let editingRushIndex = null;
 let pendingDeleteIndex = null;
 let isRushLoading = false;
-let pendingImageFile = null; // File chosen in the current modal session
+let pendingImageFile = null; 
 
 // ==================== SVG HELPER ====================
-
 function createRushSVG(className, pathD) {
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("class", className);
@@ -29,7 +26,6 @@ const DEL_PATH =
     "m339-288 141-141 141 141 51-51-141-141 141-141-51-51-141 141-141-141-51 51 141 141-141 141 51 51ZM480-96q-79 0-149-30t-122.5-82.5Q156-261 126-331T96-480q0-80 30-149.5t82.5-122Q261-804 331-834t149-30q80 0 149.5 30t122 82.5Q804-699 834-629.5T864-480q0 79-30 149t-82.5 122.5Q699-156 629.5-126T480-96Zm0-72q130 0 221-91t91-221q0-130-91-221t-221-91q-130 0-221 91t-91 221q0 130 91 221t221 91Zm0-312Z";
 
 // ==================== MODAL STATE ====================
-
 let draftFee = null;
 
 function buildDraftFromIndex(idx) {
@@ -54,7 +50,6 @@ function freshDraft() {
 }
 
 // ==================== OPEN / CLOSE MODALS ====================
-
 const rushModalOverlay = document.getElementById("rushFeeModalOverlay");
 const rushDeleteOverlay = document.getElementById("rushDeleteConfirmOverlay");
 
@@ -78,7 +73,6 @@ function openEditModal(idx) {
     draftFee = {
         id: src.id,
         label: src.label,
-        // Math.floor/parseInt strips the .00 immediately
         min: src.min ? Math.floor(src.min) : null,
         max: src.max ? Math.floor(src.max) : null,
         timeframes: src.timeframes.map((tf) => ({
@@ -97,16 +91,13 @@ function openEditModal(idx) {
 
 function closeRushModal() {
     rushModalOverlay.classList.remove("active");
-
     clearRushValidationErrors();
-
     draftFee = null;
     editingRushIndex = null;
     pendingImageFile = null;
 }
 
 // ==================== DELETE CONFIRM MODAL ====================
-
 function openDeleteConfirm(idx) {
     pendingDeleteIndex = idx;
     rushDeleteOverlay.classList.add("active");
@@ -122,16 +113,10 @@ rushDeleteOverlay.addEventListener("click", (e) => {
 });
 
 // ==================== IMAGE UPLOAD WIDGET ====================
-
-/**
- * Build the A4 image upload section and inject it into the modal.
- * One image max. PNG / JPG only.
- */
 function buildImageUploadSection() {
     const section = document.createElement("div");
     section.className = "rush_image_upload_section";
 
-    // Label row
     const headerRow = document.createElement("div");
     headerRow.className = "rush_image_upload_header";
 
@@ -142,14 +127,12 @@ function buildImageUploadSection() {
     headerRow.appendChild(labelEl);
     section.appendChild(headerRow);
 
-    // Drop zone — A4 aspect ratio (210 : 297)
     const dropZone = document.createElement("div");
     dropZone.className = "rush_image_dropzone";
     dropZone.setAttribute("role", "button");
     dropZone.setAttribute("tabindex", "0");
     dropZone.setAttribute("aria-label", "Upload reference sheet image");
 
-    // Placeholder shown when no image is set
     const placeholder = document.createElement("div");
     placeholder.className = "rush_image_placeholder";
 
@@ -159,12 +142,10 @@ function buildImageUploadSection() {
 
     placeholder.appendChild(plus);
 
-    // Preview
     const preview = document.createElement("img");
     preview.className = "rush_image_preview";
     preview.alt = "Reference sheet preview";
 
-    // Remove button
     const removeBtn = document.createElement("button");
     removeBtn.type = "button";
     removeBtn.className = "rush_image_remove_btn";
@@ -174,7 +155,6 @@ function buildImageUploadSection() {
     dropZone.appendChild(placeholder);
     dropZone.appendChild(preview);
 
-    // Hidden file input
     const fileInput = document.createElement("input");
     fileInput.type = "file";
     fileInput.accept = "image/png, image/jpeg";
@@ -184,9 +164,8 @@ function buildImageUploadSection() {
     section.appendChild(dropZone);
     section.appendChild(fileInput);
 
-    // ---- Helpers ----
     function showPreview(src) {
-        if (!src) return; // Safety check
+        if (!src) return; 
         preview.src = src;
         dropZone.classList.add("rush_image_dropzone--has_image");
         addRemoveButton();
@@ -198,7 +177,6 @@ function buildImageUploadSection() {
         pendingImageFile = null;
         if (draftFee) draftFee.image_url = null;
         fileInput.value = "";
-
         removeRemoveButton();
     }
 
@@ -210,11 +188,10 @@ function buildImageUploadSection() {
         }
         pendingImageFile = file;
 
-        // CLEANUP IMAGE ERROR
-        const dropZone = document.querySelector(".rush_image_dropzone");
-        dropZone.classList.remove("rush_input_error");
-        if (dropZone.nextElementSibling?.classList.contains("rush_error_msg")) {
-            dropZone.nextElementSibling.remove();
+        const dZone = document.querySelector(".rush_image_dropzone");
+        dZone.classList.remove("image_box_error");
+        if (dZone.nextElementSibling?.classList.contains("field_error")) {
+            dZone.nextElementSibling.remove();
         }
 
         const reader = new FileReader();
@@ -222,9 +199,7 @@ function buildImageUploadSection() {
         reader.readAsDataURL(file);
     }
 
-    // Restore existing image on edit open
     if (draftFee && draftFee.image_url) {
-        // Use a small timeout or direct call to ensure the DOM is ready
         showPreview(draftFee.image_url);
     } else {
         clearPreview();
@@ -232,10 +207,7 @@ function buildImageUploadSection() {
 
     dropZone.addEventListener("click", (e) => {
         if (e.target === removeBtn) return;
-
-        if (dropZone.classList.contains("rush_image_dropzone--has_image"))
-            return;
-
+        if (dropZone.classList.contains("rush_image_dropzone--has_image")) return;
         fileInput.click();
     });
 
@@ -272,27 +244,19 @@ function buildImageUploadSection() {
 
 // ==================== CLEARING ====================
 function clearRushValidationErrors() {
-    // 1. Remove all the red border classes
-    const erroredInputs = document.querySelectorAll(".rush_input_error");
-    erroredInputs.forEach((el) => el.classList.remove("rush_input_error"));
-
-    // 2. Remove all the "This field is required" text elements
-    const errorMessages = document.querySelectorAll(".rush_error_msg");
-    errorMessages.forEach((msg) => msg.remove());
+    document.querySelectorAll(".input_error_state").forEach((el) => el.classList.remove("input_error_state"));
+    document.querySelectorAll(".image_box_error").forEach((el) => el.classList.remove("image_box_error"));
+    document.querySelectorAll(".field_error").forEach((msg) => msg.remove());
 }
 
 // ==================== RENDER FORM ====================
-
 function renderRushModalForm() {
     document.getElementById("rushRangeLabel").value = draftFee.label;
-    document.getElementById("rushRangeMin").value =
-        draftFee.min !== null ? draftFee.min : "";
-    document.getElementById("rushRangeMax").value =
-        draftFee.max !== null ? draftFee.max : "";
+    document.getElementById("rushRangeMin").value = draftFee.min !== null ? draftFee.min : "";
+    document.getElementById("rushRangeMax").value = draftFee.max !== null ? draftFee.max : "";
 
     renderTimeframeRows();
 
-    // Inject image upload — remove stale instance first
     const existing = document.getElementById("rushImageUploadSection");
     if (existing) existing.remove();
 
@@ -301,10 +265,7 @@ function renderRushModalForm() {
 
     const priceRangeSection = document.querySelector(".rush_range_section");
     if (priceRangeSection) {
-        priceRangeSection.parentElement.insertBefore(
-            uploadSection,
-            priceRangeSection,
-        );
+        priceRangeSection.parentElement.insertBefore(uploadSection, priceRangeSection);
     }
 }
 
@@ -324,10 +285,8 @@ function renderTimeframeRows() {
         tfInput.addEventListener("input", () => {
             draftFee.timeframes[ti].label = tfInput.value;
 
-            tfInput.classList.remove("rush_input_error");
-            if (
-                tfInput.nextElementSibling?.classList.contains("rush_error_msg")
-            ) {
+            tfInput.classList.remove("input_error_state");
+            if (tfInput.nextElementSibling?.classList.contains("field_error")) {
                 tfInput.nextElementSibling.remove();
             }
         });
@@ -340,23 +299,15 @@ function renderTimeframeRows() {
         pctInput.className = "rush_pct_input";
         pctInput.placeholder = "0";
         pctInput.value = tf.percentage;
-        pctInput.addEventListener("input", () => {
-            pctInput.value = pctInput.value.replace(/[^0-9]/g, "");
-            draftFee.timeframes[ti].percentage =
-                pctInput.value === "" ? 0 : parseInt(pctInput.value, 10);
-        });
 
         pctInput.addEventListener("input", () => {
             pctInput.value = pctInput.value.replace(/[^0-9]/g, "");
-            draftFee.timeframes[ti].percentage =
-                pctInput.value === "" ? 0 : parseInt(pctInput.value, 10);
+            draftFee.timeframes[ti].percentage = pctInput.value === "" ? 0 : parseInt(pctInput.value, 10);
 
-            // AUTO-CLEANUP
-            // (Note: Since pctInput is inside pctWrap, we check the wrap for the error class)
-            pctInput.classList.remove("rush_input_error");
+            // FIX: Ensure we only clean up the input box itself
+            pctInput.classList.remove("input_error_state");
             const wrap = pctInput.parentElement;
-            wrap.classList.remove("rush_input_error");
-            if (wrap.nextElementSibling?.classList.contains("rush_error_msg")) {
+            if (wrap.nextElementSibling?.classList.contains("field_error")) {
                 wrap.nextElementSibling.remove();
             }
         });
@@ -387,13 +338,9 @@ function renderTimeframeRows() {
 }
 
 // ==================== LOAD DATA ====================
-
 async function loadRushFees() {
     try {
-        // Use the API helper to get data
         const data = await rushApi.getAllRushFees();
-
-        // Map the backend names (min_price) to your frontend names (min)
         rushFees = data.map((r) => ({
             id: r.id,
             label: r.label,
@@ -402,80 +349,52 @@ async function loadRushFees() {
             image_url: r.image_url,
             timeframes: r.timeframes || [],
         }));
-
         renderRushDisplay();
     } catch (err) {
         console.warn("Rush fees: could not load.", err);
     }
 }
 
-// ====================  INPUT VALIDATION ====================
-
-function setFieldError(elementId, isInvalid) {
-    const el = document.getElementById(elementId);
-    if (!el) return;
-
-    if (isInvalid) {
-        el.classList.add("rush_input_error");
-        // Optional: Add a small text span after the input if it doesn't exist
-        if (!el.nextElementSibling?.classList.contains("rush_error_message")) {
-            const msg = document.createElement("span");
-            msg.className = "rush_error_message";
-            msg.textContent = "This field is required";
-            el.parentNode.insertBefore(msg, el.nextSibling);
-        }
-    } else {
-        el.classList.remove("rush_input_error");
-        if (el.nextElementSibling?.classList.contains("rush_error_message")) {
-            el.nextElementSibling.remove();
-        }
-    }
-}
-
 // ==================== SAVE ====================
-
 async function saveRushFee() {
     if (isRushLoading) return;
 
-    // 1. Clear previous errors
-    document.querySelectorAll(".rush_error_msg").forEach((el) => el.remove());
-    document
-        .querySelectorAll(".rush_input_error")
-        .forEach((el) => el.classList.remove("rush_input_error"));
-
+    clearRushValidationErrors();
     let hasError = false;
 
-    // Helper to inject error message
-    const showError = (inputElement, message) => {
+    // FIX: Updated showError to accept a third argument. 
+    // This tells it WHERE to put the text message, keeping the red border strictly on the input itself!
+    const showError = (inputElement, message, appendAfterElement = inputElement) => {
         hasError = true;
-        inputElement.classList.add("rush_input_error");
+        
+        if (inputElement.classList.contains("rush_image_dropzone")) {
+            inputElement.classList.add("image_box_error");
+        } else {
+            inputElement.classList.add("input_error_state");
+        }
+        
         const msg = document.createElement("span");
-        msg.className = "rush_error_msg";
+        msg.className = "field_error";
         msg.textContent = message;
-        inputElement.parentNode.insertBefore(msg, inputElement.nextSibling);
+        appendAfterElement.parentNode.insertBefore(msg, appendAfterElement.nextSibling);
     };
 
     // --- Validation Checks ---
-
-    // A. Image Check
     if (!draftFee.image_url && !pendingImageFile) {
         const dropZone = document.querySelector(".rush_image_dropzone");
         showError(dropZone, "This field is required");
     }
 
-    // B. Price Range Label
     const labelInput = document.getElementById("rushRangeLabel");
     if (!draftFee.label || draftFee.label.trim() === "") {
         showError(labelInput, "This field is required");
     }
 
-    // C. Min Input
     const minInput = document.getElementById("rushRangeMin");
     if (draftFee.min === null || draftFee.min === "") {
         showError(minInput, "This field is required");
     }
 
-    // D. Timeframes (Each row)
     const timeframeRows = document.querySelectorAll(".rush_tf_edit_row");
     draftFee.timeframes.forEach((tf, index) => {
         const row = timeframeRows[index];
@@ -486,21 +405,19 @@ async function saveRushFee() {
             showError(tfInput, "This field is required");
         }
         if (tf.percentage === "" || tf.percentage === null) {
-            // For the percentage, we attach the error to the pctWrap or input
-            showError(pctInput.parentElement, "Required");
+            // FIX: Apply red border to pctInput, but append text AFTER pctInput.parentElement (the wrapper)
+            showError(pctInput, "Required", pctInput.parentElement);
         }
     });
 
     if (hasError) {
-        // Scroll to the top of the modal so they see the errors
         document.querySelector(".rush_fees_modal_box").scrollTop = 0;
         return;
     }
 
-    // 2. PROCEED TO SAVE (Existing logic...)
     isRushLoading = true;
     try {
-        // ... your existing save logic (upload image, send payload)
+        // Your logic here
     } catch (error) {
         console.error(error);
     } finally {
@@ -509,7 +426,6 @@ async function saveRushFee() {
 }
 
 // ==================== DELETE ====================
-
 async function deleteRushFee(idx) {
     const feeId = rushFees[idx].id;
     if (!feeId) return;
@@ -532,7 +448,6 @@ async function deleteRushFee(idx) {
 }
 
 // ==================== READ-ONLY DISPLAY ====================
-
 function renderRushDisplay() {
     const container = document.getElementById("rushFeesCardsContainer");
     const emptyEl = document.getElementById("rushFeesEmpty");
@@ -550,7 +465,6 @@ function renderRushDisplay() {
         const card = document.createElement("div");
         card.className = "rush_fee_card";
 
-        // ---- Image area (A4 proportioned) ----
         const imgArea = document.createElement("div");
         imgArea.className = "rush_card_img_area";
 
@@ -564,22 +478,15 @@ function renderRushDisplay() {
             const noImg = document.createElement("div");
             noImg.className = "rush_card_img_placeholder";
 
-            // Image icon
-            const noImgSvg = document.createElementNS(
-                "http://www.w3.org/2000/svg",
-                "svg",
-            );
+            const noImgSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
             noImgSvg.setAttribute("viewBox", "0 -960 960 960");
             noImgSvg.setAttribute("height", "26px");
             noImgSvg.setAttribute("width", "26px");
             noImgSvg.setAttribute("class", "rush_card_no_img_svg");
-            const noImgPath = document.createElementNS(
-                "http://www.w3.org/2000/svg",
-                "path",
-            );
+            const noImgPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
             noImgPath.setAttribute(
                 "d",
-                "M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm40-80h480L570-480 450-320l-90-120-120 160Zm-40 80v-560 560Z",
+                "M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm40-80h480L570-480 450-320l-90-120-120 160Zm-40 80v-560 560Z"
             );
             noImgSvg.appendChild(noImgPath);
 
@@ -593,17 +500,14 @@ function renderRushDisplay() {
 
         card.appendChild(imgArea);
 
-        // ---- Card body ----
         const body = document.createElement("div");
         body.className = "rush_card_body";
 
-        // Price range label
         const rangeLabel = document.createElement("p");
         rangeLabel.className = "rush_card_range_label";
         rangeLabel.textContent = range.label || "—";
         body.appendChild(rangeLabel);
 
-        // Timeframe dropdown
         if (range.timeframes && range.timeframes.length > 0) {
             const tfLabel = document.createElement("span");
             tfLabel.className = "rush_card_tf_label";
@@ -619,15 +523,8 @@ function renderRushDisplay() {
 
             range.timeframes.forEach((tf) => {
                 const opt = document.createElement("option");
-
-                // Force the percentage to be a whole number for display
-                const displayPct = tf.percentage
-                    ? Math.floor(tf.percentage)
-                    : 0;
-
-                const pct =
-                    displayPct > 0 ? `+${displayPct}% added to total` : "—";
-
+                const displayPct = tf.percentage ? Math.floor(tf.percentage) : 0;
+                const pct = displayPct > 0 ? `+${displayPct}% added to total` : "—";
                 const tfText = tf.label || "—";
                 opt.textContent = `${tfText}  ·  ${pct}`;
                 select.appendChild(opt);
@@ -639,7 +536,6 @@ function renderRushDisplay() {
 
         card.appendChild(body);
 
-        // ---- Edit button ----
         const editBtn = document.createElement("button");
         editBtn.type = "button";
         editBtn.className = "rush_card_edit_btn";
@@ -652,82 +548,51 @@ function renderRushDisplay() {
 }
 
 // ==================== INIT ====================
-
 function initRushFees() {
-    document
-        .getElementById("addRushFeeBtn")
-        .addEventListener("click", openAddModal);
+    document.getElementById("addRushFeeBtn").addEventListener("click", openAddModal);
 
     document.getElementById("rushRangeLabel").addEventListener("input", (e) => {
         if (draftFee) draftFee.label = e.target.value;
+        e.target.classList.remove("input_error_state");
+        if (e.target.nextElementSibling?.classList.contains("field_error")) {
+            e.target.nextElementSibling.remove();
+        }
     });
+
     document.getElementById("rushRangeMin").addEventListener("input", (e) => {
         e.target.value = e.target.value.replace(/[^0-9]/g, "");
-        if (draftFee)
-            draftFee.min =
-                e.target.value === "" ? null : parseInt(e.target.value);
+        if (draftFee) draftFee.min = e.target.value === "" ? null : parseInt(e.target.value);
+        e.target.classList.remove("input_error_state");
+        if (e.target.nextElementSibling?.classList.contains("field_error")) {
+            e.target.nextElementSibling.remove();
+        }
     });
+
     document.getElementById("rushRangeMax").addEventListener("input", (e) => {
         e.target.value = e.target.value.replace(/[^0-9]/g, "");
-        if (draftFee)
-            draftFee.max =
-                e.target.value === "" ? null : parseInt(e.target.value);
+        if (draftFee) draftFee.max = e.target.value === "" ? null : parseInt(e.target.value);
     });
 
-    document
-        .getElementById("rushAddTimeframeBtn")
-        .addEventListener("click", () => {
-            if (!draftFee) return;
-            draftFee.timeframes.push({ label: "", percentage: "" });
-            renderTimeframeRows();
-        });
-
-    document.getElementById("rushRangeLabel").addEventListener("input", (e) => {
-        if (draftFee) draftFee.label = e.target.value;
-
-        // CLEANUP
-        e.target.classList.remove("rush_input_error");
-        if (e.target.nextElementSibling?.classList.contains("rush_error_msg")) {
-            e.target.nextElementSibling.remove();
-        }
+    document.getElementById("rushAddTimeframeBtn").addEventListener("click", () => {
+        if (!draftFee) return;
+        draftFee.timeframes.push({ label: "", percentage: "" });
+        renderTimeframeRows();
     });
 
-    document.getElementById("rushRangeMin").addEventListener("input", (e) => {
-        e.target.value = e.target.value.replace(/[^0-9]/g, "");
-        if (draftFee)
-            draftFee.min =
-                e.target.value === "" ? null : parseInt(e.target.value);
-
-        // CLEANUP
-        e.target.classList.remove("rush_input_error");
-        if (e.target.nextElementSibling?.classList.contains("rush_error_msg")) {
-            e.target.nextElementSibling.remove();
-        }
-    });
-
-    document
-        .getElementById("rushSaveBtn")
-        .addEventListener("click", saveRushFee);
-
-    document
-        .getElementById("rushCancelBtn")
-        .addEventListener("click", closeRushModal);
+    document.getElementById("rushSaveBtn").addEventListener("click", saveRushFee);
+    document.getElementById("rushCancelBtn").addEventListener("click", closeRushModal);
 
     document.getElementById("rushDeleteBtn").addEventListener("click", () => {
         if (editingRushIndex === null) return;
         openDeleteConfirm(editingRushIndex);
     });
 
-    document
-        .getElementById("rushDeleteConfirmBtn")
-        .addEventListener("click", async () => {
-            if (pendingDeleteIndex === null) return;
-            await deleteRushFee(pendingDeleteIndex);
-        });
+    document.getElementById("rushDeleteConfirmBtn").addEventListener("click", async () => {
+        if (pendingDeleteIndex === null) return;
+        await deleteRushFee(pendingDeleteIndex);
+    });
 
-    document
-        .getElementById("rushDeleteCancelBtn")
-        .addEventListener("click", closeDeleteConfirm);
+    document.getElementById("rushDeleteCancelBtn").addEventListener("click", closeDeleteConfirm);
 
     loadRushFees();
 }

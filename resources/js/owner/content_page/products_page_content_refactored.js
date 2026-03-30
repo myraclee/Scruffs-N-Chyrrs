@@ -6,41 +6,24 @@
 // ================= IMPORTS =================
 import ProductAPI from "/resources/js/api/productApi.js";
 import Toast from "/resources/js/utils/toast.js";
-import FormState from "/resources/js/utils/formState.js";
 
 // ================= ELEMENTS =================
 const products_add_btn = document.getElementById("products_add_btn");
 const products_modal = document.getElementById("products_modal");
 const products_title_input = document.getElementById("products_title_input");
-const products_description_input = document.getElementById(
-    "products_description_input",
-);
+const products_description_input = document.getElementById("products_description_input");
 const products_main_add_box = document.getElementById("products_main_add_box");
-const products_main_image_preview = document.getElementById(
-    "products_main_image_preview",
-);
-const products_remove_main_image_btn = document.getElementById(
-    "products_remove_main_image_btn",
-);
-const products_price_images_wrapper = document.getElementById(
-    "products_price_images_wrapper",
-);
-const products_image_notes_wrapper = document.getElementById(
-    "products_image_notes_wrapper",
-);
+const products_main_image_preview = document.getElementById("products_main_image_preview");
+const products_remove_main_image_btn = document.getElementById("products_remove_main_image_btn");
+const products_price_images_wrapper = document.getElementById("products_price_images_wrapper");
+const products_image_notes_wrapper = document.getElementById("products_image_notes_wrapper");
 const products_cancel_btn = document.getElementById("products_cancel_btn");
 const products_save_btn = document.getElementById("products_save_btn");
 const products_delete_btn = document.getElementById("products_delete_btn");
 const products_container = document.getElementById("products_container");
-const products_no_items_text = document.getElementById(
-    "products_no_items_text",
-);
-const products_delete_confirm_modal = document.getElementById(
-    "products_delete_confirm_modal",
-);
-const products_confirm_delete_btn = document.getElementById(
-    "products_confirm_delete_btn",
-);
+const products_no_items_text = document.getElementById("products_no_items_text");
+const products_delete_confirm_modal = document.getElementById("products_delete_confirm_modal");
+const products_confirm_delete_btn = document.getElementById("products_confirm_delete_btn");
 const products_title_error = document.getElementById("products_title_error");
 const products_cover_error = document.getElementById("products_cover_error");
 const products_prices_error = document.getElementById("products_prices_error");
@@ -63,8 +46,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 async function loadProductsFromAPI() {
     try {
-        products_container.innerHTML =
-            '<p style="color: #999;">Loading products...</p>';
+        products_container.innerHTML = '<p style="color: #999;">Loading products...</p>';
         const products = await ProductAPI.getAllProducts();
         products_list = products;
         renderProducts();
@@ -72,25 +54,24 @@ async function loadProductsFromAPI() {
     } catch (error) {
         console.error("Error loading products:", error);
         Toast.error("Failed to load products from database");
-        products_container.innerHTML =
-            '<p style="color: #999;">No products uploaded yet.</p>';
+        products_container.innerHTML = '<p style="color: #999;">No products uploaded yet.</p>';
     }
 }
 
 function dispatchProductsUpdated() {
-    window.dispatchEvent(
-        new CustomEvent("productsUpdated", { detail: products_list }),
-    );
+    window.dispatchEvent(new CustomEvent("productsUpdated", { detail: products_list }));
 }
 
 // ================= VALIDATION HELPERS =================
 function setFieldError(field, errorEl, message) {
     errorEl.textContent = message;
-    field.classList.add("products_input_error");
+    errorEl.classList.remove("hidden");
+    field.classList.add("input_error_state"); // Unified error class
 }
 function clearFieldError(field, errorEl) {
     errorEl.textContent = "";
-    field.classList.remove("products_input_error");
+    errorEl.classList.add("hidden");
+    field.classList.remove("input_error_state");
 }
 
 products_title_input.addEventListener("input", () => {
@@ -116,8 +97,10 @@ products_main_add_box.addEventListener("click", () => {
         products_main_add_box.style.display = "none";
         products_remove_main_image_btn.style.display = "block";
         products_has_cover = true;
-        products_cover_error.textContent = "";
-        products_main_add_box.classList.remove("products_input_error");
+        
+        // Remove error states when image is added
+        products_cover_error.classList.add("hidden");
+        products_main_add_box.classList.remove("image_box_error");
     };
     input.click();
 });
@@ -132,16 +115,8 @@ products_remove_main_image_btn.addEventListener("click", () => {
 });
 
 // ================= PRICE IMAGES HANDLING =================
-
-/**
- * Returns the single "+" add box currently in the price wrapper, or null.
- */
 function getPriceAddBox() {
-    return (
-        products_price_images_wrapper.querySelector(
-            ".products_price_add_box",
-        ) || null
-    );
+    return products_price_images_wrapper.querySelector(".products_price_add_box") || null;
 }
 
 function createPriceBox(existingSrc = null) {
@@ -152,7 +127,6 @@ function createPriceBox(existingSrc = null) {
     box.className = "products_price_box";
 
     if (!existingSrc) {
-        // This is the "+" upload box
         box.classList.add("products_price_add_box");
         box.textContent = "+";
         box.addEventListener("click", () => {
@@ -165,25 +139,16 @@ function createPriceBox(existingSrc = null) {
                 products_price_files.push(file);
                 const reader = new FileReader();
                 reader.onload = (event) => {
-                    // Build a filled wrapper and insert before the "+" box wrapper
-                    const filledWrapper = buildFilledPriceWrapper(
-                        event.target.result,
-                        file,
-                    );
+                    const filledWrapper = buildFilledPriceWrapper(event.target.result, file);
                     const addBoxWrapper = getPriceAddBox()?.parentElement;
                     if (addBoxWrapper) {
-                        products_price_images_wrapper.insertBefore(
-                            filledWrapper,
-                            addBoxWrapper,
-                        );
+                        products_price_images_wrapper.insertBefore(filledWrapper, addBoxWrapper);
                     } else {
-                        products_price_images_wrapper.appendChild(
-                            filledWrapper,
-                        );
+                        products_price_images_wrapper.appendChild(filledWrapper);
                     }
-                    // Clear validation error
-                    products_prices_error.textContent = "";
-                    box.classList.remove("products_input_error");
+                    // Remove error state when price image is added
+                    products_prices_error.classList.add("hidden");
+                    box.classList.remove("image_box_error");
                 };
                 reader.readAsDataURL(file);
             };
@@ -192,15 +157,12 @@ function createPriceBox(existingSrc = null) {
         wrapper.appendChild(box);
         return wrapper;
     }
-
-    // Filled box (existing DB image) — built via buildFilledPriceWrapper
     return null;
 }
 
 function buildFilledPriceWrapper(src, file = null, existingImageId = null) {
     const wrapper = document.createElement("div");
     wrapper.className = "products_price_box_wrapper";
-    // Store the image ID on the wrapper for reference
     if (existingImageId !== null) {
         wrapper.dataset.priceImageId = existingImageId;
     }
@@ -218,17 +180,11 @@ function buildFilledPriceWrapper(src, file = null, existingImageId = null) {
     removeBtn.className = "products_button_remove";
     removeBtn.type = "button";
     removeBtn.onclick = () => {
-        // If it's a new file (uploaded), remove from files array
         if (file) {
-            products_price_files = products_price_files.filter(
-                (f) => f !== file,
-            );
+            products_price_files = products_price_files.filter((f) => f !== file);
         }
-        // If it's an existing DB image, remove from kept IDs
         if (existingImageId !== null) {
-            products_price_kept_ids = products_price_kept_ids.filter(
-                (id) => id !== existingImageId,
-            );
+            products_price_kept_ids = products_price_kept_ids.filter((id) => id !== existingImageId);
         }
         wrapper.remove();
         createAddPriceBox();
@@ -246,11 +202,6 @@ function createAddPriceBox() {
 }
 
 // ================= IMAGE NOTES HANDLING =================
-
-/**
- * Build a wrapper containing the note image + Remove button.
- * Used both for new uploads and for restoring existing DB images.
- */
 function buildNoteWrapper(src, file = null) {
     const wrapper = document.createElement("div");
     wrapper.className = "products_notes_item_wrapper";
@@ -269,9 +220,7 @@ function buildNoteWrapper(src, file = null) {
     removeBtn.type = "button";
     removeBtn.onclick = () => {
         if (file) {
-            products_notes_files = products_notes_files.filter(
-                (f) => f !== file,
-            );
+            products_notes_files = products_notes_files.filter((f) => f !== file);
         }
         wrapper.remove();
     };
@@ -281,9 +230,6 @@ function buildNoteWrapper(src, file = null) {
     return wrapper;
 }
 
-/**
- * Create the "+" upload box for notes and return it (does NOT append itself).
- */
 function createNotesAddBox() {
     const box = document.createElement("div");
     box.className = "products_notes_upload_box";
@@ -308,7 +254,6 @@ function createNotesAddBox() {
         const reader = new FileReader();
         reader.onload = (ev) => {
             fileInput.remove();
-            // Insert the new image wrapper just before the "+" box
             const noteWrapper = buildNoteWrapper(ev.target.result, file);
             products_image_notes_wrapper.insertBefore(noteWrapper, box);
         };
@@ -350,11 +295,7 @@ products_save_btn.addEventListener("click", async () => {
 
     // Validate product name
     if (!products_title_input.value.trim()) {
-        setFieldError(
-            products_title_input,
-            products_title_error,
-            "Product name is required",
-        );
+        setFieldError(products_title_input, products_title_error, "Product name is required.");
         hasError = true;
     } else {
         clearFieldError(products_title_input, products_title_error);
@@ -362,27 +303,24 @@ products_save_btn.addEventListener("click", async () => {
 
     // Validate cover image
     if (!products_has_cover) {
-        products_cover_error.textContent = "Cover image is required";
-        products_main_add_box.classList.add("products_input_error");
+        products_cover_error.classList.remove("hidden");
+        products_main_add_box.classList.add("image_box_error"); // New unified class
         hasError = true;
     } else {
-        products_cover_error.textContent = "";
-        products_main_add_box.classList.remove("products_input_error");
+        products_cover_error.classList.add("hidden");
+        products_main_add_box.classList.remove("image_box_error");
     }
 
-    // Validate price images — mark the "+" add box red if empty
-    const priceImages = [
-        ...products_price_images_wrapper.querySelectorAll("img"),
-    ];
+    // Validate price images
+    const priceImages = [...products_price_images_wrapper.querySelectorAll("img")];
     const priceAddBox = getPriceAddBox();
     if (!priceImages.length) {
-        products_prices_error.textContent =
-            "At least one price image is required";
-        if (priceAddBox) priceAddBox.classList.add("products_input_error");
+        products_prices_error.classList.remove("hidden");
+        if (priceAddBox) priceAddBox.classList.add("image_box_error"); // New unified class
         hasError = true;
     } else {
-        products_prices_error.textContent = "";
-        if (priceAddBox) priceAddBox.classList.remove("products_input_error");
+        products_prices_error.classList.add("hidden");
+        if (priceAddBox) priceAddBox.classList.remove("image_box_error");
     }
 
     if (hasError) return;
@@ -399,12 +337,10 @@ products_save_btn.addEventListener("click", async () => {
             formData.append("cover_image", products_main_file);
         }
 
-        // Add new price image files
         products_price_files.forEach((file, index) => {
             formData.append(`price_images[${index}]`, file);
         });
 
-        // Add IDs of existing images to keep
         products_price_kept_ids.forEach((id, index) => {
             formData.append(`existing_price_image_ids[${index}]`, id);
         });
@@ -455,15 +391,13 @@ async function editProduct(productId) {
         products_has_cover = true;
     }
 
-    // Restore price images from database
     products_price_images_wrapper.innerHTML = "";
-    products_price_files = []; // Clear new files array
-    products_price_kept_ids = []; // Track which existing images to keep
+    products_price_files = []; 
+    products_price_kept_ids = []; 
     if (product.price_images && product.price_images.length > 0) {
         product.price_images.forEach((priceImage) => {
             const imagePath = priceImage.image_path || priceImage.path;
             const imageId = priceImage.id;
-            // Add the image ID to the kept list (user can remove it later)
             products_price_kept_ids.push(imageId);
             products_price_images_wrapper.appendChild(
                 buildFilledPriceWrapper(`/storage/${imagePath}`, null, imageId),
@@ -472,22 +406,18 @@ async function editProduct(productId) {
     }
     createAddPriceBox();
 
-    // Restore image notes
     products_image_notes_wrapper.innerHTML = "";
     products_notes_files = [];
     if (product.note_images && product.note_images.length > 0) {
         product.note_images.forEach((noteImg) => {
             const notePath = noteImg.image_path || noteImg.path;
-            products_image_notes_wrapper.appendChild(
-                buildNoteWrapper(`/storage/${notePath}`),
-            );
+            products_image_notes_wrapper.appendChild(buildNoteWrapper(`/storage/${notePath}`));
         });
     }
     products_image_notes_wrapper.appendChild(createNotesAddBox());
 
     products_delete_btn.style.display = "block";
-    document.getElementById("products_modal_title").textContent =
-        "Edit Product";
+    document.getElementById("products_modal_title").textContent = "Edit Product";
     products_modal.style.display = "flex";
 }
 
@@ -559,15 +489,15 @@ function products_reset_modal() {
     products_edit_id = null;
 
     products_title_input.value = "";
-    products_title_input.classList.remove("products_input_error");
-    products_title_error.textContent = "";
+    products_title_input.classList.remove("input_error_state");
+    products_title_error.classList.add("hidden");
 
     if (products_description_input) products_description_input.value = "";
 
     products_main_image_preview.src = "";
     products_main_image_preview.style.display = "none";
     products_main_add_box.style.display = "flex";
-    products_main_add_box.classList.remove("products_input_error");
+    products_main_add_box.classList.remove("image_box_error"); // Clear error
     products_remove_main_image_btn.style.display = "none";
     products_main_file = null;
     products_has_cover = false;
@@ -575,8 +505,9 @@ function products_reset_modal() {
     products_price_images_wrapper.innerHTML = "";
     products_price_files = [];
     products_price_kept_ids = [];
-    products_cover_error.textContent = "";
-    products_prices_error.textContent = "";
+    
+    products_cover_error.classList.add("hidden");
+    products_prices_error.classList.add("hidden");
 
     document.getElementById("products_modal_title").textContent = "Add Product";
 
