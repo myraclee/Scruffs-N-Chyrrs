@@ -21,6 +21,7 @@ export default defineConfig({
                 "resources/js/owner/content_page/order_template.js",
 
                 "resources/js/customer/pages/login.js",
+                "resources/js/customer/new_password.js",
             ],
             refresh: true,
         }),
