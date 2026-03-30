@@ -111,19 +111,41 @@
         <div class="row">
             <div class="signup_password_container input_group">
                 <label for="password">Password</label>
-                <input class="signup_textbox" type="password" id="password" name="password" placeholder="Enter your password" required minlength="8" maxlength="128"
-                       @error('password') style="border: 2px solid #d93025;" @enderror>
+                <div class="password_wrapper">
+                    <input class="signup_textbox" type="password" id="password" name="password" placeholder="Enter your password" required minlength="8" maxlength="128"
+                           @error('password') style="border: 2px solid #d93025;" @enderror>
+                    <span class="toggle_password" id="toggle_signup_password">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </span>
+                </div>
                 <span class="client_error">Password must be between 8 and 128 characters.</span>
                 @error('password')
                     <span class="server_error">{{ $message }}</span>
                 @enderror
+                
+                <div id="password_requirements" style="display: none; margin-top: 10px; margin-left: 10px;">
+                    <p class="hint_label" style="font-family: Coolvetica; font-size: 14px; color: #682c7a; margin-bottom: 5px;">Password must contain:</p>
+                    <ul class="hints_list" style="font-family: sans-serif; font-size: 12px; color: #666; list-style-type: none; padding-left: 0; margin: 0; display: flex; flex-direction: column; gap: 4px;">
+                        <li id="req_length">✗ At least 8 characters</li>
+                        <li id="req_upper">✗ An uppercase letter</li>
+                        <li id="req_lower">✗ A lowercase letter</li>
+                        <li id="req_number">✗ A number</li>
+                        <li id="req_symbol">✗ A symbol (!@#$%^&*)</li>
+                    </ul>
+                </div>
             </div>
 
             <div class="signup_confirmpassword_container input_group">
                 <label for="password_confirmation">Confirm Password</label>
-                <input class="signup_textbox" type="password" id="password_confirmation" name="password_confirmation" placeholder="Re-enter your password" required minlength="8" maxlength="128"
-                       @error('password_confirmation') style="border: 2px solid #d93025;" @enderror>
+                <div class="password_wrapper">
+                    <input class="signup_textbox" type="password" id="password_confirmation" name="password_confirmation" placeholder="Re-enter your password" required minlength="8" maxlength="128"
+                           @error('password_confirmation') style="border: 2px solid #d93025;" @enderror>
+                    <span class="toggle_password" id="toggle_signup_confirm">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </span>
+                </div>
                 <span class="client_error">Please confirm your password.</span>
+                <span id="match_message" style="font-family: Coolvetica; font-size: 14px; margin-top: 6px; margin-left: 10px; display: block;"></span>
             </div>
         </div>
 

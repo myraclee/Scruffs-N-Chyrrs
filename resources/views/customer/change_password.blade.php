@@ -25,45 +25,53 @@
 
             <div class="form_group">
                 <label for="current_password">Current Password</label>
-                <input 
-                    type="password" 
-                    id="current_password" 
-                    name="current_password" 
-                    class="form_input @error('current_password') input_error @enderror"
-                    required
-                >
+                <div class="password_wrapper">
+                    <input type="password" id="current_password" name="current_password" class="form_input @error('current_password') input_error @enderror" required>
+                    <span class="toggle_password" id="toggle_current_password">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </span>
+                </div>
                 @error('current_password')
                     <span class="error_message">{{ $message }}</span>
                 @enderror
+                <p class="forgot_password"><a href="{{ route('reset-password') }}">Forgot your password?</a></p>
             </div>
 
             <div class="form_group">
                 <label for="new_password">New Password</label>
-                <input 
-                    type="password" 
-                    id="new_password" 
-                    name="new_password" 
-                    class="form_input @error('new_password') input_error @enderror"
-                    required
-                >
+                <div class="password_wrapper">
+                    <input type="password" id="new_password" name="new_password" class="form_input @error('new_password') input_error @enderror" required>
+                    <span class="toggle_password" id="toggle_new_password">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </span>
+                </div>
                 @error('new_password')
                     <span class="error_message">{{ $message }}</span>
                 @enderror
-                <p class="password_hint">Password must be at least 8 characters and contain at least uppercase, lowercase, number, and symbol.</p>
+                <div id="password_requirements" style="display: none; margin-top: 10px;">
+                    <p class="hint_label" style="font-family: Coolvetica; font-size: 13px; color: #682c7a; margin-bottom: 5px;">Password must contain:</p>
+                    <ul class="hints_list" style="font-family: sans-serif; font-size: 12px; color: #666; list-style-type: none; padding-left: 0; margin: 0; display: flex; flex-direction: column; gap: 4px;">
+                        <li id="req_length">✗ At least 8 characters</li>
+                        <li id="req_upper">✗ An uppercase letter</li>
+                        <li id="req_lower">✗ A lowercase letter</li>
+                        <li id="req_number">✗ A number</li>
+                        <li id="req_symbol">✗ A symbol (!@#$%^&*)</li>
+                    </ul>
+                </div>
             </div>
 
             <div class="form_group">
                 <label for="new_password_confirmation">Confirm New Password</label>
-                <input 
-                    type="password" 
-                    id="new_password_confirmation" 
-                    name="new_password_confirmation" 
-                    class="form_input @error('new_password_confirmation') input_error @enderror"
-                    required
-                >
+                <div class="password_wrapper">
+                    <input type="password" id="new_password_confirmation" name="new_password_confirmation" class="form_input @error('new_password_confirmation') input_error @enderror" required>
+                    <span class="toggle_password" id="toggle_confirm_password">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </span>
+                </div>
                 @error('new_password_confirmation')
                     <span class="error_message">{{ $message }}</span>
                 @enderror
+                <span id="match_message" style="font-family: Coolvetica; font-size: 13px; margin-top: 5px; display: block;"></span>
             </div>
 
             <div class="form_actions">

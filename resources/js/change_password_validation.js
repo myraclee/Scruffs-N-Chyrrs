@@ -4,84 +4,114 @@ document.addEventListener("DOMContentLoaded", () => {
     const confirmPasswordInput = document.getElementById(
         "new_password_confirmation",
     );
+    const reqBox = document.getElementById("password_requirements");
+    const matchMsg = document.getElementById("match_message");
 
     if (!form) return;
 
-    // Password validation function
+    const reqs = {
+        length: {
+            regex: /.{8,}/,
+            element: document.getElementById("req_length"),
+        },
+        upper: {
+            regex: /[A-Z]/,
+            element: document.getElementById("req_upper"),
+        },
+        lower: {
+            regex: /[a-z]/,
+            element: document.getElementById("req_lower"),
+        },
+        number: {
+            regex: /[0-9]/,
+            element: document.getElementById("req_number"),
+        },
+        symbol: {
+            regex: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/,
+            element: document.getElementById("req_symbol"),
+        },
+    };
+
     function validatePassword(password) {
         const errors = [];
-
-        if (password.length < 8) {
-            errors.push("At least 8 characters");
-        }
-        if (!/[A-Z]/.test(password)) {
-            errors.push("At least 1 uppercase letter");
-        }
-        if (!/[a-z]/.test(password)) {
-            errors.push("At least 1 lowercase letter");
-        }
-        if (!/[0-9]/.test(password)) {
-            errors.push("At least 1 number");
-        }
-        if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
-            errors.push("At least 1 symbol (!@#$%^&* etc.)");
-        }
-
+        if (password.length < 8) errors.push("At least 8 characters");
+        if (!/[A-Z]/.test(password)) errors.push("At least 1 uppercase letter");
+        if (!/[a-z]/.test(password)) errors.push("At least 1 lowercase letter");
+        if (!/[0-9]/.test(password)) errors.push("At least 1 number");
+        if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password))
+            errors.push("At least 1 symbol");
         return errors;
     }
 
-    // Show password validation hints
-    newPasswordInput.addEventListener("input", () => {
-        const password = newPasswordInput.value;
-        const errors = validatePassword(password);
-
-        // Find or create hints container
-        let hintsContainer =
-            newPasswordInput.parentElement.querySelector(".password_hints");
-        if (!hintsContainer) {
-            hintsContainer = document.createElement("div");
-            hintsContainer.className = "password_hints";
-            newPasswordInput.parentElement.appendChild(hintsContainer);
+    const updateHintsUI = (val) => {
+        for (const key in reqs) {
+            if (reqs[key].element) {
+                if (reqs[key].regex.test(val)) {
+                    reqs[key].element.innerHTML =
+                        "✓ " + reqs[key].element.innerText.substring(2);
+                    reqs[key].element.style.color = "#4caf50";
+                } else {
+                    reqs[key].element.innerHTML =
+                        "✗ " + reqs[key].element.innerText.substring(2);
+                    reqs[key].element.style.color = "#d32f2f";
+                }
+            }
         }
+    };
 
-        if (password.length === 0) {
-            hintsContainer.innerHTML = "";
-            return;
-        }
+    if (newPasswordInput && reqBox) {
+        newPasswordInput.addEventListener("focus", () => {
+            reqBox.style.display = "block";
+            updateHintsUI(newPasswordInput.value); // 🚀 Triggers RED instantly on click
+        });
+        newPasswordInput.addEventListener("input", (e) => {
+            updateHintsUI(e.target.value);
+            checkMatch();
+        });
+    }
 
-        if (errors.length === 0) {
-            hintsContainer.innerHTML =
-                '<p class="hint_success">✓ Password meets all requirements</p>';
+    function checkMatch() {
+        if (!newPasswordInput || !confirmPasswordInput || !matchMsg) return;
+        if (confirmPasswordInput.value === "") {
+            matchMsg.textContent = "";
+        } else if (newPasswordInput.value === confirmPasswordInput.value) {
+            matchMsg.textContent = "✓ Passwords match!";
+            matchMsg.style.color = "#4caf50";
         } else {
-            let hintsHTML =
-                '<p class="hint_label">Password must have:</p><ul class="hints_list">';
-            const allChecks = [
-                { text: "At least 8 characters", regex: /.{8,}/ },
-                { text: "At least 1 uppercase letter", regex: /[A-Z]/ },
-                { text: "At least 1 lowercase letter", regex: /[a-z]/ },
-                { text: "At least 1 number", regex: /[0-9]/ },
-                {
-                    text: "At least 1 symbol (!@#$%^&* etc.)",
-                    regex: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/,
-                },
-            ];
-
-            allChecks.forEach((check) => {
-                const isMet = check.regex.test(password);
-                hintsHTML += `<li class="${isMet ? "hint_met" : "hint_unmet"}">${isMet ? "✓" : "✗"} ${check.text}</li>`;
-            });
-
-            hintsHTML += "</ul>";
-            hintsContainer.innerHTML = hintsHTML;
+            matchMsg.textContent = "✗ Passwords do not match.";
+            matchMsg.style.color = "#d32f2f";
         }
-    });
+    }
 
-    // Form submission validation
+    if (confirmPasswordInput) {
+        confirmPasswordInput.addEventListener("input", checkMatch);
+    }
+
+    // 🚀 NEW: Clean SVG Icons
+    const eyeOpen = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+    const eyeClosed = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+
+    function setupEye(toggleId, inputId) {
+        const toggle = document.getElementById(toggleId);
+        const input = document.getElementById(inputId);
+        if (toggle && input) {
+            toggle.innerHTML = eyeOpen; // Set default
+            toggle.addEventListener("click", function () {
+                const isPassword = input.getAttribute("type") === "password";
+                input.setAttribute("type", isPassword ? "text" : "password");
+                this.innerHTML = isPassword ? eyeClosed : eyeOpen;
+            });
+        }
+    }
+
+    setupEye("toggle_current_password", "current_password");
+    setupEye("toggle_new_password", "new_password");
+    setupEye("toggle_confirm_password", "new_password_confirmation");
+
     form.addEventListener("submit", (e) => {
         const currentPassword = form.querySelector("#current_password").value;
         const newPassword = newPasswordInput.value;
         const confirmPassword = confirmPasswordInput.value;
-
         let isValid = true;
         const newPasswordErrors = validatePassword(newPassword);
 
@@ -92,22 +122,18 @@ document.addEventListener("DOMContentLoaded", () => {
                 "Current password is required",
             );
         }
-
         if (newPasswordErrors.length > 0) {
             isValid = false;
-            const errorMessage =
-                "Password must have: " + newPasswordErrors.join(", ");
-            showFieldError(newPasswordInput, errorMessage);
+            showFieldError(
+                newPasswordInput,
+                "Password must meet requirements.",
+            );
         }
-
         if (newPassword !== confirmPassword) {
             isValid = false;
             showFieldError(confirmPasswordInput, "Passwords do not match");
         }
-
-        if (!isValid) {
-            e.preventDefault();
-        }
+        if (!isValid) e.preventDefault();
     });
 
     function showFieldError(field, message) {

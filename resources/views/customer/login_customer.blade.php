@@ -30,13 +30,16 @@
 
         <div class="login_container">
             <label for="password">Password</label>
-            <input class="login_textbox" type="password" id="password" name="password" placeholder="Enter your password" required
-                   @error('password') style="border: 1px solid red;" @enderror>
-            
+            <div class="password_wrapper">
+                <input class="login_textbox" type="password" id="password" name="password" placeholder="Enter your password" required
+                       @error('password') style="border: 1px solid red;" @enderror>
+                <span class="toggle_password" id="toggle_login_password">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                </span>
+            </div>
             @error('password')
                 <span style="color: red; font-family: Coolvetica; font-size: 14px; display: block; margin-top: 4px;">{{ $message }}</span>
             @enderror
-
             <p class="forgot_password"><a href="{{ route('reset-password') }}">Forgot your password?</a></p>
         </div>
 

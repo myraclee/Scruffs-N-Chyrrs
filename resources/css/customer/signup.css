@@ -55,7 +55,8 @@ label {
 .signup_textbox:focus {
     border-color: #682c7a;
     outline: none;
-    transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transition:
+        box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
         border-color 0.3s ease;
 }
 
@@ -90,16 +91,18 @@ form {
     gap: 7px;
 }
 
-input[type='checkbox'] {
+input[type="checkbox"] {
     height: 15px;
     width: 15px;
 
     accent-color: #682c7a;
     cursor: pointer;
-    transition: transform 0.2s ease-in-out, accent-color 0.2s ease-in-out;
+    transition:
+        transform 0.2s ease-in-out,
+        accent-color 0.2s ease-in-out;
 }
 
-input[type='checkbox']:checked {
+input[type="checkbox"]:checked {
     transform: scale(1.1);
 }
 
@@ -130,7 +133,9 @@ input[type='checkbox']:checked {
     font-size: 17px;
 
     cursor: not-allowed;
-    transition: background-color 0.3s ease, transform 0.2s ease;
+    transition:
+        background-color 0.3s ease,
+        transform 0.2s ease;
 }
 
 .signup_submit.active {
@@ -173,14 +178,14 @@ input[type='checkbox']:checked {
 .validation_error {
     font-size: 12px;
     color: #d32f2f;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     margin-top: 4px;
 }
 
 /* Password Validation Hints */
 .password_hints {
     margin-top: 12px;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 12px;
 }
 
@@ -220,7 +225,6 @@ input[type='checkbox']:checked {
     color: #d32f2f;
     font-weight: 500;
 }
-
 
 /* MOBILE RESPONSIVENESS */
 @media screen and (max-width: 768px) {
@@ -263,7 +267,7 @@ input[type='checkbox']:checked {
     /* Allows the T&C text to wrap nicely without breaking */
     .tnc {
         font-size: 14px;
-        flex-wrap: wrap; 
+        flex-wrap: wrap;
         justify-content: center;
         padding: 0 10px;
     }
@@ -273,4 +277,28 @@ input[type='checkbox']:checked {
         padding: 12px 20px;
         box-sizing: border-box;
     }
+}
+/* 🚀 Custom Eye Toggle & Hide Default Browser Eye */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+    display: none;
+}
+.password_wrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+.toggle_password {
+    position: absolute;
+    right: 16px;
+    cursor: pointer;
+    font-size: 18px;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+    user-select: none;
+    z-index: 10;
+}
+.toggle_password:hover {
+    opacity: 1;
 }

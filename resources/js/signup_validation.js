@@ -6,26 +6,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const confirmPasswordInput = document.getElementById(
         "password_confirmation",
     );
+    const reqBox = document.getElementById("password_requirements");
+    const matchMsg = document.getElementById("match_message");
 
-    if (!form) {
-        console.error(
-            "Validation Script Error: Could not find the signup form!",
-        );
-        return;
-    }
+    if (!form) return;
 
-    // Strict email validation
     function validateEmail(email) {
-        const re = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
-        return re.test(email);
+        return /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(email);
     }
-
-    // Phone validation function
     function validatePhone(phone) {
         return /^9[0-9]{9}$/.test(phone);
     }
 
-    // Password validation function
     function validatePassword(password) {
         const errors = [];
         if (password.length < 8) errors.push("At least 8 characters");
@@ -33,62 +25,99 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!/[a-z]/.test(password)) errors.push("At least 1 lowercase letter");
         if (!/[0-9]/.test(password)) errors.push("At least 1 number");
         if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password))
-            errors.push("At least 1 symbol (!@#$%^&* etc.)");
+            errors.push("At least 1 symbol");
         return errors;
     }
 
-    // Show password validation hints (Real-time by default)
-    if (passwordInput) {
-        passwordInput.addEventListener("input", () => {
-            const password = passwordInput.value;
-            const errors = validatePassword(password);
+    const reqs = {
+        length: {
+            regex: /.{8,}/,
+            element: document.getElementById("req_length"),
+        },
+        upper: {
+            regex: /[A-Z]/,
+            element: document.getElementById("req_upper"),
+        },
+        lower: {
+            regex: /[a-z]/,
+            element: document.getElementById("req_lower"),
+        },
+        number: {
+            regex: /[0-9]/,
+            element: document.getElementById("req_number"),
+        },
+        symbol: {
+            regex: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/,
+            element: document.getElementById("req_symbol"),
+        },
+    };
 
-            let hintsContainer =
-                passwordInput.parentElement.querySelector(".password_hints");
-            if (!hintsContainer) {
-                hintsContainer = document.createElement("div");
-                hintsContainer.className = "password_hints";
-                passwordInput.parentElement.appendChild(hintsContainer);
+    const updateHintsUI = (val) => {
+        for (const key in reqs) {
+            if (reqs[key].element) {
+                if (reqs[key].regex.test(val)) {
+                    reqs[key].element.innerHTML =
+                        "✓ " + reqs[key].element.innerText.substring(2);
+                    reqs[key].element.style.color = "#4caf50";
+                } else {
+                    reqs[key].element.innerHTML =
+                        "✗ " + reqs[key].element.innerText.substring(2);
+                    reqs[key].element.style.color = "#d32f2f";
+                }
             }
+        }
+    };
 
-            if (password.length === 0) {
-                hintsContainer.innerHTML = "";
-                return;
-            }
-
-            if (errors.length === 0) {
-                hintsContainer.innerHTML =
-                    '<p class="hint_success">✓ Password meets all requirements</p>';
-            } else {
-                let hintsHTML =
-                    '<p class="hint_label">Password must have:</p><ul class="hints_list">';
-                const allChecks = [
-                    { text: "At least 8 characters", regex: /.{8,}/ },
-                    { text: "At least 1 uppercase letter", regex: /[A-Z]/ },
-                    { text: "At least 1 lowercase letter", regex: /[a-z]/ },
-                    { text: "At least 1 number", regex: /[0-9]/ },
-                    {
-                        text: "At least 1 symbol (!@#$%^&* etc.)",
-                        regex: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/,
-                    },
-                ];
-
-                allChecks.forEach((check) => {
-                    const isMet = check.regex.test(password);
-                    hintsHTML += `<li class="${isMet ? "hint_met" : "hint_unmet"}">${isMet ? "✓" : "✗"} ${check.text}</li>`;
-                });
-
-                hintsHTML += "</ul>";
-                hintsContainer.innerHTML = hintsHTML;
-            }
+    if (passwordInput && reqBox) {
+        passwordInput.addEventListener("focus", () => {
+            reqBox.style.display = "block";
+            updateHintsUI(passwordInput.value); // 🚀 Triggers RED instantly on click
+        });
+        passwordInput.addEventListener("input", (e) => {
+            updateHintsUI(e.target.value);
+            checkMatch();
         });
     }
 
-    // Form submission validation
+    function checkMatch() {
+        if (!passwordInput || !confirmPasswordInput || !matchMsg) return;
+        if (confirmPasswordInput.value === "") {
+            matchMsg.textContent = "";
+        } else if (passwordInput.value === confirmPasswordInput.value) {
+            matchMsg.textContent = "✓ Passwords match!";
+            matchMsg.style.color = "#4caf50";
+        } else {
+            matchMsg.textContent = "✗ Passwords do not match.";
+            matchMsg.style.color = "#d32f2f";
+        }
+    }
+
+    if (confirmPasswordInput) {
+        confirmPasswordInput.addEventListener("input", checkMatch);
+    }
+
+    // 🚀 NEW: Clean SVG Icons
+    const eyeOpen = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+    const eyeClosed = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+
+    function setupEye(toggleId, inputId) {
+        const toggle = document.getElementById(toggleId);
+        const input = document.getElementById(inputId);
+        if (toggle && input) {
+            toggle.innerHTML = eyeOpen; // Set default
+            toggle.addEventListener("click", function () {
+                const isPassword = input.getAttribute("type") === "password";
+                input.setAttribute("type", isPassword ? "text" : "password");
+                this.innerHTML = isPassword ? eyeClosed : eyeOpen;
+            });
+        }
+    }
+    setupEye("toggle_signup_password", "password");
+    setupEye("toggle_signup_confirm", "password_confirmation");
+
+    // Form submission validation (Preserved perfectly!)
     form.addEventListener("submit", (e) => {
         let isValid = true;
-
-        // Validate email
         const email = emailInput.value.trim();
         if (email === "") {
             isValid = false;
@@ -103,7 +132,6 @@ document.addEventListener("DOMContentLoaded", () => {
             clearFieldError(emailInput);
         }
 
-        // Validate phone
         const phone = contactInput.value.trim();
         if (phone === "") {
             isValid = false;
@@ -121,19 +149,18 @@ document.addEventListener("DOMContentLoaded", () => {
             clearFieldError(contactInput);
         }
 
-        // Validate password
         const password = passwordInput.value;
         const passwordErrors = validatePassword(password);
         if (passwordErrors.length > 0) {
             isValid = false;
-            const errorMessage =
-                "Password must have: " + passwordErrors.join(", ");
-            showFieldError(passwordInput, errorMessage);
+            showFieldError(
+                passwordInput,
+                "Password must have: " + passwordErrors.join(", "),
+            );
         } else {
             clearFieldError(passwordInput);
         }
 
-        // Validate password confirmation
         const confirmPassword = confirmPasswordInput.value;
         if (password !== confirmPassword) {
             isValid = false;
@@ -142,61 +169,42 @@ document.addEventListener("DOMContentLoaded", () => {
             clearFieldError(confirmPasswordInput);
         }
 
-        if (!isValid) {
-            e.preventDefault();
-        }
+        if (!isValid) e.preventDefault();
     });
 
-    // CHANGED TO 'input': Real-time validation feedback exactly as you type
     if (emailInput) {
         emailInput.addEventListener("input", () => {
             const email = emailInput.value.trim();
-            if (email === "") {
+            if (email === "")
                 showFieldError(
                     emailInput,
                     "Please enter a valid email address.",
                 );
-            } else if (!email.includes("@")) {
+            else if (!email.includes("@"))
                 showFieldError(emailInput, "Email must contain an @ symbol.");
-            } else if (!validateEmail(email)) {
+            else if (!validateEmail(email))
                 showFieldError(
                     emailInput,
                     "Please enter a valid email address.",
                 );
-            } else {
-                clearFieldError(emailInput);
-            }
+            else clearFieldError(emailInput);
         });
     }
 
     if (contactInput) {
         contactInput.addEventListener("input", () => {
             const phone = contactInput.value.trim();
-            if (phone === "") {
+            if (phone === "")
                 showFieldError(
                     contactInput,
                     "Please enter a 10-digit number starting with 9.",
                 );
-            } else if (!validatePhone(phone)) {
+            else if (!validatePhone(phone))
                 showFieldError(
                     contactInput,
                     "Phone number must be 10 digits and start with 9.",
                 );
-            } else {
-                clearFieldError(contactInput);
-            }
-        });
-    }
-
-    if (confirmPasswordInput) {
-        confirmPasswordInput.addEventListener("input", () => {
-            const password = passwordInput.value;
-            const confirmPassword = confirmPasswordInput.value;
-            if (confirmPassword !== "" && password !== confirmPassword) {
-                showFieldError(confirmPasswordInput, "Passwords do not match.");
-            } else {
-                clearFieldError(confirmPasswordInput);
-            }
+            else clearFieldError(contactInput);
         });
     }
 
