@@ -9,55 +9,6 @@
 @endsection
 
 @section('content')
-    <style>
-        /* =========================================================
-           GLOBAL MODAL ERROR STYLING (Matches Signup Page Exactly)
-           ========================================================= */
-        
-        /* 1. Unifies every single error text across all modals */
-        .sample_name_error,
-        .sample_images_error,
-        .products_error_message,
-        .field_error,
-        .faq_error_message {
-            color: #d93025 !important;
-            font-family: Coolvetica, sans-serif !important;
-            font-size: 13px !important;
-            margin-top: 6px !important;
-            margin-bottom: 0 !important;
-            margin-left: 0 !important;
-            text-align: left !important;
-            display: block; /* Ensures it drops to its own line */
-            width: 100%;
-        }
-
-        /* Allows JS to easily hide the errors */
-        .hidden, .btn_hidden {
-            display: none !important;
-        }
-
-        /* 2. Unified Input Box Error State */
-        .input_error_state {
-            border: 2px solid #d93025 !important;
-            box-shadow: 0 0 5px rgba(217, 48, 37, 0.3) !important;
-        }
-
-        /* 3. Image Add Box Error State (Turns border AND the '+' red) */
-        .image_box_error {
-            border: 2px solid #d93025 !important;
-            color: #d93025 !important; /* Turns the + text/icon red */
-            background-color: rgba(217, 48, 37, 0.02) !important; /* Tiny red tint for extra emphasis */
-            box-shadow: 0 0 5px rgba(217, 48, 37, 0.3) !important;
-        }
-        
-        /* Ensures any SVG icons inside the image box also turn red */
-        .image_box_error svg, 
-        .image_box_error path {
-            fill: #d93025 !important;
-            stroke: #d93025 !important;
-        }
-    </style>
-
     <div class="header_animation">
         <span class="star">✦</span>
         <h1 class="page_header animated_header" id="animatedHeader">Content Management</h1>
@@ -117,16 +68,13 @@
                 <div class="add_sample_modal_box">
                     <h2>Add Sample Products</h2>
                     <p class="add_sample_description">Display your product samples!</p>
-                    
                     <h3>Sample Title</h3>
                     <input type="text" id="sampleNameInput" placeholder="Enter product sample name" maxlength="60"/>
-                    <span class="sample_name_error hidden" id="sampleNameError">Sample name is required.</span>
-                    
+                    <p class="sample_name_error" id="sampleNameError">Sample name is required.</p>
                     <h3>Sample Images</h3>
                     <div class="sample_image_grid" id="sampleImageGrid"></div>
-                    <span class="sample_images_error hidden" id="sampleImageError">At least one image is required.</span>
+                    <p class="sample_images_error" id="sampleImageError">At least one image is required.</p>
                     <p class="sample_image_counter" id="sampleImageCounter">0 / 5 images selected</p>
-                    
                     <div class="sample_image_actions">
                         <div class="left_sample_actions"></div>
                         <div class="right_sample_actions">
@@ -167,26 +115,21 @@
             <div class="products_modal_content">
                 <h2 id="products_modal_title">Add Product</h2>
                 <p>Display your products and its price list!</p>
-                
                 <label>Product Name</label>
                 <input type="text" id="products_title_input" class="products_title_input" placeholder="Enter product name" maxlength="60"/>
-                <span id="products_title_error" class="products_error_message hidden">Product name is required.</span>
-                
+                <span id="products_title_error" class="products_error_message"></span>
                 <label>Product Description</label>
                 <textarea id="products_description_input" class="products_description_input" placeholder="Enter product description (optional)" maxlength="200" rows="3"></textarea>
-                
                 <label>Main Cover Image</label>
                 <div id="products_main_image_wrapper">
                     <div id="products_main_add_box" class="products_add_box">+</div>
                     <img id="products_main_image_preview" alt="Main Image Preview" style="display:none" />
                     <button id="products_remove_main_image_btn" class="products_button_remove" style="display:none">Remove</button>
                 </div>
-                <span id="products_cover_error" class="products_error_message hidden">Cover image is required.</span>
-                
+                <span id="products_cover_error" class="products_error_message"></span>
                 <label>Price List Images</label>
                 <div id="products_price_images_wrapper" class="products_price_wrapper"></div>
-                <span id="products_prices_error" class="products_error_message hidden">At least one price list image is required.</span>
-                
+                <span id="products_prices_error" class="products_error_message"></span>
                 <label>Image Notes</label>
                 <div id="products_image_notes_wrapper" class="products_image_notes_wrapper"></div>
                 <div class="products_modal_actions">
@@ -223,6 +166,10 @@
         <button id="open_add_template_btn" class="add_template_button">Add New Template</button>
 
         {{-- Add / Edit Template Modal --}}
+        {{--
+            Change #4: The overlay click-to-close listener has been removed from
+            the JS. This modal can only be closed via the Cancel button.
+        --}}
         <div class="add_template_modal" id="templateModalOverlay">
             <div class="add_template_modal_box" id="templateModal">
                 <h2 class="modal_title" id="templateModalTitle">Add New Template</h2>
@@ -314,7 +261,7 @@
             </div>
         </div>
 
-        {{-- Delete Confirmation Modal --}}
+        {{-- Delete Confirmation Modal (still closes on outside click — intentional) --}}
         <div class="modal_overlay" id="deleteTemplateModalOverlay">
             <div class="delete_confirm_box template_delete_box">
                 <p class="delete_msg">Do you wish to delete the<br>selected template?</p>
@@ -345,13 +292,22 @@
                     {{-- Price Range --}}
                     <div class="rush_range_section">
                         <label class="rush_field_label">Price Range Label</label>
-                        <input type="text" id="rushRangeLabel" class="rush_range_label_input"
-                               placeholder='e.g. "Below ₱3,000"' />
+                        <div class="rush_input_group">
+                            <input type="text" id="rushRangeLabel" class="rush_range_label_input" placeholder='e.g. "Below ₱3,000"' />
+                        </div>
 
                         <div class="rush_range_amounts_row">
-                            <input type="text" id="rushRangeMin" class="rush_range_amount_input" placeholder="Min (₱)" />
+                            {{-- SEPARATE DIV FOR MIN + ERROR --}}
+                            <div class="rush_input_group">
+                                <input type="text" id="rushRangeMin" class="rush_range_amount_input" placeholder="Min (₱)" />
+                            </div>
+
                             <span class="rush_range_separator">–</span>
-                            <input type="text" id="rushRangeMax" class="rush_range_amount_input" placeholder="Max (₱, blank = ∞)" />
+
+                            {{-- SEPARATE DIV FOR MAX --}}
+                            <div class="rush_input_group">
+                                <input type="text" id="rushRangeMax" class="rush_range_amount_input" placeholder="Max (₱, blank = ∞)" />
+                            </div>
                         </div>
                     </div>
 
@@ -382,7 +338,7 @@
                         <p class="delete_msg">Do you wish to delete<br>this rush fee?</p>
                         <button class="template_delete_btn_large" id="rushDeleteConfirmBtn" type="button">Delete Rush Fee</button>
                         <small class="delete_subtext">This process cannot be undone</small>
-                        <button class="rush_delete_cancel_link" id="rushDeleteCancelBtn" type="button">Cancel</button>
+
                     </div>
                 </div>
             </div>

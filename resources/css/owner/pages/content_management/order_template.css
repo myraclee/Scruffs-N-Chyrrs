@@ -1037,7 +1037,7 @@ select:focus {
     height: 32px;
     border: 2px solid #682c7a;
     border-radius: 30px;
-    background-color: white;
+    background-color: #fffcf8;
     font-size: 13px;
     color: #333;
     padding-left: 12px;
@@ -1076,19 +1076,18 @@ select:focus {
     display: flex;
     flex-direction: column;
     gap: 3px;
-    border-top: 1px solid #e8d5f0;
+    border-top: 1px solid #682c7a;
     padding-top: 8px;
 }
 
 .product_card_fee_line {
     font-family: Coolvetica;
-    font-size: 11px;
+    font-size: 12px;
     color: #682c7a;
     margin: 0;
     word-break: break-word;
     white-space: normal;
     line-height: 1.4;
-    opacity: 0.85;
 }
 
 /* ==================== PRODUCT CARD EDIT BUTTON ==================== */
@@ -1185,85 +1184,153 @@ select:focus {
 
 /* ==================== RUSH FEES SECTION ==================== */
 
-.rush_fees_section_header {
-    font-family: Coolvetica;
-    font-size: 30px;
-    color: #682c7a;
-    margin-bottom: 15px;
+.rush_fees_section {
+    margin-top: 30px;
 }
 
 .rush_fees_empty {
     color: #999999;
     margin-left: 50px;
-}
-
-/* ---- Read-only display: per-range tables ---- */
-
-.rush_fees_display_container {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-    margin-bottom: 15px;
-}
-
-.rush_display_block {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.rush_display_range_heading {
     font-family: Coolvetica;
-    font-size: 18px;
-    color: #682c7a;
-    margin: 0;
-}
-
-.rush_display_table {
-    border-collapse: separate;
-    border-spacing: 0;
-    width: 100%;
-    min-width: 260px;
-    border: 0 solid #682c7a;
-    border-radius: 0;
-    overflow: hidden;
-    font-family: Coolvetica;
-}
-
-.rush_display_col_header {
-    background-color: #682c7a;
-    color: #fff7ec;
-    font-size: 13px;
-    padding: 10px 16px;
-    text-align: left;
-}
-
-.rush_display_tf {
-    font-size: 13px;
-    color: #333;
-    padding: 9px 16px;
-    background: #fff;
-}
-
-.rush_display_pct {
     font-size: 14px;
-    color: #682c7a;
-    font-weight: bold;
-    padding: 9px 16px;
-    background: #fff;
-    text-align: center;
 }
 
-.rush_display_table tbody tr:last-child td {
+/* ==================== RUSH FEES CARDS DISPLAY ==================== */
+
+.rush_fees_cards_container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 15px;
+
+    align-items: flex-start;
+}
+
+.rush_fee_card {
+    background: #fff7ec;
+    border: 2px solid #682c7a;
+    border-radius: 18px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    width: 280px;
+    box-shadow: 0 4px 14px rgba(104, 44, 122, 0.1);
+    flex-shrink: 0;
+    transition:
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+.rush_card_table thead th:first-child {
+    border-top-left-radius: 14px;
+}
+
+.rush_card_table thead th:last-child {
+    border-top-right-radius: 14px;
+}
+
+.rush_card_table tbody tr:last-child td:first-child {
+    border-bottom-left-radius: 14px;
+}
+
+.rush_card_table tbody tr:last-child td:last-child {
+    border-bottom-right-radius: 14px;
+}
+
+.rush_card_table tbody tr:last-child td {
     border-bottom: none;
 }
 
-.rush_display_table tbody tr:hover td {
-    background-color: #fdf6ff;
-    transition: background-color 0.15s ease;
+/* Card Header - Price Range Label */
+.rush_card_header {
+    font-family: Coolvetica;
+    font-size: 18px;
+    color: #682c7a;
+    font-weight: 600;
+    margin: 0;
+    padding: 16px 18px 12px;
+    line-height: 1.3;
+    word-break: break-word;
 }
 
-.edit_rush_fees_btn {
+/* Timeframes Table */
+.rush_card_table {
+    width: 90%;
+    margin: 0 auto 12px auto;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-family: Coolvetica;
+
+    border: 1px solid #682c7a;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.rush_card_table thead {
+    background: #682c7a;
+}
+
+.rush_card_table th {
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #fff7ec;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    border-bottom: 1px solid #682c7a;
+}
+
+.rush_card_table th:last-child {
+    text-align: center;
+}
+
+.rush_card_table tbody tr {
+    border-bottom: 1px solid #682c7a;
+}
+
+.rush_card_table tbody tr:hover {
+    background-color: rgba(104, 44, 122, 0.03);
+}
+
+.rush_card_table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.rush_card_table td {
+    padding: 8px 14px;
+    font-size: 13px;
+    color: #682c7a;
+    font-family: Coolvetica;
+    text-align: center;
+    border-bottom: 1px solid #682c7a;
+    background: #fffcf8;
+}
+
+/* Edit Button - Similar to Order Template Style */
+.rush_card_edit_btn {
+    border: 2px solid #682c7a;
+    border-radius: 30px;
+    background-color: transparent;
+    height: 26px;
+    width: 70px;
+    font-family: Coolvetica;
+    font-size: 13px;
+    color: #682c7a;
+    cursor: pointer;
+    align-self: flex-end;
+    margin: 12px 14px;
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.rush_card_edit_btn:hover {
+    background-color: #682c7a;
+    color: #fff7ec;
+}
+
+/* ==================== ADD RUSH FEE BUTTON ==================== */
+
+.add_rush_fee_btn {
     border: none;
     outline: none;
     height: 35px;
@@ -1275,13 +1342,13 @@ select:focus {
     font-size: 15px;
     color: #fff7ec;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: transform 0.2s ease;
     display: inline-block;
     margin-top: 5px;
 }
 
-.edit_rush_fees_btn:hover {
-    background-color: #4c1c5b;
+.add_rush_fee_btn:hover {
+    transform: scale(1.05);
 }
 
 /* ==================== RUSH FEES MODAL ==================== */
@@ -1310,11 +1377,11 @@ select:focus {
 
 .rush_fees_modal_box {
     background: #fff7ec;
-    width: 580px;
+    width: 520px;
     padding: 40px 40px 0 40px;
     border-radius: 30px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
-    max-height: 88vh;
+    max-height: 70vh;
     overflow-y: auto;
     box-sizing: border-box;
     scrollbar-width: none;
@@ -1342,75 +1409,7 @@ select:focus {
     border-bottom: 2px solid #682c7a;
 }
 
-/* ---- Cards container (main page) ---- */
-
-.rush_fees_cards_container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    margin-bottom: 15px;
-}
-
-.rush_fee_card {
-    background: #fff7ec;
-    border: 2px solid #682c7a;
-    border-radius: 16px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    width: 280px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    flex-shrink: 0;
-}
-
-.rush_display_col_pct {
-    text-align: center;
-    width: 48px;
-    flex-shrink: 0;
-}
-
-.rush_card_edit_btn {
-    border: none;
-    background: transparent;
-    border-top: 2px solid #682c7a;
-    height: 32px;
-    font-family: Coolvetica;
-    font-size: 13px;
-    color: #682c7a;
-    cursor: pointer;
-    width: 100%;
-    transition:
-        background-color 0.2s ease,
-        color 0.2s ease;
-}
-
-.rush_card_edit_btn:hover {
-    background-color: #682c7a;
-    color: #fff7ec;
-}
-
-.add_rush_fee_btn {
-    border: none;
-    outline: none;
-    height: 35px;
-    padding: 0 22px;
-    background-color: #682c7a;
-    border-radius: 30px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    font-family: Coolvetica;
-    font-size: 15px;
-    color: #fff7ec;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-    display: inline-block;
-    margin-top: 5px;
-}
-
-.add_rush_fee_btn:hover {
-    transform: scale(1.05);
-}
-
-/* ---- Modal form fields ---- */
+/* ==================== PRICE RANGE SECTION ==================== */
 
 .rush_range_section {
     padding: 15px 0;
@@ -1424,6 +1423,7 @@ select:focus {
     font-family: Coolvetica;
     font-size: 20px;
     color: #682c7a;
+    margin-bottom: 0;
 }
 
 .rush_range_label_input {
@@ -1434,6 +1434,7 @@ select:focus {
     padding: 0 16px;
     font-size: 14px;
     box-sizing: border-box;
+    transition: border-color 0.2s ease;
 }
 
 .rush_range_label_input:focus {
@@ -1444,8 +1445,8 @@ select:focus {
 .rush_range_amounts_row {
     display: flex;
     flex-direction: row;
-    align-items: center;
-    gap: 10px;
+    align-items: flex-start;
+    justify-content: space-between;
 }
 
 .rush_range_amount_input {
@@ -1456,6 +1457,7 @@ select:focus {
     padding: 0 14px;
     font-size: 13px;
     text-align: center;
+    transition: border-color 0.2s ease;
 }
 
 .rush_range_amount_input:focus {
@@ -1468,67 +1470,80 @@ select:focus {
     font-size: 16px;
     color: #682c7a;
     flex-shrink: 0;
+    padding-top: 7px;
 }
 
-/* ---- Timeframes section ---- */
+/* ==================== TIMEFRAMES SECTION ==================== */
 
 .rush_timeframes_section {
     padding: 15px 0;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
 }
 
 .rush_tf_col_headers {
     display: flex;
     flex-direction: row;
-    align-items: center;
-    gap: 8px;
-    padding: 0 4px 6px;
-    border-bottom: 1px solid #e8d5f0;
+    align-items: flex-start; /* Keeps inputs aligned at top even when errors appear */
+    gap: 15px; /* Consistent gap between columns */
+    width: 100%;
 }
 
 .rush_tf_col_headers span {
     font-family: Coolvetica;
-    font-size: 12px;
+    font-size: 20px;
     color: #682c7a;
 }
 
-.rush_tf_col_headers span:first-child {
-    font-size: 20px;
-}
-
-.rush_tf_col_headers span:first-child {
+.rush_tf_col_headers span {
     flex: 1;
+    min-width: 0;
 }
 
-.rush_tf_col_headers span:nth-child(2) {
-    width: 100px;
-    text-align: center;
+.rush_tf_col_headers::after {
+    content: "";
+    width: 20px;
     flex-shrink: 0;
-    padding-right: 28px;
 }
 
 .rush_tf_rows {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 10px;
 }
 
 .rush_tf_edit_row {
     display: flex;
     flex-direction: row;
-    align-items: center;
-    gap: 8px;
+    align-items: flex-start; /* Keeps inputs aligned at top even when errors appear */
+    gap: 15px; /* Consistent gap between columns */
+    width: 100%;
+}
+
+/* Input Wrappers - contain input + error message */
+.rush_tf_input_wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.rush_pct_input_wrapper {
+    width: 140px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 .rush_timeframe_input {
-    flex: 1;
+    width: 100%;
     height: 32px;
     border: 2px solid #682c7a;
     border-radius: 30px;
     padding: 0 12px;
     font-size: 13px;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease;
 }
 
 .rush_timeframe_input:focus {
@@ -1541,18 +1556,19 @@ select:focus {
     flex-direction: row;
     align-items: center;
     gap: 4px;
-    width: 80px;
-    flex-shrink: 0;
+    width: 100%;
     justify-content: center;
 }
 
 .rush_pct_input {
-    width: 52px;
+    flex: 1; /* Percentage box takes available space in its half */
     height: 32px;
     border: 2px solid #682c7a;
     border-radius: 20px;
     text-align: center;
     font-size: 13px;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease;
 }
 
 .rush_pct_input:focus {
@@ -1567,8 +1583,7 @@ select:focus {
     flex-shrink: 0;
 }
 
-/* ---- Delete row SVG ---- */
-
+/* Delete Row SVG */
 .rush_del_svg {
     flex-shrink: 0;
     border-radius: 50%;
@@ -1577,6 +1592,7 @@ select:focus {
     transition:
         fill 0.2s ease,
         background-color 0.2s ease;
+    margin-top: 6px;
 }
 
 .rush_del_svg:hover {
@@ -1589,8 +1605,7 @@ select:focus {
     pointer-events: none;
 }
 
-/* ---- Add timeframe button ---- */
-
+/* Add Timeframe Button */
 .rush_add_row_btn {
     border: none;
     border-radius: 30px;
@@ -1611,7 +1626,21 @@ select:focus {
     background-color: #4c1c5b;
 }
 
-/* ---- Modal actions — sticky at bottom ---- */
+/* ==================== VALIDATION ERRORS ==================== */
+
+.rush_input_error {
+    border-color: #c83333 !important;
+}
+
+.rush_error_msg {
+    font-family: Coolvetica;
+    font-size: 11px;
+    color: #c83333;
+    margin-top: 4px;
+    display: block;
+}
+
+/* ==================== MODAL ACTIONS ==================== */
 
 .rush_modal_actions {
     position: sticky;
@@ -1657,21 +1686,6 @@ select:focus {
     transform: scale(1.05);
 }
 
-.rush_delete_cancel_link {
-    border: none;
-    background: transparent;
-    font-family: Coolvetica;
-    font-size: 13px;
-    color: #999;
-    cursor: pointer;
-    padding: 4px 8px;
-    transition: color 0.2s ease;
-}
-
-.rush_delete_cancel_link:hover {
-    color: #682c7a;
-}
-
 .rush_cancel_btn {
     border: none;
     padding: 8px 14px;
@@ -1707,329 +1721,76 @@ select:focus {
 .rush_save_btn:hover {
     transform: scale(1.05);
 }
-/* =============================================
-   RUSH FEES — IMAGE UPLOAD WIDGET (modal)
-   + REDESIGNED DISPLAY CARDS (main page)
-   Append to your admin rush_fees CSS file.
-   ============================================= */
 
-/* ==================== DISPLAY CARDS OVERRIDES ==================== */
-/* These replace the table-based card layout */
+/* ==================== RESPONSIVE ==================== */
 
-.rush_fees_cards_container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    margin-bottom: 15px;
+@media (max-width: 600px) {
+    .rush_fees_modal_box {
+        width: 100%;
+        padding: 25px 18px 0 18px;
+        border-radius: 20px;
+        max-height: 90vh;
+    }
+
+    .rush_modal_title {
+        font-size: 24px;
+    }
+
+    .rush_range_amounts_row {
+        flex-wrap: wrap;
+    }
+
+    .rush_range_amount_input {
+        width: 100%;
+    }
+
+    .rush_tf_col_headers span {
+        font-size: 16px;
+    }
+
+    .rush_pct_input_wrapper {
+        width: 120px;
+    }
+
+    .rush_pct_input {
+        width: 80px;
+    }
 }
 
-.rush_fee_card {
-    background: #fff7ec;
-    border: 2px solid #682c7a;
-    border-radius: 18px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    width: 220px; /* compact card width */
-    box-shadow: 0 4px 14px rgba(104, 44, 122, 0.1);
-    flex-shrink: 0;
-    transition:
-        box-shadow 0.2s ease,
-        transform 0.2s ease;
-}
+@media (max-width: 420px) {
+    .rush_fees_modal_box {
+        padding: 20px 15px 0 15px;
+        border-radius: 16px;
+        max-height: 92vh;
+    }
 
-.rush_fee_card:hover {
-    box-shadow: 0 8px 24px rgba(104, 44, 122, 0.18);
-    transform: translateY(-2px);
-}
+    .rush_modal_title {
+        font-size: 20px;
+    }
 
-/* ---- A4-proportioned image area (210:297 ≈ 1:1.414) ---- */
-.rush_card_img_area {
-    width: 100%;
-    /* A4 aspect ratio on a 220px wide card ≈ 311px tall — too tall.
-       Use a fixed height instead so cards stay compact. */
-    height: 180px;
-    background: #f5ece0;
-    border-bottom: 2px solid rgba(104, 44, 122, 0.2);
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    flex-shrink: 0;
-}
+    .rush_modal_description {
+        font-size: 11px;
+    }
 
-.rush_card_img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain; /* show full A4 without cropping */
-    display: block;
-    background: #f5ece0;
-    padding: 6px;
-    box-sizing: border-box;
-}
+    .rush_field_label {
+        font-size: 16px;
+    }
 
-/* Placeholder when no image uploaded */
-.rush_card_img_placeholder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    width: 100%;
-    height: 100%;
-    color: rgba(104, 44, 122, 0.35);
-}
+    .rush_tf_col_headers span {
+        font-size: 14px;
+    }
 
-.rush_card_no_img_svg {
-    fill: rgba(104, 44, 122, 0.3);
-}
+    .rush_pct_input_wrapper {
+        width: 100px;
+    }
 
-.rush_card_img_placeholder span {
-    font-family: "Coolvetica", sans-serif;
-    font-size: 11px;
-    color: rgba(104, 44, 122, 0.4);
-}
+    .rush_pct_input {
+        width: 70px;
+    }
 
-/* ---- Card text body ---- */
-.rush_card_body {
-    padding: 12px 14px 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    flex: 1;
-}
-
-.rush_card_range_label {
-    font-family: "Coolvetica", sans-serif;
-    font-size: 15px;
-    color: #682c7a;
-    font-weight: 600;
-    margin: 0;
-    line-height: 1.3;
-    word-break: break-word;
-}
-
-.rush_card_tf_label {
-    font-family: "Coolvetica", sans-serif;
-    font-size: 11px;
-    color: rgba(104, 44, 122, 0.55);
-    letter-spacing: 0.3px;
-    text-transform: uppercase;
-}
-
-/* ---- Timeframe dropdown ---- */
-.rush_card_select_wrap {
-    position: relative;
-}
-
-/* Custom arrow */
-.rush_card_select_wrap::after {
-    content: "";
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 0;
-    height: 0;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    border-top: 5px solid #682c7a;
-    pointer-events: none;
-}
-
-.rush_card_select {
-    width: 100%;
-    height: 32px;
-    padding: 0 30px 0 12px;
-    border: 1.5px solid rgba(104, 44, 122, 0.4);
-    border-radius: 20px;
-    background: #fffcf8;
-    font-family: "Coolvetica", sans-serif;
-    font-size: 12px;
-    color: #312e2e;
-    appearance: none;
-    cursor: pointer;
-    box-sizing: border-box;
-    transition:
-        border-color 0.2s ease,
-        background 0.2s ease;
-    /* Truncate long option text */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.rush_card_select:hover {
-    border-color: #682c7a;
-    background: #f5e8ff;
-}
-
-.rush_card_select:focus {
-    outline: none;
-    border-color: #682c7a;
-    box-shadow: 0 0 0 3px rgba(104, 44, 122, 0.1);
-}
-
-/* ---- Edit button at bottom ---- */
-.rush_card_edit_btn {
-    border: none;
-    background: transparent;
-    border-top: 1.5px solid rgba(104, 44, 122, 0.2);
-    height: 34px;
-    font-family: "Coolvetica", sans-serif;
-    font-size: 13px;
-    color: #682c7a;
-    cursor: pointer;
-    width: 100%;
-    transition:
-        background 0.2s ease,
-        color 0.2s ease;
-    flex-shrink: 0;
-}
-
-.rush_card_edit_btn:hover {
-    background: #682c7a;
-    color: #fff7ec;
-}
-
-/* ==================== IMAGE UPLOAD WIDGET (modal) ==================== */
-
-.rush_image_upload_section {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding: 16px 0 10px;
-    border-bottom: 2px solid #682c7a;
-    padding-bottom: 20px;
-    position: relative;
-}
-
-.rush_image_upload_header {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-}
-
-/* Hidden native file input */
-.rush_image_file_input {
-    display: none;
-}
-
-/* A4 drop zone — 210:297, capped at 220px wide inside the modal */
-.rush_image_dropzone {
-    position: relative;
-    width: 170px;
-    height: 240px;
-    aspect-ratio: 210 / 297;
-    align-self: center;
-
-    background: #fff7ec;
-    border: 2px solid #682c7a;
-    border-radius: 12px;
-    cursor: pointer;
-    overflow: hidden;
-    transition:
-        border-color 0.2s ease,
-        background 0.2s ease,
-        box-shadow 0.2s ease;
-    outline: none;
-}
-
-.rush_image_dropzone:hover,
-.rush_image_dropzone:focus-visible {
-    border-color: #682c7a;
-    background: #dcbae6;
-}
-
-.rush_image_placeholder {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-}
-
-.rush_image_plus {
-    font-size: 40px;
-    color: #682c7a;
-    font-weight: 300;
-    pointer-events: none;
-}
-
-/* Preview */
-.rush_image_preview {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    opacity: 0;
-    pointer-events: none;
-    box-sizing: border-box;
-    background: #fff7ec;
-}
-
-.rush_image_dropzone--has_image .rush_image_preview {
-    opacity: 1;
-}
-
-.rush_image_dropzone--has_image .rush_image_placeholder {
-    display: none;
-}
-
-/* Remove button */
-.rush_image_remove_btn {
-    background-color: #c83333;
-    border-radius: 30px;
-    border: none;
-
-    color: #fff7ec;
-    font-family: Coolvetica;
-    font-size: 12px;
-
-    width: 60px;
-    height: 25px;
-
-    cursor: pointer;
-    text-align: center;
-    align-self: center;
-
-    opacity: 0;
-    text-decoration: none;
-}
-
-.rush_image_upload_section
-    .rush_image_dropzone--has_image
-    ~ .rush_image_remove_btn {
-    opacity: 1;
-}
-
-.rush_image_remove_btn:hover {
-    text-decoration: none;
-    background-color: #8d0e0e;
-    transition: 0.2s ease;
-}
-
-/* INPUT VALIDATIONS */
-.rush_input_error {
-    border-color: #c83333 !important;
-}
-
-/* The "This field is required" text */
-.rush_error_msg {
-    color: #c83333;
-    font-family: Coolvetica, sans-serif;
-    font-size: 11px;
-    margin-top: 4px;
-    display: block;
-}
-
-/* Center the error for the image dropzone */
-.rush_image_upload_section .rush_error_msg {
-    text-align: center;
-    width: 170px;
-    margin: 4px auto 0;
+    .rush_range_separator {
+        padding-top: 5px;
+    }
 }
 
 /* ==================== MEDIA QUERIES ==================== */

@@ -7,7 +7,6 @@ let rushFees = [];
 let editingRushIndex = null;
 let pendingDeleteIndex = null;
 let isRushLoading = false;
-let pendingImageFile = null; 
 
 // ==================== SVG HELPER ====================
 function createRushSVG(className, pathD) {
@@ -31,21 +30,25 @@ let draftFee = null;
 function buildDraftFromIndex(idx) {
     const src = rushFees[idx];
     return {
+        id: src.id,
         label: src.label,
-        min: src.min,
-        max: src.max,
-        timeframes: src.timeframes.map((tf) => ({ ...tf })),
-        image_url: src.image_url ?? null,
+        min: src.min ? Math.floor(src.min) : null,
+        max: src.max ? Math.floor(src.max) : null,
+        timeframes: src.timeframes.map((tf) => ({
+            id: tf.id,
+            label: tf.label,
+            percentage: tf.percentage ? Math.floor(tf.percentage) : "",
+        })),
     };
 }
 
 function freshDraft() {
     return {
+        id: null,
         label: "",
         min: null,
         max: null,
-        timeframes: [{ label: "", percentage: "" }],
-        image_url: null,
+        timeframes: [{ id: null, label: "", percentage: "" }],
     };
 }
 
@@ -56,10 +59,7 @@ const rushDeleteOverlay = document.getElementById("rushDeleteConfirmOverlay");
 function openAddModal() {
     editingRushIndex = null;
     draftFee = freshDraft();
-    pendingImageFile = null;
-
     clearRushValidationErrors();
-
     document.getElementById("rushModalTitle").textContent = "Add Rush Fee";
     document.getElementById("rushDeleteBtn").classList.add("btn_hidden");
     renderRushModalForm();
@@ -68,23 +68,12 @@ function openAddModal() {
 
 function openEditModal(idx) {
     editingRushIndex = idx;
-    const src = rushFees[idx];
 
-    draftFee = {
-        id: src.id,
-        label: src.label,
-        min: src.min ? Math.floor(src.min) : null,
-        max: src.max ? Math.floor(src.max) : null,
-        timeframes: src.timeframes.map((tf) => ({
-            ...tf,
-            percentage: tf.percentage ? Math.floor(tf.percentage) : "",
-        })),
-        image_url: src.image_url ?? null,
-    };
+    draftFee = buildDraftFromIndex(idx);
+    clearRushValidationErrors();
 
     document.getElementById("rushModalTitle").textContent = "Edit Rush Fee";
     document.getElementById("rushDeleteBtn").classList.remove("btn_hidden");
-
     renderRushModalForm();
     rushModalOverlay.classList.add("active");
 }
@@ -94,7 +83,6 @@ function closeRushModal() {
     clearRushValidationErrors();
     draftFee = null;
     editingRushIndex = null;
-    pendingImageFile = null;
 }
 
 // ==================== DELETE CONFIRM MODAL ====================
@@ -112,161 +100,50 @@ rushDeleteOverlay.addEventListener("click", (e) => {
     if (e.target === rushDeleteOverlay) closeDeleteConfirm();
 });
 
-// ==================== IMAGE UPLOAD WIDGET ====================
-function buildImageUploadSection() {
-    const section = document.createElement("div");
-    section.className = "rush_image_upload_section";
+// ==================== VALIDATION HELPERS ====================
 
-    const headerRow = document.createElement("div");
-    headerRow.className = "rush_image_upload_header";
-
-    const labelEl = document.createElement("span");
-    labelEl.className = "rush_field_label";
-    labelEl.textContent = "Pricing Image";
-
-    headerRow.appendChild(labelEl);
-    section.appendChild(headerRow);
-
-    const dropZone = document.createElement("div");
-    dropZone.className = "rush_image_dropzone";
-    dropZone.setAttribute("role", "button");
-    dropZone.setAttribute("tabindex", "0");
-    dropZone.setAttribute("aria-label", "Upload reference sheet image");
-
-    const placeholder = document.createElement("div");
-    placeholder.className = "rush_image_placeholder";
-
-    const plus = document.createElement("span");
-    plus.className = "rush_image_plus";
-    plus.textContent = "+";
-
-    placeholder.appendChild(plus);
-
-    const preview = document.createElement("img");
-    preview.className = "rush_image_preview";
-    preview.alt = "Reference sheet preview";
-
-    const removeBtn = document.createElement("button");
-    removeBtn.type = "button";
-    removeBtn.className = "rush_image_remove_btn";
-    removeBtn.setAttribute("aria-label", "Remove image");
-    removeBtn.textContent = "Remove";
-
-    dropZone.appendChild(placeholder);
-    dropZone.appendChild(preview);
-
-    const fileInput = document.createElement("input");
-    fileInput.type = "file";
-    fileInput.accept = "image/png, image/jpeg";
-    fileInput.className = "rush_image_file_input";
-    fileInput.setAttribute("aria-hidden", "true");
-
-    section.appendChild(dropZone);
-    section.appendChild(fileInput);
-
-    function showPreview(src) {
-        if (!src) return; 
-        preview.src = src;
-        dropZone.classList.add("rush_image_dropzone--has_image");
-        addRemoveButton();
-    }
-
-    function clearPreview() {
-        preview.src = "";
-        dropZone.classList.remove("rush_image_dropzone--has_image");
-        pendingImageFile = null;
-        if (draftFee) draftFee.image_url = null;
-        fileInput.value = "";
-        removeRemoveButton();
-    }
-
-    function handleFile(file) {
-        if (!file) return;
-        if (!["image/png", "image/jpeg"].includes(file.type)) {
-            toast.error("Only PNG and JPG images are allowed.");
-            return;
-        }
-        pendingImageFile = file;
-
-        const dZone = document.querySelector(".rush_image_dropzone");
-        dZone.classList.remove("image_box_error");
-        if (dZone.nextElementSibling?.classList.contains("field_error")) {
-            dZone.nextElementSibling.remove();
-        }
-
-        const reader = new FileReader();
-        reader.onload = (e) => showPreview(e.target.result);
-        reader.readAsDataURL(file);
-    }
-
-    if (draftFee && draftFee.image_url) {
-        showPreview(draftFee.image_url);
-    } else {
-        clearPreview();
-    }
-
-    dropZone.addEventListener("click", (e) => {
-        if (e.target === removeBtn) return;
-        if (dropZone.classList.contains("rush_image_dropzone--has_image")) return;
-        fileInput.click();
+function clearRushValidationErrors() {
+    document.querySelectorAll(".rush_input_error").forEach((el) => {
+        el.classList.remove("rush_input_error");
     });
-
-    dropZone.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            fileInput.click();
-        }
+    document.querySelectorAll(".rush_error_msg").forEach((msg) => {
+        msg.remove();
     });
-
-    removeBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        clearPreview();
-    });
-
-    fileInput.addEventListener("change", () => {
-        handleFile(fileInput.files[0] ?? null);
-    });
-
-    function addRemoveButton() {
-        if (!section.contains(removeBtn)) {
-            section.appendChild(removeBtn);
-        }
-    }
-
-    function removeRemoveButton() {
-        if (section.contains(removeBtn)) {
-            removeBtn.remove();
-        }
-    }
-
-    return section;
 }
 
-// ==================== CLEARING ====================
-function clearRushValidationErrors() {
-    document.querySelectorAll(".input_error_state").forEach((el) => el.classList.remove("input_error_state"));
-    document.querySelectorAll(".image_box_error").forEach((el) => el.classList.remove("image_box_error"));
-    document.querySelectorAll(".field_error").forEach((msg) => msg.remove());
+function showFieldError(element, message) {
+    element.classList.add("rush_input_error");
+    const parent = element.closest(".rush_input_group");
+
+    let errorMsg = parent.querySelector(".rush_error_msg");
+    if (!errorMsg) {
+        errorMsg = document.createElement("span");
+        errorMsg.className = "rush_error_msg";
+        parent.appendChild(errorMsg);
+    }
+    errorMsg.textContent = message;
+}
+
+function clearFieldError(element) {
+    if (element.classList.contains("rush_input_error")) {
+        element.classList.remove("rush_input_error");
+        const parent = element.closest(".rush_input_group");
+        const errorMsg = parent.querySelector(".rush_error_msg");
+        if (errorMsg) {
+            errorMsg.remove();
+        }
+    }
 }
 
 // ==================== RENDER FORM ====================
 function renderRushModalForm() {
     document.getElementById("rushRangeLabel").value = draftFee.label;
-    document.getElementById("rushRangeMin").value = draftFee.min !== null ? draftFee.min : "";
-    document.getElementById("rushRangeMax").value = draftFee.max !== null ? draftFee.max : "";
 
+    document.getElementById("rushRangeMin").value =
+        draftFee.min !== null ? draftFee.min : "";
+    document.getElementById("rushRangeMax").value =
+        draftFee.max !== null ? draftFee.max : "";
     renderTimeframeRows();
-
-    const existing = document.getElementById("rushImageUploadSection");
-    if (existing) existing.remove();
-
-    const uploadSection = buildImageUploadSection();
-    uploadSection.id = "rushImageUploadSection";
-
-    const priceRangeSection = document.querySelector(".rush_range_section");
-    if (priceRangeSection) {
-        priceRangeSection.parentElement.insertBefore(uploadSection, priceRangeSection);
-    }
 }
 
 function renderTimeframeRows() {
@@ -277,6 +154,9 @@ function renderTimeframeRows() {
         const row = document.createElement("div");
         row.className = "rush_tf_edit_row";
 
+        // Timeframe Column Group
+        const tfGroup = document.createElement("div");
+        tfGroup.className = "rush_input_group";
         const tfInput = document.createElement("input");
         tfInput.type = "text";
         tfInput.className = "rush_timeframe_input";
@@ -285,53 +165,63 @@ function renderTimeframeRows() {
         tfInput.addEventListener("input", () => {
             draftFee.timeframes[ti].label = tfInput.value;
 
-            tfInput.classList.remove("input_error_state");
-            if (tfInput.nextElementSibling?.classList.contains("field_error")) {
-                tfInput.nextElementSibling.remove();
-            }
+            clearFieldError(tfInput);
         });
 
+        tfGroup.appendChild(tfInput);
+
+        // Percentage input wrapper
+        const pctGroup = document.createElement("div");
+        pctGroup.className = "rush_input_group";
         const pctWrap = document.createElement("div");
         pctWrap.className = "rush_pct_wrap";
-
         const pctInput = document.createElement("input");
         pctInput.type = "text";
         pctInput.className = "rush_pct_input";
         pctInput.placeholder = "0";
         pctInput.value = tf.percentage;
 
-        pctInput.addEventListener("input", () => {
-            pctInput.value = pctInput.value.replace(/[^0-9]/g, "");
-            draftFee.timeframes[ti].percentage = pctInput.value === "" ? 0 : parseInt(pctInput.value, 10);
+        pctInput.addEventListener("input", (e) => {
+            const input = e.target;
 
-            // FIX: Ensure we only clean up the input box itself
-            pctInput.classList.remove("input_error_state");
-            const wrap = pctInput.parentElement;
-            if (wrap.nextElementSibling?.classList.contains("field_error")) {
-                wrap.nextElementSibling.remove();
+            // 1. STRIP EVERYTHING THAT ISN'T A DIGIT IMMEDIATELY
+            const numericValue = input.value.replace(/\D/g, "");
+
+            // 2. FORCE THE INPUT TO ONLY SHOW THE NUMBERS
+            // If they typed a letter, this effectively deletes it before it renders.
+            input.value = numericValue;
+
+            // 3. UPDATE DRAFT STATE
+            if (draftFee) {
+                draftFee.timeframes[ti].percentage =
+                    numericValue === "" ? "" : parseInt(numericValue, 10);
+            }
+
+            // 4. ONLY CLEAR ERROR IF A NUMBER WAS ACTUALLY TYPED
+            // If numericValue is empty (because they typed a letter), this is skipped.
+            if (numericValue.length > 0) {
+                clearFieldError(input);
             }
         });
-
         const pctSym = document.createElement("span");
         pctSym.className = "rush_pct_symbol";
         pctSym.textContent = "%";
-
         pctWrap.appendChild(pctInput);
         pctWrap.appendChild(pctSym);
+        pctGroup.appendChild(pctWrap);
 
+        // Delete icon
         const delSvg = createRushSVG("rush_del_svg", DEL_PATH);
-        delSvg.title = "Remove row";
-        if (draftFee.timeframes.length <= 1) {
+        if (draftFee.timeframes.length <= 1)
             delSvg.classList.add("rush_del_hidden");
-        }
         delSvg.addEventListener("click", () => {
             if (draftFee.timeframes.length <= 1) return;
             draftFee.timeframes.splice(ti, 1);
             renderTimeframeRows();
         });
 
-        row.appendChild(tfInput);
-        row.appendChild(pctWrap);
+        row.appendChild(tfGroup);
+        row.appendChild(pctGroup);
         row.appendChild(delSvg);
         wrapper.appendChild(row);
     });
@@ -346,7 +236,6 @@ async function loadRushFees() {
             label: r.label,
             min: r.min_price,
             max: r.max_price,
-            image_url: r.image_url,
             timeframes: r.timeframes || [],
         }));
         renderRushDisplay();
@@ -362,39 +251,37 @@ async function saveRushFee() {
     clearRushValidationErrors();
     let hasError = false;
 
-    // FIX: Updated showError to accept a third argument. 
-    // This tells it WHERE to put the text message, keeping the red border strictly on the input itself!
-    const showError = (inputElement, message, appendAfterElement = inputElement) => {
-        hasError = true;
-        
-        if (inputElement.classList.contains("rush_image_dropzone")) {
-            inputElement.classList.add("image_box_error");
-        } else {
-            inputElement.classList.add("input_error_state");
-        }
-        
-        const msg = document.createElement("span");
-        msg.className = "field_error";
-        msg.textContent = message;
-        appendAfterElement.parentNode.insertBefore(msg, appendAfterElement.nextSibling);
-    };
-
-    // --- Validation Checks ---
-    if (!draftFee.image_url && !pendingImageFile) {
-        const dropZone = document.querySelector(".rush_image_dropzone");
-        showError(dropZone, "This field is required");
-    }
-
-    const labelInput = document.getElementById("rushRangeLabel");
-    if (!draftFee.label || draftFee.label.trim() === "") {
-        showError(labelInput, "This field is required");
-    }
-
     const minInput = document.getElementById("rushRangeMin");
-    if (draftFee.min === null || draftFee.min === "") {
-        showError(minInput, "This field is required");
+    const maxInput = document.getElementById("rushRangeMax");
+    const labelInput = document.getElementById("rushRangeLabel");
+
+    // 2. Validate Label
+    if (!draftFee.label || draftFee.label.trim() === "") {
+        showFieldError(labelInput, "Price Range Label is required.");
+        hasError = true;
     }
 
+    // 3. Validate Minimum (Required)
+    if (draftFee.min === null || draftFee.min === "") {
+        showFieldError(minInput, "Minimum Range is required.");
+        hasError = true;
+    }
+
+    // 4. Validate Range (Min vs Max)
+    if (draftFee.min !== null && draftFee.max !== null) {
+        const min = parseInt(draftFee.min);
+        const max = parseInt(draftFee.max);
+
+        if (min > max) {
+            setMinMaxError(minInput, maxInput, "Min cannot exceed max.");
+            hasError = true;
+        } else if (min === max) {
+            setMinMaxError(minInput, maxInput, "Min and max cannot be equal.");
+            hasError = true;
+        }
+    }
+
+    // Validate Timeframes
     const timeframeRows = document.querySelectorAll(".rush_tf_edit_row");
     draftFee.timeframes.forEach((tf, index) => {
         const row = timeframeRows[index];
@@ -402,24 +289,50 @@ async function saveRushFee() {
         const pctInput = row.querySelector(".rush_pct_input");
 
         if (!tf.label || tf.label.trim() === "") {
-            showError(tfInput, "This field is required");
+            showFieldError(tfInput, "Timeframe is required.");
+            hasError = true;
         }
-        if (tf.percentage === "" || tf.percentage === null) {
-            // FIX: Apply red border to pctInput, but append text AFTER pctInput.parentElement (the wrapper)
-            showError(pctInput, "Required", pctInput.parentElement);
+
+        if (
+            tf.percentage === "" ||
+            tf.percentage === null ||
+            tf.percentage === 0
+        ) {
+            showFieldError(pctInput, "Percentage is required.");
+            hasError = true;
         }
     });
 
     if (hasError) {
         document.querySelector(".rush_fees_modal_box").scrollTop = 0;
-        return;
+        return; // STOP HERE. Do not proceed to API call.
     }
 
     isRushLoading = true;
     try {
-        // Your logic here
+        const rushFeePayload = {
+            label: draftFee.label,
+            min_price: draftFee.min,
+            max_price: draftFee.max,
+            timeframes: draftFee.timeframes.map((tf) => ({
+                label: tf.label,
+                percentage: parseFloat(tf.percentage) || 0,
+            })),
+        };
+
+        if (editingRushIndex === null) {
+            await rushApi.createRushFee(rushFeePayload);
+            toast.success("Rush fee added successfully");
+        } else {
+            await rushApi.updateRushFee(draftFee.id, rushFeePayload);
+            toast.success("Rush fee updated successfully");
+        }
+
+        await loadRushFees();
+        closeRushModal();
     } catch (error) {
-        console.error(error);
+        console.error("Error saving rush fee:", error);
+        toast.error(error.message || "Failed to save rush fee");
     } finally {
         isRushLoading = false;
     }
@@ -436,7 +349,6 @@ async function deleteRushFee(idx) {
     try {
         await rushApi.deleteRushFee(feeId);
         toast.success("Rush fee deleted successfully");
-
         closeDeleteConfirm();
         closeRushModal();
         await loadRushFees();
@@ -465,77 +377,56 @@ function renderRushDisplay() {
         const card = document.createElement("div");
         card.className = "rush_fee_card";
 
-        const imgArea = document.createElement("div");
-        imgArea.className = "rush_card_img_area";
+        // Header - Price Range Label
+        const header = document.createElement("h3");
+        header.className = "rush_card_header";
+        header.textContent = range.label || "—";
+        card.appendChild(header);
 
-        if (range.image_url) {
-            const img = document.createElement("img");
-            img.src = range.image_url;
-            img.alt = `${range.label || "Rush fee"} reference`;
-            img.className = "rush_card_img";
-            imgArea.appendChild(img);
-        } else {
-            const noImg = document.createElement("div");
-            noImg.className = "rush_card_img_placeholder";
-
-            const noImgSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-            noImgSvg.setAttribute("viewBox", "0 -960 960 960");
-            noImgSvg.setAttribute("height", "26px");
-            noImgSvg.setAttribute("width", "26px");
-            noImgSvg.setAttribute("class", "rush_card_no_img_svg");
-            const noImgPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            noImgPath.setAttribute(
-                "d",
-                "M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm40-80h480L570-480 450-320l-90-120-120 160Zm-40 80v-560 560Z"
-            );
-            noImgSvg.appendChild(noImgPath);
-
-            const noImgLabel = document.createElement("span");
-            noImgLabel.textContent = "No image uploaded";
-
-            noImg.appendChild(noImgSvg);
-            noImg.appendChild(noImgLabel);
-            imgArea.appendChild(noImg);
-        }
-
-        card.appendChild(imgArea);
-
-        const body = document.createElement("div");
-        body.className = "rush_card_body";
-
-        const rangeLabel = document.createElement("p");
-        rangeLabel.className = "rush_card_range_label";
-        rangeLabel.textContent = range.label || "—";
-        body.appendChild(rangeLabel);
-
+        // Timeframes table
         if (range.timeframes && range.timeframes.length > 0) {
-            const tfLabel = document.createElement("span");
-            tfLabel.className = "rush_card_tf_label";
-            tfLabel.textContent = "Timeframe & fee";
-            body.appendChild(tfLabel);
+            const table = document.createElement("table");
+            table.className = "rush_card_table";
 
-            const selectWrap = document.createElement("div");
-            selectWrap.className = "rush_card_select_wrap";
+            const thead = document.createElement("thead");
+            const headerRow = document.createElement("tr");
 
-            const select = document.createElement("select");
-            select.className = "rush_card_select";
-            select.setAttribute("aria-label", "Timeframe options");
+            const timeframeHeader = document.createElement("th");
+            timeframeHeader.textContent = "Timeframe";
+            headerRow.appendChild(timeframeHeader);
+
+            const percentageHeader = document.createElement("th");
+            percentageHeader.textContent = "% Added to Total";
+            headerRow.appendChild(percentageHeader);
+
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+
+            const tbody = document.createElement("tbody");
 
             range.timeframes.forEach((tf) => {
-                const opt = document.createElement("option");
-                const displayPct = tf.percentage ? Math.floor(tf.percentage) : 0;
-                const pct = displayPct > 0 ? `+${displayPct}% added to total` : "—";
-                const tfText = tf.label || "—";
-                opt.textContent = `${tfText}  ·  ${pct}`;
-                select.appendChild(opt);
+                const row = document.createElement("tr");
+
+                const timeframeCell = document.createElement("td");
+                timeframeCell.textContent = tf.label || "—";
+                row.appendChild(timeframeCell);
+
+                const percentageCell = document.createElement("td");
+                const displayPct = tf.percentage
+                    ? Math.floor(tf.percentage)
+                    : 0;
+                percentageCell.textContent =
+                    displayPct > 0 ? `+${displayPct}%` : "—";
+                row.appendChild(percentageCell);
+
+                tbody.appendChild(row);
             });
 
-            selectWrap.appendChild(select);
-            body.appendChild(selectWrap);
+            table.appendChild(tbody);
+            card.appendChild(table);
         }
 
-        card.appendChild(body);
-
+        // Edit button
         const editBtn = document.createElement("button");
         editBtn.type = "button";
         editBtn.className = "rush_card_edit_btn";
@@ -549,52 +440,121 @@ function renderRushDisplay() {
 
 // ==================== INIT ====================
 function initRushFees() {
-    document.getElementById("addRushFeeBtn").addEventListener("click", openAddModal);
+    document
+        .getElementById("addRushFeeBtn")
+        .addEventListener("click", openAddModal);
 
     document.getElementById("rushRangeLabel").addEventListener("input", (e) => {
         if (draftFee) draftFee.label = e.target.value;
-        e.target.classList.remove("input_error_state");
-        if (e.target.nextElementSibling?.classList.contains("field_error")) {
-            e.target.nextElementSibling.remove();
-        }
+        clearFieldError(e.target);
     });
 
-    document.getElementById("rushRangeMin").addEventListener("input", (e) => {
-        e.target.value = e.target.value.replace(/[^0-9]/g, "");
-        if (draftFee) draftFee.min = e.target.value === "" ? null : parseInt(e.target.value);
-        e.target.classList.remove("input_error_state");
-        if (e.target.nextElementSibling?.classList.contains("field_error")) {
-            e.target.nextElementSibling.remove();
-        }
-    });
+    document
+        .getElementById("rushAddTimeframeBtn")
+        .addEventListener("click", () => {
+            if (!draftFee) return;
+            draftFee.timeframes.push({ id: null, label: "", percentage: "" });
+            renderTimeframeRows();
+        });
 
-    document.getElementById("rushRangeMax").addEventListener("input", (e) => {
-        e.target.value = e.target.value.replace(/[^0-9]/g, "");
-        if (draftFee) draftFee.max = e.target.value === "" ? null : parseInt(e.target.value);
-    });
-
-    document.getElementById("rushAddTimeframeBtn").addEventListener("click", () => {
-        if (!draftFee) return;
-        draftFee.timeframes.push({ label: "", percentage: "" });
-        renderTimeframeRows();
-    });
-
-    document.getElementById("rushSaveBtn").addEventListener("click", saveRushFee);
-    document.getElementById("rushCancelBtn").addEventListener("click", closeRushModal);
+    document
+        .getElementById("rushSaveBtn")
+        .addEventListener("click", saveRushFee);
+    document
+        .getElementById("rushCancelBtn")
+        .addEventListener("click", closeRushModal);
 
     document.getElementById("rushDeleteBtn").addEventListener("click", () => {
         if (editingRushIndex === null) return;
         openDeleteConfirm(editingRushIndex);
     });
 
-    document.getElementById("rushDeleteConfirmBtn").addEventListener("click", async () => {
-        if (pendingDeleteIndex === null) return;
-        await deleteRushFee(pendingDeleteIndex);
-    });
-
-    document.getElementById("rushDeleteCancelBtn").addEventListener("click", closeDeleteConfirm);
+    document
+        .getElementById("rushDeleteConfirmBtn")
+        .addEventListener("click", async () => {
+            if (pendingDeleteIndex === null) return;
+            await deleteRushFee(pendingDeleteIndex);
+        });
 
     loadRushFees();
+
+    const minInput = document.getElementById("rushRangeMin");
+    const maxInput = document.getElementById("rushRangeMax");
+
+    const validateRange = () => {
+        const minVal = minInput.value === "" ? null : parseInt(minInput.value);
+        const maxVal = maxInput.value === "" ? null : parseInt(maxInput.value);
+
+        if (minVal === null || maxVal === null) {
+            clearMinMaxError(minInput, maxInput);
+            return;
+        }
+
+        if (minVal > maxVal) {
+            setMinMaxError(minInput, maxInput, "Min cannot exceed max.");
+        } else if (minVal === maxVal) {
+            setMinMaxError(minInput, maxInput, "Min and max cannot be equal.");
+        } else {
+            clearMinMaxError(minInput, maxInput);
+        }
+    };
+
+    minInput.addEventListener("input", (e) => {
+        const val = e.target.value.replace(/\D/g, "");
+        e.target.value = val;
+
+        if (draftFee) draftFee.min = val === "" ? null : parseInt(val);
+
+        // FIX: Only clear the "Required" error if there is actually a number
+        if (val.length > 0) {
+            clearFieldError(e.target);
+            validateRange(); // Only check range if we have a value
+        }
+    });
+
+    maxInput.addEventListener("input", (e) => {
+        const val = e.target.value.replace(/\D/g, "");
+        e.target.value = val;
+
+        if (draftFee) draftFee.max = val === "" ? null : parseInt(val);
+
+        validateRange();
+    });
 }
 
 document.addEventListener("DOMContentLoaded", initRushFees);
+
+// ==================== MIN AND MAX ERROR ====================
+
+function setMinMaxError(minEl, maxEl, message) {
+    // Both turn red
+    minEl.classList.add("rush_input_error");
+    maxEl.classList.add("rush_input_error");
+
+    // Message only under Min
+    const parent = minEl.closest(".rush_input_group");
+    let errorMsg = parent.querySelector(".rush_error_msg");
+    if (!errorMsg) {
+        errorMsg = document.createElement("span");
+        errorMsg.className = "rush_error_msg";
+        parent.appendChild(errorMsg);
+    }
+    errorMsg.textContent = message;
+}
+
+function clearMinMaxError(minEl, maxEl) {
+    minEl.classList.remove("rush_input_error");
+    maxEl.classList.remove("rush_input_error");
+
+    const parent = minEl.closest(".rush_input_group");
+    const errorMsg = parent.querySelector(".rush_error_msg");
+
+    // Updated to check for both possible range error messages
+    const rangeErrors = [
+        "Min cannot exceed max.",
+        "Min and max cannot be equal.",
+    ];
+    if (errorMsg && rangeErrors.includes(errorMsg.textContent)) {
+        errorMsg.remove();
+    }
+}
