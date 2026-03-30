@@ -5,11 +5,20 @@
 @endsection
 
 @section('content')
-    <h1 class="header_new_password">Create New Password</h1>
-    <p class="new_password_description">Enter and confirm your new password.</p>
+    <div class="header_section">
+        <span class="floating_star star_1">✦</span>
+        <span class="floating_star star_2">✦</span>
+        <span class="floating_star star_3">✦</span>
+        <span class="floating_star star_4">✦</span>
+        <span class="floating_star star_5">★</span>
+        <span class="floating_star star_6">✦</span>
+        
+        <h1 class="header_new_password">Create New Password</h1>
+        <p class="new_password_description">Enter and confirm your new password.</p>
+    </div>
 
     @if($errors->any())
-        <div style="max-width: 500px; margin: 0 auto 20px; padding: 15px; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 5px; color: #721c24; font-family: Coolvetica;">
+        <div class="error_container">
             @foreach($errors->all() as $error)
                 <p style="margin: 5px 0;">{{ $error }}</p>
             @endforeach
@@ -44,7 +53,7 @@
             </ul>
 
             @error('new_password')
-                <span style="color: #d94848; font-family: Coolvetica; font-size: 12px; margin-top: 5px; display: block;">{{ $message }}</span>
+                <span class="field_error">{{ $message }}</span>
             @enderror
         </div>
 
@@ -67,7 +76,7 @@
             <span id="password_match_message" class="match_message"></span>
 
             @error('new_password_confirmation')
-                <span style="color: #d94848; font-family: Coolvetica; font-size: 12px; margin-top: 5px; display: block;">{{ $message }}</span>
+                <span class="field_error">{{ $message }}</span>
             @enderror
         </div>
 
@@ -75,4 +84,17 @@
             <button type="submit" class="password_button">Reset Password</button>
         </div>
     </form>
+
+    <div id="success_modal" class="modal_overlay">
+        <div class="modal_content">
+            <div class="stars_container">
+                <span class="star">✦</span>
+                <span class="star_center">✦</span>
+                <span class="star">✦</span>
+            </div>
+            <h2 class="modal_header">Awesome!</h2>
+            <p class="modal_text">Your new password is good to go.</p>
+            <button type="button" id="modal_continue_btn" class="password_button">Save & Login</button>
+        </div>
+    </div>
 @endsection
