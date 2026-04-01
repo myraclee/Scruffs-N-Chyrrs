@@ -16,13 +16,9 @@ Route::get('/', function () {
     return view('customer.pages.home');
 })->name('home');
 
-Route::get('/products', function () {
-    return view('customer.pages.products');
-})->name('products');
-
-Route::get('/products/{product}', function (App\Models\Product $product) {
-    return view('customer.pages.product-detail', compact('product'));
-})->name('product.detail');
+// Route::get('/products', function () {
+//     return view('customer.pages.products');
+// })->name('products');
 
 Route::get('/faqs', function () {
     return view('customer.pages.faqs');
@@ -143,6 +139,26 @@ Route::prefix('api/rush-fees')->group(function () {
     Route::delete('{rushFee}', [RushFeeController::class, 'destroy'])->middleware(['auth', 'owner']);
     Route::patch('{rushFee}/reorder-timeframes', [RushFeeController::class, 'reorderTimeframes'])->middleware(['auth', 'owner']);
     Route::get('/admin/index', [RushFeeController::class, 'adminIndex'])->middleware(['auth', 'owner']);
+});
+
+// PRODUCT DETAILS - Public read, owner auth required for write operations
+Route::prefix('products')->group(function () {
+    Route::get('/', function () {
+        return view('customer.pages.products');
+    })->name('products');
+
+    // EDIT THIS ONE
+    Route::get('{product}', function (App\Models\Product $product) {
+        $otherProducts = App\Models\Product::where('id', '!=', $product->id)
+            ->select('id', 'name', 'slug')
+            ->orderBy('name', 'asc')
+            ->get();
+
+        return view('customer.pages.product-detail', [
+            'product' => $product,
+            'otherProducts' => $otherProducts
+        ]);
+    })->name('product.detail');
 });
 
 // OWNER ROUTES

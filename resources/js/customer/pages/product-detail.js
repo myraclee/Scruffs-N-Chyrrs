@@ -1,7 +1,7 @@
 /**
  * Product Detail Page Script
  * Displays product price images in a responsive FIFO 2-column grid
- * Features: Skeleton loaders, fade-in animations, responsive layout
+ * Features: Skeleton loaders, fade-in animations, responsive layout, centered images
  * Also manages the order modal for customer ordering
  */
 
@@ -93,7 +93,7 @@ function setupEventListeners() {
                             authMeta?.getAttribute("content") === "true";
 
                         if (!isAuthenticated) {
-                            // 🚀 NEW: Pack the message in the browser's temporary storage
+                            // Pack the message in the browser's temporary storage
                             sessionStorage.setItem(
                                 "auth_toast_message",
                                 "Please login or create an account to place an order.",
@@ -142,6 +142,7 @@ function renderSkeletonLoaders() {
         const skeletonWrapper = document.createElement("div");
         skeletonWrapper.className = "price_image_wrapper loading";
         skeletonWrapper.setAttribute("aria-hidden", "true");
+        skeletonWrapper.style.setProperty("--index", i);
         gallery.appendChild(skeletonWrapper);
     }
 }
@@ -149,6 +150,7 @@ function renderSkeletonLoaders() {
 /**
  * Load and render price images from the product data
  * Implements FIFO layout: 1st image column 1, 2nd image column 2, 3rd image column 1, etc.
+ * Images are always centered using object-fit: contain
  */
 async function loadAndRenderPriceImages() {
     if (!priceImages || priceImages.length === 0) {
@@ -165,8 +167,8 @@ async function loadAndRenderPriceImages() {
     priceImages.forEach((image, index) => {
         try {
             const wrapper = document.createElement("div");
-            wrapper.className = "price_image_wrapper loading";
-            wrapper.style.animationDelay = `${index * 0.1}s`;
+            wrapper.className = "price_image_wrapper";
+            wrapper.style.setProperty("--index", index);
 
             const img = document.createElement("img");
             img.alt = `${product.name} - Price List ${index + 1}`;
@@ -175,7 +177,6 @@ async function loadAndRenderPriceImages() {
             // Handle image loading
             img.addEventListener("load", () => {
                 wrapper.classList.remove("loading");
-                img.style.animation = "fadeIn 0.6s ease both";
             });
 
             img.addEventListener("error", () => {
@@ -208,21 +209,9 @@ async function loadAndRenderPriceImages() {
     imageElements.sort((a, b) => a.order - b.order);
 
     // Append to gallery in FIFO order (left, right, left, right, ...)
-    imageElements.forEach((element) => {
+    imageElements.forEach((element, index) => {
+        // Update index for animation delay
+        element.wrapper.style.setProperty("--index", index);
         gallery.appendChild(element.wrapper);
     });
-}
-
-/**
- * Handle image loading with proper error states
- */
-function handleImageLoad(img, wrapper) {
-    wrapper.classList.remove("loading");
-    img.style.animation = "fadeIn 0.6s ease both";
-}
-
-function handleImageError(wrapper) {
-    wrapper.classList.add("error");
-    wrapper.innerHTML =
-        '<div class="price_image_error_text">Failed to load image</div>';
 }
