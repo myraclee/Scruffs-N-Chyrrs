@@ -175,7 +175,7 @@
     z-index: 1;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 48px 24px 100px;
+    padding: 48px 24px 60px;
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -556,6 +556,25 @@
 
 .btn_sparkle:last-child {
     animation-delay: 1s;
+}
+
+/* PRODUCT NOTES */
+.product_notes_section {
+    background: #fff7ec;
+    border: 2px solid #682c7a;
+    border-radius: 28px;
+    padding: 30px;
+    box-shadow:
+        0 6px 28px rgba(104, 44, 122, 0.09),
+        0 0 0 5px rgba(104, 44, 122, 0.04);
+    animation: fade_up 0.5s 0.1s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+
+.product_notes_header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
 }
 
 /* ===== RESPONSIVE ===== */

@@ -89,7 +89,15 @@
         </div>
     </div>
 
-
+    {{-- PRODUCT NOTES --}}
+    <div class="product_notes_section">
+        <div class="product_notes_header">
+            <span class="section_spark">✦</span>
+            <h2 class="section_title">Product Notes</h2>
+            <span class="section_line"></span>
+        </div>
+    </div>
+    
 </div>
 
 {{-- ORDER MODAL COMPONENT --}}
