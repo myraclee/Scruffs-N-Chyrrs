@@ -50,9 +50,7 @@
                 <div class="product_nav_scroll">
                     @foreach($otherProducts as $navItem)
                         <a href="{{ route('product.detail', $navItem->slug) }}" class="product_nav_btn">
-                            <span class="nav_btn_icon">✦</span>
                             <span class="nav_btn_text">{{ $navItem->name }}</span>
-                            <span class="nav_btn_arrow">→</span>
                         </a>
                     @endforeach
                 </div>
@@ -61,39 +59,36 @@
     @endif
 
     {{-- CURRENT PRODUCT SHOWCASE --}}
-    <div class="current_product_showcase">
-        <div class="showcase_sparkle left">✦</div>
-        <div class="showcase_content">
-            <span class="showcase_label">Currently Viewing</span>
-            <h1 class="showcase_title">{{ $product->name }}</h1>
-            @if($product->description)
-                <p class="showcase_description">{{ $product->description }}</p>
-            @endif
+    <div class="current_product_whole">
+        <div class="current_product_showcase">
+            <div class="showcase_sparkle left">✦</div>
+            <div class="showcase_content">
+
+                <h1 class="showcase_title"> {{ $product->name }} </h1>
+                @if($product->description)
+                    <p class="showcase_description">{{ $product->description }}</p>
+                @endif
+            </div>
+            <div class="showcase_sparkle right">✦</div>
         </div>
-        <div class="showcase_sparkle right">✦</div>
+
+        {{-- PRICE IMAGES GALLERY SECTION --}}
+        <div class="price_gallery_section">
+            <div class="price_gallery" id="priceGallery">
+                <!-- Skeleton loaders will be inserted here by JavaScript -->
+            </div>
+        </div>
+
+        {{-- ORDER NOW BUTTON --}}
+        <div class="order_button_container">
+            <button class="order_now_button" id="orderNowBtn">
+                <span class="btn_sparkle">✦</span>
+                <span>Order Now</span>
+                <span class="btn_sparkle">✦</span>
+            </button>
+        </div>
     </div>
 
-    {{-- PRICE IMAGES GALLERY SECTION --}}
-    <div class="price_gallery_section">
-        <div class="gallery_header">
-            <span class="gallery_spark">✦</span>
-            <h3>Choose Your Style</h3>
-            <span class="gallery_spark">✦</span>
-        </div>
-        
-        <div class="price_gallery" id="priceGallery">
-            <!-- Skeleton loaders will be inserted here by JavaScript -->
-        </div>
-    </div>
-
-    {{-- ORDER NOW BUTTON --}}
-    <div class="order_button_container">
-        <button class="order_now_button" id="orderNowBtn">
-            <span class="btn_sparkle">✦</span>
-            <span>Order Now</span>
-            <span class="btn_sparkle">✦</span>
-        </button>
-    </div>
 
 </div>
 
