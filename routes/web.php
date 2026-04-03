@@ -10,7 +10,9 @@ use App\Http\Controllers\Api\FaqController;
 use App\Http\Controllers\Api\FAQCategoryController;
 use App\Http\Controllers\Api\RushFeeController;
 use App\Http\Controllers\Api\CustomerOrderController;
+use App\Http\Controllers\OrderController;
 use Illuminate\Support\Facades\Route;
+
 
 Route::get('/', function () {
     return view('customer.pages.home');
@@ -64,6 +66,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/account/orders', function () {
         return view('customer.view_orders'); // your Blade for customers
     })->name('customer.orders');
+    Route::post('/place-custom-order', [App\Http\Controllers\OrderController::class, 'store'])->name('order.store');
 });
 
 // API ROUTES - Products and Materials
@@ -111,6 +114,7 @@ Route::prefix('api/customer-orders')->group(function () {
     Route::get('product/{productId}/template', [CustomerOrderController::class, 'getProductOrderTemplate']);
     Route::post('/', [CustomerOrderController::class, 'store'])->middleware('auth');
 });
+
 
 // FAQ ROUTES - Public read, auth required for write operations
 Route::prefix('api/faqs')->group(function () {
@@ -185,3 +189,4 @@ Route::middleware(['auth', 'owner'])->group(function () {
         return view('owner.pages.content_management');
     })->name('owner.content');
 });
+

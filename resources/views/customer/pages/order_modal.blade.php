@@ -1,9 +1,15 @@
-<!-- Order Modal - Customer Ordering Interface -->
 <div id="orderModal" class="order_modal_overlay">
     <div class="order_modal_box">
-        <!-- Header -->
+        <div style="display: flex; gap: 10px; padding: 24px 32px 0; overflow-x: auto; scrollbar-width: none;">
+            <button class="order_modal_category_tab" style="background: #682c7a; color: white; padding: 8px 20px; border-radius: 20px; font-family: 'Coolvetica', sans-serif; border: none; cursor: pointer; white-space: nowrap; font-size: 15px;">Stickers</button>
+            <button class="order_modal_category_tab" style="background: #dcbae6; color: #682c7a; padding: 8px 20px; border-radius: 20px; font-family: 'Coolvetica', sans-serif; border: none; cursor: pointer; white-space: nowrap; font-size: 15px;">Button Pins</button>
+            <button class="order_modal_category_tab" style="background: #dcbae6; color: #682c7a; padding: 8px 20px; border-radius: 20px; font-family: 'Coolvetica', sans-serif; border: none; cursor: pointer; white-space: nowrap; font-size: 15px;">Photocards</button>
+            <button class="order_modal_category_tab" style="background: #dcbae6; color: #682c7a; padding: 8px 20px; border-radius: 20px; font-family: 'Coolvetica', sans-serif; border: none; cursor: pointer; white-space: nowrap; font-size: 15px;">Business Cards</button>
+            <button class="order_modal_category_tab" style="background: #dcbae6; color: #682c7a; padding: 8px 20px; border-radius: 20px; font-family: 'Coolvetica', sans-serif; border: none; cursor: pointer; white-space: nowrap; font-size: 15px;">Posters</button>
+        </div>
+
         <div class="order_modal_header">
-            <h2 class="order_modal_title">Customize Your Order</h2>
+            <h2 class="order_modal_title" id="dynamicModalTitle">Sticker Orders</h2>
             <button class="order_modal_close_btn" id="closeOrderModal" aria-label="Close order modal">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -12,130 +18,81 @@
             </button>
         </div>
 
-        <!-- Product Info Section -->
-        <div class="order_modal_product_info" id="productInfo">
-            <div class="order_modal_product_image">
-                <img id="productInfoImage" src="" alt="Product" loading="lazy" />
-            </div>
-            <div class="order_modal_product_details">
-                <h3 id="productInfoName"></h3>
-                <p id="productInfoDescription"></p>
-            </div>
-        </div>
-
-        <!-- Form Content -->
-        <form id="orderForm" class="order_modal_form">
-            @csrf
-
-            <!-- Options Section -->
+        <div class="order_modal_form">
             <div class="order_modal_section">
-                <h3 class="order_modal_section_title">Customize Your Selection</h3>
-                <div id="optionsContainer" class="order_modal_options_container">
-                    <!-- Options will be rendered here by JavaScript -->
-                </div>
+                <h3 class="order_modal_section_title">Main Drive Link</h3>
+                <input type="text" id="generalDriveLink" class="order_modal_drive_input" placeholder="Paste your main Google Drive folder link here..." required>
             </div>
 
-            <!-- Quantity Section -->
-            <div class="order_modal_section">
-                <label for="quantityInput" class="order_modal_label">
-                    Quantity
-                    <span class="order_modal_label_info" id="quantityInfo"></span>
-                </label>
-                <div class="order_modal_quantity_control">
-                    <button class="order_modal_qty_btn" id="qtyDecrement" type="button" aria-label="Decrease quantity">
-                        <span>−</span>
-                    </button>
-                    <input
-                        type="number"
-                        id="quantityInput"
-                        name="quantity"
-                        class="order_modal_qty_input"
-                        min="1"
-                        value="1"
-                        required
-                        aria-label="Quantity"
-                    />
-                    <button class="order_modal_qty_btn" id="qtyIncrement" type="button" aria-label="Increase quantity">
-                        <span>+</span>
-                    </button>
-                </div>
-            </div>
+            <div class="order_modal_price_divider"></div>
 
-            <!-- Rush Fee Section -->
-            <div class="order_modal_section">
-                <label for="rushFeeSelect" class="order_modal_label">
-                    Rush Fee (Optional)
-                </label>
-                <select id="rushFeeSelect" name="rush_fee_id" class="order_modal_select">
-                    <option value="">Standard Processing</option>
-                    <!-- Rush fee options will be rendered here by JavaScript -->
-                </select>
-            </div>
-
-            <!-- Special Instructions Section -->
-            <div class="order_modal_section">
-                <label for="specialInstructions" class="order_modal_label">
-                    Special Instructions (Optional)
-                </label>
-                <textarea
-                    id="specialInstructions"
-                    name="special_instructions"
-                    class="order_modal_textarea"
-                    placeholder="Any special requests or notes for your order..."
-                    maxlength="1000"
-                ></textarea>
-                <small id="instructionsCount" class="order_modal_char_count">0/1000</small>
-            </div>
-
-            <!-- Price Breakdown Section -->
-            <div class="order_modal_price_section">
-                <h3 class="order_modal_price_title">Price Breakdown</h3>
+            <div class="order_modal_section" style="background: #fffcf8; padding: 20px; border-radius: 16px; border: 2px dashed #dcbae6;">
+                <h3 class="order_modal_section_title">Add to Order</h3>
                 
-                <div class="order_modal_price_row">
-                    <span class="order_modal_price_label">Base Price</span>
-                    <span class="order_modal_price_value" id="basePriceDisplay">$0.00</span>
+                <div class="file_spec_fields" style="margin-bottom: 15px;">
+                    <div class="file_spec_field">
+                        <label class="file_spec_label">Type <span class="label_required">*</span></label>
+                        <select id="itemType" class="order_modal_select">
+                            <option value="Die-Cut">Die-Cut</option>
+                            <option value="Kiss-Cut">Kiss-Cut</option>
+                        </select>
+                    </div>
+                    
+                    <div class="file_spec_field">
+                        <label class="file_spec_label">Lamination <span class="label_required">*</span></label>
+                        <select id="itemLamination" class="order_modal_select">
+                            <option value="Matte">Matte</option>
+                            <option value="Glossy">Glossy</option>
+                            <option value="Holographic">Holographic</option>
+                        </select>
+                    </div>
+
+                    <div class="file_spec_field">
+                        <label class="file_spec_label">Quantity</label>
+                        <input type="number" id="itemQuantity" class="file_spec_input" min="1" value="1">
+                    </div>
                 </div>
 
-                <div class="order_modal_price_row" id="discountRow" style="display: none;">
-                    <span class="order_modal_price_label">Bulk Discount</span>
-                    <span class="order_modal_price_value discount" id="discountDisplay">-$0.00</span>
+                <div class="file_spec_field" style="margin-bottom: 15px;">
+                    <label class="file_spec_label">Specific File Name <span class="label_optional">(Inside your G-Drive)</span></label>
+                    <input type="text" id="itemFileName" class="file_spec_input" placeholder="e.g., cute_cat_sticker.png">
                 </div>
 
-                <div class="order_modal_price_row" id="layoutFeeRow" style="display: none;">
-                    <span class="order_modal_price_label">Layout Fee</span>
-                    <span class="order_modal_price_value" id="layoutFeeDisplay">$0.00</span>
-                </div>
+                <input type="hidden" id="currentItemCategory" value="Stickers">
+                <input type="hidden" id="currentItemBasePrice" value="45.00">
 
-                <div class="order_modal_price_row" id="rushFeeRow" style="display: none;">
-                    <span class="order_modal_price_label">Rush Fee</span>
-                    <span class="order_modal_price_value" id="rushFeeDisplay">$0.00</span>
+                <button type="button" id="addItemBtn" class="add_file_spec_btn" style="width: 100%; justify-content: center; margin-top: 10px;">
+                    <span>+</span> Add Design to List
+                </button>
+            </div>
+
+            <div class="order_modal_section">
+                <h3 class="order_modal_section_title">Your Items</h3>
+                <div id="cartItemsContainer" class="file_specs_container">
+                    <p style="text-align: center; color: #666; font-family: 'Coolvetica', sans-serif; font-size: 14px; margin-top: 10px;" id="emptyCartMsg">No items added yet. Build your order above!</p>
+                </div>
+            </div>
+
+            <div class="order_modal_price_section">
+                <div class="order_modal_section" style="margin-bottom: 15px;">
+                    <label class="order_modal_label">Rush Processing</label>
+                    <select id="rushFeeSelect" class="order_modal_select" style="background: white;">
+                        <option value="0">Standard Processing (No Extra Fee)</option>
+                        <option value="150">24-Hour Rush (+₱150.00)</option>
+                    </select>
                 </div>
 
                 <div class="order_modal_price_divider"></div>
 
                 <div class="order_modal_price_row total">
-                    <span class="order_modal_price_label">Total</span>
-                    <span class="order_modal_price_value" id="totalPriceDisplay">$0.00</span>
+                    <span class="order_modal_price_label">FULL TOTAL <span class="price_sparkle">✨</span></span>
+                    <span class="order_modal_price_value" id="grandTotalDisplay">₱0.00</span>
                 </div>
             </div>
 
-            <!-- Form Messages -->
-            <div id="formMessage" class="order_modal_message" style="display: none;"></div>
-
-            <!-- Submit Button -->
-            <button type="submit" class="order_modal_submit_btn" id="submitOrderBtn">
+            <button type="button" class="order_modal_submit_btn" id="submitMasterOrderBtn">
                 <span id="submitBtnText">Place Order</span>
-                <span id="submitBtnSpinner" class="spinner" style="display: none;"></span>
             </button>
-        </form>
-
-        <!-- Unauthenticated User Message -->
-        <div id="authMessage" class="order_modal_auth_message" style="display: none;">
-            <p>You need to be logged in to place an order.</p>
-            <div class="order_modal_auth_buttons">
-                <a href="{{ route('login') }}" class="order_modal_auth_link">Login</a>
-                <a href="{{ route('signup') }}" class="order_modal_auth_link">Create Account</a>
-            </div>
         </div>
     </div>
 </div>

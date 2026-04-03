@@ -88,7 +88,7 @@
 
     {{-- ORDER NOW BUTTON --}}
     <div class="order_button_container">
-        <button class="order_now_button" id="orderNowBtn" disabled>
+        <button class="order_now_button" id="orderNowBtn">
             <span class="btn_sparkle">✦</span>
             <span>Order Now</span>
             <span class="btn_sparkle">✦</span>

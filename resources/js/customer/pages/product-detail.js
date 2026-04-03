@@ -6,7 +6,7 @@
  */
 
 // ================= IMPORTS =================
-import { openOrderModal } from "./order_modal.js";
+// Removed the broken order_modal import!
 import Toast from "/resources/js/utils/toast.js";
 
 // ================= STATE & ELEMENTS =================
@@ -29,7 +29,6 @@ document.addEventListener("DOMContentLoaded", () => {
  */
 function initializeProductDetail() {
     try {
-        // Get product data from data attribute
         const productData = container.getAttribute("data-product");
 
         if (!productData) {
@@ -37,19 +36,12 @@ function initializeProductDetail() {
         }
 
         product = JSON.parse(productData);
-
         priceImages = product.price_images || [];
 
-        // Set up event listeners
         setupEventListeners();
-
-        // Render skeleton loaders
         renderSkeletonLoaders();
-
-        // Load price images
         loadAndRenderPriceImages();
 
-        // Enable Order Now button
         if (orderNowBtn) {
             orderNowBtn.disabled = false;
         }
@@ -65,7 +57,6 @@ function initializeProductDetail() {
  */
 function setupEventListeners() {
     try {
-        // Back button - FIRST priority
         if (backBtn) {
             backBtn.addEventListener("click", (e) => {
                 e.preventDefault();
@@ -76,7 +67,6 @@ function setupEventListeners() {
         console.error("Error attaching back button listener:", backButtonError);
     }
 
-    // Order Now button - SECOND priority (won't block back button if it fails)
     try {
         if (orderNowBtn) {
             orderNowBtn.addEventListener(
@@ -88,26 +78,27 @@ function setupEventListeners() {
                         const authMeta = document.querySelector(
                             'meta[name="user-authenticated"]',
                         );
-
                         const isAuthenticated =
                             authMeta?.getAttribute("content") === "true";
 
+                        // Require login before opening the modal!
                         if (!isAuthenticated) {
-                            // Pack the message in the browser's temporary storage
                             sessionStorage.setItem(
                                 "auth_toast_message",
                                 "Please login or create an account to place an order.",
                             );
-
-                            // Instantly redirect without waiting!
                             window.location.href = "/login";
                             return;
                         }
 
-                        // Open order modal for this product
-                        const productId =
-                            container.getAttribute("data-product-id");
-                        await openOrderModal(parseInt(productId));
+                        // Open our new custom order modal
+                        if (typeof window.openOrderModal === "function") {
+                            window.openOrderModal();
+                        } else {
+                            console.error(
+                                "openOrderModal function not found. Check if order_modal.js is loaded.",
+                            );
+                        }
                     } catch (modalError) {
                         console.error(
                             "Error in Order Now handler:",
@@ -129,15 +120,9 @@ function setupEventListeners() {
     }
 }
 
-/**
- * Render skeleton loaders for all price images
- * Creates a 2-column grid with placeholder elements
- */
 function renderSkeletonLoaders() {
     gallery.innerHTML = "";
-
-    const imageCount = priceImages.length || 4; // Minimum 4 skeletons for visual consistency
-
+    const imageCount = priceImages.length || 4;
     for (let i = 0; i < imageCount; i++) {
         const skeletonWrapper = document.createElement("div");
         skeletonWrapper.className = "price_image_wrapper loading";
@@ -147,11 +132,6 @@ function renderSkeletonLoaders() {
     }
 }
 
-/**
- * Load and render price images from the product data
- * Implements FIFO layout: 1st image column 1, 2nd image column 2, 3rd image column 1, etc.
- * Images are always centered using object-fit: contain
- */
 async function loadAndRenderPriceImages() {
     if (!priceImages || priceImages.length === 0) {
         gallery.innerHTML =
@@ -159,11 +139,8 @@ async function loadAndRenderPriceImages() {
         return;
     }
     gallery.innerHTML = "";
-
-    // Create array to track grid positions
     const imageElements = [];
 
-    // Create all image elements first
     priceImages.forEach((image, index) => {
         try {
             const wrapper = document.createElement("div");
@@ -174,7 +151,6 @@ async function loadAndRenderPriceImages() {
             img.alt = `${product.name} - Price List ${index + 1}`;
             img.loading = "lazy";
 
-            // Handle image loading
             img.addEventListener("load", () => {
                 wrapper.classList.remove("loading");
             });
@@ -186,7 +162,6 @@ async function loadAndRenderPriceImages() {
                     '<div class="price_image_error_text">Image failed to load</div>';
             });
 
-            // Set image source (construct path from storage)
             if (!image.image_path) {
                 throw new Error(
                     "image_path is missing from price image object",
@@ -205,12 +180,9 @@ async function loadAndRenderPriceImages() {
         }
     });
 
-    // Sort by sort_order if available
     imageElements.sort((a, b) => a.order - b.order);
 
-    // Append to gallery in FIFO order (left, right, left, right, ...)
     imageElements.forEach((element, index) => {
-        // Update index for animation delay
         element.wrapper.style.setProperty("--index", index);
         gallery.appendChild(element.wrapper);
     });

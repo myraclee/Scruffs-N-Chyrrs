@@ -1,594 +1,197 @@
-/**
- * Order Modal - Customer Ordering System
- * Handles modal interactions, pricing calculations, and order submission
- */
+// ====== EXCEL-STYLE ORDER MODAL LOGIC ====== //
 
-// ================= IMPORTS =================
-import CustomerOrderAPI from "/resources/js/api/customerOrderApi.js";
-import Toast from "/resources/js/utils/toast.js";
-
-// ================= STATE =================
-let templateData = null;
-let selectedProductId = null;
-let selectedOptions = {}; // { optionId: optionTypeId }
-let isSubmitting = false;
-let userAuthenticated = false;
-
-// ================= DOM ELEMENTS =================
-let modal = null;
-let overlay = null;
-let form = null;
-let closeBtn = null;
-let optionsContainer = null;
-let quantityInput = null;
-let qtyDecrement = null;
-let qtyIncrement = null;
-let rushFeeSelect = null;
-let specialInstructions = null;
-let instructionsCount = null;
-let submitBtn = null;
-let submitBtnText = null;
-let submitBtnSpinner = null;
-let priceDisplay = {};
-let quantityInfo = null;
-let authMessage = null;
-let formMessage = null;
-let productInfo = null;
-
-// ================= INITIALIZATION =================
 document.addEventListener("DOMContentLoaded", () => {
-    initializeModal();
-    setupEventListeners();
-    checkUserAuthentication();
-});
+    // Only run this script if the modal actually exists on the page
+    const orderModal = document.getElementById("orderModal");
+    if (!orderModal) return;
 
-/**
- * Initialize modal DOM references
- */
-function initializeModal() {
-    modal = document.getElementById("orderModal");
-    overlay = modal; // Modal element IS the overlay (has class order_modal_overlay)
-    form = modal?.querySelector("#orderForm");
-    closeBtn = modal?.querySelector("#closeOrderModal");
-    optionsContainer = modal?.querySelector("#optionsContainer");
-    quantityInput = modal?.querySelector("#quantityInput");
-    qtyDecrement = modal?.querySelector("#qtyDecrement");
-    qtyIncrement = modal?.querySelector("#qtyIncrement");
-    rushFeeSelect = modal?.querySelector("#rushFeeSelect");
-    specialInstructions = modal?.querySelector("#specialInstructions");
-    instructionsCount = modal?.querySelector("#instructionsCount");
-    submitBtn = modal?.querySelector("#submitOrderBtn");
-    submitBtnText = modal?.querySelector("#submitBtnText");
-    submitBtnSpinner = modal?.querySelector("#submitBtnSpinner");
-    quantityInfo = modal?.querySelector("#quantityInfo");
-    authMessage = modal?.querySelector("#authMessage");
-    formMessage = modal?.querySelector("#formMessage");
-    productInfo = modal?.querySelector("#productInfo");
+    // --- State Variables (The Cart) ---
+    let orderItems = [];
+    let grandTotal = 0;
 
-    // Price display elements
-    priceDisplay = {
-        base: modal?.querySelector("#basePriceDisplay"),
-        discount: modal?.querySelector("#discountDisplay"),
-        discountRow: modal?.querySelector("#discountRow"),
-        layoutFee: modal?.querySelector("#layoutFeeDisplay"),
-        layoutFeeRow: modal?.querySelector("#layoutFeeRow"),
-        rushFee: modal?.querySelector("#rushFeeDisplay"),
-        rushFeeRow: modal?.querySelector("#rushFeeRow"),
-        total: modal?.querySelector("#totalPriceDisplay"),
+    // --- DOM Elements ---
+    const closeBtn = document.getElementById("closeOrderModal");
+    const addItemBtn = document.getElementById("addItemBtn");
+    const submitBtn = document.getElementById("submitMasterOrderBtn");
+
+    // Inputs
+    const itemType = document.getElementById("itemType");
+    const itemLamination = document.getElementById("itemLamination");
+    const itemQuantity = document.getElementById("itemQuantity");
+    const itemFileName = document.getElementById("itemFileName");
+    const rushFeeSelect = document.getElementById("rushFeeSelect");
+    const generalDriveLink = document.getElementById("generalDriveLink");
+
+    // Displays
+    const cartContainer = document.getElementById("cartItemsContainer");
+    const emptyMsg = document.getElementById("emptyCartMsg");
+    const grandTotalDisplay = document.getElementById("grandTotalDisplay");
+
+    // --- Open/Close Modal (Attached to window so the HTML button can see it!) ---
+    // --- Open/Close Modal ---
+    window.closeOrderModal = function () {
+        orderModal.classList.remove("active");
+        orderModal.style.display = "none"; // Ensure it hides!
+        document.body.style.overflow = "auto";
     };
 
-    if (!modal || !form) {
-        console.warn("Order modal elements not found in DOM");
-        return;
-    }
-}
-
-/**
- * Setup event listeners
- */
-function setupEventListeners() {
-    // Poka-yoke: if this module is initialized more than once, do not rebind listeners.
-    if (!form || form.dataset.orderModalListenersBound === "true") {
-        return;
-    }
-
-    // Close modal
-    closeBtn?.addEventListener("click", closeOrderModal);
-    overlay?.addEventListener("click", (e) => {
-        if (e.target === overlay) {
-            closeOrderModal();
-        }
-    });
-    document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape" && overlay?.classList.contains("active")) {
-            closeOrderModal();
-        }
-    });
-
-    // Quantity controls
-    qtyDecrement?.addEventListener("click", (e) => {
-        e.preventDefault();
-        const current = parseInt(quantityInput.value) || 1;
-        const minOrder = templateData?.template?.min_order || 1;
-        if (current > minOrder) {
-            quantityInput.value = current - 1;
-            updatePriceDisplay();
-        }
-    });
-
-    qtyIncrement?.addEventListener("click", (e) => {
-        e.preventDefault();
-        quantityInput.value = (parseInt(quantityInput.value) || 1) + 1;
-        updatePriceDisplay();
-    });
-
-    // Quantity input
-    quantityInput?.addEventListener("change", updatePriceDisplay);
-    quantityInput?.addEventListener("input", () => {
-        const value = parseInt(quantityInput.value) || 1;
-        const minOrder = templateData?.template?.min_order || 1;
-        if (value < minOrder) {
-            quantityInput.value = minOrder;
-        }
-        updatePriceDisplay();
-    });
-
-    // Rush fee selection
-    rushFeeSelect?.addEventListener("change", updatePriceDisplay);
-
-    // Special instructions character counter
-    specialInstructions?.addEventListener("input", (e) => {
-        const count = e.target.value.length;
-        instructionsCount.textContent = `${count}/1000`;
-    });
-
-    // Form submission
-    form?.addEventListener("submit", handleFormSubmit);
-
-    // Mark listeners as bound so duplicate module instances cannot add a second submit handler.
-    form.dataset.orderModalListenersBound = "true";
-}
-
-/**
- * Open order modal and load template for a product
- * @param {number} productId - Product to order
- */
-export async function openOrderModal(productId) {
-    try {
-        if (!overlay) {
-            console.error("Modal not initialized");
-            return;
-        }
-        selectedProductId = productId;
-        selectedOptions = {};
-        formMessage.style.display = "none";
-
-        // Show loading state
-        overlay.classList.add("active");
-        form.style.display = "none";
-        authMessage.style.display = "none";
-        optionsContainer.innerHTML =
-            '<p style="text-align: center; color: #999;">Loading order configuration...</p>';
-
-        // Fetch template
-        templateData = await CustomerOrderAPI.getOrderTemplate(productId);
-
-        // Render modal content
-        renderProductInfo();
-        renderOptions();
-        renderRushFees();
-        updateQuantityConstraints();
-        updatePriceDisplay();
-
-        // Show form or auth message
-        if (userAuthenticated) {
-            form.style.display = "block";
-            authMessage.style.display = "none";
-        } else {
-            form.style.display = "none";
-            authMessage.style.display = "block";
-        }
-    } catch (error) {
-        console.error("Error opening order modal:", error);
-        Toast.error("Failed to load order options. Please try again.");
-        closeOrderModal();
-    }
-}
-
-/**
- * Close order modal
- */
-function closeOrderModal() {
-    overlay?.classList.remove("active");
-    form.reset();
-    quantityInput.value = "1";
-    specialInstructions.value = "";
-    instructionsCount.textContent = "0/1000";
-    selectedOptions = {};
-    templateData = null;
-    selectedProductId = null;
-    isSubmitting = false;
-}
-
-/**
- * Check user authentication status
- */
-function checkUserAuthentication() {
-    // Check if user is authenticated by looking for a session indicator
-    // This would typically come from the Blade template via a data attribute
-    const userAuth = document.querySelector('meta[name="user-authenticated"]');
-    userAuthenticated = userAuth?.getAttribute("content") === "true";
-}
-
-/**
- * Render product information (image, name, description)
- */
-function renderProductInfo() {
-    if (!templateData?.product) return;
-
-    const product = templateData.product;
-    const productImage = productInfo?.querySelector("#productInfoImage");
-    const productName = productInfo?.querySelector("#productInfoName");
-    const productDesc = productInfo?.querySelector("#productInfoDescription");
-
-    if (productImage) {
-        productImage.src = product.cover_image_path
-            ? `/storage/${product.cover_image_path}`
-            : "/images/placeholder.png";
-        productImage.alt = product.name;
-    }
-    if (productName) productName.textContent = product.name;
-    if (productDesc) productDesc.textContent = product.description;
-}
-
-/**
- * Render customization options from template
- */
-function renderOptions() {
-    if (!templateData?.template?.options) return;
-
-    optionsContainer.innerHTML = "";
-
-    templateData.template.options.forEach((option) => {
-        const optionGroup = document.createElement("div");
-        optionGroup.className = "order_modal_option_group";
-
-        const optionLabel = document.createElement("div");
-        optionLabel.className = "order_modal_option_label";
-        optionLabel.textContent = option.label;
-        optionGroup.appendChild(optionLabel);
-
-        const typesContainer = document.createElement("div");
-        typesContainer.className = "order_modal_option_types";
-
-        option.option_types.forEach((optionType) => {
-            const btn = document.createElement("button");
-            btn.type = "button";
-            btn.className = "order_modal_option_type_btn";
-            btn.textContent = optionType.type_name;
-            btn.disabled = !optionType.is_available;
-
-            if (optionType.is_available) {
-                btn.addEventListener("click", () => {
-                    selectOption(option.id, optionType.id, btn);
-                });
-            }
-
-            typesContainer.appendChild(btn);
-        });
-
-        optionGroup.appendChild(typesContainer);
-        optionsContainer.appendChild(optionGroup);
-    });
-}
-
-/**
- * Handle option selection
- */
-function selectOption(optionId, optionTypeId, btnElement) {
-    // Deselect previous selection for this option
-    const siblings = btnElement.parentElement.querySelectorAll(
-        ".order_modal_option_type_btn",
-    );
-    siblings.forEach((btn) => btn.classList.remove("selected"));
-
-    // Select current option
-    btnElement.classList.add("selected");
-    selectedOptions[optionId] = optionTypeId;
-
-    // Update pricing
-    updatePriceDisplay();
-
-    // Mark required selections are made
-    markFormTouched();
-}
-
-/**
- * Render rush fee options
- */
-function renderRushFees() {
-    if (!templateData?.rush_fees) return;
-
-    rushFeeSelect.innerHTML = '<option value="">Standard Processing</option>';
-
-    templateData.rush_fees.forEach((rushFee) => {
-        const option = document.createElement("option");
-        option.value = rushFee.id;
-
-        const mainTimeframe = rushFee.timeframes?.[0];
-        const timeframeLabel = mainTimeframe?.label || "Rush Processing";
-        const timeframePercentage =
-            mainTimeframe?.percentage || rushFee.percentage_increase || 0;
-
-        option.textContent = `${rushFee.label} (${timeframeLabel}) +${timeframePercentage}%`;
-        rushFeeSelect.appendChild(option);
-    });
-}
-
-/**
- * Update quantity constraints based on minimum order
- */
-function updateQuantityConstraints() {
-    const minOrder = templateData?.template?.min_order || 1;
-    quantityInput.min = minOrder;
-    quantityInput.value = minOrder;
-
-    if (minOrder > 1) {
-        quantityInfo.innerHTML = `<br><small style="color: #999;">Minimum: ${minOrder}</small>`;
-    }
-}
-
-/**
- * Calculate and display price in real time
- */
-function updatePriceDisplay() {
-    if (!templateData) return;
-
-    // Skip price calculation if not all options are selected yet
-    const template = templateData.template;
-    if (template.options.length !== Object.keys(selectedOptions).length) {
-        // Not all options selected - show placeholder or skip
-        return;
-    }
-
-    try {
-        const pricing = calculateOrderPrice();
-
-        // Update price displays
-        priceDisplay.base.textContent = `$${pricing.basePrice.toFixed(2)}`;
-
-        if (pricing.discountAmount > 0) {
-            priceDisplay.discountRow.style.display = "flex";
-            priceDisplay.discount.textContent = `-$${pricing.discountAmount.toFixed(2)}`;
-        } else {
-            priceDisplay.discountRow.style.display = "none";
-        }
-
-        if (pricing.layoutFeeAmount > 0) {
-            priceDisplay.layoutFeeRow.style.display = "flex";
-            priceDisplay.layoutFee.textContent = `$${pricing.layoutFeeAmount.toFixed(2)}`;
-        } else {
-            priceDisplay.layoutFeeRow.style.display = "none";
-        }
-
-        if (pricing.rushFeeAmount > 0) {
-            priceDisplay.rushFeeRow.style.display = "flex";
-            priceDisplay.rushFee.textContent = `$${pricing.rushFeeAmount.toFixed(2)}`;
-        } else {
-            priceDisplay.rushFeeRow.style.display = "none";
-        }
-
-        priceDisplay.total.textContent = `$${pricing.totalPrice.toFixed(2)}`;
-    } catch (error) {
-        console.error("Error calculating price:", error);
-    }
-}
-
-/**
- * Calculate final order price based on selected options, quantity, and rush fee
- * @returns {Object} Pricing breakdown
- */
-function calculateOrderPrice() {
-    const template = templateData.template;
-    const quantity = parseInt(quantityInput.value) || 1;
-    const selectedRushFeeId = rushFeeSelect.value;
-
-    // 1. Build combination key from selected options
-    const combinationKey = buildCombinationKey();
-
-    // 2. Find matching pricing
-    const pricingEntry = template.pricings.find(
-        (p) => p.combination_key === combinationKey,
-    );
-    if (!pricingEntry) {
-        throw new Error("No pricing found for selected options");
-    }
-
-    let basePrice = pricingEntry.price * quantity;
-
-    // 3. Apply bulk discount
-    let discountAmount = 0;
-    const applicableDiscount = template.discounts.find(
-        (d) => d.min_quantity <= quantity,
-    );
-    if (applicableDiscount) {
-        discountAmount = applicableDiscount.price_reduction * quantity;
-    }
-
-    // 4. Add layout fee
-    const layoutFeeAmount = template.layout_fee || 0;
-
-    // 5. Add rush fee if selected
-    let rushFeeAmount = 0;
-    if (selectedRushFeeId) {
-        const rushFee = templateData.rush_fees.find(
-            (rf) => rf.id == selectedRushFeeId,
-        );
-        if (rushFee && rushFee.timeframes && rushFee.timeframes.length > 0) {
-            // Use the first timeframe's percentage (matching what's displayed in the select)
-            const timeframePercentage = rushFee.timeframes[0].percentage || 0;
-            const orderValue = basePrice - discountAmount + layoutFeeAmount;
-            rushFeeAmount = orderValue * (timeframePercentage / 100);
-        }
-    }
-
-    const totalPrice =
-        basePrice - discountAmount + layoutFeeAmount + rushFeeAmount;
-
-    return {
-        basePrice: Math.round(basePrice * 100) / 100,
-        discountAmount: Math.round(discountAmount * 100) / 100,
-        layoutFeeAmount: Math.round(layoutFeeAmount * 100) / 100,
-        rushFeeAmount: Math.round(rushFeeAmount * 100) / 100,
-        totalPrice: Math.round(totalPrice * 100) / 100,
+    window.openOrderModal = function () {
+        orderModal.classList.add("active");
+        orderModal.style.display = "flex"; // Uses flex to center it
+        document.body.style.overflow = "hidden";
     };
-}
 
-/**
- * Build combination key from selected options
- * Format: "1,2,3" where numbers are option type IDs
- */
-function buildCombinationKey() {
-    const ids = Object.values(selectedOptions);
-    ids.sort((a, b) => a - b);
-    return ids.join(",");
-}
+    closeBtn.addEventListener("click", () => {
+        orderModal.classList.remove("active");
+        document.body.style.overflow = "auto";
+    });
 
-/**
- * Mark form as touched for validation purposes
- */
-function markFormTouched() {
-    // Could expand this for showing validation errors
-}
+    // --- Format Currency ---
+    const formatMoney = (amount) => {
+        return new Intl.NumberFormat("en-PH", {
+            style: "currency",
+            currency: "PHP",
+        }).format(amount);
+    };
 
-/**
- * Validate all form inputs before submission
- * KAIZEN: Error proofing - guard against null templateData
- */
-function validateForm() {
-    // GUARD 1: Verify templateData exists (prevents Vite HMR issues)
-    if (!templateData || !templateData.template) {
-        showFormMessage(
-            "Form data lost. Please refresh and try again.",
-            "error",
+    // --- Add Item to Cart ---
+    addItemBtn.addEventListener("click", () => {
+        const qty = parseInt(itemQuantity.value) || 1;
+        const category = document.getElementById("currentItemCategory").value;
+        const basePrice = parseFloat(
+            document.getElementById("currentItemBasePrice").value,
         );
-        return false;
-    }
 
-    const template = templateData.template;
-
-    // Check all options are selected
-    if (template.options.length !== Object.keys(selectedOptions).length) {
-        showFormMessage("Please select all customization options", "error");
-        return false;
-    }
-
-    // Check quantity is valid
-    const quantity = parseInt(quantityInput.value) || 0;
-    if (quantity < (template.min_order || 1)) {
-        showFormMessage(
-            `Minimum quantity is ${template.min_order || 1}`,
-            "error",
-        );
-        return false;
-    }
-
-    return true;
-}
-
-/**
- * Show validation or status messages in the form
- */
-function showFormMessage(message, type = "info") {
-    formMessage.textContent = message;
-    formMessage.className = `order_modal_message ${type}`;
-    formMessage.style.display = "block";
-
-    if (type !== "error") {
-        setTimeout(() => {
-            formMessage.style.display = "none";
-        }, 3000);
-    }
-}
-
-/**
- * Handle form submission
- */
-async function handleFormSubmit(e) {
-    e.preventDefault();
-
-    // Cross-instance guard: if duplicate module instances exist, share lock via DOM dataset.
-    if (form?.dataset.orderModalSubmitting === "true") {
-        return;
-    }
-
-    // ========== KAIZEN POKA-YOKE: Authentication Guard ==========
-    if (!userAuthenticated) {
-        return;
-    }
-
-    // ========== KAIZEN POKA-YOKE: Submission Lock (SET FIRST!) ==========
-    // CRITICAL: Set isSubmitting IMMEDIATELY to prevent race conditions.
-    // Do NOT allow any code (even a few lines) between the check and set!
-    // This prevents concurrent form submissions Completely.
-    if (isSubmitting) {
-        return;
-    }
-    isSubmitting = true; // ✓ SET IMMEDIATELY (Error-proofing)
-    if (form) {
-        form.dataset.orderModalSubmitting = "true";
-    }
-
-    // Disable button immediately to provide visual feedback
-    submitBtn.disabled = true;
-    submitBtnText.style.display = "none";
-    submitBtnSpinner.style.display = "inline-block";
-
-    // Wrap ALL logic in try/catch to prevent unhandled promise rejections
-    try {
-        // Validate form (moved inside try to catch validation errors)
-        const isFormValid = validateForm();
-
-        if (!isFormValid) {
-            return;
-        }
-
-        // GUARD: Verify templateData still exists (preventing race conditions)
-        if (!templateData || !templateData.template) {
-            throw new Error(
-                "Form data lost (templateData is null). Please refresh the page and try again.",
-            );
-        }
-
-        const pricing = calculateOrderPrice();
-        const orderData = {
-            product_id: selectedProductId,
-            order_template_id: templateData.template.id,
-            selected_options: selectedOptions,
-            quantity: parseInt(quantityInput.value),
-            rush_fee_id: rushFeeSelect.value || null,
-            special_instructions: specialInstructions.value.trim() || null,
+        // Create the item object
+        const newItem = {
+            id: Date.now(), // Unique ID for deleting
+            category: category,
+            type: itemType.value,
+            lamination: itemLamination.value,
+            quantity: qty,
+            price: basePrice,
+            design_name_link: itemFileName.value || "Not provided",
+            needs_layout: true, // Defaulting to true for stickers as requested by SA
         };
 
-        // Submit order
-        const result = await CustomerOrderAPI.submitOrder(orderData);
+        orderItems.push(newItem);
+        updateCartDisplay();
 
-        if (result.success) {
-            Toast.success(result.message || "Order placed successfully!");
-            closeOrderModal();
-        } else {
-            showFormMessage(result.message || "Failed to place order", "error");
+        // Reset form for next item
+        itemQuantity.value = 1;
+        itemFileName.value = "";
+    });
+
+    // --- Update Cart UI and Totals ---
+    function updateCartDisplay() {
+        cartContainer.innerHTML = ""; // Clear current display
+        let currentTotal = parseFloat(rushFeeSelect.value); // Start with rush fee
+
+        if (orderItems.length === 0) {
+            cartContainer.appendChild(emptyMsg);
+            grandTotalDisplay.innerText = formatMoney(currentTotal);
+            return;
         }
-    } catch (error) {
-        console.error("Order submission failed:", error);
-        showFormMessage("An error occurred while placing your order", "error");
-    } finally {
-        isSubmitting = false;
-        if (form) {
-            form.dataset.orderModalSubmitting = "false";
-        }
-        submitBtn.disabled = false;
-        submitBtnSpinner.style.display = "none";
-        submitBtnText.style.display = "inline";
+
+        orderItems.forEach((item) => {
+            // 1. Calculate this specific item's total (Excel Logic)
+            let layoutFee = 0;
+            let discount = 0;
+
+            if (item.category === "Stickers") {
+                if (item.needs_layout) layoutFee = 35;
+                if (item.quantity >= 7) discount = 5 * item.quantity;
+            } else if (item.category === "Button Pins") {
+                if (item.quantity >= 10) discount = 3 * item.quantity;
+            }
+
+            const itemTotal = item.price * item.quantity + layoutFee - discount;
+            currentTotal += itemTotal;
+
+            // 2. Build the HTML for the row
+            const rowHtml = `
+                <div class="file_spec_row" id="item-${item.id}">
+                    <div class="file_spec_row_header">
+                        <span class="file_spec_number">${item.type} | ${item.lamination}</span>
+                        <button type="button" class="remove_file_spec_btn" onclick="removeItem(${item.id})">✕</button>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-family: 'Coolvetica', sans-serif; font-size: 13px;">
+                        <span>File: ${item.design_name_link}</span>
+                        <span>Qty: ${item.quantity}</span>
+                        <span style="font-weight: bold; color: #682c7a;">${formatMoney(itemTotal)}</span>
+                    </div>
+                    ${discount > 0 ? `<div style="color: #2e7d32; font-size: 11px; margin-top: 5px;">Includes ${formatMoney(discount)} Bulk Discount!</div>` : ""}
+                </div>
+            `;
+            cartContainer.insertAdjacentHTML("beforeend", rowHtml);
+        });
+
+        grandTotalDisplay.innerText = formatMoney(currentTotal);
     }
-}
+
+    // --- Remove Item ---
+    window.removeItem = function (id) {
+        orderItems = orderItems.filter((item) => item.id !== id);
+        updateCartDisplay();
+    };
+
+    // --- Listen for Rush Fee Changes ---
+    rushFeeSelect.addEventListener("change", updateCartDisplay);
+
+    // --- Submit to Backend ---
+    submitBtn.addEventListener("click", async () => {
+        // Validation
+        if (!generalDriveLink.value) {
+            alert("Please provide your main Google Drive link!");
+            return;
+        }
+        if (orderItems.length === 0) {
+            alert("Please add at least one design to your order!");
+            return;
+        }
+
+        // Change button to loading state
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<span class="spinner"></span> Processing...';
+        submitBtn.disabled = true;
+
+        try {
+            // Send data to the Controller we built!
+            const response = await fetch("/place-custom-order", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": document
+                        .querySelector('meta[name="csrf-token"]')
+                        .getAttribute("content"),
+                },
+                body: JSON.stringify({
+                    general_gdrive_link: generalDriveLink.value,
+                    rush_fee: rushFeeSelect.value,
+                    items: orderItems,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Success! Close modal and empty cart
+                alert(data.message);
+                orderItems = [];
+                generalDriveLink.value = "";
+                rushFeeSelect.value = "0";
+                updateCartDisplay();
+                orderModal.classList.remove("active");
+            } else {
+                alert("Something went wrong. Please try again.");
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("Connection error. Are you logged in?");
+        } finally {
+            // Reset button
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    });
+});
