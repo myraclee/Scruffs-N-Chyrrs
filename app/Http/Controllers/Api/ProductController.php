@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Models\ProductNoteImage;
 use App\Models\ProductPriceImage;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -12,13 +13,13 @@ use Illuminate\Support\Facades\Storage;
 class ProductController extends Controller
 {
     /**
-     * Get all products with their price images.
+     * Get all products with their related images.
      * GET /api/products
      */
     public function index(): JsonResponse
     {
         try {
-            $products = Product::with('priceImages')
+            $products = Product::with(['priceImages', 'noteImages'])
                 ->orderBy('created_at', 'desc')
                 ->get();
 
@@ -36,7 +37,7 @@ class ProductController extends Controller
     }
 
     /**
-     * Create a new product with cover image and price images.
+     * Create a new product with cover image, price images, and note images.
      * POST /api/products
      */
     public function store(Request $request): JsonResponse
@@ -48,6 +49,8 @@ class ProductController extends Controller
                 'cover_image' => 'required|image|mimes:png,jpg,jpeg|max:2048',
                 'price_images' => 'required|array|min:1',
                 'price_images.*' => 'required|image|mimes:png,jpg,jpeg|max:5120',
+                'note_images' => 'nullable|array',
+                'note_images.*' => 'required|image|mimes:png,jpg,jpeg|max:5120',
             ]);
 
             // Store cover image
@@ -70,10 +73,22 @@ class ProductController extends Controller
                 ]);
             }
 
+            // Store note images
+            if ($request->hasFile('note_images')) {
+                foreach ($request->file('note_images') as $index => $image) {
+                    $path = $image->store('products/notes', 'public');
+                    ProductNoteImage::create([
+                        'product_id' => $product->id,
+                        'image_path' => $path,
+                        'sort_order' => $index,
+                    ]);
+                }
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Product created successfully',
-                'data' => $product->load('priceImages'),
+                'data' => $product->load(['priceImages', 'noteImages']),
             ], 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
@@ -91,7 +106,7 @@ class ProductController extends Controller
     }
 
     /**
-     * Get a single product with its price images.
+     * Get a single product with its related images.
      * GET /api/products/{productId}
      */
     public function show($productId): JsonResponse
@@ -100,7 +115,7 @@ class ProductController extends Controller
             $product = Product::findOrFail($productId);
             return response()->json([
                 'success' => true,
-                'data' => $product->load('priceImages'),
+                'data' => $product->load(['priceImages', 'noteImages']),
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -127,6 +142,10 @@ class ProductController extends Controller
                 'price_images.*' => 'required|image|mimes:png,jpg,jpeg|max:5120',
                 'existing_price_image_ids' => 'nullable|array',
                 'existing_price_image_ids.*' => 'integer',
+                'note_images' => 'nullable|array',
+                'note_images.*' => 'required|image|mimes:png,jpg,jpeg|max:5120',
+                'existing_note_image_ids' => 'nullable|array',
+                'existing_note_image_ids.*' => 'integer',
             ]);
 
             if ($request->hasFile('cover_image')) {
@@ -173,10 +192,40 @@ class ProductController extends Controller
                 }
             }
 
+            // Always sync note images with the submitted keep-list.
+            // If the keep-list is empty/missing, all existing notes are removed.
+            $existingKeptNoteIds = $request->input('existing_note_image_ids', []);
+            if (!is_array($existingKeptNoteIds)) {
+                $existingKeptNoteIds = [$existingKeptNoteIds];
+            }
+            $existingKeptNoteIds = array_map('intval', $existingKeptNoteIds);
+
+            foreach ($product->noteImages as $noteImage) {
+                if (!in_array($noteImage->id, $existingKeptNoteIds)) {
+                    Storage::disk('public')->delete($noteImage->image_path);
+                    $noteImage->delete();
+                }
+            }
+
+            // Create new note images if provided
+            if ($request->hasFile('note_images')) {
+                $maxNoteSortOrder = $product->noteImages()
+                    ->max('sort_order') ?? -1;
+
+                foreach ($request->file('note_images') as $index => $image) {
+                    $path = $image->store('products/notes', 'public');
+                    ProductNoteImage::create([
+                        'product_id' => $product->id,
+                        'image_path' => $path,
+                        'sort_order' => $maxNoteSortOrder + $index + 1,
+                    ]);
+                }
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Product updated successfully',
-                'data' => $product->load('priceImages'),
+                'data' => $product->load(['priceImages', 'noteImages']),
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
@@ -209,6 +258,11 @@ class ProductController extends Controller
             // Delete all price images
             foreach ($product->priceImages as $priceImage) {
                 Storage::disk('public')->delete($priceImage->image_path);
+            }
+
+            // Delete all note images
+            foreach ($product->noteImages as $noteImage) {
+                Storage::disk('public')->delete($noteImage->image_path);
             }
 
             $product->delete();

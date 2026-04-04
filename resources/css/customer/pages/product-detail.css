@@ -198,7 +198,7 @@
     background: #fff7ec;
     border: 2px solid #682c7a;
     border-radius: 50px;
-    font-family: "Coolvetica", sans-serif;
+    font-family: 'Coolvetica', sans-serif;
     font-size: 15px;
     color: #682c7a;
     text-decoration: none;
@@ -226,7 +226,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    font-family: "Coolvetica", sans-serif;
+    font-family: 'Coolvetica', sans-serif;
     font-size: 14px;
 }
 
@@ -239,7 +239,7 @@
 }
 
 .breadcrumb_link::after {
-    content: "";
+    content: '';
     position: absolute;
     bottom: -2px;
     left: 0;
@@ -284,7 +284,7 @@
 }
 
 .current_product_showcase::before {
-    content: "";
+    content: '';
     position: absolute;
     top: 0;
     left: -100%;
@@ -326,7 +326,7 @@
 }
 
 .showcase_title {
-    font-family: "SuperDream", sans-serif;
+    font-family: 'SuperDream', sans-serif;
     font-size: 50px;
     color: #682c7a;
     margin: 8px 0 0 0;
@@ -335,7 +335,7 @@
 
 .showcase_title::before,
 .showcase_title::after {
-    content: "✦";
+    content: '✦';
     font-size: 30px;
     animation: 2.5s ease-in-out 0s infinite normal none running sparkle_twinkle;
 }
@@ -349,7 +349,7 @@
 }
 
 .showcase_description {
-    font-family: "Coolvetica", sans-serif;
+    font-family: 'Coolvetica', sans-serif;
     font-size: 20px;
     color: rgba(104, 44, 122, 0.7);
     margin: 0;
@@ -363,8 +363,7 @@
     border: 2px solid #682c7a;
     border-radius: 28px;
     padding: 30px;
-    box-shadow:
-        0 6px 28px rgba(104, 44, 122, 0.09),
+    box-shadow: 0 6px 28px rgba(104, 44, 122, 0.09),
         0 0 0 5px rgba(104, 44, 122, 0.04);
     animation: fade_up 0.5s 0.1s cubic-bezier(0.34, 1.4, 0.64, 1) both;
 }
@@ -385,7 +384,7 @@
 }
 
 .section_title {
-    font-family: "SuperDream", sans-serif;
+    font-family: 'SuperDream', sans-serif;
     font-size: 28px;
     color: #682c7a;
     margin: 0;
@@ -437,7 +436,7 @@
     padding: 10px 20px;
     border: #682c7a solid 2px;
     border-radius: 50px;
-    font-family: "Coolvetica";
+    font-family: 'Coolvetica';
     font-size: 16px;
     color: #682c7a;
     text-decoration: none;
@@ -508,7 +507,7 @@
 }
 
 .price_image_error_text {
-    font-family: "Coolvetica", sans-serif;
+    font-family: 'Coolvetica', sans-serif;
     font-size: 14px;
     color: rgba(104, 44, 122, 0.5);
     text-align: center;
@@ -533,7 +532,7 @@
     padding: 15px 30px;
     border-radius: 50px;
     border: none;
-    font-family: "Coolvetica";
+    font-family: 'Coolvetica';
     font-size: 20px;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -564,8 +563,7 @@
     border: 2px solid #682c7a;
     border-radius: 28px;
     padding: 30px;
-    box-shadow:
-        0 6px 28px rgba(104, 44, 122, 0.09),
+    box-shadow: 0 6px 28px rgba(104, 44, 122, 0.09),
         0 0 0 5px rgba(104, 44, 122, 0.04);
     animation: fade_up 0.5s 0.1s cubic-bezier(0.34, 1.4, 0.64, 1) both;
 }
@@ -575,6 +573,50 @@
     align-items: center;
     gap: 12px;
     margin-bottom: 24px;
+}
+
+.product_notes_gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+.product_note_image_wrapper {
+    border: 2px solid #682c7a;
+    border-radius: 20px;
+    overflow: hidden;
+    background: #fff7ec;
+    animation: fade_up 0.35s ease both;
+    animation-delay: calc(var(--index, 0) * 0.08s);
+}
+
+.product_note_image_wrapper.error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 120px;
+    background: #f5e5f0;
+}
+
+.product_note_image {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    transition: transform 0.25s ease;
+}
+
+.product_note_image_wrapper:hover .product_note_image {
+    transform: scale(1.02);
+}
+
+.product_notes_empty {
+    margin: 0;
+    padding: 18px 8px;
+    text-align: center;
+    font-family: 'Coolvetica', sans-serif;
+    font-size: 16px;
+    color: rgba(104, 44, 122, 0.65);
 }
 
 /* ===== RESPONSIVE ===== */
@@ -648,6 +690,10 @@
     .order_now_button {
         width: 100%;
         justify-content: center;
+    }
+
+    .product_notes_gallery {
+        grid-template-columns: 1fr;
     }
 
     .product_spark.s11,

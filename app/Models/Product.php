@@ -71,6 +71,14 @@ class Product extends Model
     }
 
     /**
+     * Get the note images for the product.
+     */
+    public function noteImages(): HasMany
+    {
+        return $this->hasMany(ProductNoteImage::class)->orderBy('sort_order');
+    }
+
+    /**
      * Get the order template for this product.
      */
     public function orderTemplate(): HasOne

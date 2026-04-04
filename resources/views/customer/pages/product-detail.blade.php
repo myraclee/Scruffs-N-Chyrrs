@@ -18,7 +18,7 @@
 </div>
 
 <div class="product_detail_container" 
-     data-product="{{ json_encode($product->load('priceImages')) }}"
+    data-product="{{ json_encode($product->load(['priceImages', 'noteImages'])) }}"
      data-product-id="{{ $product->id }}"
      data-product-slug="{{ $product->slug }}">
     
@@ -96,6 +96,7 @@
             <h2 class="section_title">Product Notes</h2>
             <span class="section_line"></span>
         </div>
+        <div class="product_notes_gallery" id="notesGallery"></div>
     </div>
     
 </div>

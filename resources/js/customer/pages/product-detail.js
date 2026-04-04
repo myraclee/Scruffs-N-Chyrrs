@@ -13,7 +13,9 @@ import Toast from "/resources/js/utils/toast.js";
 
 let product = null;
 let priceImages = [];
+let noteImages = [];
 const gallery = document.getElementById("priceGallery");
+const notesGallery = document.getElementById("notesGallery");
 const backBtn = document.getElementById("backBtn");
 const orderNowBtn = document.getElementById("orderNowBtn");
 const container = document.querySelector(".product_detail_container");
@@ -37,10 +39,12 @@ function initializeProductDetail() {
 
         product = JSON.parse(productData);
         priceImages = product.price_images || [];
+        noteImages = product.note_images || [];
 
         setupEventListeners();
         renderSkeletonLoaders();
         loadAndRenderPriceImages();
+        loadAndRenderNoteImages();
 
         if (orderNowBtn) {
             orderNowBtn.disabled = false;
@@ -186,4 +190,57 @@ async function loadAndRenderPriceImages() {
         element.wrapper.style.setProperty("--index", index);
         gallery.appendChild(element.wrapper);
     });
+}
+
+function loadAndRenderNoteImages() {
+    if (!notesGallery) {
+        return;
+    }
+
+    notesGallery.innerHTML = "";
+
+    if (!noteImages || noteImages.length === 0) {
+        notesGallery.innerHTML =
+            '<p class="product_notes_empty">No additional product notes available for this product.</p>';
+        return;
+    }
+
+    const sortedNoteImages = [...noteImages].sort(
+        (a, b) => (a.sort_order || 0) - (b.sort_order || 0),
+    );
+
+    sortedNoteImages.forEach((noteImage, index) => {
+        if (!noteImage.image_path) {
+            return;
+        }
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "product_note_image_wrapper";
+        wrapper.style.setProperty("--index", index);
+
+        const img = document.createElement("img");
+        img.className = "product_note_image";
+        img.alt = `${product.name} - Product Note ${index + 1}`;
+        img.loading = "lazy";
+
+        const imagePath = noteImage.image_path.startsWith("/")
+            ? noteImage.image_path
+            : `/storage/${noteImage.image_path}`;
+
+        img.src = imagePath;
+
+        img.addEventListener("error", () => {
+            wrapper.classList.add("error");
+            wrapper.innerHTML =
+                '<div class="price_image_error_text">Note image failed to load</div>';
+        });
+
+        wrapper.appendChild(img);
+        notesGallery.appendChild(wrapper);
+    });
+
+    if (!notesGallery.children.length) {
+        notesGallery.innerHTML =
+            '<p class="product_notes_empty">No additional product notes available for this product.</p>';
+    }
 }

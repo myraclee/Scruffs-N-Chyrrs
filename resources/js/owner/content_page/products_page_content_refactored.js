@@ -36,6 +36,7 @@ let products_main_file = null;
 let products_price_files = []; // New image files being added
 let products_price_kept_ids = []; // Existing image IDs to keep (from database)
 let products_notes_files = [];
+let products_note_kept_ids = []; // Existing note image IDs to keep (from database)
 
 // ================= INITIALIZATION =================
 document.addEventListener("DOMContentLoaded", async () => {
@@ -97,7 +98,7 @@ products_main_add_box.addEventListener("click", () => {
         products_main_add_box.style.display = "none";
         products_remove_main_image_btn.style.display = "block";
         products_has_cover = true;
-        
+
         // Remove error states when image is added
         products_cover_error.classList.add("hidden");
         products_main_add_box.classList.remove("image_box_error");
@@ -202,9 +203,12 @@ function createAddPriceBox() {
 }
 
 // ================= IMAGE NOTES HANDLING =================
-function buildNoteWrapper(src, file = null) {
+function buildNoteWrapper(src, file = null, existingImageId = null) {
     const wrapper = document.createElement("div");
     wrapper.className = "products_notes_item_wrapper";
+    if (existingImageId !== null) {
+        wrapper.dataset.noteImageId = existingImageId;
+    }
 
     const box = document.createElement("div");
     box.className = "products_notes_upload_box products_notes_display_box";
@@ -221,6 +225,11 @@ function buildNoteWrapper(src, file = null) {
     removeBtn.onclick = () => {
         if (file) {
             products_notes_files = products_notes_files.filter((f) => f !== file);
+        }
+        if (existingImageId !== null) {
+            products_note_kept_ids = products_note_kept_ids.filter(
+                (id) => id !== existingImageId,
+            );
         }
         wrapper.remove();
     };
@@ -267,6 +276,7 @@ function initNotesUpload() {
     if (!products_image_notes_wrapper) return;
     products_image_notes_wrapper.innerHTML = "";
     products_notes_files = [];
+    products_note_kept_ids = [];
     products_image_notes_wrapper.appendChild(createNotesAddBox());
 }
 
@@ -345,6 +355,10 @@ products_save_btn.addEventListener("click", async () => {
             formData.append(`existing_price_image_ids[${index}]`, id);
         });
 
+        products_note_kept_ids.forEach((id, index) => {
+            formData.append(`existing_note_image_ids[${index}]`, id);
+        });
+
         products_notes_files.forEach((file, index) => {
             formData.append(`note_images[${index}]`, file);
         });
@@ -392,8 +406,8 @@ async function editProduct(productId) {
     }
 
     products_price_images_wrapper.innerHTML = "";
-    products_price_files = []; 
-    products_price_kept_ids = []; 
+    products_price_files = [];
+    products_price_kept_ids = [];
     if (product.price_images && product.price_images.length > 0) {
         product.price_images.forEach((priceImage) => {
             const imagePath = priceImage.image_path || priceImage.path;
@@ -408,10 +422,15 @@ async function editProduct(productId) {
 
     products_image_notes_wrapper.innerHTML = "";
     products_notes_files = [];
+    products_note_kept_ids = [];
     if (product.note_images && product.note_images.length > 0) {
         product.note_images.forEach((noteImg) => {
             const notePath = noteImg.image_path || noteImg.path;
-            products_image_notes_wrapper.appendChild(buildNoteWrapper(`/storage/${notePath}`));
+            const noteImageId = noteImg.id;
+            products_note_kept_ids.push(noteImageId);
+            products_image_notes_wrapper.appendChild(
+                buildNoteWrapper(`/storage/${notePath}`, null, noteImageId),
+            );
         });
     }
     products_image_notes_wrapper.appendChild(createNotesAddBox());
@@ -505,7 +524,8 @@ function products_reset_modal() {
     products_price_images_wrapper.innerHTML = "";
     products_price_files = [];
     products_price_kept_ids = [];
-    
+    products_note_kept_ids = [];
+
     products_cover_error.classList.add("hidden");
     products_prices_error.classList.add("hidden");
 
