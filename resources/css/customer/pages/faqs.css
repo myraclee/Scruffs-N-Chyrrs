@@ -583,7 +583,10 @@
     }
 
     .faqs_container_section {
-        padding: 35px 20px;
+        padding: 0 20px;
+    }
+    .faqs_accordion_wrapper {
+        margin-bottom: 50px;
     }
 
     .faqs_accordion_wrapper h2 {
@@ -616,7 +619,7 @@
 
 @media (max-width: 600px) {
     .faqs_opening {
-        padding: 40px 15px 20px;
+        padding: 40px 15px 0;
     }
 
     .faqs_opening h1 {
@@ -628,7 +631,11 @@
     }
 
     .faqs_container_section {
-        padding: 30px 15px;
+        padding: 0 15px;
+    }
+
+    .faqs_accordion_wrapper {
+        margin-bottom: 10px;
     }
 
     .faqs_accordion_wrapper h2 {

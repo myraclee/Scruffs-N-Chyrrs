@@ -174,13 +174,20 @@
         box-shadow 0.32s ease;
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    align-items: center;
     cursor: pointer;
     width: 230px;
     padding: 12px 12px;
     --rot: -2deg;
-    transform: rotate(var(--rot));
+
     animation: cardIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
     border: #682c7a 1px solid;
+
+    transition:
+        transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+        box-shadow 0.4s ease,
+        outline 0.2s ease;
 }
 
 .product_card::before {
@@ -205,9 +212,13 @@
 }
 
 .product_card:hover {
-    transform: rotate(var(--card-rotation, 0deg)) translateY(-8px);
-    box-shadow: 0 12px 32px rgba(104, 44, 122, 0.25);
-    border: #682c7a solid 3px;
+    transform: rotate(var(--card-rotation, 0deg)) translateY(-12px) scale(1.05);
+    outline: 3px solid #682c7a;
+
+    box-shadow:
+        0 5px 15px rgba(104, 44, 122, 0.1),
+        0 15px 35px rgba(104, 44, 122, 0.2),
+        0 25px 60px rgba(104, 44, 122, 0.15);
 }
 
 .product_card_image {
@@ -287,15 +298,18 @@
 /* ===== RESPONSIVE ===== */
 @media (max-width: 900px) {
     .products_opening {
-        padding: 40px 20px;
+        padding: 40px 20px 10px;
+    }
+    .rushfee_section {
+        margin-top: 30px;
     }
 
     .products_opening h1 {
-        font-size: 40px;
+        font-size: 42px;
     }
 
     .products_opening p {
-        font-size: 16px;
+        font-size: 18px;
     }
 
     .products_section {
@@ -303,39 +317,25 @@
     }
 
     .products_grid {
-        /* Force a 2-column grid on phones so they don't get too squished */
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px; /* Tighter gap for small screens */
+        gap: 20px;
         padding: 0 10px;
     }
 
     .product_card {
-        width: 100%; /* Lets it fill the 2-column grid perfectly */
+        width: 200px;
         padding: 8px;
         padding-bottom: 20px;
-        /* Speed up the mobile animation so it feels snappy! */
         animation-duration: 0.5s;
     }
 
     .product_card_image {
-        height: 140px; /* Slightly taller to keep the aspect ratio looking good */
-        margin-bottom: 8px;
+        height: 200px;
+        width: 190px;
     }
 
     .product_card_info h3 {
         font-size: 16px;
-    }
-
-    .products_price_modal_content {
-        max-width: 90vw;
-    }
-
-    .products_price_carousel {
-        gap: 15px;
-    }
-
-    .products_price_image {
-        max-height: 300px;
+        width: 190px;
     }
 }
 
@@ -345,72 +345,52 @@
     }
 
     .products_opening h1 {
-        font-size: 32px;
+        font-size: 30px;
     }
 
     .products_opening p {
-        font-size: 14px;
+        font-size: 15px;
     }
 
     .products_section {
-        padding: 30px 15px;
+        padding: 30px 10px;
     }
 
     .products_grid {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-        gap: 15px;
+        gap: 40px;
+        padding: 0 5px;
+        justify-content: center;
     }
 
     .product_card {
-        width: 150px;
+        width: 155px;
         padding: 8px;
-        padding-bottom: 40px;
+        padding-bottom: 20px;
     }
 
     .product_card_image {
-        height: 120px;
+        width: 155px;
+        height: 155px;
         margin-bottom: 8px;
     }
 
     .product_card_info h3 {
+        width: 145px;
         font-size: 14px;
+        height: 70px;
     }
 
     .product_card_description {
         font-size: 11px;
     }
 
-    .products_price_modal_content {
-        max-width: 95vw;
+    .rushfee_section {
+        margin-top: 20px;
+        margin-bottom: 20px;
+        padding: 0 20px;
     }
 
-    .products_price_modal_header {
-        padding: 15px;
-    }
-
-    .products_price_modal_header h2 {
-        font-size: 22px;
-    }
-
-    .products_price_modal_body {
-        padding: 20px 15px;
-    }
-
-    .products_price_carousel {
-        gap: 10px;
-    }
-
-    .products_price_carousel_btn {
-        width: 35px;
-        height: 35px;
-        font-size: 16px;
-    }
-
-    .products_price_image {
-        max-height: 250px;
-    }
-
-    .products_price_counter {
-        font-size: 12px;
+    .rushfee_section p {
+        font-size: 13px;
     }
 }
