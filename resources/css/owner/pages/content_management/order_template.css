@@ -1228,6 +1228,22 @@ select:focus {
     word-break: break-word;
 }
 
+.rush_card_image_wrap {
+    width: 90%;
+    margin: 0 auto 12px auto;
+    border: 1px solid #682c7a;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #ffffff;
+}
+
+.rush_card_image {
+    width: 100%;
+    height: 130px;
+    display: block;
+    object-fit: cover;
+}
+
 /* Timeframes Table */
 .rush_card_table {
     width: 90%;
@@ -1444,6 +1460,136 @@ select:focus {
     color: #682c7a;
     flex-shrink: 0;
     padding-top: 7px;
+}
+
+/* ==================== IMAGE SECTION ==================== */
+
+.rush_image_section {
+    padding: 15px 0;
+    border-bottom: 2px solid #682c7a;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.rush_image_upload_slot {
+    padding: 0;
+    background: #fff7ec;
+    flex-shrink: 0;
+}
+
+.rush_image_upload_slot.hidden {
+    display: none;
+}
+
+.rush_image_input_hidden {
+    display: none;
+}
+
+.rush_image_upload_status {
+    font-family: Coolvetica;
+    font-size: 12px;
+    color: #682c7a;
+    margin: 0;
+}
+
+.rush_image_preview_wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.rush_image_preview_wrap.hidden {
+    display: none;
+}
+
+.rush_image_preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border: none;
+    border-radius: 0;
+    background: #ffffff;
+    display: block;
+}
+
+.rush_image_preview_stage {
+    width: 120px;
+    height: 80px;
+    border-radius: 12px;
+    border: 2px solid #682c7a;
+    background: #ffffff;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rush_image_fullscreen_btn {
+    border: none;
+    width: 35px;
+    height: 35px;
+    background: #682c7a;
+    border-radius: 50%;
+    font-family: Coolvetica;
+    font-size: 18px;
+    color: #fff7ec;
+    cursor: pointer;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.rush_image_fullscreen_btn:hover {
+    background-color: #4c1c5b;
+    transform: scale(1.06);
+}
+
+.rush_image_remove_btn {
+    font-family: Coolvetica;
+    font-size: 12px;
+    color: #fff7ec;
+    background-color: #c83333;
+    border-radius: 30px;
+    width: 60px;
+    height: 25px;
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.2s ease;
+}
+
+.rush_image_remove_btn:hover {
+    background-color: #8d0e0e;
+}
+
+.rush_image_preview_stage:fullscreen,
+.rush_image_preview_stage:-webkit-full-screen,
+.rush_image_preview_stage:-moz-full-screen,
+.rush_image_preview_stage:-ms-fullscreen {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    background: radial-gradient(circle, #2a0a35 0%, #0d000f 70%);
+}
+
+.rush_image_preview_stage:fullscreen .rush_image_preview,
+.rush_image_preview_stage:-webkit-full-screen .rush_image_preview,
+.rush_image_preview_stage:-moz-full-screen .rush_image_preview,
+.rush_image_preview_stage:-ms-fullscreen .rush_image_preview {
+    width: auto;
+    height: auto;
+    max-width: 100vw;
+    max-height: 100vh;
+    object-fit: contain;
 }
 
 /* ==================== TIMEFRAMES SECTION ==================== */
@@ -1713,8 +1859,22 @@ select:focus {
         width: 100%;
     }
 
+    .rush_image_preview_stage {
+        width: 100px;
+        height: 70px;
+    }
+
+    .rush_image_preview_wrap {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
     .rush_tf_col_headers span {
         font-size: 16px;
+    }
+
+    .rush_card_image {
+        height: 110px;
     }
 
     .rush_pct_input_wrapper {
@@ -1749,6 +1909,10 @@ select:focus {
         font-size: 14px;
     }
 
+    .rush_card_image {
+        height: 96px;
+    }
+
     .rush_pct_input_wrapper {
         width: 100px;
     }
@@ -1759,6 +1923,11 @@ select:focus {
 
     .rush_range_separator {
         padding-top: 5px;
+    }
+
+    .rush_image_preview_stage {
+        width: 90px;
+        height: 64px;
     }
 }
 

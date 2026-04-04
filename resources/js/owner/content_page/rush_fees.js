@@ -34,6 +34,7 @@ function buildDraftFromIndex(idx) {
         label: src.label,
         min: src.min ? Math.floor(src.min) : null,
         max: src.max ? Math.floor(src.max) : null,
+        imageUrl: src.imageUrl || "",
         timeframes: src.timeframes.map((tf) => ({
             id: tf.id,
             label: tf.label,
@@ -48,6 +49,7 @@ function freshDraft() {
         label: "",
         min: null,
         max: null,
+        imageUrl: "",
         timeframes: [{ id: null, label: "", percentage: "" }],
     };
 }
@@ -55,6 +57,14 @@ function freshDraft() {
 // ==================== OPEN / CLOSE MODALS ====================
 const rushModalOverlay = document.getElementById("rushFeeModalOverlay");
 const rushDeleteOverlay = document.getElementById("rushDeleteConfirmOverlay");
+const rushImageUploadSlot = document.getElementById("rushImageUploadSlot");
+const rushImageInput = document.getElementById("rushFeeImageInput");
+const rushImageUploadStatus = document.getElementById("rushImageUploadStatus");
+const rushImagePreviewWrap = document.getElementById("rushImagePreviewWrap");
+const rushImagePreviewStage = document.getElementById("rushImagePreviewStage");
+const rushImagePreview = document.getElementById("rushImagePreview");
+const rushImageFullscreenBtn = document.getElementById("rushImageFullscreenBtn");
+const rushImageRemoveBtn = document.getElementById("rushImageRemoveBtn");
 
 function openAddModal() {
     editingRushIndex = null;
@@ -79,6 +89,7 @@ function openEditModal(idx) {
 }
 
 function closeRushModal() {
+    exitRushImageFullscreenIfOpen();
     rushModalOverlay.classList.remove("active");
     clearRushValidationErrors();
     draftFee = null;
@@ -135,6 +146,144 @@ function clearFieldError(element) {
     }
 }
 
+function normalizeStorageImageUrl(imageUrl) {
+    if (!imageUrl) return "";
+
+    if (
+        imageUrl.startsWith("http://") ||
+        imageUrl.startsWith("https://") ||
+        imageUrl.startsWith("/")
+    ) {
+        return imageUrl;
+    }
+
+    return `/storage/${imageUrl.replace(/^\/+/, "")}`;
+}
+
+function getFullscreenElement() {
+    return (
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement ||
+        null
+    );
+}
+
+function requestElementFullscreen(element) {
+    if (!element) return;
+
+    if (element.requestFullscreen) {
+        element.requestFullscreen();
+    } else if (element.webkitRequestFullscreen) {
+        element.webkitRequestFullscreen();
+    } else if (element.mozRequestFullScreen) {
+        element.mozRequestFullScreen();
+    } else if (element.msRequestFullscreen) {
+        element.msRequestFullscreen();
+    }
+}
+
+function exitFullscreen() {
+    if (document.exitFullscreen) {
+        document.exitFullscreen();
+    } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+    } else if (document.mozExitFullScreen) {
+        document.mozExitFullScreen();
+    } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+    }
+}
+
+function exitRushImageFullscreenIfOpen() {
+    const fullscreenTarget = rushImagePreviewStage || rushImagePreview;
+    if (!fullscreenTarget) return;
+
+    if (getFullscreenElement() === fullscreenTarget) {
+        exitFullscreen();
+    }
+}
+
+function toggleRushImageFullscreen() {
+    const fullscreenTarget = rushImagePreviewStage || rushImagePreview;
+    if (!fullscreenTarget || !rushImagePreview?.src) return;
+
+    if (getFullscreenElement() === fullscreenTarget) {
+        exitFullscreen();
+        return;
+    }
+
+    requestElementFullscreen(rushImagePreviewStage || rushImagePreview);
+}
+
+function renderRushImageState() {
+    if (!rushImagePreviewWrap || !rushImagePreview || !rushImageUploadStatus) {
+        return;
+    }
+
+    const normalizedImageUrl = normalizeStorageImageUrl(draftFee?.imageUrl || "");
+
+    if (!normalizedImageUrl) {
+        exitRushImageFullscreenIfOpen();
+        rushImageUploadSlot?.classList.remove("hidden");
+        rushImagePreview.src = "";
+        rushImagePreviewWrap.classList.add("hidden");
+        rushImageUploadStatus.textContent = "No image uploaded.";
+        return;
+    }
+
+    rushImageUploadSlot?.classList.add("hidden");
+    rushImagePreview.src = normalizedImageUrl;
+    rushImagePreviewWrap.classList.remove("hidden");
+    rushImageUploadStatus.textContent = "Image uploaded successfully.";
+}
+
+async function handleRushImageSelected(event) {
+    if (!draftFee) return;
+
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    clearFieldError(rushImageUploadSlot || rushImageInput);
+
+    isRushLoading = true;
+    rushImageUploadStatus.textContent = "Uploading image...";
+
+    try {
+        const uploadedImage = await rushApi.uploadRushFeeImage(file);
+        const uploadedUrl =
+            uploadedImage?.image_url ||
+            normalizeStorageImageUrl(uploadedImage?.image_path || "");
+
+        if (!uploadedUrl) {
+            throw new Error("Image upload did not return a valid URL");
+        }
+
+        draftFee.imageUrl = uploadedUrl;
+        renderRushImageState();
+        toast.success("Rush fee image uploaded successfully");
+    } catch (error) {
+        showFieldError(
+            rushImageUploadSlot || rushImageInput,
+            error.message || "Failed to upload rush fee image",
+        );
+        rushImageUploadStatus.textContent = "Image upload failed.";
+        toast.error(error.message || "Failed to upload rush fee image");
+    } finally {
+        isRushLoading = false;
+        event.target.value = "";
+    }
+}
+
+function removeRushImage() {
+    if (!draftFee) return;
+
+    draftFee.imageUrl = "";
+    clearFieldError(rushImageUploadSlot || rushImageInput);
+    renderRushImageState();
+}
+
 // ==================== RENDER FORM ====================
 function renderRushModalForm() {
     document.getElementById("rushRangeLabel").value = draftFee.label;
@@ -143,6 +292,7 @@ function renderRushModalForm() {
         draftFee.min !== null ? draftFee.min : "";
     document.getElementById("rushRangeMax").value =
         draftFee.max !== null ? draftFee.max : "";
+    renderRushImageState();
     renderTimeframeRows();
 }
 
@@ -236,6 +386,7 @@ async function loadRushFees() {
             label: r.label,
             min: r.min_price,
             max: r.max_price,
+            imageUrl: r.image_url || "",
             timeframes: r.timeframes || [],
         }));
         renderRushDisplay();
@@ -314,6 +465,7 @@ async function saveRushFee() {
             label: draftFee.label,
             min_price: draftFee.min,
             max_price: draftFee.max,
+            image_url: draftFee.imageUrl || "",
             timeframes: draftFee.timeframes.map((tf) => ({
                 label: tf.label,
                 percentage: parseFloat(tf.percentage) || 0,
@@ -382,6 +534,23 @@ function renderRushDisplay() {
         header.className = "rush_card_header";
         header.textContent = range.label || "—";
         card.appendChild(header);
+
+        // Owner-only card image preview
+        const normalizedImageUrl = normalizeStorageImageUrl(
+            range.imageUrl || "",
+        );
+        if (normalizedImageUrl) {
+            const imageWrap = document.createElement("div");
+            imageWrap.className = "rush_card_image_wrap";
+
+            const cardImage = document.createElement("img");
+            cardImage.className = "rush_card_image";
+            cardImage.src = normalizedImageUrl;
+            cardImage.alt = `${range.label || "Rush fee"} image`;
+
+            imageWrap.appendChild(cardImage);
+            card.appendChild(imageWrap);
+        }
 
         // Timeframes table
         if (range.timeframes && range.timeframes.length > 0) {
@@ -475,6 +644,13 @@ function initRushFees() {
             if (pendingDeleteIndex === null) return;
             await deleteRushFee(pendingDeleteIndex);
         });
+
+    rushImageUploadSlot?.addEventListener("click", () => {
+        rushImageInput?.click();
+    });
+    rushImageInput?.addEventListener("change", handleRushImageSelected);
+    rushImageFullscreenBtn?.addEventListener("click", toggleRushImageFullscreen);
+    rushImageRemoveBtn?.addEventListener("click", removeRushImage);
 
     loadRushFees();
 

@@ -311,6 +311,22 @@
                         </div>
                     </div>
 
+                    <div class="rush_image_section">
+                        <label class="rush_field_label" for="rushFeeImageInput">Rush Fee Image (Optional)</label>
+                        <div class="rush_input_group">
+                            <button type="button" id="rushImageUploadSlot" class="image_slot plus rush_image_upload_slot" aria-label="Upload rush fee image"></button>
+                            <input type="file" id="rushFeeImageInput" class="rush_image_input_hidden" accept="image/jpeg,image/png,image/gif,image/webp" />
+                        </div>
+                        <p class="rush_image_upload_status" id="rushImageUploadStatus">No image uploaded.</p>
+                        <div class="rush_image_preview_wrap hidden" id="rushImagePreviewWrap">
+                            <div class="rush_image_preview_stage" id="rushImagePreviewStage">
+                                <img id="rushImagePreview" class="rush_image_preview" alt="Rush fee preview image" />
+                            </div>
+                            <button type="button" class="rush_image_fullscreen_btn" id="rushImageFullscreenBtn" title="Toggle fullscreen" aria-label="Fullscreen">⛶</button>
+                            <button type="button" class="rush_image_remove_btn" id="rushImageRemoveBtn">Remove</button>
+                        </div>
+                    </div>
+
                     {{-- Timeframe rows --}}
                     <div class="rush_timeframes_section">
                         <div class="rush_tf_col_headers">

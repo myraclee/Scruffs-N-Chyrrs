@@ -70,6 +70,63 @@ class RushFeeAPI {
     }
 
     /**
+     * Upload a rush fee image
+     * @param {File} imageFile - Image file to upload
+     * @returns {Promise<Object>} Uploaded image payload { image_path, image_url }
+     */
+    async uploadRushFeeImage(imageFile) {
+        try {
+            if (!(imageFile instanceof File)) {
+                throw new Error("Image file is required");
+            }
+
+            const formData = new FormData();
+            formData.append("image", imageFile);
+
+            const csrfToken = this.getCsrfToken();
+            if (csrfToken && !formData.has("_token")) {
+                formData.append("_token", csrfToken);
+            }
+
+            const response = await fetch(`${this.baseUrl}/upload-image`, {
+                method: "POST",
+                headers: {
+                    Accept: "application/json",
+                    "X-Requested-With": "XMLHttpRequest",
+                    "X-CSRF-TOKEN": csrfToken,
+                },
+                body: formData,
+            });
+
+            let result = null;
+            try {
+                result = await response.json();
+            } catch {
+                result = null;
+            }
+
+            if (!response.ok) {
+                const errorMessage =
+                    result?.message ||
+                    result?.error ||
+                    `HTTP error! status: ${response.status}`;
+                throw new Error(errorMessage);
+            }
+
+            if (!result?.success) {
+                throw new Error(
+                    result?.message || "Failed to upload rush fee image",
+                );
+            }
+
+            return result.data || {};
+        } catch (error) {
+            console.error("Error uploading rush fee image:", error);
+            throw error;
+        }
+    }
+
+    /**
      * Create a new rush fee with timeframes
      * @param {Object} rushFeeData - Rush fee data { label, min_price, max_price, timeframes: [] }
      * @returns {Promise<Object>} Created rush fee with timeframes
@@ -91,7 +148,7 @@ class RushFeeAPI {
                 const errorData = await response.json();
                 throw new Error(
                     errorData.message ||
-                        `HTTP error! status: ${response.status}`,
+                    `HTTP error! status: ${response.status}`,
                 );
             }
 
@@ -126,7 +183,7 @@ class RushFeeAPI {
                 const errorData = await response.json();
                 throw new Error(
                     errorData.message ||
-                        `HTTP error! status: ${response.status}`,
+                    `HTTP error! status: ${response.status}`,
                 );
             }
 
@@ -159,7 +216,7 @@ class RushFeeAPI {
                 const errorData = await response.json();
                 throw new Error(
                     errorData.message ||
-                        `HTTP error! status: ${response.status}`,
+                    `HTTP error! status: ${response.status}`,
                 );
             }
 
@@ -197,7 +254,7 @@ class RushFeeAPI {
                 const errorData = await response.json();
                 throw new Error(
                     errorData.message ||
-                        `HTTP error! status: ${response.status}`,
+                    `HTTP error! status: ${response.status}`,
                 );
             }
 

@@ -6,13 +6,14 @@ use Tests\TestCase;
 
 class ProductSampleModalStyleContractTest extends TestCase
 {
-    public function test_sample_modal_script_uses_isolated_add_box_selector(): void
+    public function test_sample_modal_script_uses_isolated_add_slot_selector(): void
     {
         $script = file_get_contents(base_path('resources/js/owner/content_page/product_sample_modal.js'));
 
         $this->assertIsString($script);
-        $this->assertStringContainsString("querySelector('.sample_add_box')", $script);
-        $this->assertStringContainsString("addBox.className = 'sample_add_box';", $script);
+        $this->assertStringContainsString("querySelector('.sample_add_slot')", $script);
+        $this->assertStringContainsString("addBox.className = 'image_slot plus sample_add_slot';", $script);
+        $this->assertStringNotContainsString("querySelector('.sample_add_box')", $script);
         $this->assertStringNotContainsString("querySelector('.products_add_box')", $script);
     }
 
@@ -21,7 +22,8 @@ class ProductSampleModalStyleContractTest extends TestCase
         $css = file_get_contents(base_path('resources/css/owner/pages/content_management/home_page_content.css'));
 
         $this->assertIsString($css);
-        $this->assertStringContainsString('.sample_add_box {', $css);
+        $this->assertStringContainsString('.sample_add_slot {', $css);
+        $this->assertStringNotContainsString('.sample_add_box {', $css);
 
         preg_match('/\\.sample_image_wrapper\\s*\\{([^}]*)\\}/s', $css, $wrapperMatches);
         $wrapperBlock = $wrapperMatches[1] ?? '';

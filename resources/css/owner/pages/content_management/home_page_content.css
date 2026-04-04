@@ -665,27 +665,13 @@
 }
 
 /* ── MODAL: Upload add-box ── */
-.sample_add_box {
-    width: 120px;
-    height: 120px;
-    border-radius: 14px;
-    border: 2px dashed #682c7a;
+.sample_add_slot {
+    padding: 0;
     background: #fff7ec;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 42px;
-    color: #682c7a;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
     flex-shrink: 0;
 }
 
-.sample_add_box:hover {
-    background-color: #dcbae6;
-}
-
-.sample_add_box.image_box_error {
+.sample_add_slot.image_box_error {
     border-color: #c83333;
 }
 

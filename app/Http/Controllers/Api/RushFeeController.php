@@ -6,6 +6,7 @@ use App\Models\RushFee;
 use App\Models\RushFeeTimeframe;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\Controller;
 
 class RushFeeController extends Controller
@@ -26,6 +27,7 @@ class RushFeeController extends Controller
                     'label' => $fee->label,
                     'min_price' => $fee->min_price,
                     'max_price' => $fee->max_price,
+                    'image_url' => $fee->image_url,
                     'timeframes' => $fee->timeframes->sortBy('sort_order')->values(),
                 ];
             });
@@ -52,6 +54,7 @@ class RushFeeController extends Controller
                     'label' => $fee->label,
                     'min_price' => $fee->min_price,
                     'max_price' => $fee->max_price,
+                    'image_url' => $fee->image_url,
                     'timeframes' => $fee->timeframes->sortBy('sort_order')->values(),
                     'created_at' => $fee->created_at,
                     'updated_at' => $fee->updated_at,
@@ -62,6 +65,48 @@ class RushFeeController extends Controller
             'success' => true,
             'data' => $rushFees,
         ]);
+    }
+
+    /**
+     * Upload a rush fee image.
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function uploadImage(Request $request): JsonResponse
+    {
+        try {
+            $request->validate([
+                'image' => 'required|image|mimes:jpeg,png,gif,webp|max:5120',
+            ]);
+
+            $path = $request->file('image')->store('rush_fees', 'public');
+
+            if (!$path) {
+                throw new \Exception('Failed to store image file');
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Rush fee image uploaded successfully',
+                'data' => [
+                    'image_path' => $path,
+                    'image_url' => Storage::url($path),
+                ],
+            ], 201);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to upload rush fee image',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -77,6 +122,7 @@ class RushFeeController extends Controller
                 'label' => 'required|string|max:255',
                 'min_price' => 'required|numeric|min:0',
                 'max_price' => 'required|numeric|min:0|gt:min_price',
+                'image_url' => 'nullable|string|max:2048',
                 'timeframes' => 'required|array|min:1',
                 'timeframes.*.label' => 'required|string|max:255',
                 'timeframes.*.percentage' => 'required|numeric|min:0|max:100',
@@ -86,6 +132,7 @@ class RushFeeController extends Controller
                 'label' => $validated['label'],
                 'min_price' => $validated['min_price'],
                 'max_price' => $validated['max_price'],
+                'image_url' => $validated['image_url'] ?? '',
             ]);
 
             // Create timeframes
@@ -134,6 +181,7 @@ class RushFeeController extends Controller
                 'label' => 'nullable|string|max:255',
                 'min_price' => 'nullable|numeric|min:0',
                 'max_price' => 'nullable|numeric|min:0',
+                'image_url' => 'nullable|string|max:2048',
                 'timeframes' => 'nullable|array|min:1',
                 'timeframes.*.id' => 'nullable|integer|exists:rush_fee_timeframes,id',
                 'timeframes.*.label' => 'required|string|max:255',
@@ -149,6 +197,9 @@ class RushFeeController extends Controller
             }
             if (isset($validated['max_price'])) {
                 $rushFee->max_price = $validated['max_price'];
+            }
+            if (array_key_exists('image_url', $validated)) {
+                $rushFee->image_url = $validated['image_url'] ?? '';
             }
             $rushFee->save();
 

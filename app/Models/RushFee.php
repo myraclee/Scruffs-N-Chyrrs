@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Builder;
  * @property string $label
  * @property string $min_price
  * @property string $max_price
+ * @property string $image_url
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  */
@@ -35,6 +36,7 @@ class RushFee extends Model
         'label',
         'min_price',
         'max_price',
+        'image_url',
     ];
 
     /**

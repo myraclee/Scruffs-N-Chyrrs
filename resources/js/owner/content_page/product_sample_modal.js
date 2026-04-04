@@ -57,8 +57,7 @@ function validateSampleForm() {
 
     // Validate Images
     const totalImages = existingSampleImages.length + currentSampleFiles.length;
-    // Look specifically for our big box class
-    const addBox = sampleImageGrid.querySelector('.sample_add_box');
+    const addBox = sampleImageGrid.querySelector('.sample_add_slot');
 
     if (totalImages === 0) {
         if (addBox) addBox.classList.add('image_box_error');
@@ -82,7 +81,7 @@ function updateSampleCounter() {
     const total = existingSampleImages.length + currentSampleFiles.length;
     sampleImageCounter.textContent = `${total} / ${MAX_SAMPLE_IMAGES} images selected`;
 
-    const addBox = sampleImageGrid.querySelector('.sample_add_box');
+    const addBox = sampleImageGrid.querySelector('.sample_add_slot');
     if (addBox) {
         addBox.style.display = total >= MAX_SAMPLE_IMAGES ? 'none' : 'flex';
         // Clear error if we have images
@@ -95,11 +94,12 @@ function updateSampleCounter() {
 
 function initSampleUploadBox() {
     sampleImageGrid.innerHTML = '';
-    const addBox = document.createElement('div');
+    const addBox = document.createElement('button');
 
-    addBox.className = 'sample_add_box';
+    addBox.type = 'button';
+    addBox.className = 'image_slot plus sample_add_slot';
+    addBox.setAttribute('aria-label', 'Add sample image');
 
-    addBox.textContent = '+';
     addBox.onclick = () => {
         const total = existingSampleImages.length + currentSampleFiles.length;
         if (total >= MAX_SAMPLE_IMAGES) {
@@ -170,7 +170,7 @@ function buildSampleImageWrapper(src, isNew, identifier) {
 
 function populateSampleGrid() {
     initSampleUploadBox();
-    const addBox = sampleImageGrid.querySelector('.sample_add_box');
+    const addBox = sampleImageGrid.querySelector('.sample_add_slot');
 
     existingSampleImages.forEach(img => {
         const wrapper = buildSampleImageWrapper(`/storage/${img.image_path}`, false, img.id);
