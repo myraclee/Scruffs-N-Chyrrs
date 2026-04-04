@@ -34,10 +34,6 @@
                 <li class="{{ request()->routeIs('faqs') ? 'active' : '' }}">
                     <a href="{{ route('faqs') }}">FAQs</a>
                 </li>
-                
-                <li>
-                    <a href="{{ route('owner.dashboard') }}">Accounts</a>
-                </li>
             </ul>
         </div>
 
