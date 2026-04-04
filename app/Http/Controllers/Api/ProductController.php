@@ -46,7 +46,7 @@ class ProductController extends Controller
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'description' => 'nullable|string',
-                'cover_image' => 'required|image|mimes:png,jpg,jpeg|max:2048',
+                'cover_image' => 'required|image|mimes:png,jpg,jpeg|max:5120',
                 'price_images' => 'required|array|min:1',
                 'price_images.*' => 'required|image|mimes:png,jpg,jpeg|max:5120',
                 'note_images' => 'nullable|array',
@@ -137,7 +137,7 @@ class ProductController extends Controller
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'description' => 'nullable|string',
-                'cover_image' => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
+                'cover_image' => 'nullable|image|mimes:png,jpg,jpeg|max:5120',
                 'price_images' => 'nullable|array',
                 'price_images.*' => 'required|image|mimes:png,jpg,jpeg|max:5120',
                 'existing_price_image_ids' => 'nullable|array',
