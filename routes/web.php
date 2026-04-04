@@ -10,9 +10,9 @@ use App\Http\Controllers\Api\FaqController;
 use App\Http\Controllers\Api\FAQCategoryController;
 use App\Http\Controllers\Api\RushFeeController;
 use App\Http\Controllers\Api\CustomerOrderController;
-use App\Http\Controllers\OrderController;
+use App\Http\Controllers\Api\CustomerCartController;
+use App\Http\Controllers\Api\OwnerOrderController;
 use Illuminate\Support\Facades\Route;
-
 
 Route::get('/', function () {
     return view('customer.pages.home');
@@ -112,7 +112,26 @@ Route::prefix('api/order-templates')->group(function () {
 // CUSTOMER ORDERS ROUTES - Public read for templates, auth required for POST
 Route::prefix('api/customer-orders')->group(function () {
     Route::get('product/{productId}/template', [CustomerOrderController::class, 'getProductOrderTemplate']);
-    Route::post('/', [CustomerOrderController::class, 'store'])->middleware('auth');
+
+    Route::middleware('auth')->group(function () {
+        Route::get('/', [CustomerOrderController::class, 'index']);
+        Route::get('{orderGroup}', [CustomerOrderController::class, 'show'])->whereNumber('orderGroup');
+        Route::post('/', [CustomerOrderController::class, 'store']);
+    });
+});
+
+Route::prefix('api/customer-cart')->middleware('auth')->group(function () {
+    Route::get('/', [CustomerCartController::class, 'index']);
+    Route::post('items', [CustomerCartController::class, 'storeItem']);
+    Route::patch('items/{cartItem}', [CustomerCartController::class, 'updateItem'])->whereNumber('cartItem');
+    Route::delete('items/{cartItem}', [CustomerCartController::class, 'destroyItem'])->whereNumber('cartItem');
+    Route::post('checkout', [CustomerCartController::class, 'checkout']);
+});
+
+Route::prefix('api/owner/orders')->middleware(['auth', 'owner'])->group(function () {
+    Route::get('/', [OwnerOrderController::class, 'index']);
+    Route::get('{orderGroup}', [OwnerOrderController::class, 'show'])->whereNumber('orderGroup');
+    Route::patch('{orderGroup}/status', [OwnerOrderController::class, 'updateStatus'])->whereNumber('orderGroup');
 });
 
 
@@ -189,4 +208,3 @@ Route::middleware(['auth', 'owner'])->group(function () {
         return view('owner.pages.content_management');
     })->name('owner.content');
 });
-

@@ -20,6 +20,18 @@ class IsOwner
             return $next($request);
         }
 
+        if ($this->expectsApiResponse($request)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized access.',
+            ], 403);
+        }
+
         return redirect()->route('home')->with('error', 'Unauthorized access.');
+    }
+
+    private function expectsApiResponse(Request $request): bool
+    {
+        return $request->expectsJson() || $request->is('api/*');
     }
 }

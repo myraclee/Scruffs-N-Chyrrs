@@ -4,6 +4,10 @@
 @vite(['resources/css/customer/view_orders.css'])
 @endsection
 
+@section('page_js')
+@vite('resources/js/customer/pages/view_orders.js')
+@endsection
+
 @section('content')
 
 {{-- Background Sparkles --}}
@@ -57,25 +61,8 @@
     </div>
 
     <div class="cart_section">
-        <div class="cart_content">
-            {{-- Empty state for cart - you can replace this with your own design --}}
-            <div class="empty_state">
-                <div class="empty_sparkles" aria-hidden="true">
-                    <span>✦</span><span>✧</span><span>✦</span>
-                </div>
-                <div class="empty_icon">
-                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <circle cx="9" cy="21" r="1"></circle>
-                        <circle cx="20" cy="21" r="1"></circle>
-                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                    </svg>
-                </div>
-                <p class="empty_message">Empty as a blank page… ready for your magic touch!</p>
-                <a href="{{ route('products') }}" class="browse_products_btn">
-                    <span class="btn_sparkle">✦</span>
-                    <span>Browse Products</span>
-                </a>
-            </div>
+        <div class="cart_content" id="cartContent">
+            <p class="orders_placeholder">Loading your cart...</p>
         </div>
     </div>
 
@@ -99,7 +86,7 @@
                         </svg>
                     </span>
                     <h3 class="category_title">Current Orders</h3>
-                    <span class="category_count">0</span>
+                    <span class="category_count" id="currentOrdersCount">0</span>
                 </div>
                 <span class="category_toggle">
                     <svg class="toggle_icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -108,10 +95,7 @@
                 </span>
             </button>
             <div class="orders_category_content" id="currentOrdersContent">
-                {{-- Your order design will go here --}}
-                <div class="orders_placeholder">
-                    <p>Your current orders will appear here</p>
-                </div>
+                <div class="orders_placeholder">Loading current orders...</div>
             </div>
         </div>
 
@@ -125,7 +109,7 @@
                         </svg>
                     </span>
                     <h3 class="category_title">Completed Orders</h3>
-                    <span class="category_count">0</span>
+                    <span class="category_count" id="completedOrdersCount">0</span>
                 </div>
                 <span class="category_toggle">
                     <svg class="toggle_icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -134,10 +118,7 @@
                 </span>
             </button>
             <div class="orders_category_content" id="completedOrdersContent">
-                {{-- Your order design will go here --}}
-                <div class="orders_placeholder">
-                    <p>Your completed orders will appear here</p>
-                </div>
+                <div class="orders_placeholder">Loading completed orders...</div>
             </div>
         </div>
 
@@ -145,29 +126,4 @@
 
 </div>
 
-@endsection
-
-@section('page_scripts')
-<script>
-// Toggle orders category (expand/collapse)
-function toggleOrdersCategory(category) {
-    const content = document.getElementById(category + 'OrdersContent');
-    const header = content.previousElementSibling;
-    const isOpen = content.classList.contains('open');
-    
-    if (isOpen) {
-        content.classList.remove('open');
-        header.classList.remove('active');
-    } else {
-        content.classList.add('open');
-        header.classList.add('active');
-    }
-}
-
-// Initialize - open current orders by default
-document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('currentOrdersContent').classList.add('open');
-    document.querySelector('[onclick="toggleOrdersCategory(\'current\')"]').classList.add('active');
-});
-</script>
 @endsection

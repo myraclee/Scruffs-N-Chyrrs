@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\CustomerOrder;
-use App\Models\Product;
+use App\Models\CustomerOrderGroup;
 use App\Models\OrderTemplate;
+use App\Models\Product;
 use App\Models\RushFee;
+use App\Services\OrderPricingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,20 +16,103 @@ use Illuminate\Support\Facades\DB;
 
 class CustomerOrderController extends Controller
 {
+    public function __construct(
+        protected OrderPricingService $pricingService
+    ) {
+    }
+
+    /**
+     * List grouped orders for the authenticated customer.
+     */
+    public function index(Request $request): JsonResponse
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication required',
+            ], 401);
+        }
+
+        $validated = $request->validate([
+            'status' => 'nullable|in:all,waiting,approved,preparing,ready,completed,cancelled',
+            'per_page' => 'nullable|integer|min:1|max:100',
+        ]);
+
+        $status = $validated['status'] ?? 'all';
+        $perPage = (int) ($validated['per_page'] ?? 12);
+
+        $query = CustomerOrderGroup::query()
+            ->where('user_id', Auth::id())
+            ->with([
+                'orders:id,customer_order_group_id,product_id,quantity,total_price,status,selected_options,special_instructions,created_at',
+                'orders.product:id,name,cover_image_path',
+            ])
+            ->latest();
+
+        if ($status !== 'all') {
+            $query->where('status', $status);
+        }
+
+        $groups = $query->paginate($perPage);
+
+        return response()->json([
+            'success' => true,
+            'data' => $groups->getCollection()->map(fn ($group) => $this->transformGroup($group))->values(),
+            'meta' => [
+                'current_page' => $groups->currentPage(),
+                'last_page' => $groups->lastPage(),
+                'per_page' => $groups->perPage(),
+                'total' => $groups->total(),
+            ],
+        ]);
+    }
+
+    /**
+     * Get a specific grouped order with full item details.
+     */
+    public function show(CustomerOrderGroup $orderGroup): JsonResponse
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication required',
+            ], 401);
+        }
+
+        if ((int) $orderGroup->user_id !== (int) Auth::id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You are not allowed to view this order.',
+            ], 403);
+        }
+
+        $orderGroup->load([
+            'orders.product:id,name,cover_image_path',
+            'orders.rushFee:id,label',
+            'orders.orderTemplate.options.optionTypes:id,order_template_option_id,type_name,is_available,position',
+            'orders.orderTemplate.options:id,order_template_id,label,position',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => $this->transformGroup($orderGroup, true),
+        ]);
+    }
+
     /**
      * Fetch order template with all related configurations for a product.
      * GET /api/customer-orders/product/{productId}/template
-     * 
+     *
      * Returns: template, options, pricings, discounts, min_order, layout_fee, rush_fees
      */
     public function getProductOrderTemplate(int $productId): JsonResponse
     {
         try {
             $product = Product::findOrFail($productId);
-            
+
             $orderTemplate = $product->orderTemplate()
                 ->with([
-                    'options.optionTypes' => fn($q) => $q->orderBy('position'),
+                    'options.optionTypes' => fn ($q) => $q->orderBy('position'),
                     'pricings',
                     'discounts',
                     'minOrder',
@@ -51,22 +136,22 @@ class CustomerOrderController extends Controller
                     ],
                     'template' => [
                         'id' => $orderTemplate->id,
-                        'options' => $orderTemplate->options->map(fn($opt) => [
+                        'options' => $orderTemplate->options->map(fn ($opt) => [
                             'id' => $opt->id,
                             'label' => $opt->label,
                             'position' => $opt->position,
-                            'option_types' => $opt->optionTypes->map(fn($type) => [
+                            'option_types' => $opt->optionTypes->map(fn ($type) => [
                                 'id' => $type->id,
                                 'type_name' => $type->type_name,
                                 'is_available' => $type->is_available,
                                 'position' => $type->position,
                             ]),
                         ]),
-                        'pricings' => $orderTemplate->pricings->map(fn($p) => [
+                        'pricings' => $orderTemplate->pricings->map(fn ($p) => [
                             'combination_key' => $p->combination_key,
                             'price' => (float)$p->price,
                         ]),
-                        'discounts' => $orderTemplate->discounts->map(fn($d) => [
+                        'discounts' => $orderTemplate->discounts->map(fn ($d) => [
                             'min_quantity' => $d->min_quantity,
                             'price_reduction' => (float)$d->price_reduction,
                             'position' => $d->position,
@@ -74,12 +159,12 @@ class CustomerOrderController extends Controller
                         'min_order' => $orderTemplate->minOrder->min_quantity ?? 1,
                         'layout_fee' => $orderTemplate->layoutFee?->fee_amount ? (float)$orderTemplate->layoutFee->fee_amount : 0,
                     ],
-                    'rush_fees' => $rushFees->map(fn($rf) => [
+                    'rush_fees' => $rushFees->map(fn ($rf) => [
                         'id' => $rf->id,
                         'label' => $rf->label,
                         'min_price' => (float)$rf->min_price,
                         'max_price' => (float)$rf->max_price,
-                        'timeframes' => $rf->timeframes->map(fn($tf) => [
+                        'timeframes' => $rf->timeframes->map(fn ($tf) => [
                             'id' => $tf->id,
                             'label' => $tf->label,
                             'percentage' => (float)$tf->percentage,
@@ -99,7 +184,7 @@ class CustomerOrderController extends Controller
     /**
      * Store a new customer order.
      * POST /api/customer-orders
-     * 
+     *
      * Requires authentication.
      * Validates all inputs and calculates final pricing.
      */
@@ -122,14 +207,16 @@ class CustomerOrderController extends Controller
                 'quantity' => 'required|integer|min:1',
                 'rush_fee_id' => 'nullable|exists:rush_fees,id',
                 'special_instructions' => 'nullable|string|max:1000',
+                'general_drive_link' => 'nullable|string|max:2048',
             ]);
 
             $product = Product::findOrFail($validated['product_id']);
-            $orderTemplate = OrderTemplate::findOrFail($validated['order_template_id']);
+            $orderTemplate = OrderTemplate::with(['minOrder', 'options.optionTypes', 'pricings', 'discounts', 'layoutFee'])
+                ->findOrFail($validated['order_template_id']);
             $quantity = $validated['quantity'];
 
             // Validate that product has this order template
-            if ($product->orderTemplate->id !== $orderTemplate->id) {
+            if (! $product->orderTemplate || (int) $product->orderTemplate->id !== (int) $orderTemplate->id) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Invalid order template for this product',
@@ -145,10 +232,15 @@ class CustomerOrderController extends Controller
                 ], 422);
             }
 
-            // Calculate pricing
-            $pricing = $this->calculateOrderPricing(
+            $selectedOptions = $this->pricingService->normalizeSelectedOptions(
                 $orderTemplate,
-                $validated['selected_options'],
+                $validated['selected_options']
+            );
+
+            // Calculate pricing
+            $pricing = $this->pricingService->calculate(
+                $orderTemplate,
+                $selectedOptions,
                 $quantity,
                 $validated['rush_fee_id'] ?? null
             );
@@ -161,13 +253,25 @@ class CustomerOrderController extends Controller
             }
 
             // Store the order in a transaction
-            $order = DB::transaction(function () use ($validated, $pricing) {
-                return CustomerOrder::create([
+            [$group, $order] = DB::transaction(function () use ($validated, $pricing, $selectedOptions) {
+                $group = CustomerOrderGroup::create([
+                    'user_id' => Auth::id(),
+                    'status' => 'waiting',
+                    'general_drive_link' => $validated['general_drive_link'] ?? null,
+                    'subtotal_price' => $pricing['base_price'],
+                    'discount_total' => $pricing['discount_amount'],
+                    'rush_fee_total' => $pricing['rush_fee_amount'],
+                    'layout_fee_total' => $pricing['layout_fee_amount'],
+                    'total_price' => $pricing['total_price'],
+                ]);
+
+                $order = CustomerOrder::create([
+                    'customer_order_group_id' => $group->id,
                     'user_id' => Auth::id(),
                     'product_id' => $validated['product_id'],
                     'order_template_id' => $validated['order_template_id'],
                     'rush_fee_id' => $validated['rush_fee_id'] ?? null,
-                    'selected_options' => $validated['selected_options'],
+                    'selected_options' => $selectedOptions,
                     'quantity' => $validated['quantity'],
                     'special_instructions' => $validated['special_instructions'] ?? null,
                     'base_price' => $pricing['base_price'],
@@ -175,8 +279,10 @@ class CustomerOrderController extends Controller
                     'rush_fee_amount' => $pricing['rush_fee_amount'],
                     'layout_fee_amount' => $pricing['layout_fee_amount'],
                     'total_price' => $pricing['total_price'],
-                    'status' => 'pending',
+                    'status' => 'waiting',
                 ]);
+
+                return [$group, $order];
             });
 
             // Verify order was actually saved to database
@@ -194,6 +300,7 @@ class CustomerOrderController extends Controller
                 'success' => true,
                 'message' => 'Order placed successfully',
                 'data' => [
+                    'order_group_id' => $group->id,
                     'order_id' => $order->id,
                     'total_price' => (float)$order->total_price,
                     'status' => $order->status,
@@ -222,89 +329,54 @@ class CustomerOrderController extends Controller
     }
 
     /**
-     * Calculate final pricing for an order based on selected options, quantity, and rush fee.
-     * 
-     * Returns: { success, base_price, discount_amount, rush_fee_amount, layout_fee_amount, total_price }
+     * Normalize group and item data into a UI-ready shape.
      */
-    private function calculateOrderPricing(
-        OrderTemplate $template,
-        array $selectedOptions,
-        int $quantity,
-        ?int $rushFeeId = null
-    ): array
+    private function transformGroup(CustomerOrderGroup $group, bool $withFullOrderPayload = false): array
     {
-        try {
-            // 1. Find base price from selected option combination
-            $combinationKey = $this->buildCombinationKey($selectedOptions);
-            
-            $pricing = $template->pricings
-                ->where('combination_key', $combinationKey)
-                ->first();
-
-            if (!$pricing) {
-                return [
-                    'success' => false,
-                    'message' => 'Invalid option combination selected',
-                ];
-            }
-
-            $basePrice = (float)$pricing->price * $quantity;
-
-            // 2. Apply bulk discount if applicable
-            $discountAmount = 0;
-            $discount = $template->discounts
-                ->where('min_quantity', '<=', $quantity)
-                ->sortByDesc('min_quantity')
-                ->first();
-
-            if ($discount) {
-                $discountAmount = (float)$discount->price_reduction * $quantity;
-            }
-
-            // 3. Add layout fee if applicable
-            $layoutFeeAmount = 0;
-            if ($template->layoutFee) {
-                $layoutFeeAmount = (float)$template->layoutFee->fee_amount;
-            }
-
-            // 4. Add rush fee if selected
-            $rushFeeAmount = 0;
-            if ($rushFeeId) {
-                $rushFee = RushFee::with('timeframes')->find($rushFeeId);
-                if ($rushFee && $rushFee->timeframes->count() > 0) {
-                    // Use the first timeframe's percentage
-                    $timeframePercentage = (float)$rushFee->timeframes->first()->percentage;
-                    $orderValue = $basePrice - $discountAmount + $layoutFeeAmount;
-                    $rushFeeAmount = round($orderValue * ($timeframePercentage / 100), 2);
-                }
-            }
-
-            $totalPrice = $basePrice - $discountAmount + $layoutFeeAmount + $rushFeeAmount;
-
-            return [
-                'success' => true,
-                'base_price' => round($basePrice, 2),
-                'discount_amount' => round($discountAmount, 2),
-                'rush_fee_amount' => round($rushFeeAmount, 2),
-                'layout_fee_amount' => round($layoutFeeAmount, 2),
-                'total_price' => round($totalPrice, 2),
+        $orders = $group->orders->map(function (CustomerOrder $order) use ($withFullOrderPayload) {
+            $base = [
+                'id' => $order->id,
+                'product_id' => $order->product_id,
+                'product_name' => $order->product?->name,
+                'product_cover' => $order->product?->cover_image_path,
+                'quantity' => $order->quantity,
+                'total_price' => (float) $order->total_price,
+                'status' => $order->status,
+                'status_label' => $order->status_label,
+                'created_at' => $order->created_at?->toISOString(),
             ];
-        } catch (\Exception $e) {
-            return [
-                'success' => false,
-                'message' => 'Error calculating pricing: ' . $e->getMessage(),
-            ];
-        }
-    }
 
-    /**
-     * Build a combination key from selected option IDs.
-     * Format: "1,2,3" where numbers are selected option type IDs
-     */
-    private function buildCombinationKey(array $selectedOptions): string
-    {
-        $ids = array_values($selectedOptions);
-        sort($ids);
-        return implode(',', $ids);
+            if (! $withFullOrderPayload) {
+                return $base;
+            }
+
+            return array_merge($base, [
+                'selected_options' => $order->selected_options,
+                'formatted_options' => $order->formatted_options,
+                'special_instructions' => $order->special_instructions,
+                'base_price' => (float) $order->base_price,
+                'discount_amount' => (float) $order->discount_amount,
+                'rush_fee_amount' => (float) $order->rush_fee_amount,
+                'layout_fee_amount' => (float) $order->layout_fee_amount,
+            ]);
+        })->values();
+
+        return [
+            'id' => $group->id,
+            'status' => $group->status,
+            'status_label' => $group->status_label,
+            'general_drive_link' => $group->general_drive_link,
+            'totals' => [
+                'subtotal_price' => (float) $group->subtotal_price,
+                'discount_total' => (float) $group->discount_total,
+                'rush_fee_total' => (float) $group->rush_fee_total,
+                'layout_fee_total' => (float) $group->layout_fee_total,
+                'total_price' => (float) $group->total_price,
+            ],
+            'items_count' => $orders->count(),
+            'orders' => $orders,
+            'created_at' => $group->created_at?->toISOString(),
+            'updated_at' => $group->updated_at?->toISOString(),
+        ];
     }
 }

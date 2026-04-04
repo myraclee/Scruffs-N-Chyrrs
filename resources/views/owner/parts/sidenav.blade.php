@@ -45,14 +45,24 @@
     </div>
 
     {{-- USER SECTION --}}
+    @php($ownerUser = Auth::user())
     <div class="user_section" id="userSection">
         <div class="user_popup" id="userPopup">
-            <a href="{{ route('account') }}">
-                <div class="sidenav_account">
-                    <p>View Account</p>
-                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#312E2E"><path d="M234-276q51-39 114-61.5T480-360q69 0 132 22.5T726-276q35-41 54.5-93T800-480q0-133-93.5-226.5T480-800q-133 0-226.5 93.5T160-480q0 59 19.5 111t54.5 93Zm146.5-204.5Q340-521 340-580t40.5-99.5Q421-720 480-720t99.5 40.5Q620-639 620-580t-40.5 99.5Q539-440 480-440t-99.5-40.5ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm100-95.5q47-15.5 86-44.5-39-29-86-44.5T480-280q-53 0-100 15.5T294-220q39 29 86 44.5T480-160q53 0 100-15.5ZM523-537q17-17 17-43t-17-43q-17-17-43-17t-43 17q-17 17-17 43t17 43q17 17 43 17t43-17Zm-43-43Zm0 360Z"/></svg>
-                </div>
-            </a>
+            @if ($ownerUser)
+                <a href="{{ route('account') }}">
+                    <div class="sidenav_account">
+                        <p>View Account</p>
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#312E2E"><path d="M234-276q51-39 114-61.5T480-360q69 0 132 22.5T726-276q35-41 54.5-93T800-480q0-133-93.5-226.5T480-800q-133 0-226.5 93.5T160-480q0 59 19.5 111t54.5 93Zm146.5-204.5Q340-521 340-580t40.5-99.5Q421-720 480-720t99.5 40.5Q620-639 620-580t-40.5 99.5Q539-440 480-440t-99.5-40.5ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm100-95.5q47-15.5 86-44.5-39-29-86-44.5T480-280q-53 0-100 15.5T294-220q39 29 86 44.5T480-160q53 0 100-15.5ZM523-537q17-17 17-43t-17-43q-17-17-43-17t-43 17q-17 17-17 43t17 43q17 17 43 17t43-17Zm-43-43Zm0 360Z"/></svg>
+                    </div>
+                </a>
+            @else
+                <a href="{{ route('owner.login') }}">
+                    <div class="sidenav_account">
+                        <p>Owner Login</p>
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#312E2E"><path d="M492-240v-84l96 96 56-56-192-192-192 192 56 56 96-96v84h80Zm-252 80q-33 0-56.5-23.5T160-240v-480q0-33 23.5-56.5T240-800h480q33 0 56.5 23.5T800-720v480q0 33-23.5 56.5T720-160H240Zm0-80h480v-480H240v480Zm0-480v480-480Z"/></svg>
+                    </div>
+                </a>
+            @endif
 
             <a href="{{ route('home') }}">
             <div class="sidenav_main">
@@ -61,18 +71,20 @@
             </div>
             </a>
 
-            <button type="button" class="sidenav_logout" onclick="document.getElementById('ownerLogoutForm').submit()">
-                <span class="logout_link">Logout</span>
-                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#312E2E"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-55-58 102-102H360v-80h327L585-622l55-58 200 200-200 200Z"/></svg>
-            </button>
+            @if ($ownerUser)
+                <button type="button" class="sidenav_logout" onclick="document.getElementById('ownerLogoutForm').submit()">
+                    <span class="logout_link">Logout</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#312E2E"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-55-58 102-102H360v-80h327L585-622l55-58 200 200-200 200Z"/></svg>
+                </button>
+            @endif
         </div>
 
         <div class="bottom_menu" id="userToggle">
             <img src="{{ asset('images/brand_elements/sea_bunny.png') }}" class="avatar_img">
             <div class="user_expand">
                 <div class="user_info">
-                    <p class="user_name">{{ Auth::user()->first_name }} {{ Auth::user()->last_name }}</p>
-                    <p class="user_email">{{ Auth::user()->email }}</p>
+                    <p class="user_name">{{ $ownerUser?->first_name ? $ownerUser->first_name . ' ' . $ownerUser->last_name : 'Guest' }}</p>
+                    <p class="user_email">{{ $ownerUser?->email ?? 'Not signed in' }}</p>
                 </div>
                 <svg class="arrow_icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#5F6368"><path d="M480-345 240-585l56-56 184 184 184-184 56 56-240 240Z"/></svg>
             </div>

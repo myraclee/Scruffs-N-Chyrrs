@@ -6,6 +6,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property int $id
@@ -69,5 +71,29 @@ class User extends Authenticatable
     public function isOwner(): bool
     {
         return $this->user_type === 'owner';
+    }
+
+    /**
+     * Get the user's persistent cart.
+     */
+    public function cart(): HasOne
+    {
+        return $this->hasOne(CustomerCart::class);
+    }
+
+    /**
+     * Get grouped orders placed by the user.
+     */
+    public function customerOrderGroups(): HasMany
+    {
+        return $this->hasMany(CustomerOrderGroup::class);
+    }
+
+    /**
+     * Get item-level customer order records for the user.
+     */
+    public function customerOrders(): HasMany
+    {
+        return $this->hasMany(CustomerOrder::class);
     }
 }

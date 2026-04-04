@@ -1,197 +1,309 @@
-// ====== EXCEL-STYLE ORDER MODAL LOGIC ====== //
+import CustomerOrderAPI from "/resources/js/api/customerOrderApi.js";
+import Toast from "/resources/js/utils/toast.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-    // Only run this script if the modal actually exists on the page
     const orderModal = document.getElementById("orderModal");
     if (!orderModal) return;
 
-    // --- State Variables (The Cart) ---
-    let orderItems = [];
-    let grandTotal = 0;
+    const container = document.querySelector(".product_detail_container");
+    const productData = container?.getAttribute("data-product");
+    const productId = Number(container?.getAttribute("data-product-id"));
 
-    // --- DOM Elements ---
+    if (!productId || !productData) {
+        console.warn("Product detail context not found for order modal.");
+        return;
+    }
+
+    let product = null;
+    let templatePayload = null;
+    let cartPayload = null;
+
+    try {
+        product = JSON.parse(productData);
+    } catch (error) {
+        console.error("Failed to parse product payload for order modal", error);
+    }
+
     const closeBtn = document.getElementById("closeOrderModal");
     const addItemBtn = document.getElementById("addItemBtn");
     const submitBtn = document.getElementById("submitMasterOrderBtn");
-
-    // Inputs
-    const itemType = document.getElementById("itemType");
-    const itemLamination = document.getElementById("itemLamination");
-    const itemQuantity = document.getElementById("itemQuantity");
-    const itemFileName = document.getElementById("itemFileName");
+    const quantityInput = document.getElementById("itemQuantity");
+    const notesInput = document.getElementById("itemFileName");
     const rushFeeSelect = document.getElementById("rushFeeSelect");
-    const generalDriveLink = document.getElementById("generalDriveLink");
-
-    // Displays
+    const driveLinkInput = document.getElementById("generalDriveLink");
+    const optionsContainer = document.getElementById("dynamicOptionsContainer");
     const cartContainer = document.getElementById("cartItemsContainer");
-    const emptyMsg = document.getElementById("emptyCartMsg");
+    const emptyMessage = document.getElementById("emptyCartMsg");
     const grandTotalDisplay = document.getElementById("grandTotalDisplay");
+    const modalTitle = document.getElementById("dynamicModalTitle");
 
-    // --- Open/Close Modal (Attached to window so the HTML button can see it!) ---
-    // --- Open/Close Modal ---
-    window.closeOrderModal = function () {
-        orderModal.classList.remove("active");
-        orderModal.style.display = "none"; // Ensure it hides!
-        document.body.style.overflow = "auto";
-    };
-
-    window.openOrderModal = function () {
-        orderModal.classList.add("active");
-        orderModal.style.display = "flex"; // Uses flex to center it
-        document.body.style.overflow = "hidden";
-    };
-
-    closeBtn.addEventListener("click", () => {
-        orderModal.classList.remove("active");
-        document.body.style.overflow = "auto";
-    });
-
-    // --- Format Currency ---
-    const formatMoney = (amount) => {
-        return new Intl.NumberFormat("en-PH", {
+    const formatMoney = (amount) =>
+        new Intl.NumberFormat("en-PH", {
             style: "currency",
             currency: "PHP",
-        }).format(amount);
-    };
+        }).format(Number(amount || 0));
 
-    // --- Add Item to Cart ---
-    addItemBtn.addEventListener("click", () => {
-        const qty = parseInt(itemQuantity.value) || 1;
-        const category = document.getElementById("currentItemCategory").value;
-        const basePrice = parseFloat(
-            document.getElementById("currentItemBasePrice").value,
-        );
+    function setButtonLoading(button, isLoading, loadingText) {
+        if (!button) return;
 
-        // Create the item object
-        const newItem = {
-            id: Date.now(), // Unique ID for deleting
-            category: category,
-            type: itemType.value,
-            lamination: itemLamination.value,
-            quantity: qty,
-            price: basePrice,
-            design_name_link: itemFileName.value || "Not provided",
-            needs_layout: true, // Defaulting to true for stickers as requested by SA
-        };
-
-        orderItems.push(newItem);
-        updateCartDisplay();
-
-        // Reset form for next item
-        itemQuantity.value = 1;
-        itemFileName.value = "";
-    });
-
-    // --- Update Cart UI and Totals ---
-    function updateCartDisplay() {
-        cartContainer.innerHTML = ""; // Clear current display
-        let currentTotal = parseFloat(rushFeeSelect.value); // Start with rush fee
-
-        if (orderItems.length === 0) {
-            cartContainer.appendChild(emptyMsg);
-            grandTotalDisplay.innerText = formatMoney(currentTotal);
-            return;
+        if (!button.dataset.originalHtml) {
+            button.dataset.originalHtml = button.innerHTML;
         }
 
-        orderItems.forEach((item) => {
-            // 1. Calculate this specific item's total (Excel Logic)
-            let layoutFee = 0;
-            let discount = 0;
-
-            if (item.category === "Stickers") {
-                if (item.needs_layout) layoutFee = 35;
-                if (item.quantity >= 7) discount = 5 * item.quantity;
-            } else if (item.category === "Button Pins") {
-                if (item.quantity >= 10) discount = 3 * item.quantity;
-            }
-
-            const itemTotal = item.price * item.quantity + layoutFee - discount;
-            currentTotal += itemTotal;
-
-            // 2. Build the HTML for the row
-            const rowHtml = `
-                <div class="file_spec_row" id="item-${item.id}">
-                    <div class="file_spec_row_header">
-                        <span class="file_spec_number">${item.type} | ${item.lamination}</span>
-                        <button type="button" class="remove_file_spec_btn" onclick="removeItem(${item.id})">✕</button>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; font-family: 'Coolvetica', sans-serif; font-size: 13px;">
-                        <span>File: ${item.design_name_link}</span>
-                        <span>Qty: ${item.quantity}</span>
-                        <span style="font-weight: bold; color: #682c7a;">${formatMoney(itemTotal)}</span>
-                    </div>
-                    ${discount > 0 ? `<div style="color: #2e7d32; font-size: 11px; margin-top: 5px;">Includes ${formatMoney(discount)} Bulk Discount!</div>` : ""}
-                </div>
-            `;
-            cartContainer.insertAdjacentHTML("beforeend", rowHtml);
-        });
-
-        grandTotalDisplay.innerText = formatMoney(currentTotal);
+        if (isLoading) {
+            button.innerHTML = `<span class="spinner"></span> ${loadingText}`;
+            button.disabled = true;
+        } else {
+            button.innerHTML = button.dataset.originalHtml;
+            button.disabled = false;
+        }
     }
 
-    // --- Remove Item ---
-    window.removeItem = function (id) {
-        orderItems = orderItems.filter((item) => item.id !== id);
-        updateCartDisplay();
-    };
+    function readSelectedOptions() {
+        const selected = {};
+        const selects = optionsContainer.querySelectorAll("select[data-option-id]");
 
-    // --- Listen for Rush Fee Changes ---
-    rushFeeSelect.addEventListener("change", updateCartDisplay);
-
-    // --- Submit to Backend ---
-    submitBtn.addEventListener("click", async () => {
-        // Validation
-        if (!generalDriveLink.value) {
-            alert("Please provide your main Google Drive link!");
-            return;
-        }
-        if (orderItems.length === 0) {
-            alert("Please add at least one design to your order!");
-            return;
+        for (const select of selects) {
+            if (!select.value) {
+                return null;
+            }
+            selected[select.dataset.optionId] = Number(select.value);
         }
 
-        // Change button to loading state
-        const originalText = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<span class="spinner"></span> Processing...';
-        submitBtn.disabled = true;
+        return selected;
+    }
+
+    function renderTemplateControls() {
+        if (!templatePayload?.template || !optionsContainer) return;
+
+        modalTitle.textContent = `${product?.name ?? "Product"} Order`;
+
+        optionsContainer.innerHTML = "";
+
+        templatePayload.template.options.forEach((option) => {
+            const wrapper = document.createElement("div");
+            wrapper.className = "file_spec_field";
+
+            const label = document.createElement("label");
+            label.className = "file_spec_label";
+            label.textContent = `${option.label} *`;
+
+            const select = document.createElement("select");
+            select.className = "order_modal_select";
+            select.dataset.optionId = String(option.id);
+
+            const placeholder = document.createElement("option");
+            placeholder.value = "";
+            placeholder.textContent = "Choose an option";
+            select.appendChild(placeholder);
+
+            option.option_types
+                .filter((itemType) => itemType.is_available)
+                .sort((a, b) => a.position - b.position)
+                .forEach((itemType) => {
+                    const optionNode = document.createElement("option");
+                    optionNode.value = itemType.id;
+                    optionNode.textContent = itemType.type_name;
+                    select.appendChild(optionNode);
+                });
+
+            wrapper.appendChild(label);
+            wrapper.appendChild(select);
+            optionsContainer.appendChild(wrapper);
+        });
+
+        quantityInput.min = templatePayload.template.min_order || 1;
+        quantityInput.value = templatePayload.template.min_order || 1;
+
+        rushFeeSelect.innerHTML =
+            '<option value="">Standard Processing (No Extra Fee)</option>';
+
+        templatePayload.rush_fees.forEach((rushFee) => {
+            const firstTimeframe = rushFee.timeframes?.[0];
+            const label = firstTimeframe
+                ? `${rushFee.label} (${firstTimeframe.label} +${firstTimeframe.percentage}%)`
+                : rushFee.label;
+
+            const optionNode = document.createElement("option");
+            optionNode.value = rushFee.id;
+            optionNode.textContent = label;
+            rushFeeSelect.appendChild(optionNode);
+        });
+    }
+
+    function renderCart() {
+        if (!cartPayload || !cartContainer) return;
+
+        cartContainer.innerHTML = "";
+
+        if (!cartPayload.items || cartPayload.items.length === 0) {
+            cartContainer.appendChild(emptyMessage);
+            grandTotalDisplay.textContent = formatMoney(0);
+            return;
+        }
+
+        cartPayload.items.forEach((item) => {
+            const optionSummary =
+                item.formatted_options
+                    ?.map(
+                        (option) =>
+                            `${option.option_label}: ${option.selected_value}`,
+                    )
+                    .join(" | ") || "No option summary";
+
+            const row = document.createElement("div");
+            row.className = "file_spec_row";
+            row.innerHTML = `
+                <div class="file_spec_row_header">
+                    <span class="file_spec_number">${item.product_name} x${item.quantity}</span>
+                    <button type="button" class="remove_file_spec_btn" data-remove-id="${item.id}">✕</button>
+                </div>
+                <div style="display:flex;justify-content:space-between;gap:8px;font-family:'Coolvetica',sans-serif;font-size:13px;flex-wrap:wrap;">
+                    <span>${optionSummary}</span>
+                    <span style="font-weight:bold;color:#682c7a;">${formatMoney(item.total_price)}</span>
+                </div>
+                ${item.special_instructions ? `<div style="margin-top:8px;font-family:'Coolvetica',sans-serif;font-size:12px;color:#666;">Notes: ${item.special_instructions}</div>` : ""}
+            `;
+
+            cartContainer.appendChild(row);
+        });
+
+        grandTotalDisplay.textContent = formatMoney(cartPayload.totals.total_price);
+    }
+
+    async function refreshCart() {
+        const response = await CustomerOrderAPI.getCart();
+        if (!response.success) {
+            Toast.error(response.message || "Failed to load cart.");
+            return;
+        }
+
+        cartPayload = response.data;
+        renderCart();
+    }
+
+    async function ensureTemplateLoaded() {
+        if (templatePayload) return;
 
         try {
-            // Send data to the Controller we built!
-            const response = await fetch("/place-custom-order", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": document
-                        .querySelector('meta[name="csrf-token"]')
-                        .getAttribute("content"),
-                },
-                body: JSON.stringify({
-                    general_gdrive_link: generalDriveLink.value,
-                    rush_fee: rushFeeSelect.value,
-                    items: orderItems,
-                }),
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                // Success! Close modal and empty cart
-                alert(data.message);
-                orderItems = [];
-                generalDriveLink.value = "";
-                rushFeeSelect.value = "0";
-                updateCartDisplay();
-                orderModal.classList.remove("active");
-            } else {
-                alert("Something went wrong. Please try again.");
-            }
+            templatePayload = await CustomerOrderAPI.getOrderTemplate(productId);
+            renderTemplateControls();
         } catch (error) {
-            console.error("Error:", error);
-            alert("Connection error. Are you logged in?");
-        } finally {
-            // Reset button
-            submitBtn.innerHTML = originalText;
-            submitBtn.disabled = false;
+            Toast.error("Unable to load product order configuration.");
         }
+    }
+
+    window.closeOrderModal = function () {
+        orderModal.classList.remove("active");
+        orderModal.style.display = "none";
+        document.body.style.overflow = "auto";
+    };
+
+    window.openOrderModal = async function () {
+        orderModal.classList.add("active");
+        orderModal.style.display = "flex";
+        document.body.style.overflow = "hidden";
+
+        await ensureTemplateLoaded();
+        await refreshCart();
+    };
+
+    closeBtn.addEventListener("click", window.closeOrderModal);
+
+    cartContainer.addEventListener("click", async (event) => {
+        const removeBtn = event.target.closest("button[data-remove-id]");
+        if (!removeBtn) return;
+
+        const removeId = Number(removeBtn.dataset.removeId);
+        if (!removeId) return;
+
+        const result = await CustomerOrderAPI.removeCartItem(removeId);
+        if (!result.success) {
+            Toast.error(result.message || "Unable to remove cart item.");
+            return;
+        }
+
+        Toast.success("Item removed from cart.");
+        cartPayload = result.data;
+        renderCart();
+    });
+
+    addItemBtn.addEventListener("click", async () => {
+        if (!templatePayload) {
+            Toast.error("Order options are still loading. Please wait.");
+            return;
+        }
+
+        const selectedOptions = readSelectedOptions();
+        if (!selectedOptions) {
+            Toast.warning("Please choose a value for each option.");
+            return;
+        }
+
+        const quantity = Number(quantityInput.value || 0);
+        if (quantity < Number(quantityInput.min || 1)) {
+            Toast.warning(
+                `Minimum quantity is ${quantityInput.min || 1} for this product.`,
+            );
+            return;
+        }
+
+        setButtonLoading(addItemBtn, true, "Adding...");
+
+        const result = await CustomerOrderAPI.addCartItem({
+            product_id: productId,
+            order_template_id: templatePayload.template.id,
+            selected_options: selectedOptions,
+            quantity,
+            rush_fee_id: rushFeeSelect.value ? Number(rushFeeSelect.value) : null,
+            special_instructions: notesInput.value.trim() || null,
+        });
+
+        setButtonLoading(addItemBtn, false);
+
+        if (!result.success) {
+            const firstError = result.errors
+                ? Object.values(result.errors).flat()[0]
+                : null;
+            Toast.error(firstError || result.message || "Failed to add item.");
+            return;
+        }
+
+        notesInput.value = "";
+        quantityInput.value = quantityInput.min || 1;
+        cartPayload = result.data;
+        renderCart();
+        Toast.success("Item added to persistent cart.");
+    });
+
+    submitBtn.addEventListener("click", async () => {
+        const driveLink = driveLinkInput.value.trim();
+        if (!driveLink) {
+            Toast.warning("Please provide your main drive link before checkout.");
+            return;
+        }
+
+        if (!cartPayload?.items || cartPayload.items.length === 0) {
+            Toast.warning("Your cart is empty. Add at least one item.");
+            return;
+        }
+
+        setButtonLoading(submitBtn, true, "Processing...");
+
+        const result = await CustomerOrderAPI.checkoutCart(driveLink);
+
+        setButtonLoading(submitBtn, false);
+
+        if (!result.success) {
+            const firstError = result.errors
+                ? Object.values(result.errors).flat()[0]
+                : null;
+            Toast.error(firstError || result.message || "Checkout failed.");
+            return;
+        }
+
+        Toast.success("Checkout complete! Redirecting to your orders...");
+        window.closeOrderModal();
+        window.location.href = "/account/orders";
     });
 });

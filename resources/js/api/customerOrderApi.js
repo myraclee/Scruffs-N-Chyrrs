@@ -4,7 +4,8 @@
  */
 class CustomerOrderAPI {
   constructor() {
-    this.baseUrl = '/api/customer-orders';
+    this.orderBaseUrl = '/api/customer-orders';
+    this.cartBaseUrl = '/api/customer-cart';
   }
 
   /**
@@ -19,6 +20,35 @@ class CustomerOrderAPI {
     return token || '';
   }
 
+  async request(url, options = {}) {
+    const response = await fetch(url, {
+      headers: {
+        Accept: 'application/json',
+        'X-CSRF-TOKEN': this.getCsrfToken(),
+        'X-Requested-With': 'XMLHttpRequest',
+        ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+        ...(options.headers || {}),
+      },
+      ...options,
+    });
+
+    const contentType = response.headers.get('content-type') || '';
+    const result = contentType.includes('application/json')
+      ? await response.json()
+      : { message: await response.text() };
+
+    if (!response.ok) {
+      return {
+        success: false,
+        statusCode: response.status,
+        message: result.message || 'Request failed.',
+        errors: result.errors || {},
+      };
+    }
+
+    return result;
+  }
+
   /**
    * Fetch order template for a product
    * Gets all configuration: options, pricings, discounts, rush fees
@@ -27,7 +57,7 @@ class CustomerOrderAPI {
    */
   async getOrderTemplate(productId) {
     try {
-      const response = await fetch(`${this.baseUrl}/product/${productId}/template`);
+      const response = await fetch(`${this.orderBaseUrl}/product/${productId}/template`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -54,43 +84,114 @@ class CustomerOrderAPI {
    */
   async submitOrder(orderData) {
     try {
-      const csrfToken = this.getCsrfToken();
-
-      const response = await fetch(this.baseUrl, {
+      const response = await this.request(this.orderBaseUrl, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': csrfToken,
-          'X-Requested-With': 'XMLHttpRequest',
-        },
         body: JSON.stringify(orderData),
       });
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        // Return error response for handling by caller
-        return {
-          success: false,
-          statusCode: response.status,
-          message: result.message || 'Failed to submit order',
-          errors: result.errors || {},
-        };
-      }
-
-      if (result.success) {
-        return result;
-      } else {
-        return {
-          success: false,
-          message: result.message || 'Failed to submit order',
-        };
-      }
+      return response;
     } catch (error) {
       console.error('Error submitting order:', error);
       return {
         success: false,
         message: 'Network error occurred. Please try again.',
+      };
+    }
+  }
+
+  async getMyOrders(filters = {}) {
+    try {
+      const query = new URLSearchParams(filters).toString();
+      const url = query ? `${this.orderBaseUrl}?${query}` : this.orderBaseUrl;
+      return await this.request(url, { method: 'GET' });
+    } catch (error) {
+      console.error('Error fetching customer orders:', error);
+      return {
+        success: false,
+        message: 'Unable to load your orders right now.',
+      };
+    }
+  }
+
+  async getOrderGroup(orderGroupId) {
+    try {
+      return await this.request(`${this.orderBaseUrl}/${orderGroupId}`, { method: 'GET' });
+    } catch (error) {
+      console.error('Error fetching order group:', error);
+      return {
+        success: false,
+        message: 'Unable to load order details.',
+      };
+    }
+  }
+
+  async getCart() {
+    try {
+      return await this.request(this.cartBaseUrl, { method: 'GET' });
+    } catch (error) {
+      console.error('Error fetching cart:', error);
+      return {
+        success: false,
+        message: 'Unable to load your cart right now.',
+      };
+    }
+  }
+
+  async addCartItem(itemData) {
+    try {
+      return await this.request(`${this.cartBaseUrl}/items`, {
+        method: 'POST',
+        body: JSON.stringify(itemData),
+      });
+    } catch (error) {
+      console.error('Error adding cart item:', error);
+      return {
+        success: false,
+        message: 'Unable to add item to cart.',
+      };
+    }
+  }
+
+  async updateCartItem(itemId, itemData) {
+    try {
+      return await this.request(`${this.cartBaseUrl}/items/${itemId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(itemData),
+      });
+    } catch (error) {
+      console.error('Error updating cart item:', error);
+      return {
+        success: false,
+        message: 'Unable to update cart item.',
+      };
+    }
+  }
+
+  async removeCartItem(itemId) {
+    try {
+      return await this.request(`${this.cartBaseUrl}/items/${itemId}`, {
+        method: 'DELETE',
+      });
+    } catch (error) {
+      console.error('Error removing cart item:', error);
+      return {
+        success: false,
+        message: 'Unable to remove cart item.',
+      };
+    }
+  }
+
+  async checkoutCart(generalDriveLink) {
+    try {
+      return await this.request(`${this.cartBaseUrl}/checkout`, {
+        method: 'POST',
+        body: JSON.stringify({ general_drive_link: generalDriveLink }),
+      });
+    } catch (error) {
+      console.error('Error during checkout:', error);
+      return {
+        success: false,
+        message: 'Checkout failed. Please try again.',
       };
     }
   }

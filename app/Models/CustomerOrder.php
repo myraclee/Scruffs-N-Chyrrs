@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 
 class CustomerOrder extends Model
 {
@@ -18,6 +17,7 @@ class CustomerOrder extends Model
      * @var list<string>
      */
     protected $fillable = [
+        'customer_order_group_id',
         'user_id',
         'product_id',
         'order_template_id',
@@ -59,6 +59,14 @@ class CustomerOrder extends Model
     }
 
     /**
+     * Get the grouped checkout record this item belongs to.
+     */
+    public function orderGroup(): BelongsTo
+    {
+        return $this->belongsTo(CustomerOrderGroup::class, 'customer_order_group_id');
+    }
+
+    /**
      * Get the product being ordered.
      */
     public function product(): BelongsTo
@@ -88,10 +96,10 @@ class CustomerOrder extends Model
     public function getStatusLabelAttribute(): string
     {
         return match ($this->status) {
-            'pending' => 'Pending',
-            'confirmed' => 'Confirmed',
-            'processing' => 'Processing',
-            'shipped' => 'Shipped',
+            'waiting' => 'Waiting for Approval',
+            'approved' => 'Order Approved',
+            'preparing' => 'Preparing Order',
+            'ready' => 'Ready for Shipping',
             'completed' => 'Completed',
             'cancelled' => 'Cancelled',
             default => ucfirst($this->status),
@@ -100,7 +108,7 @@ class CustomerOrder extends Model
 
     /**
      * Get formatted selected options for display.
-     * Returns array of option label => selected value(s)
+     * Returns a list of objects for API/UI consistency.
      */
     public function getFormattedOptionsAttribute(): array
     {
@@ -111,15 +119,23 @@ class CustomerOrder extends Model
         $formatted = [];
 
         foreach ($this->orderTemplate->options as $option) {
-            if (isset($this->selected_options[$option->id])) {
-                $selectedValue = $this->selected_options[$option->id];
-                
+            $optionKey = (string) $option->id;
+
+            if (isset($this->selected_options[$optionKey]) || isset($this->selected_options[$option->id])) {
+                $selectedValue = $this->selected_options[$optionKey] ?? $this->selected_options[$option->id];
+
                 // Find the option type label
                 if (is_numeric($selectedValue)) {
-                    $optionType = $option->optionTypes->find(fn($ot) => $ot->id == $selectedValue);
-                    $formatted[$option->label] = $optionType?->type_name ?? $selectedValue;
+                    $optionType = $option->optionTypes->first(fn ($ot) => (int) $ot->id === (int) $selectedValue);
+                    $formatted[] = [
+                        'option_label' => $option->label,
+                        'selected_value' => $optionType?->type_name ?? (string) $selectedValue,
+                    ];
                 } else {
-                    $formatted[$option->label] = $selectedValue;
+                    $formatted[] = [
+                        'option_label' => $option->label,
+                        'selected_value' => (string) $selectedValue,
+                    ];
                 }
             }
         }
