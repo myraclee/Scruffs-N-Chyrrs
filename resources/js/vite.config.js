@@ -1,29 +1,12 @@
-import { defineConfig } from "vite";
-import laravel from "laravel-vite-plugin";
+/**
+ * DEPRECATED CONFIG FILE
+ *
+ * Canonical Vite configuration for this project lives at the repository root:
+ *   ../../vite.config.js
+ *
+ * This file intentionally re-exports the root config to avoid accidental drift
+ * when tooling or scripts are pointed at resources/js/vite.config.js.
+ */
+import rootViteConfig from "../../vite.config.js";
 
-export default defineConfig({
-    plugins: [
-        laravel({
-            input: [
-                "resources/css/app.css",
-                "resources/css/universal.css",
-                "resources/css/page_parts/navbar.css",
-                "resources/css/page_parts/footer.css",
-
-                "resources/css/customer/password_page/reset_password.css",
-                "resources/css/customer/password_page/enter_code.css",
-                "resources/css/customer/password_page/new_password.css",
-
-                "resources/css/owner/inventory.css",
-                "resources/js/owner/inventory.js",
-
-                "resources/css/owner/pages/content_management/order_template.css",
-                "resources/js/owner/content_page/order_template.js",
-
-                "resources/js/customer/pages/login.js",
-                "resources/js/customer/new_password.js",
-            ],
-            refresh: true,
-        }),
-    ],
-});
+export default rootViteConfig;

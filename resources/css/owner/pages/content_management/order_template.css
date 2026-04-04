@@ -112,10 +112,7 @@ select:focus {
     font-size: 14px;
     color: #682c7a;
     cursor: pointer;
-    transition:
-        background-color 0.2s ease,
-        color 0.2s ease,
-        opacity 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
 }
 
 .modal_tab:hover:not(.tab_locked) {
@@ -178,9 +175,7 @@ select:focus {
     color: #333;
     appearance: none;
     cursor: pointer;
-    transition:
-        border-color 0.2s ease,
-        background-color 0.2s ease;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
 .product_name_select:hover {
@@ -359,9 +354,7 @@ select:focus {
     fill: #682c7a;
     border-radius: 50%;
     cursor: pointer;
-    transition:
-        fill 0.2s ease,
-        background-color 0.2s ease;
+    transition: fill 0.2s ease, background-color 0.2s ease;
 }
 
 .add_product_option_specification:hover {
@@ -373,9 +366,7 @@ select:focus {
     fill: #c83333;
     border-radius: 50%;
     cursor: pointer;
-    transition:
-        fill 0.2s ease,
-        background-color 0.2s ease;
+    transition: fill 0.2s ease, background-color 0.2s ease;
 }
 
 .delete_product_option_specification:hover {
@@ -498,9 +489,7 @@ select:focus {
     font-size: 13px;
     flex-shrink: 0;
     align-self: flex-start;
-    transition:
-        border-color 0.2s ease,
-        background-color 0.2s ease;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
 .combination_price_input.input_error {
@@ -557,7 +546,7 @@ select:focus {
 
 /* ==================== DISCOUNT HEADER ROW ==================== */
 
-*/ .discount_header_row {
+.discount_header_row {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -653,9 +642,7 @@ select:focus {
     border-radius: 50%;
     cursor: pointer;
     flex-shrink: 0;
-    transition:
-        fill 0.2s ease,
-        background-color 0.2s ease;
+    transition: fill 0.2s ease, background-color 0.2s ease;
 }
 
 .add_discount_row_svg:hover {
@@ -668,9 +655,7 @@ select:focus {
     border-radius: 50%;
     cursor: pointer;
     flex-shrink: 0;
-    transition:
-        fill 0.2s ease,
-        background-color 0.2s ease;
+    transition: fill 0.2s ease, background-color 0.2s ease;
 }
 
 .delete_discount_row_svg:hover {
@@ -899,9 +884,7 @@ select:focus {
     color: #fff7ec;
     cursor: pointer;
     margin-right: auto;
-    transition:
-        transform 0.2s ease,
-        background-color 0.2s ease;
+    transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
 .delete_product_modal_btn:hover {
@@ -970,7 +953,7 @@ select:focus {
 }
 
 .select_wrapper::after {
-    content: "";
+    content: '';
     position: absolute;
     right: 14px;
     top: 50%;
@@ -1044,9 +1027,7 @@ select:focus {
     padding-right: 30px;
     cursor: pointer;
     appearance: none;
-    transition:
-        border-color 0.2s ease,
-        background-color 0.2s ease;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
 .product_card_select:hover {
@@ -1103,9 +1084,7 @@ select:focus {
     color: #682c7a;
     cursor: pointer;
     align-self: flex-end;
-    transition:
-        background-color 0.2s ease,
-        color 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .product_card_edit_btn:hover {
@@ -1166,9 +1145,7 @@ select:focus {
     font-size: 15px;
     color: #fff7ec;
     cursor: pointer;
-    transition:
-        background-color 0.2s ease,
-        transform 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
 .template_delete_btn_large:hover {
@@ -1216,9 +1193,7 @@ select:focus {
     width: 280px;
     box-shadow: 0 4px 14px rgba(104, 44, 122, 0.1);
     flex-shrink: 0;
-    transition:
-        box-shadow 0.2s ease,
-        transform 0.2s ease;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .rush_card_table thead th:first-child {
@@ -1318,9 +1293,7 @@ select:focus {
     cursor: pointer;
     align-self: flex-end;
     margin: 12px 14px;
-    transition:
-        background-color 0.2s ease,
-        color 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .rush_card_edit_btn:hover {
@@ -1502,7 +1475,7 @@ select:focus {
 }
 
 .rush_tf_col_headers::after {
-    content: "";
+    content: '';
     width: 20px;
     flex-shrink: 0;
 }
@@ -1589,9 +1562,7 @@ select:focus {
     border-radius: 50%;
     cursor: pointer;
     fill: #c83333;
-    transition:
-        fill 0.2s ease,
-        background-color 0.2s ease;
+    transition: fill 0.2s ease, background-color 0.2s ease;
     margin-top: 6px;
 }
 
@@ -1676,9 +1647,7 @@ select:focus {
     color: #fff7ec;
     cursor: pointer;
     margin-right: auto;
-    transition:
-        background-color 0.2s ease,
-        transform 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
 .rush_delete_modal_btn:hover {

@@ -1,0 +1,52 @@
+/* Manage Categories Modal */
+
+.manage_categories_modal {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 1200;
+}
+
+.manage_categories_modal.active {
+    display: flex;
+}
+
+.manage_categories_box {
+    width: min(680px, calc(100vw - 2rem));
+    max-height: calc(100vh - 3rem);
+    overflow: auto;
+    background: #fffaf3;
+    border: 2px solid #f0c88a;
+    border-radius: 16px;
+    padding: 1rem;
+}
+
+.manage_categories_header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.manage_categories_actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.manage_categories_table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.75rem;
+}
+
+.manage_categories_table th,
+.manage_categories_table td {
+    text-align: left;
+    padding: 0.55rem 0.4rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
