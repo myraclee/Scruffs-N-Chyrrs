@@ -5,7 +5,7 @@
 @vite(['resources/css/owner/pages/content_management/home_page_content.css'])
 @vite(['resources/css/owner/pages/content_management/products_page_content.css'])
 @vite(['resources/css/owner/pages/content_management/order_template.css'])
-@vite(['resources/css/owner/pages/content_management/manage_categories.css'])
+@vite(['resources/css/owner/pages/content_management/faq_management.css'])
 @endsection
 
 @section('content')
@@ -371,12 +371,12 @@
             <form id="categoryForm">
                 <div class="form_group">
                     <label for="categoryNameInput">Category Label</label>
-                    <input type="text" id="categoryNameInput" placeholder="Enter category label" maxlength="255" required />
+                    <input type="text" id="categoryNameInput" placeholder="Enter category label" maxlength="255" required disabled />
                     <span class="field_error hidden"></span>
                 </div>
                 <div class="form_group">
                     <label for="sortOrderInput">Sort Order (1-99)</label>
-                    <input type="text" id="sortOrderInput" placeholder="Enter sort order" inputmode="numeric" required />
+                    <input type="text" id="sortOrderInput" placeholder="Enter sort order" inputmode="numeric" required disabled />
                     <span class="field_error hidden"></span>
                 </div>
 
@@ -404,6 +404,7 @@
                 </div>
 
                 <div class="form_actions">
+                    <button type="button" class="create_mode_btn" id="enterCreateModeBtn">Create New</button>
                     <button type="button" class="cancel_btn" id="closeCategoryFormBtn">Cancel</button>
                     <button type="submit" class="submit_btn">Save</button>
                 </div>
@@ -472,5 +473,4 @@
 @vite('resources/js/owner/content_page/rush_fees.js')
 @vite('resources/js/owner/content_page/manage_categories_modal.js')
 @vite('resources/js/owner/content_page/faq_management.js')
-@vite(['resources/css/owner/pages/content_management/faq_management.css'])
 @vite('resources/js/owner/animations.js')

@@ -7,6 +7,7 @@ use App\Models\FAQCategory;
 use App\Services\CategorySortOrderManager;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class FAQCategoryController extends Controller
 {
@@ -42,11 +43,12 @@ class FAQCategoryController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:faq_categories,name',
-            'sort_order' => 'required|integer|min:1|max:99',
+            'sort_order' => 'required|integer|min:1|max:99|unique:faq_categories,sort_order',
         ], [
             'name.unique' => 'A category with this name already exists.',
             'sort_order.min' => 'Sort order must be at least 1.',
             'sort_order.max' => 'Sort order cannot exceed 99.',
+            'sort_order.unique' => 'This sort order is already assigned to another category.',
         ]);
 
         $category = FAQCategory::create($validated);
@@ -69,11 +71,18 @@ class FAQCategoryController extends Controller
     {
         $validated = $request->validate([
             'name' => 'nullable|string|max:255|unique:faq_categories,name,' . $faqCategory->id,
-            'sort_order' => 'nullable|integer|min:1|max:99',
+            'sort_order' => [
+                'nullable',
+                'integer',
+                'min:1',
+                'max:99',
+                Rule::unique('faq_categories', 'sort_order')->ignore($faqCategory->id),
+            ],
         ], [
             'name.unique' => 'A category with this name already exists.',
             'sort_order.min' => 'Sort order must be at least 1.',
             'sort_order.max' => 'Sort order cannot exceed 99.',
+            'sort_order.unique' => 'This sort order is already assigned to another category.',
         ]);
 
         $faqCategory->update($validated);

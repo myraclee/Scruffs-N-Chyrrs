@@ -43,7 +43,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 window.addEventListener("categoriesChanged", async () => {
     await populateCategoryDropdown();
     loadFaqs();
-    Toast.info("Categories updated");
 });
 
 addFaqBtn.addEventListener("click", () => {

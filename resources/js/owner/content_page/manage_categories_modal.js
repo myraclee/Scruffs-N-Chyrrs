@@ -5,6 +5,7 @@
  */
 
 import ManageCategoriesAPI from "../../api/manage_categories_api.js";
+import Toast from "../../utils/toast.js";
 
 // ================= STATE =================
 let categories = [];
@@ -12,6 +13,7 @@ let editingCategoryId = null;
 let pendingDeleteId = null;
 let isLoading = false;
 let isSaving = false; // Prevent double submissions
+let formMode = "idle"; // idle | create | edit
 
 // ================= DOM ELEMENTS =================
 let modalOverlay,
@@ -19,7 +21,8 @@ let modalOverlay,
     categoryForm,
     categoryNameInput,
     sortOrderInput,
-    submitBtn;
+    submitBtn,
+    createModeBtn;
 let categoryTableBody, addCategoryBtn, deleteConfirmOverlay;
 let deleteConfirmMessage, deleteConfirmYesBtn, deleteConfirmNoBtn;
 
@@ -46,7 +49,12 @@ function initializeElements() {
     );
     deleteConfirmYesBtn = document.getElementById("deleteCategoryConfirmYes");
     deleteConfirmNoBtn = document.getElementById("deleteCategoryConfirmNo");
+    createModeBtn = document.getElementById("enterCreateModeBtn");
     submitBtn = categoryForm.querySelector(".submit_btn");
+
+    // Inputs are intentionally read-only until edit mode is activated.
+    setInputsEnabled(false);
+    setSaveButtonState(true, "Save");
 }
 
 function setupEventListeners() {
@@ -57,6 +65,7 @@ function setupEventListeners() {
         "closeCategoryFormBtn",
     );
     closeCategoryFormBtn?.addEventListener("click", closeCategoryModal);
+    createModeBtn?.addEventListener("click", enterCreateMode);
 
     categoryForm?.addEventListener("submit", saveCategory);
 
@@ -87,7 +96,7 @@ async function loadCategories() {
         renderCategoryList();
     } catch (error) {
         console.error("Failed to load categories:", error);
-        showError("Failed to load categories");
+        Toast.error("Failed to load categories");
     } finally {
         isLoading = false;
     }
@@ -103,7 +112,7 @@ function renderCategoryList() {
         categoryTableBody.innerHTML = `
       <tr>
         <td colspan="3" style="text-align: center; padding: 20px; color: #999;">
-          No categories yet. Click "Save Category" to create one.
+                    No categories yet. Click "Create New" then "Save" to add one.
         </td>
       </tr>
     `;
@@ -118,18 +127,24 @@ function renderCategoryList() {
       <td class="category_name">${escapeHtml(category.name)}</td>
       <td class="category_sort_order">${category.sort_order}</td>
       <td class="category_actions">
-        <button class="action_btn edit_btn" data-id="${category.id}" title="Edit">Edit</button>
-        <button class="action_btn delete_btn" data-id="${category.id}" title="Delete">Delete</button>
+                <button type="button" class="action_btn edit_btn" data-id="${category.id}" title="Edit">Edit</button>
+                <button type="button" class="action_btn delete_btn" data-id="${category.id}" title="Delete">Delete</button>
       </td>
     `;
 
         const editBtn = row.querySelector(".edit_btn");
         const deleteBtn = row.querySelector(".delete_btn");
 
-        editBtn.addEventListener("click", () => openCategoryModal(category.id));
-        deleteBtn.addEventListener("click", () =>
-            openDeleteConfirm(category.id),
-        );
+        editBtn.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            openCategoryModal(category.id);
+        });
+        deleteBtn.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            openDeleteConfirm(category.id);
+        });
 
         categoryTableBody.appendChild(row);
     });
@@ -140,29 +155,55 @@ function openCategoryModal(categoryId = null) {
     editingCategoryId = categoryId;
     isSaving = false; // Reset saving state
 
+    clearFieldErrors();
+
     if (categoryId === null) {
-        // Create new category
+        // Default modal state: view-only until user selects Edit.
+        formMode = "idle";
         categoryForm.reset();
-        categoryNameInput.focus();
+        setInputsEnabled(false);
+        setSaveButtonState(true, "Save");
     } else {
         // Edit existing category
         const category = categories.find((c) => c.id === categoryId);
         if (category) {
+            formMode = "edit";
             categoryNameInput.value = category.name;
             sortOrderInput.value = category.sort_order;
+            setInputsEnabled(true);
+            setSaveButtonState(false, "Save");
+            categoryNameInput.focus();
         }
     }
 
-    setSaveButtonState(false);
     showModal();
+}
+
+function enterCreateMode() {
+    formMode = "create";
+    editingCategoryId = null;
+    isSaving = false;
+
+    clearFieldErrors();
+    categoryForm.reset();
+    setInputsEnabled(true);
+    setSaveButtonState(false, "Create");
+    categoryNameInput.focus();
 }
 
 function closeCategoryModal() {
     hideModal();
+    formMode = "idle";
     editingCategoryId = null;
     isSaving = false;
     categoryForm.reset();
-    setSaveButtonState(false);
+    setInputsEnabled(false);
+    setSaveButtonState(true, "Save");
+}
+
+function setInputsEnabled(enabled) {
+    categoryNameInput.disabled = !enabled;
+    sortOrderInput.disabled = !enabled;
 }
 
 function showModal() {
@@ -176,14 +217,10 @@ function hideModal() {
 }
 
 // ================= SET SAVE BUTTON STATE =================
-function setSaveButtonState(disabled) {
+function setSaveButtonState(disabled, label = "Save") {
     if (submitBtn) {
         submitBtn.disabled = disabled;
-        if (disabled) {
-            submitBtn.textContent = "Save";
-        } else {
-            submitBtn.textContent = "Save";
-        }
+        submitBtn.textContent = label;
     }
 }
 
@@ -191,8 +228,24 @@ function setSaveButtonState(disabled) {
 async function saveCategory(e) {
     e.preventDefault();
 
+    // Poka-yoke: ignore submit events from non-save controls.
+    const submitter = e.submitter;
+    if (submitter && !submitter.classList.contains("submit_btn")) {
+        return;
+    }
+
     // Prevent double submission
     if (isSaving) {
+        return;
+    }
+
+    if (formMode === "idle") {
+        Toast.error("Choose Create New or Edit an existing category first.");
+        return;
+    }
+
+    if (formMode === "edit" && editingCategoryId === null) {
+        Toast.error("Select a category to edit first.");
         return;
     }
 
@@ -210,24 +263,46 @@ async function saveCategory(e) {
         return;
     }
 
+    const hasDuplicateSortOrder = categories.some(
+        (category) => {
+            if (Number(category.sort_order) !== sortOrder) {
+                return false;
+            }
+
+            if (formMode !== "edit") {
+                return true;
+            }
+
+            return Number(category.id) !== Number(editingCategoryId);
+        },
+    );
+
+    if (hasDuplicateSortOrder) {
+        showFieldError(
+            sortOrderInput,
+            "This sort order is already assigned to another category.",
+        );
+        return;
+    }
+
     try {
         isSaving = true;
-        setSaveButtonState(true);
+        setSaveButtonState(true, formMode === "create" ? "Create" : "Save");
         clearFieldErrors();
 
         const categoryData = { name, sort_order: sortOrder };
 
-        if (editingCategoryId === null) {
+        if (formMode === "create") {
             // Create new
             await ManageCategoriesAPI.createCategory(categoryData);
-            showSuccess("Category created successfully");
+            Toast.success("Category created successfully");
         } else {
             // Update existing
             await ManageCategoriesAPI.updateCategory(
                 editingCategoryId,
                 categoryData,
             );
-            showSuccess("Category updated successfully");
+            Toast.success("Category updated successfully");
         }
 
         closeCategoryModal();
@@ -238,7 +313,7 @@ async function saveCategory(e) {
     } catch (error) {
         handleSaveError(error);
         isSaving = false;
-        setSaveButtonState(false);
+        setSaveButtonState(false, formMode === "create" ? "Create" : "Save");
     }
 }
 
@@ -267,7 +342,7 @@ async function confirmDelete() {
         await ManageCategoriesAPI.deleteCategory(pendingDeleteId);
 
         cancelDelete();
-        showSuccess("Category deleted successfully");
+        Toast.success("Category deleted successfully");
         await loadCategories();
 
         // Notify parent that categories changed
@@ -276,11 +351,11 @@ async function confirmDelete() {
         cancelDelete();
 
         if (error.status === 409) {
-            showError(
+            Toast.error(
                 `Cannot delete: ${error.message} (${error.faq_count} FAQ(s) in this category)`,
             );
         } else {
-            showError("Failed to delete category");
+            Toast.error("Failed to delete category");
         }
     } finally {
         isLoading = false;
@@ -288,22 +363,6 @@ async function confirmDelete() {
 }
 
 // ================= NOTIFICATION SYSTEM =================
-function showSuccess(message) {
-    if (window.Toast && typeof window.Toast.success === "function") {
-        window.Toast.success(message);
-    } else {
-        alert(message);
-    }
-}
-
-function showError(message) {
-    if (window.Toast && typeof window.Toast.error === "function") {
-        window.Toast.error(message);
-    } else {
-        alert(`Error: ${message}`);
-    }
-}
-
 function showFieldError(field, message) {
     const errorElement = field.nextElementSibling;
     if (errorElement && errorElement.classList.contains("field_error")) {
@@ -334,9 +393,9 @@ function handleSaveError(error) {
             }
         });
     } else if (error.message) {
-        showError(error.message);
+        Toast.error(error.message);
     } else {
-        showError("Failed to save category");
+        Toast.error("Failed to save category");
     }
 }
 

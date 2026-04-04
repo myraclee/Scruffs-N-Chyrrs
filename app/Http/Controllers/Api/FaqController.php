@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\FAQ;
+use App\Models\FAQCategory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -16,15 +17,7 @@ class FaqController extends Controller
      */
     public function index(): JsonResponse
     {
-        $faqs = FAQ::active()
-            ->with('categoryRelation')
-            ->get()
-            ->groupBy(function ($faq) {
-                return $faq->categoryRelation->name ?? 'Uncategorized';
-            })
-            ->map(function ($items) {
-                return $items->values();
-            });
+        $faqs = $this->buildGroupedFaqs(activeOnly: true);
 
         return response()->json([
             'success' => true,
@@ -39,20 +32,57 @@ class FaqController extends Controller
      */
     public function adminIndex(): JsonResponse
     {
-        $faqs = FAQ::orderBy('sort_order')
-            ->with('categoryRelation')
-            ->get()
-            ->groupBy(function ($faq) {
-                return $faq->categoryRelation->name ?? 'Uncategorized';
-            })
-            ->map(function ($items) {
-                return $items->values();
-            });
+        $faqs = $this->buildGroupedFaqs(activeOnly: false);
 
         return response()->json([
             'success' => true,
             'data' => $faqs,
         ]);
+    }
+
+    /**
+     * Build grouped FAQs in deterministic category order.
+     *
+     * Categories are ordered by faq_categories.sort_order.
+     * FAQs inside each category are ordered by faqs.sort_order.
+     * Uncategorized/orphaned FAQs are appended at the end.
+     */
+    private function buildGroupedFaqs(bool $activeOnly): \Illuminate\Support\Collection
+    {
+        $query = FAQ::query()
+            ->with('categoryRelation')
+            ->orderBy('sort_order')
+            ->orderBy('id');
+
+        if ($activeOnly) {
+            $query->where('is_active', true);
+        }
+
+        $faqs = $query->get();
+
+        $orderedCategories = FAQCategory::ordered()
+            ->pluck('name', 'id');
+
+        $faqsByCategoryId = $faqs->groupBy('faq_category_id');
+        $orderedGroups = collect();
+
+        foreach ($orderedCategories as $categoryId => $categoryName) {
+            $items = $faqsByCategoryId->get($categoryId, collect())->values();
+
+            if ($items->isNotEmpty()) {
+                $orderedGroups->put($categoryName, $items);
+            }
+        }
+
+        $uncategorized = $faqs
+            ->filter(fn (FAQ $faq) => $faq->faq_category_id === null || !$orderedCategories->has($faq->faq_category_id))
+            ->values();
+
+        if ($uncategorized->isNotEmpty()) {
+            $orderedGroups->put('Uncategorized', $uncategorized);
+        }
+
+        return $orderedGroups;
     }
 
     /**

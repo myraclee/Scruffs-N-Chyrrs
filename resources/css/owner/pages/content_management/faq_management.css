@@ -28,12 +28,16 @@
 
 .faq_actions_row {
     display: flex;
+    align-items: center;
     gap: 10px;
     flex-wrap: wrap;
     margin-bottom: 20px;
 }
 
 .manage_categories_button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     background: #682c7a;
     color: #fff7ec;
     font-family: Coolvetica;
@@ -42,16 +46,29 @@
     border-radius: 30px;
     width: 160px;
     height: 35px;
+    opacity: 1;
+    transform: none;
+    line-height: 1;
+    position: relative;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     cursor: pointer;
-    transition: transform 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
 }
 
 .manage_categories_button:hover {
-    transform: scale(1.05);
+    transform: translateY(-1px) scale(1.03);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.22);
+}
+
+.manage_categories_button:focus-visible {
+    outline: 3px solid rgba(104, 44, 122, 0.25);
+    outline-offset: 2px;
 }
 
 .add_faq_button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     background: #682c7a;
     color: #fff7ec;
     font-family: Coolvetica;
@@ -60,13 +77,15 @@
     border-radius: 30px;
     width: 90px;
     height: 35px;
+    line-height: 1;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     cursor: pointer;
-    transition: transform 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .add_faq_button:hover {
-    transform: scale(1.05);
+    transform: translateY(-1px) scale(1.03);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.22);
 }
 
 /* ==================== CATEGORY BOXES ==================== */
@@ -468,7 +487,8 @@
 }
 
 .submit_btn,
-.cancel_btn {
+.cancel_btn,
+.create_mode_btn {
     padding: 8px 14px;
     border: none;
     border-radius: 30px;
@@ -495,6 +515,17 @@
 }
 
 .submit_btn:hover {
+    transform: scale(1.05);
+}
+
+.create_mode_btn {
+    width: 120px;
+    margin-right: auto;
+    background: #2f7d64;
+    color: #fff7ec;
+}
+
+.create_mode_btn:hover {
     transform: scale(1.05);
 }
 
@@ -654,7 +685,7 @@
 }
 
 .add_faq_modal_box .select_wrapper::after {
-    content: "";
+    content: '';
     position: absolute;
     right: 14px;
     top: 50%;
@@ -741,9 +772,7 @@
     color: #fff7ec;
     cursor: pointer;
     margin-right: auto;
-    transition:
-        transform 0.2s ease,
-        background-color 0.2s ease;
+    transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
 .delete_faq_modal_btn:not(.btn_hidden):hover {
@@ -841,9 +870,7 @@
     cursor: pointer;
     font-family: Coolvetica;
     font-size: 14px;
-    transition:
-        background-color 0.2s ease,
-        transform 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
 .faq_delete_btn_large:hover {
@@ -920,6 +947,7 @@
 
     .submit_btn,
     .cancel_btn,
+    .create_mode_btn,
     .confirm_delete_btn,
     .cancel_delete_btn,
     .save_faq,
