@@ -280,7 +280,7 @@
 }
 
 .image_slot.plus::before {
-    content: "+";
+    content: '+';
     font-size: 40px;
     color: #682c7a;
 }
@@ -481,7 +481,7 @@
 }
 
 .sample_image_slot.plus::before {
-    content: "+";
+    content: '+';
     font-size: 42px;
     color: #682c7a;
 }
@@ -644,9 +644,7 @@
     cursor: pointer;
     font-family: Coolvetica;
     font-size: 14px;
-    transition:
-        background-color 0.2s ease,
-        transform 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
 .delete_confirm_box button:hover {
@@ -667,7 +665,7 @@
 }
 
 /* ── MODAL: Upload add-box ── */
-.products_add_box {
+.sample_add_box {
     width: 120px;
     height: 120px;
     border-radius: 14px;
@@ -683,21 +681,21 @@
     flex-shrink: 0;
 }
 
-.products_add_box:hover {
+.sample_add_box:hover {
     background-color: #dcbae6;
 }
 
-.products_add_box.image_box_error {
+.sample_add_box.image_box_error {
     border-color: #c83333;
 }
 
 /* ── MODAL: Uploaded image wrappers inside the grid ── */
 .sample_image_wrapper {
     width: 120px;
-    height: 120px;
-    position: relative;
-    border-radius: 14px;
-    overflow: visible;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
     flex-shrink: 0;
 }
 
@@ -711,18 +709,14 @@
 }
 
 .remove_sample_image {
-    position: absolute;
-    bottom: -28px;
-    left: 50%;
-    transform: translateX(-50%);
     font-family: Coolvetica;
     font-size: 12px;
     color: #fff7ec;
     background-color: #c83333;
     border: none;
     border-radius: 30px;
-    width: 60px;
-    height: 22px;
+    width: 64px;
+    height: 24px;
     cursor: pointer;
     white-space: nowrap;
     transition: background-color 0.2s ease;
@@ -820,9 +814,7 @@
     font-family: Coolvetica;
     font-size: 13px;
     cursor: pointer;
-    transition:
-        background-color 0.2s ease,
-        color 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .edit_sample_btn {

@@ -58,8 +58,8 @@ function validateSampleForm() {
     // Validate Images
     const totalImages = existingSampleImages.length + currentSampleFiles.length;
     // Look specifically for our big box class
-    const addBox = sampleImageGrid.querySelector('.products_add_box');
-    
+    const addBox = sampleImageGrid.querySelector('.sample_add_box');
+
     if (totalImages === 0) {
         if (addBox) addBox.classList.add('image_box_error');
         sampleImageError.classList.remove('hidden');
@@ -82,7 +82,7 @@ function updateSampleCounter() {
     const total = existingSampleImages.length + currentSampleFiles.length;
     sampleImageCounter.textContent = `${total} / ${MAX_SAMPLE_IMAGES} images selected`;
 
-    const addBox = sampleImageGrid.querySelector('.products_add_box');
+    const addBox = sampleImageGrid.querySelector('.sample_add_box');
     if (addBox) {
         addBox.style.display = total >= MAX_SAMPLE_IMAGES ? 'none' : 'flex';
         // Clear error if we have images
@@ -96,10 +96,9 @@ function updateSampleCounter() {
 function initSampleUploadBox() {
     sampleImageGrid.innerHTML = '';
     const addBox = document.createElement('div');
-    
-    // FIX: Using your official CSS class so it stays a big square!
-    addBox.className = 'products_add_box'; 
-    
+
+    addBox.className = 'sample_add_box';
+
     addBox.textContent = '+';
     addBox.onclick = () => {
         const total = existingSampleImages.length + currentSampleFiles.length;
@@ -171,7 +170,7 @@ function buildSampleImageWrapper(src, isNew, identifier) {
 
 function populateSampleGrid() {
     initSampleUploadBox();
-    const addBox = sampleImageGrid.querySelector('.products_add_box');
+    const addBox = sampleImageGrid.querySelector('.sample_add_box');
 
     existingSampleImages.forEach(img => {
         const wrapper = buildSampleImageWrapper(`/storage/${img.image_path}`, false, img.id);
@@ -198,12 +197,12 @@ function resetSampleModal() {
     sampleNameInput.value = '';
     currentSampleFiles = [];
     existingSampleImages = [];
-    
+
     // Clear validation styling
     sampleNameInput.classList.remove('input_error_state');
     sampleNameError.classList.add('hidden');
     sampleImageError.classList.add('hidden');
-    
+
     initSampleUploadBox();
 }
 
