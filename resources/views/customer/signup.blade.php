@@ -16,6 +16,18 @@
     <h1 class="header_signup">Sign Up</h1>
 
     <style>
+        /* --- UI FIXES APPLIED --- */
+        .signup_textbox {
+            border: 2px solid #682c7a !important;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .toggle_password svg {
+            stroke: #682c7a !important;
+        }
+        /* ------------------------ */
+
         .input_group {
             position: relative;
         }
@@ -32,12 +44,16 @@
         .client_error {
             display: none;
         }
-        
+
+        /* Error States */
+        .input_error_state,
         #custom_signup_form.was-validated .signup_textbox:invalid {
             border: 2px solid #d93025 !important;
             box-shadow: 0 0 5px rgba(217, 48, 37, 0.3) !important;
         }
         
+        /* Force display block when JS adds this class */
+        .show_error,
         #custom_signup_form.was-validated .signup_textbox:invalid ~ .client_error {
             display: block !important;
         }
@@ -61,9 +77,9 @@
         <div class="row">
             <div class="signup_firstname_container input_group">
                 <label for="first_name">First Name</label>
-                <input class="signup_textbox" type="text" id="first_name" name="first_name" placeholder="ex. Juan" value="{{ old('first_name') }}" required maxlength="50"
-                       @error('first_name') style="border: 2px solid #d93025;" @enderror>
-                <span class="client_error">Please enter your first name.</span>
+                <input class="signup_textbox" type="text" id="first_name" name="first_name" placeholder="ex. Juan" value="{{ old('first_name') }}" required maxlength="50" pattern="^[A-Za-z\s]*[A-Za-z][A-Za-z\s]*$"
+                       @error('first_name') style="border: 2px solid #d93025 !important;" @enderror>
+                <span class="client_error">Please enter a valid first name (letters only, cannot be blank).</span>
                 @error('first_name')
                     <span class="server_error">{{ $message }}</span>
                 @enderror
@@ -71,9 +87,9 @@
 
             <div class="signup_lastname_container input_group">
                 <label for="last_name">Last Name</label>
-                <input class="signup_textbox" type="text" id="last_name" name="last_name" placeholder="ex. De la Cruz" value="{{ old('last_name') }}" required maxlength="50"
-                       @error('last_name') style="border: 2px solid #d93025;" @enderror>
-                <span class="client_error">Please enter your last name.</span>
+                <input class="signup_textbox" type="text" id="last_name" name="last_name" placeholder="ex. De la Cruz" value="{{ old('last_name') }}" required maxlength="50" pattern="^[A-Za-z\s]*[A-Za-z][A-Za-z\s]*$"
+                       @error('last_name') style="border: 2px solid #d93025 !important;" @enderror>
+                <span class="client_error">Please enter a valid last name (letters only, cannot be blank).</span>
                 @error('last_name')
                     <span class="server_error">{{ $message }}</span>
                 @enderror
@@ -83,9 +99,10 @@
         <div class="row">
             <div class="signup_email_container input_group">
                 <label for="email">Email</label>
-                <input class="signup_textbox" type="email" id="email" name="email" placeholder="email@address.com" value="{{ old('email') }}" required maxlength="254" pattern="^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$"
-                       @error('email') style="border: 2px solid #d93025;" @enderror>
-                <span class="client_error">Please enter a valid email.</span>
+                <input class="signup_textbox" type="email" id="email" name="email" placeholder="email@address.com" value="{{ old('email') }}" required maxlength="254" 
+                       pattern="^[a-zA-Z0-9._%+\-]{2,}@[a-zA-Z0-9.\-]{2,}\.[a-zA-Z]{2,}$"
+                       @error('email') style="border: 2px solid #d93025 !important;" @enderror>
+                <span class="client_error email_custom_error">Enter a valid email. Each part must be at least 2 characters.</span>
                 @error('email')
                     <span class="server_error">{{ $message }}</span>
                 @enderror
@@ -98,7 +115,7 @@
                     <span style="position: absolute; left: 20px; top: 25px; transform: translateY(-50%); font-family: Coolvetica, sans-serif; font-size: 15px; color: #333; pointer-events: none;">+63</span>
                     
                     <input class="signup_textbox" type="tel" id="contact_number" name="contact_number" placeholder="9123456789" value="{{ str_replace('+63', '', old('contact_number')) }}" required maxlength="10" pattern="^9[0-9]{9}$" oninput="this.value = this.value.replace(/[^0-9]/g, '')"
-                           style="text-indent: 32px; margin: 0; @error('contact_number') border: 2px solid #d93025; @enderror">
+                           style="text-indent: 32px; margin: 0; @error('contact_number') border: 2px solid #d93025 !important; @enderror">
                            
                     <span class="client_error">Please enter a 10-digit number starting with 9.</span>
                     @error('contact_number')
@@ -113,7 +130,7 @@
                 <label for="password">Password</label>
                 <div class="password_wrapper">
                     <input class="signup_textbox" type="password" id="password" name="password" placeholder="Enter your password" required minlength="8" maxlength="128"
-                           @error('password') style="border: 2px solid #d93025;" @enderror>
+                           @error('password') style="border: 2px solid #d93025 !important;" @enderror>
                     <span class="toggle_password" id="toggle_signup_password">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                     </span>
@@ -139,7 +156,7 @@
                 <label for="password_confirmation">Confirm Password</label>
                 <div class="password_wrapper">
                     <input class="signup_textbox" type="password" id="password_confirmation" name="password_confirmation" placeholder="Re-enter your password" required minlength="8" maxlength="128"
-                           @error('password_confirmation') style="border: 2px solid #d93025;" @enderror>
+                           @error('password_confirmation') style="border: 2px solid #d93025 !important;" @enderror>
                     <span class="toggle_password" id="toggle_signup_confirm">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                     </span>
@@ -183,6 +200,29 @@
         document.addEventListener("DOMContentLoaded", () => {
             const form = document.getElementById("custom_signup_form");
             const submitBtn = document.getElementById("signup_submit");
+            const emailInput = document.getElementById("email");
+            const emailError = document.querySelector(".email_custom_error");
+
+            // Explicitly force error text to show based on custom validation state
+            const handleEmailValidation = () => {
+                const regex = /^[a-zA-Z0-9._%+\-]{2,}@[a-zA-Z0-9.\-]{2,}\.[a-zA-Z]{2,}$/;
+                if (!regex.test(emailInput.value) && emailInput.value.length > 0) {
+                    emailInput.setCustomValidity("Invalid email format.");
+                    if(form.classList.contains('was-validated')) {
+                        emailInput.classList.add("input_error_state");
+                        emailError.classList.add("show_error");
+                    }
+                } else {
+                    emailInput.setCustomValidity("");
+                    emailInput.classList.remove("input_error_state");
+                    emailError.classList.remove("show_error");
+                }
+            };
+
+            if (emailInput) {
+                emailInput.addEventListener("input", handleEmailValidation);
+                emailInput.addEventListener("blur", handleEmailValidation);
+            }
 
             if (form) {
                 if (submitBtn) {
@@ -190,6 +230,7 @@
                         if (!form.checkValidity()) {
                             event.preventDefault(); 
                             form.classList.add("was-validated"); 
+                            handleEmailValidation(); // Ensure UI reflects state on click
                         }
                     });
                 }
@@ -199,6 +240,7 @@
                         event.preventDefault(); 
                         event.stopImmediatePropagation(); 
                         form.classList.add("was-validated");
+                        handleEmailValidation(); // Ensure UI reflects state on submit
                     }
                 });
             }

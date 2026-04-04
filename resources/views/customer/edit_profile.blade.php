@@ -9,6 +9,27 @@
 @endsection
 
 @section('content')
+    <style>
+        /* --- UI FIXES APPLIED --- */
+        .form_input {
+            border: 2px solid #682c7a !important;
+            outline: none;
+            transition: border 0.2s ease;
+        }
+
+        .form_group {
+            position: relative;
+        }
+
+        .validation_error, .server_error {
+            color: #d93025; 
+            font-family: Coolvetica, sans-serif;
+            font-size: 14px;
+            margin-top: 6px;
+            display: block;
+        }
+    </style>
+
     <div class="edit_profile_container">
         <span class="star star_tr">✦</span>
         <span class="star star_br">✦</span>
@@ -31,7 +52,7 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('update-profile') }}" class="edit_profile_form">
+        <form method="POST" action="{{ route('update-profile') }}" class="edit_profile_form" id="edit_profile_form" novalidate>
             @csrf
 
             <div class="form_group">
@@ -40,12 +61,15 @@
                     type="text" 
                     id="first_name" 
                     name="first_name" 
-                    class="form_input @error('first_name') input_error @enderror"
+                    class="form_input"
                     value="{{ old('first_name', Auth::user()->first_name) }}"
                     required
+                    maxlength="50"
+                    pattern="^[A-Za-z\s]*[A-Za-z][A-Za-z\s]*$"
+                    @error('first_name') style="border: 2px solid #d93025 !important;" @enderror
                 >
                 @error('first_name')
-                    <span class="error_message">{{ $message }}</span>
+                    <span class="server_error">{{ $message }}</span>
                 @enderror
             </div>
 
@@ -55,12 +79,15 @@
                     type="text" 
                     id="last_name" 
                     name="last_name" 
-                    class="form_input @error('last_name') input_error @enderror"
+                    class="form_input"
                     value="{{ old('last_name', Auth::user()->last_name) }}"
                     required
+                    maxlength="50"
+                    pattern="^[A-Za-z\s]*[A-Za-z][A-Za-z\s]*$"
+                    @error('last_name') style="border: 2px solid #d93025 !important;" @enderror
                 >
                 @error('last_name')
-                    <span class="error_message">{{ $message }}</span>
+                    <span class="server_error">{{ $message }}</span>
                 @enderror
             </div>
 
@@ -70,27 +97,37 @@
                     type="email" 
                     id="email" 
                     name="email" 
-                    class="form_input @error('email') input_error @enderror"
+                    class="form_input"
                     value="{{ old('email', Auth::user()->email) }}"
                     required
+                    maxlength="254"
+                    pattern="^[a-zA-Z0-9._%+\-]{2,}@[a-zA-Z0-9.\-]{2,}\.[a-zA-Z]{2,}$"
+                    @error('email') style="border: 2px solid #d93025 !important;" @enderror
                 >
                 @error('email')
-                    <span class="error_message">{{ $message }}</span>
+                    <span class="server_error">{{ $message }}</span>
                 @enderror
             </div>
 
             <div class="form_group">
                 <label for="contact_number">Phone Number</label>
-                <input 
-                    type="text" 
-                    id="contact_number" 
-                    name="contact_number" 
-                    class="form_input @error('contact_number') input_error @enderror"
-                    value="{{ old('contact_number', Auth::user()->contact_number) }}"
-                    required
-                >
+                <div style="position: relative; display: block;">
+                    <span style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-family: Coolvetica, sans-serif; font-size: 15px; color: #333; pointer-events: none;">+63</span>
+                    <input 
+                        type="tel" 
+                        id="contact_number" 
+                        name="contact_number" 
+                        class="form_input"
+                        value="{{ old('contact_number', str_replace('+63', '', Auth::user()->contact_number)) }}"
+                        required
+                        maxlength="10"
+                        pattern="^9[0-9]{9}$"
+                        oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                        style="text-indent: 32px; @error('contact_number') border: 2px solid #d93025 !important; @enderror"
+                    >
+                </div>
                 @error('contact_number')
-                    <span class="error_message">{{ $message }}</span>
+                    <span class="server_error">{{ $message }}</span>
                 @enderror
             </div>
 

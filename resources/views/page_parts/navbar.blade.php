@@ -1,3 +1,12 @@
+<style>
+    /* Bypassing Vite to kill the popup underline */
+    .account_popup a,
+    .account_popup .popup_item {
+        text-decoration: none !important;
+        border-bottom: none !important;
+    }
+</style>
+
 <div class="nav_whole">
     <div class="nav_container">
         <img src="{{ asset('images/brand_elements/label_name.png') }}" class="label_name">
