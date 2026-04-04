@@ -89,6 +89,7 @@ Route::prefix('api/materials')->group(function () {
 Route::prefix('api/home-images')->group(function () {
     Route::get('/', [HomeImageController::class, 'index']);
     Route::post('/', [HomeImageController::class, 'store']);
+    Route::post('sync', [HomeImageController::class, 'sync']);
     Route::delete('{homeImage}', [HomeImageController::class, 'destroy']);
 });
 

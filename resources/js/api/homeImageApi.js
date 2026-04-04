@@ -104,6 +104,50 @@ class HomeImageAPI {
     }
 
     /**
+     * Sync home page images in one save action.
+     * Keeps submitted existing IDs, removes dropped ones, and uploads new files.
+     * @param {FormData} formData - Contains existing_image_ids[] and images[]
+     * @returns {Promise<Array>} Final ordered home image list
+     */
+    async syncImages(formData) {
+        try {
+            this.isLoading = true;
+
+            if (this.getCsrfToken() && !formData.has("_token")) {
+                formData.append("_token", this.getCsrfToken());
+            }
+
+            const response = await fetch(`${this.baseUrl}/sync`, {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-CSRF-TOKEN": this.getCsrfToken(),
+                    Accept: "application/json",
+                },
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                const errorMsg =
+                    result.message || result.error || "Failed to sync home images";
+                throw new Error(errorMsg);
+            }
+
+            if (result.success) {
+                return result.data || [];
+            }
+
+            throw new Error(result.message || "Unexpected error syncing home images");
+        } catch (error) {
+            console.error("Error syncing home images:", error);
+            throw error;
+        } finally {
+            this.isLoading = false;
+        }
+    }
+
+    /**
      * Delete a home page image
      * @param {number} id - The home image ID to delete
      * @returns {Promise<void>}

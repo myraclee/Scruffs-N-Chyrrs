@@ -7,6 +7,7 @@ use App\Models\ProductSample;
 use App\Models\ProductSampleImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class ProductSampleController extends Controller
 {
@@ -141,39 +142,78 @@ class ProductSampleController extends Controller
                 'name' => 'required|string|max:255',
                 'description' => 'nullable|string|max:1000',
                 'images.*' => 'image|mimes:jpeg,png,gif,webp|max:5120', // 5MB max
+                'existing_image_ids' => 'nullable|array',
+                'existing_image_ids.*' => 'integer',
             ]);
 
-            // Update basic fields
-            $productSample->update([
-                'name' => $validated['name'],
-                'description' => $validated['description'] ?? null,
-            ]);
+            DB::transaction(function () use ($request, $validated, $productSample): void {
+                // Update basic fields
+                $productSample->update([
+                    'name' => $validated['name'],
+                    'description' => $validated['description'] ?? null,
+                ]);
 
-            // Handle new image uploads
-            if ($request->hasFile('images')) {
-                $sortOrder = $productSample->images()->max('sort_order') + 1 ?? 0;
+                $existingImages = $productSample->images()->orderBy('sort_order')->get();
+                $existingImageIdSet = $existingImages->pluck('id')->all();
 
-                foreach ($request->file('images') as $imageFile) {
-                    // Store the image
-                    $path = $imageFile->store("product_samples/{$productSample->id}", 'public');
-
-                    if (!$path) {
-                        throw new \Exception('Failed to store image file');
-                    }
-
-                    // Create image record
-                    ProductSampleImage::create([
-                        'product_sample_id' => $productSample->id,
-                        'image_path' => $path,
-                        'sort_order' => $sortOrder,
-                    ]);
-
-                    $sortOrder++;
+                // Keep-list defaults to empty, which means remove all existing images.
+                $keepIds = $request->input('existing_image_ids', []);
+                if (!is_array($keepIds)) {
+                    $keepIds = [$keepIds];
                 }
-            }
+
+                $normalizedKeepIds = [];
+                foreach ($keepIds as $id) {
+                    $normalizedId = (int) $id;
+                    if ($normalizedId > 0 && in_array($normalizedId, $existingImageIdSet, true)) {
+                        $normalizedKeepIds[] = $normalizedId;
+                    }
+                }
+                $normalizedKeepIds = array_values(array_unique($normalizedKeepIds));
+
+                foreach ($existingImages as $image) {
+                    if (!in_array($image->id, $normalizedKeepIds, true)) {
+                        if (Storage::disk('public')->exists($image->image_path)) {
+                            Storage::disk('public')->delete($image->image_path);
+                        }
+                        $image->delete();
+                    }
+                }
+
+                // Normalize kept image sort order so new uploads append predictably.
+                $keptImages = $productSample->images()->orderBy('sort_order')->get();
+                foreach ($keptImages as $index => $keptImage) {
+                    if ((int) $keptImage->sort_order !== $index) {
+                        $keptImage->update(['sort_order' => $index]);
+                    }
+                }
+
+                $nextSortOrder = $keptImages->count();
+
+                // Handle new image uploads
+                if ($request->hasFile('images')) {
+                    foreach ($request->file('images') as $imageFile) {
+                        $path = $imageFile->store("product_samples/{$productSample->id}", 'public');
+
+                        if (!$path) {
+                            throw new \Exception('Failed to store image file');
+                        }
+
+                        ProductSampleImage::create([
+                            'product_sample_id' => $productSample->id,
+                            'image_path' => $path,
+                            'sort_order' => $nextSortOrder,
+                        ]);
+
+                        $nextSortOrder++;
+                    }
+                }
+            });
 
             // Reload with images
-            $productSample->load('images');
+            $productSample->load(['images' => function ($query) {
+                $query->orderBy('sort_order');
+            }]);
 
             return response()->json([
                 'success' => true,

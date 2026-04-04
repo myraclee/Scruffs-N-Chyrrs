@@ -62,18 +62,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             const clearBtn = document.createElement("button");
             clearBtn.className = "clear_image";
             clearBtn.textContent = "Remove";
-            clearBtn.onclick = async () => {
-                // If this is an existing image (has id), delete it from API
-                if (fileObj.id) {
-                    try {
-                        await HomeImageAPI.deleteImage(fileObj.id);
-                        Toast.success("Image removed");
-                    } catch (error) {
-                        Toast.error("Failed to remove image");
-                        return;
-                    }
-                }
-
+            clearBtn.onclick = () => {
                 tempImages.splice(index, 1);
                 renderGrid();
             };
@@ -147,28 +136,26 @@ document.addEventListener("DOMContentLoaded", async () => {
             saveBtn.disabled = true;
             saveBtn.textContent = "Saving...";
 
-            // Upload new images (those without id)
-            const newImages = tempImages.filter(
-                (img) => !img.id && !img.image_path,
-            );
+            const formData = new FormData();
+            let existingIndex = 0;
+            let newImageIndex = 0;
 
-            for (const imgObj of newImages) {
-                const formData = new FormData();
-                formData.append("image", imgObj.file);
-
-                try {
-                    const uploadedImage =
-                        await HomeImageAPI.createImage(formData);
-                    imgObj.id = uploadedImage.id;
-                    imgObj.image_path = uploadedImage.image_path;
-                    imgObj.preview = `/storage/${uploadedImage.image_path}`;
-                } catch (error) {
-                    Toast.error(`Failed to upload image: ${error.message}`);
-                    return;
+            tempImages.forEach((imgObj) => {
+                if (imgObj.id) {
+                    formData.append(`existing_image_ids[${existingIndex}]`, imgObj.id);
+                    existingIndex++;
+                } else if (imgObj.file) {
+                    formData.append(`images[${newImageIndex}]`, imgObj.file);
+                    newImageIndex++;
                 }
-            }
+            });
 
-            savedImages = tempImages.map((img) => ({ ...img }));
+            const syncedImages = await HomeImageAPI.syncImages(formData);
+            savedImages = syncedImages.map((img) => ({
+                id: img.id,
+                image_path: img.image_path,
+                preview: `/storage/${img.image_path}`,
+            }));
             renderMainImages();
             modal.style.display = "none";
             Toast.success("Home images updated successfully!");
@@ -177,7 +164,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             Toast.error("Failed to save home images");
         } finally {
             saveBtn.disabled = false;
-            saveBtn.textContent = "Save Images";
+            saveBtn.textContent = "Save";
         }
     };
 
