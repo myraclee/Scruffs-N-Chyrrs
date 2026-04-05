@@ -22,7 +22,8 @@ class AuthController extends Controller
         $rules = [
             'required',
             'string',
-            'regex:/^[a-zA-Z0-9]+([._+\-]?[a-zA-Z0-9]+)*@[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$/'
+            // ✅ FIXED: supports subdomains (e.g. yahoo.com.ph)
+            'regex:/^[a-zA-Z0-9]+([._+\-]?[a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.\-]?[a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/'
         ];
 
         if ($uniqueRule) {
@@ -42,7 +43,8 @@ class AuthController extends Controller
         $request->validate([
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
-            'email' => $this->emailRules('unique:' . User::class),
+            // ✅ FIXED unique rule
+            'email' => $this->emailRules('unique:users,email'),
             'contact_number' => ['required', 'string', 'max:20'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
@@ -71,7 +73,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Handle login with 3rd attempt=2min, 4th attempt=5min, 5th attempt=permanent lock.
+     * Handle login with lockout logic.
      */
     public function login(Request $request)
     {
@@ -89,78 +91,85 @@ class AuthController extends Controller
 
         if ($validator->fails()) {
             $errors = $validator->errors();
+
+            // ✅ Keeps password error hidden if email format is wrong
             if ($errors->has('email') && str_contains($errors->first('email'), 'format is invalid')) {
                 if (!empty($request->password)) {
                     $errors->forget('password');
                 }
             }
+
             return back()->withErrors($errors)->withInput($request->only('email'));
         }
 
         $user = User::where('email', $request->email)->first();
 
         if ($user) {
-            // 1. Permanent Lock Check
+            // Permanent lock
             if ($user->is_locked) {
                 return back()
                     ->withErrors(['password' => 'Account locked due to multiple failed attempts.'])
                     ->withInput($request->only('email'));
             }
 
-            // 2. Temporary Lockout Check
+            // Temporary lock
             if ($user->lockout_until && now()->lessThan($user->lockout_until)) {
-                $secondsLeft = now()->diffInSeconds($user->lockout_until);
-                
                 return back()
                     ->withInput($request->only('email'))
                     ->with('lockout_until', $user->lockout_until->timestamp);
             }
         }
 
-        // 3. Attempt Login
+        // Attempt login
         if (Auth::attempt($request->only('email', 'password'))) {
             if ($user) {
-                $user->update(['login_attempts' => 0, 'lockout_until' => null]);
+                $user->update([
+                    'login_attempts' => 0,
+                    'lockout_until' => null
+                ]);
             }
+
             $request->session()->regenerate();
-            return ($user && $user->user_type === 'owner') 
-                ? redirect()->route('owner.dashboard') 
+
+            return ($user && $user->user_type === 'owner')
+                ? redirect()->route('owner.dashboard')
                 : redirect()->route('home');
         }
 
-        // 4. Handle Failed Attempt Logic
+        // Failed attempts
         if ($user) {
             $user->increment('login_attempts');
 
-            // 5th Attempt: Permanent Lock
             if ($user->login_attempts >= 5) {
                 $user->update(['is_locked' => true, 'lockout_until' => null]);
+
                 return back()
                     ->withErrors(['password' => 'Account locked due to multiple failed attempts.'])
                     ->withInput($request->only('email'));
             }
 
-            // 4th Attempt: 5-Minute Lockout
             if ($user->login_attempts == 4) {
                 $lockoutUntil = now()->addMinutes(5);
                 $user->update(['lockout_until' => $lockoutUntil]);
+
                 return back()
                     ->withInput($request->only('email'))
                     ->with('lockout_until', $lockoutUntil->timestamp);
             }
 
-            // 3rd Attempt: 2-Minute Lockout
             if ($user->login_attempts == 3) {
                 $lockoutUntil = now()->addMinutes(2);
                 $user->update(['lockout_until' => $lockoutUntil]);
+
                 return back()
                     ->withInput($request->only('email'))
                     ->with('lockout_until', $lockoutUntil->timestamp);
             }
         }
 
-        // Generic Error for wrong password or unregistered email
-        return back()->withErrors(['password' => 'Invalid email or password.'])->withInput($request->only('email'));
+        return back()
+            ->withErrors(['password' => 'Invalid email or password.'])
+            ->withInput($request->only('email'));
     }
 
     public function account()
@@ -173,6 +182,7 @@ class AuthController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
         return redirect()->route('home');
     }
 
@@ -230,12 +240,16 @@ class AuthController extends Controller
 
     public function sendResetCode(Request $request)
     {
-        $request->validate(['email' => $this->emailRules()]);
+        $request->validate([
+            'email' => $this->emailRules()
+        ]);
 
         $user = User::where('email', $request->email)->first();
 
         if (!$user) {
-            return back()->withErrors(['email' => 'No account found with this email address.'])->onlyInput('email');
+            return back()
+                ->withErrors(['email' => 'No account found with this email address.'])
+                ->onlyInput('email');
         }
 
         $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
@@ -251,22 +265,28 @@ class AuthController extends Controller
         );
 
         Mail::to($request->email)->send(new PasswordResetCode($code, $user->first_name));
+
         $request->session()->put('reset_email', $request->email);
 
-        return redirect()->route('enter-code')->with('success', 'A verification code has been sent to your email.');
+        return redirect()->route('enter-code')
+            ->with('success', 'A verification code has been sent to your email.');
     }
 
     public function showEnterCode()
     {
         if (!session('reset_email')) return redirect()->route('reset-password');
+
         return view('customer.password_page.enter_code');
     }
 
     public function verifyResetCode(Request $request)
     {
-        $request->validate(['code' => ['required', 'string', 'size:6']]);
+        $request->validate([
+            'code' => ['required', 'string', 'size:6']
+        ]);
 
         $email = session('reset_email');
+
         if (!$email) return redirect()->route('reset-password');
 
         $resetToken = DB::table('password_reset_tokens')->where('email', $email)->first();
@@ -280,29 +300,43 @@ class AuthController extends Controller
         }
 
         $request->session()->put('verified_reset_email', $email);
+
         return redirect()->route('new-password')->with('success', 'Code verified successfully!');
     }
 
     public function showNewPassword()
     {
         if (!session('verified_reset_email')) return redirect()->route('reset-password');
+
         return view('customer.password_page.new_password');
     }
 
     public function resetPassword(Request $request)
     {
-        $request->validate(['new_password' => ['required', 'confirmed', Rules\Password::defaults()]]);
+        $request->validate([
+            'new_password' => ['required', 'confirmed', Rules\Password::defaults()]
+        ]);
 
         $email = session('verified_reset_email');
+
         if (!$email) return redirect()->route('reset-password');
 
         $user = User::where('email', $email)->first();
-        if (!$user) return redirect()->route('reset-password')->withErrors(['email' => 'User not found.']);
 
-        $user->update(['password' => Hash::make($request->new_password)]);
+        if (!$user) {
+            return redirect()->route('reset-password')
+                ->withErrors(['email' => 'User not found.']);
+        }
+
+        $user->update([
+            'password' => Hash::make($request->new_password)
+        ]);
+
         DB::table('password_reset_tokens')->where('email', $email)->delete();
+
         $request->session()->forget(['reset_email', 'verified_reset_email']);
 
-        return redirect()->route('login')->with('success', 'Password reset successfully! Please log in with your new password.');
+        return redirect()->route('login')
+            ->with('success', 'Password reset successfully! Please log in with your new password.');
     }
 }
