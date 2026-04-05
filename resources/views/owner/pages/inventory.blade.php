@@ -135,6 +135,19 @@
 
 </div>
 
+<div class="modal_overlay" id="deleteMaterialConfirmOverlay" aria-hidden="true">
+    <div class="delete_confirmation_modal" id="deleteMaterialConfirmModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="deleteMaterialConfirmMessage" tabindex="-1">
+        <p class="delete_msg" id="deleteMaterialConfirmMessage">
+            Are you sure you want to delete this material?
+        </p>
+        <small class="delete_subtext">This action cannot be undone.</small>
+        <div class="delete_confirmation_actions">
+            <button type="button" class="cancel_delete_btn" id="deleteMaterialCancelBtn">Cancel</button>
+            <button type="button" class="confirm_delete_btn" id="deleteMaterialConfirmBtn">Delete Material</button>
+        </div>
+    </div>
+</div>
+
 @vite('resources/js/owner/inventory_refactored.js')
 @vite('resources/js/owner/animations.js')
 @endsection

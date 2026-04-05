@@ -255,6 +255,8 @@
 .primary_button:focus-visible,
 .cancel_btn:focus-visible,
 .save_btn:focus-visible,
+.cancel_delete_btn:focus-visible,
+.confirm_delete_btn:focus-visible,
 .text_input:focus-visible,
 .number_input:focus-visible,
 .tiny_input:focus-visible,
@@ -455,6 +457,87 @@
     background: #a15fb5;
 }
 
+/* Delete Confirmation Modal */
+.delete_confirmation_modal {
+    background: #fff7ec;
+    border-radius: 24px;
+    padding: 35px 30px;
+    max-width: 380px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    text-align: center;
+}
+
+.delete_msg {
+    font-family: Coolvetica;
+    font-size: 20px;
+    color: #682c7a;
+    margin: 0;
+    line-height: 1.35;
+}
+
+.delete_subtext {
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    color: #777;
+}
+
+.delete_confirmation_actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 8px;
+    width: 100%;
+}
+
+.confirm_delete_btn,
+.cancel_delete_btn {
+    padding: 10px 14px;
+    border: none;
+    border-radius: 30px;
+    font-family: Coolvetica;
+    font-size: 15px;
+    cursor: pointer;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    min-height: 40px;
+    flex: 1;
+}
+
+.confirm_delete_btn {
+    background: #c83333;
+    color: #fff7ec;
+}
+
+.confirm_delete_btn:hover {
+    background: #8d0e0e;
+    transform: scale(1.03);
+}
+
+.cancel_delete_btn {
+    background: #999999;
+    color: #fff7ec;
+}
+
+.cancel_delete_btn:hover {
+    background: #7c7c7c;
+    transform: scale(1.03);
+}
+
+.confirm_delete_btn:disabled,
+.cancel_delete_btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+    transform: none;
+}
+
+.delete_confirmation_modal[aria-busy='true'] {
+    pointer-events: none;
+}
+
 /* ==========================================
    INVENTORY MEDIA QUERIES
    ========================================== */
@@ -535,6 +618,16 @@
     }
     .cancel_btn,
     .save_btn {
+        width: 100%;
+    }
+
+    .delete_confirmation_actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .confirm_delete_btn,
+    .cancel_delete_btn {
         width: 100%;
     }
 

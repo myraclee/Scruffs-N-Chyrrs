@@ -32,6 +32,22 @@ const outOfStockCard = document.getElementById("outOfStockCard");
 const lowStockList = document.getElementById("lowStockList");
 const outOfStockList = document.getElementById("outOfStockList");
 
+const deleteMaterialConfirmOverlay = document.getElementById(
+    "deleteMaterialConfirmOverlay",
+);
+const deleteMaterialConfirmModal = document.getElementById(
+    "deleteMaterialConfirmModal",
+);
+const deleteMaterialConfirmMessage = document.getElementById(
+    "deleteMaterialConfirmMessage",
+);
+const deleteMaterialCancelBtn = document.getElementById(
+    "deleteMaterialCancelBtn",
+);
+const deleteMaterialConfirmBtn = document.getElementById(
+    "deleteMaterialConfirmBtn",
+);
+
 // ================= STATE =================
 let materials_list = [];
 let products_list = [];
@@ -42,6 +58,10 @@ let isSaving = false;
 let lastFocusedElement = null;
 let showAllLowStockNames = false;
 let showAllOutOfStockNames = false;
+let pendingDeleteMaterialId = null;
+let pendingDeleteMaterialName = "";
+let deleteMaterialTriggerElement = null;
+let isDeletingMaterial = false;
 
 const DEFAULT_LOW_STOCK_THRESHOLD = 5;
 const STATUS_CARD_NAME_CAP = 3;
@@ -61,7 +81,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         !lowStockCard ||
         !outOfStockCard ||
         !lowStockList ||
-        !outOfStockList
+        !outOfStockList ||
+        !deleteMaterialConfirmOverlay ||
+        !deleteMaterialConfirmModal ||
+        !deleteMaterialConfirmMessage ||
+        !deleteMaterialCancelBtn ||
+        !deleteMaterialConfirmBtn
     ) {
         return;
     }
@@ -134,6 +159,24 @@ function setupEventListeners() {
         if (e.target === modalOverlay) {
             closeAllModals();
         }
+    });
+
+    deleteMaterialConfirmOverlay.addEventListener("click", (e) => {
+        if (e.target === deleteMaterialConfirmOverlay) {
+            if (isDeletingMaterial) {
+                return;
+            }
+
+            closeDeleteMaterialConfirm();
+        }
+    });
+
+    deleteMaterialCancelBtn.addEventListener("click", () => {
+        closeDeleteMaterialConfirm();
+    });
+
+    deleteMaterialConfirmBtn.addEventListener("click", async () => {
+        await confirmDeleteMaterial();
     });
 
     document.addEventListener("keydown", handleOverlayKeydown);
@@ -432,28 +475,110 @@ async function openEditModal(btn, materialId) {
  * Delete material
  * Makes the function available globally for onclick handler
  */
-window.deleteMaterial = async function (materialId) {
-    if (
-        !confirm(
-            "Are you sure you want to delete this material? This action cannot be undone.",
-        )
-    ) {
+window.deleteMaterial = function (triggerOrId, maybeMaterialId) {
+    const materialId =
+        typeof triggerOrId === "number"
+            ? triggerOrId
+            : Number(maybeMaterialId);
+
+    if (!Number.isInteger(materialId)) {
+        Toast.error("Material not found");
         return;
     }
 
+    const material = materials_list.find((item) => item.id === materialId);
+    if (!material) {
+        Toast.error("Material not found");
+        return;
+    }
+
+    const triggerElement =
+        typeof triggerOrId === "number" ? document.activeElement : triggerOrId;
+
+    openDeleteMaterialConfirm(materialId, material.name, triggerElement);
+};
+
+function openDeleteMaterialConfirm(materialId, materialName, triggerElement) {
+    pendingDeleteMaterialId = materialId;
+    pendingDeleteMaterialName = materialName;
+    deleteMaterialTriggerElement = triggerElement || document.activeElement;
+
+    deleteMaterialConfirmMessage.textContent =
+        `Are you sure you want to delete the material "${materialName}"?`;
+
+    setDeleteModalBusyState(false);
+    deleteMaterialConfirmOverlay.classList.add("active");
+    deleteMaterialConfirmOverlay.setAttribute("aria-hidden", "false");
+    deleteMaterialConfirmModal.setAttribute("aria-hidden", "false");
+    deleteMaterialCancelBtn.focus();
+}
+
+function closeDeleteMaterialConfirm(force = false) {
+    if (isDeletingMaterial && !force) {
+        return;
+    }
+
+    deleteMaterialConfirmOverlay.classList.remove("active");
+    deleteMaterialConfirmOverlay.setAttribute("aria-hidden", "true");
+    deleteMaterialConfirmModal.setAttribute("aria-hidden", "true");
+
+    pendingDeleteMaterialId = null;
+    pendingDeleteMaterialName = "";
+    setDeleteModalBusyState(false);
+
+    if (
+        deleteMaterialTriggerElement &&
+        deleteMaterialTriggerElement.isConnected &&
+        typeof deleteMaterialTriggerElement.focus === "function"
+    ) {
+        deleteMaterialTriggerElement.focus();
+    }
+
+    deleteMaterialTriggerElement = null;
+}
+
+async function confirmDeleteMaterial() {
+    if (pendingDeleteMaterialId === null || isDeletingMaterial) {
+        return;
+    }
+
+    setDeleteModalBusyState(true);
+
     try {
-        await MaterialAPI.deleteMaterial(materialId);
+        await MaterialAPI.deleteMaterial(pendingDeleteMaterialId);
         Toast.success("Material deleted successfully!");
         await loadMaterialsAndProducts();
+        closeDeleteMaterialConfirm(true);
     } catch (error) {
         console.error("Error deleting material:", error);
         if (error?.statusCode === 419) {
             Toast.error("Session expired. Refresh this page and sign in again.");
             return;
         }
-        Toast.error(error.message || "Failed to delete material");
+
+        const materialLabel = pendingDeleteMaterialName
+            ? `"${pendingDeleteMaterialName}"`
+            : "this material";
+        Toast.error(error.message || `Failed to delete ${materialLabel}`);
+    } finally {
+        setDeleteModalBusyState(false);
     }
-};
+}
+
+function setDeleteModalBusyState(isBusy) {
+    isDeletingMaterial = isBusy;
+
+    deleteMaterialConfirmBtn.disabled = isBusy;
+    deleteMaterialCancelBtn.disabled = isBusy;
+    deleteMaterialConfirmBtn.textContent = isBusy
+        ? "Deleting..."
+        : "Delete Material";
+
+    deleteMaterialConfirmModal.setAttribute(
+        "aria-busy",
+        isBusy ? "true" : "false",
+    );
+}
 
 /**
  * Make openEditModal available globally for onclick handler
@@ -501,7 +626,7 @@ function renderMaterials() {
                     <span>${productText}</span>
                     <div class="product_actions">
                         <button type="button" class="action_btn edit_btn" onclick="openEditModal(this, ${material.id})" title="Edit material" aria-label="Edit ${safeMaterialName}">Edit</button>
-                        <button type="button" class="action_btn delete_btn" onclick="deleteMaterial(${material.id})" title="Delete material" aria-label="Delete ${safeMaterialName}">Delete</button>
+                        <button type="button" class="action_btn delete_btn" onclick="deleteMaterial(this, ${material.id})" title="Delete material" aria-label="Delete ${safeMaterialName}">Delete</button>
                     </div>
                 </div>
             </td>
@@ -711,17 +836,37 @@ function setModalVisibility(isVisible, targetModal = null) {
 }
 
 function handleOverlayKeydown(event) {
-    if (!modalOverlay.classList.contains("active")) {
+    const isFormModalActive = modalOverlay.classList.contains("active");
+    const isDeleteModalActive = deleteMaterialConfirmOverlay.classList.contains(
+        "active",
+    );
+
+    if (!isFormModalActive && !isDeleteModalActive) {
         return;
     }
 
     if (event.key === "Escape") {
         event.preventDefault();
+
+        if (isDeleteModalActive) {
+            if (isDeletingMaterial) {
+                return;
+            }
+
+            closeDeleteMaterialConfirm();
+            return;
+        }
+
         closeAllModals();
         return;
     }
 
     if (event.key === "Tab") {
+        if (isDeleteModalActive && isDeletingMaterial) {
+            event.preventDefault();
+            return;
+        }
+
         trapFocus(event);
     }
 }
@@ -764,6 +909,10 @@ function getActiveModal() {
 
     if (editMaterialModal.classList.contains("active")) {
         return editMaterialModal;
+    }
+
+    if (deleteMaterialConfirmOverlay.classList.contains("active")) {
+        return deleteMaterialConfirmModal;
     }
 
     return null;
