@@ -64,7 +64,13 @@ class OrderPricingService
         return ['success' => true];
     }
 
-    public function calculate(OrderTemplate $template, array $selectedOptions, int $quantity, ?int $rushFeeId = null): array
+    public function calculate(
+        OrderTemplate $template,
+        array $selectedOptions,
+        int $quantity,
+        ?int $rushFeeId = null,
+        ?string $specialInstructions = null
+    ): array
     {
         $selectedOptions = $this->normalizeSelectedOptions($template, $selectedOptions);
 
@@ -110,13 +116,18 @@ class OrderPricingService
                 $discountAmount = (float) $discount->price_reduction * $quantity;
             }
 
-            $layoutFeeAmount = $template->layoutFee
+            $layoutCount = $this->parseLayoutCountFromNotes($specialInstructions);
+            $layoutFeePerLayout = $template->layoutFee
                 ? (float) $template->layoutFee->fee_amount
                 : 0;
+            $layoutFeeAmount = $layoutFeePerLayout * $layoutCount;
 
             $rushFeeAmount = 0;
             if ($rushFeeId) {
-                $rushFee = RushFee::with('timeframes')->find($rushFeeId);
+                $rushFee = RushFee::with([
+                    'timeframes' => fn ($query) => $query->orderBy('sort_order')->orderBy('id'),
+                ])->find($rushFeeId);
+
                 if ($rushFee && $rushFee->timeframes->isNotEmpty()) {
                     $timeframePercentage = (float) $rushFee->timeframes->first()->percentage;
                     $orderValue = $basePrice - $discountAmount + $layoutFeeAmount;
@@ -148,6 +159,20 @@ class OrderPricingService
         sort($ids);
 
         return implode(',', $ids);
+    }
+
+    private function parseLayoutCountFromNotes(?string $specialInstructions): int
+    {
+        if ($specialInstructions === null) {
+            return 0;
+        }
+
+        $segments = array_filter(
+            array_map(static fn ($value) => trim($value), explode(',', $specialInstructions)),
+            static fn ($value) => $value !== ''
+        );
+
+        return count($segments);
     }
 
     private function buildLegacyCombinationKey(OrderTemplate $template, array $selectedOptions): string

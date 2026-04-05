@@ -28,6 +28,8 @@ class CustomerCartController extends Controller
     public function index(): JsonResponse
     {
         $cart = $this->getCartWithRelations();
+        $this->recalculateCartItemPricing($cart);
+        $cart = $this->getCartWithRelations();
 
         return response()->json([
             'success' => true,
@@ -69,7 +71,8 @@ class CustomerCartController extends Controller
             $template,
             $validated['selected_options'],
             (int) $validated['quantity'],
-            $validated['rush_fee_id'] ?? null
+            $validated['rush_fee_id'] ?? null,
+            $validated['special_instructions'] ?? null,
         );
 
         if (!($pricing['success'] ?? false)) {
@@ -128,6 +131,9 @@ class CustomerCartController extends Controller
         $updatedRushFeeId = array_key_exists('rush_fee_id', $validated)
             ? $validated['rush_fee_id']
             : $cartItem->rush_fee_id;
+        $updatedSpecialInstructions = array_key_exists('special_instructions', $validated)
+            ? $validated['special_instructions']
+            : $cartItem->special_instructions;
 
         $normalizedOptions = $this->pricingService->normalizeSelectedOptions(
             $template,
@@ -146,7 +152,8 @@ class CustomerCartController extends Controller
             $template,
             $normalizedOptions,
             $updatedQuantity,
-            $updatedRushFeeId
+            $updatedRushFeeId,
+            $updatedSpecialInstructions,
         );
 
         if (!($pricing['success'] ?? false)) {
@@ -160,7 +167,7 @@ class CustomerCartController extends Controller
             'selected_options' => $normalizedOptions,
             'quantity' => $updatedQuantity,
             'rush_fee_id' => $updatedRushFeeId,
-            'special_instructions' => $validated['special_instructions'] ?? $cartItem->special_instructions,
+            'special_instructions' => $updatedSpecialInstructions,
             'base_price' => $pricing['base_price'],
             'discount_amount' => $pricing['discount_amount'],
             'rush_fee_amount' => $pricing['rush_fee_amount'],
@@ -168,6 +175,8 @@ class CustomerCartController extends Controller
             'total_price' => $pricing['total_price'],
         ]);
 
+        $freshCart = $this->getCartWithRelations();
+        $this->recalculateCartItemPricing($freshCart);
         $freshCart = $this->getCartWithRelations();
 
         return response()->json([
@@ -198,6 +207,8 @@ class CustomerCartController extends Controller
             'general_drive_link' => 'required|string|max:2048',
         ]);
 
+        $cart = $this->getCartWithRelations();
+        $this->recalculateCartItemPricing($cart);
         $cart = $this->getCartWithRelations();
 
         if ($cart->items->isEmpty()) {
@@ -348,6 +359,50 @@ class CustomerCartController extends Controller
                 'total_price' => round((float) $items->sum('total_price'), 2),
             ],
         ];
+    }
+
+    private function recalculateCartItemPricing(CustomerCart $cart): void
+    {
+        foreach ($cart->items as $item) {
+            $template = $item->orderTemplate;
+
+            if (! $template) {
+                continue;
+            }
+
+            $template->loadMissing(['options.optionTypes', 'pricings', 'discounts', 'layoutFee']);
+
+            $pricing = $this->pricingService->calculate(
+                $template,
+                $item->selected_options ?? [],
+                (int) $item->quantity,
+                $item->rush_fee_id,
+                $item->special_instructions,
+            );
+
+            if (! ($pricing['success'] ?? false)) {
+                continue;
+            }
+
+            $shouldUpdate =
+                (float) $item->base_price !== (float) $pricing['base_price']
+                || (float) $item->discount_amount !== (float) $pricing['discount_amount']
+                || (float) $item->rush_fee_amount !== (float) $pricing['rush_fee_amount']
+                || (float) $item->layout_fee_amount !== (float) $pricing['layout_fee_amount']
+                || (float) $item->total_price !== (float) $pricing['total_price'];
+
+            if (! $shouldUpdate) {
+                continue;
+            }
+
+            $item->update([
+                'base_price' => $pricing['base_price'],
+                'discount_amount' => $pricing['discount_amount'],
+                'rush_fee_amount' => $pricing['rush_fee_amount'],
+                'layout_fee_amount' => $pricing['layout_fee_amount'],
+                'total_price' => $pricing['total_price'],
+            ]);
+        }
     }
 
     private function formatOptionsForItem(CustomerCartItem $item): array

@@ -35,6 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const cartContainer = document.getElementById("cartItemsContainer");
     const emptyMessage = document.getElementById("emptyCartMsg");
     const grandTotalDisplay = document.getElementById("grandTotalDisplay");
+    const grandTotalLabelText = document.getElementById("grandTotalLabelText");
     const modalTitle = document.getElementById("dynamicModalTitle");
     const orderPlacementFeedback = document.getElementById(
         "orderPlacementFeedback",
@@ -53,6 +54,28 @@ document.addEventListener("DOMContentLoaded", () => {
             .replace(/>/g, "&gt;")
             .replace(/\"/g, "&quot;")
             .replace(/'/g, "&#39;");
+
+    const resolveGrandTotalLabel = (items = []) => {
+        const currentProductLabel = `${product?.name ?? "Product"} Total`;
+
+        if (!Array.isArray(items) || items.length === 0) {
+            return currentProductLabel;
+        }
+
+        const hasMixedProducts = items.some(
+            (item) => Number(item.product_id) !== Number(productId),
+        );
+
+        return hasMixedProducts ? "Cart Total" : currentProductLabel;
+    };
+
+    const updateGrandTotalLabel = (items = []) => {
+        if (!grandTotalLabelText) {
+            return;
+        }
+
+        grandTotalLabelText.textContent = resolveGrandTotalLabel(items);
+    };
 
     function clearOrderPlacementFeedback() {
         if (!orderPlacementFeedback) {
@@ -194,6 +217,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!cartPayload.items || cartPayload.items.length === 0) {
             cartContainer.appendChild(emptyMessage);
+            updateGrandTotalLabel([]);
             grandTotalDisplay.textContent = formatMoney(0);
             return;
         }
@@ -224,6 +248,7 @@ document.addEventListener("DOMContentLoaded", () => {
             cartContainer.appendChild(row);
         });
 
+        updateGrandTotalLabel(cartPayload.items);
         grandTotalDisplay.textContent = formatMoney(cartPayload.totals.total_price);
     }
 

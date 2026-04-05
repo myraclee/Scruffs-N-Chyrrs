@@ -124,7 +124,9 @@ class CustomerOrderController extends Controller
                 ->firstOrFail();
 
             // Get all available rush fees for the client to choose from
-            $rushFees = RushFee::with('timeframes')
+            $rushFees = RushFee::with([
+                'timeframes' => fn ($query) => $query->orderBy('sort_order')->orderBy('id'),
+            ])
                 ->orderBy('min_price')
                 ->get();
 
@@ -245,7 +247,8 @@ class CustomerOrderController extends Controller
                 $orderTemplate,
                 $selectedOptions,
                 $quantity,
-                $validated['rush_fee_id'] ?? null
+                $validated['rush_fee_id'] ?? null,
+                $validated['special_instructions'] ?? null,
             );
 
             if (!isset($pricing['success']) || !$pricing['success']) {

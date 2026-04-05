@@ -40,6 +40,9 @@
                 <div class="file_spec_field" style="margin-bottom: 15px;">
                     <label class="file_spec_label">Item Notes <span class="label_optional">(Design filename or instruction)</span></label>
                     <input type="text" id="itemFileName" class="file_spec_input" placeholder="e.g., front_logo.png, matte finish">
+                    <p style="margin: 8px 2px 0; color: #6b5f75; font-family: 'Coolvetica', sans-serif; font-size: 12px; line-height: 1.35;">
+                        Layout fee count is comma-based: 1 entry = 1 layout, 2 entries = 2 layouts.
+                    </p>
                 </div>
 
                 <button type="button" id="addItemBtn" class="add_file_spec_btn" style="width: 100%; justify-content: center; margin-top: 10px;">
@@ -56,7 +59,7 @@
 
             <div class="order_modal_price_section">
                 <div class="order_modal_price_row total">
-                    <span class="order_modal_price_label">FULL TOTAL <span class="price_sparkle">✨</span></span>
+                    <span class="order_modal_price_label"><span id="grandTotalLabelText">Product Total</span> <span class="price_sparkle">✨</span></span>
                     <span class="order_modal_price_value" id="grandTotalDisplay">₱0.00</span>
                 </div>
             </div>
