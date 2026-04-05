@@ -41,17 +41,6 @@
         <span class="edit_section_line"></span>
     </div>
 
-        @if($errors->any())
-            <div class="alert alert_error">
-                <p><strong>Please fix the following errors:</strong></p>
-                <ul>
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
         <form method="POST" action="{{ route('update-profile') }}" class="edit_profile_form" id="edit_profile_form" novalidate>
             @csrf
 
