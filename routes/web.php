@@ -80,10 +80,10 @@ Route::prefix('api/products')->group(function () {
 
 Route::prefix('api/materials')->group(function () {
     Route::get('/', [MaterialController::class, 'index']);
-    Route::post('/', [MaterialController::class, 'store']);
+    Route::post('/', [MaterialController::class, 'store'])->middleware(['auth', 'owner']);
     Route::get('{material}', [MaterialController::class, 'show']);
-    Route::put('{material}', [MaterialController::class, 'update']);
-    Route::delete('{material}', [MaterialController::class, 'destroy']);
+    Route::put('{material}', [MaterialController::class, 'update'])->middleware(['auth', 'owner']);
+    Route::delete('{material}', [MaterialController::class, 'destroy'])->middleware(['auth', 'owner']);
 });
 
 Route::prefix('api/home-images')->group(function () {

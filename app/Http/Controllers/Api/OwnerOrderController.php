@@ -4,12 +4,18 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\CustomerOrderGroup;
+use App\Services\InventoryStockService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class OwnerOrderController extends Controller
 {
+    public function __construct(
+        protected InventoryStockService $stockService,
+    ) {
+    }
+
     public function index(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -92,9 +98,17 @@ class OwnerOrderController extends Controller
             ], 422);
         }
 
-        DB::transaction(function () use ($orderGroup, $nextStatus) {
+        $shouldRestock = $orderGroup->shouldRestockOnCancellation($nextStatus);
+
+        DB::transaction(function () use ($orderGroup, $nextStatus, $shouldRestock) {
             $orderGroup->update(['status' => $nextStatus]);
             $orderGroup->orders()->update(['status' => $nextStatus]);
+
+            if ($shouldRestock) {
+                $requirements = $orderGroup->inventory_material_requirements ?? [];
+                $this->stockService->restoreFromRequirements($requirements);
+                $orderGroup->update(['inventory_restored_at' => now()]);
+            }
         });
 
         $orderGroup->refresh()->load([

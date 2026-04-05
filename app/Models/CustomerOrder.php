@@ -6,6 +6,32 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int $customer_order_group_id
+ * @property int $user_id
+ * @property int $product_id
+ * @property int $order_template_id
+ * @property int|null $rush_fee_id
+ * @property array<string, int|string>|null $selected_options
+ * @property int $quantity
+ * @property string|null $special_instructions
+ * @property string $base_price
+ * @property string $discount_amount
+ * @property string $rush_fee_amount
+ * @property string $layout_fee_amount
+ * @property string $total_price
+ * @property string $status
+ * @property \Illuminate\Support\Carbon $created_at
+ * @property \Illuminate\Support\Carbon $updated_at
+ * @property-read string $status_label
+ * @property-read array<int, array<string, string>> $formatted_options
+ * @property-read User $user
+ * @property-read CustomerOrderGroup $orderGroup
+ * @property-read Product $product
+ * @property-read OrderTemplate $orderTemplate
+ * @property-read RushFee $rushFee
+ */
 class CustomerOrder extends Model
 {
     /** @use HasFactory<\Database\Factories\CustomerOrderFactory> */

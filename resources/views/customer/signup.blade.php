@@ -114,8 +114,8 @@
                 <div style="position: relative; display: block;">
                     <span style="position: absolute; left: 20px; top: 25px; transform: translateY(-50%); font-family: Coolvetica, sans-serif; font-size: 15px; color: #333; pointer-events: none;">+63</span>
                     
-                    <input class="signup_textbox" type="tel" id="contact_number" name="contact_number" placeholder="9123456789" value="{{ str_replace('+63', '', old('contact_number')) }}" required maxlength="10" pattern="^9[0-9]{9}$" oninput="this.value = this.value.replace(/[^0-9]/g, '')"
-                           style="text-indent: 32px; margin: 0; @error('contact_number') border: 2px solid #d93025 !important; @enderror">
+                          <input class="signup_textbox @error('contact_number') input_error_state @enderror" type="tel" id="contact_number" name="contact_number" placeholder="9123456789" value="{{ str_replace('+63', '', old('contact_number')) }}" required maxlength="10" pattern="^9[0-9]{9}$" oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                              style="text-indent: 32px; margin: 0;">
                            
                     <span class="client_error">Please enter a 10-digit number starting with 9.</span>
                     @error('contact_number')

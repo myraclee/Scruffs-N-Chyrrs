@@ -71,6 +71,10 @@
             "npm install",
             "npm run build"
         ],
+		"db-reset": [
+            "@php artisan migrate:fresh --force --drop-views",
+			"@php artisan db:seed --class=FAQSeeder"
+        ],
         "test": [
             "@php artisan config:clear --ansi",
             "@php artisan test"

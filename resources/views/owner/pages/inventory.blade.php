@@ -20,17 +20,17 @@
     </div>
 
     <div class="status_cards">
-        <div class="card low_stock">
+        <div class="card status_card low_stock status_healthy" id="lowStockCard">
             <h3>Low Stocks</h3>
-            <div id="lowStockList">
-                <p class="empty_status" style="font-style: italic; opacity: 0.7;">Checking levels...</p>
+            <div id="lowStockList" aria-live="polite">
+                <p class="empty_status">Checking levels...</p>
             </div>
         </div>
         
-        <div class="card out_of_stock">
+        <div class="card status_card out_of_stock status_healthy" id="outOfStockCard">
             <h3>Out of Stock</h3>
-            <div id="outOfStockList">
-                <p class="empty_status" style="font-style: italic; opacity: 0.7;">Checking levels...</p>
+            <div id="outOfStockList" aria-live="polite">
+                <p class="empty_status">Checking levels...</p>
             </div>
         </div>
     </div>
@@ -55,14 +55,14 @@
     </div>
 
     <div class="action_container">
-        <button id="openAddModalBtn" class="primary_button">Add Materials</button>
+        <button type="button" id="openAddModalBtn" class="primary_button">Add Materials</button>
     </div>
 </div>
 
-<div class="modal_overlay" id="modalOverlay">
+<div class="modal_overlay" id="modalOverlay" aria-hidden="true">
     
-    <div class="material_modal" id="addMaterialModal">
-        <h2 class="modal_title">Add New Materials</h2>
+    <div class="material_modal" id="addMaterialModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="addMaterialTitle" tabindex="-1">
+        <h2 class="modal_title" id="addMaterialTitle">Add New Materials</h2>
         
         <div class="input_group">
             <label>Materials</label>
@@ -71,7 +71,13 @@
 
         <div class="input_group">
             <label>Units</label>
-            <input type="number" id="newUnitsInput" class="number_input" style="width: 150px;" min="0">
+            <input type="number" id="newUnitsInput" class="number_input" style="width: 150px;" min="0" step="1" inputmode="numeric">
+        </div>
+
+        <div class="input_group">
+            <label>Low Stock Threshold</label>
+            <input type="number" id="newThresholdInput" class="number_input" style="width: 150px;" min="1" step="1" inputmode="numeric" value="5">
+            <small class="field_hint">Alert for this material when units are at or below this number.</small>
         </div>
 
         <div class="input_group">
@@ -86,13 +92,13 @@
         </div>
 
         <div class="modal_actions">
-            <button class="cancel_btn" onclick="closeAllModals()">Cancel</button>
-            <button class="save_btn" id="saveSimulatedMaterialBtn">Add Material</button>
+            <button type="button" class="cancel_btn" onclick="closeAllModals()">Cancel</button>
+            <button type="button" class="save_btn" id="saveSimulatedMaterialBtn">Add Material</button>
         </div>
     </div>
 
-    <div class="material_modal" id="editMaterialModal">
-        <h2 class="modal_title">Edit Materials</h2>
+    <div class="material_modal" id="editMaterialModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="editMaterialTitle" tabindex="-1">
+        <h2 class="modal_title" id="editMaterialTitle">Edit Materials</h2>
         
         <div class="input_group">
             <label>Materials</label>
@@ -101,7 +107,13 @@
 
         <div class="input_group">
             <label>Units</label>
-            <input type="number" id="editMaterialUnits" class="number_input" style="width: 150px;" min="0">
+            <input type="number" id="editMaterialUnits" class="number_input" style="width: 150px;" min="0" step="1" inputmode="numeric">
+        </div>
+
+        <div class="input_group">
+            <label>Low Stock Threshold</label>
+            <input type="number" id="editThresholdInput" class="number_input" style="width: 150px;" min="1" step="1" inputmode="numeric" value="5">
+            <small class="field_hint">Alert for this material when units are at or below this number.</small>
         </div>
 
         <div class="input_group">
@@ -116,11 +128,24 @@
         </div>
 
         <div class="modal_actions">
-            <button class="cancel_btn" onclick="closeAllModals()">Cancel</button>
-            <button class="save_btn" id="saveEditMaterialBtn">Save Changes</button>
+            <button type="button" class="cancel_btn" onclick="closeAllModals()">Cancel</button>
+            <button type="button" class="save_btn" id="saveEditMaterialBtn">Save Changes</button>
         </div>
     </div>
 
+</div>
+
+<div class="modal_overlay" id="deleteMaterialConfirmOverlay" aria-hidden="true">
+    <div class="delete_confirmation_modal" id="deleteMaterialConfirmModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="deleteMaterialConfirmMessage" tabindex="-1">
+        <p class="delete_msg" id="deleteMaterialConfirmMessage">
+            Are you sure you want to delete this material?
+        </p>
+        <small class="delete_subtext">This action cannot be undone.</small>
+        <div class="delete_confirmation_actions">
+            <button type="button" class="cancel_delete_btn" id="deleteMaterialCancelBtn">Cancel</button>
+            <button type="button" class="confirm_delete_btn" id="deleteMaterialConfirmBtn">Delete Material</button>
+        </div>
+    </div>
 </div>
 
 @vite('resources/js/owner/inventory_refactored.js')

@@ -85,16 +85,29 @@
     box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.1);
     font-family: Coolvetica;
     min-width: 200px;
+    border: 2px solid transparent;
+    color: #682c7a;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease,
+        background-color 0.25s ease, color 0.25s ease;
 }
 
 /* Dynamic Status Colors */
 .low_stock {
     border: 2px solid #f3c642;
-    color: #f3c642;
+    color: #7a5a07;
+    background: #fff9e8;
 }
 .out_of_stock {
     border: 2px solid #d94848;
-    color: #d94848;
+    color: #9e2727;
+    background: #fff2f2;
+}
+
+.card.status_healthy {
+    border-color: #2f7d64;
+    color: #2f7d64;
+    background: #eaf8f2;
+    box-shadow: 2px 4px 10px rgba(47, 125, 100, 0.2);
 }
 
 .card h3 {
@@ -107,17 +120,75 @@
     margin-bottom: 5px;
 }
 
+.empty_status {
+    font-style: italic;
+    opacity: 0.8;
+}
+
+.status_item {
+    margin-bottom: 6px;
+    font-size: 16px;
+    line-height: 1.2;
+}
+
+.status_more_btn {
+    border: none;
+    background: transparent;
+    color: inherit;
+    font-family: Coolvetica;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 6px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.status_more_btn:hover {
+    opacity: 0.75;
+}
+
+@keyframes statusGlowAmber {
+    0%,
+    100% {
+        box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.1), 0 0 0 rgba(243, 198, 66, 0);
+    }
+    50% {
+        box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.1),
+            0 0 16px rgba(243, 198, 66, 0.45);
+    }
+}
+
+@keyframes statusGlowRed {
+    0%,
+    100% {
+        box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.1), 0 0 0 rgba(217, 72, 72, 0);
+    }
+    50% {
+        box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.1),
+            0 0 16px rgba(217, 72, 72, 0.4);
+    }
+}
+
+.card.status_alert.pulse_glow.low_stock {
+    animation: statusGlowAmber 2.6s ease-in-out infinite;
+}
+
+.card.status_alert.pulse_glow.out_of_stock {
+    animation: statusGlowRed 2.6s ease-in-out infinite;
+}
+
 /* Table Styling */
 .table_wrapper {
     background: #fff;
     border-radius: 15px;
-    overflow: hidden;
+    overflow: auto;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     margin-bottom: 30px;
     border: 2px solid #682c7a;
 }
 .inventory_table {
     width: 100%;
+    min-width: 640px;
     border-collapse: collapse;
     font-family: Coolvetica;
     color: #4a205a;
@@ -144,14 +215,54 @@
     align-items: center;
 }
 
-.edit_btn {
-    background: transparent;
-    border: none;
-    color: #682c7a;
-    cursor: pointer;
+.product_actions {
+    display: flex;
+    gap: 10px;
 }
+
+.action_btn {
+    height: 25px;
+    width: 50px;
+    border: none;
+    border-radius: 30px;
+    font-family: Coolvetica;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.edit_btn {
+    background: #682c7a;
+    color: #fff7ec;
+}
+
 .edit_btn:hover {
-    color: #a15fb5;
+    background: #4c1c5b;
+    transform: scale(1.05);
+}
+
+.delete_btn {
+    background: #c83333;
+    color: #fff7ec;
+}
+
+.delete_btn:hover {
+    background: #8d0e0e;
+    transform: scale(1.05);
+}
+
+.action_btn:focus-visible,
+.primary_button:focus-visible,
+.cancel_btn:focus-visible,
+.save_btn:focus-visible,
+.cancel_delete_btn:focus-visible,
+.confirm_delete_btn:focus-visible,
+.text_input:focus-visible,
+.number_input:focus-visible,
+.tiny_input:focus-visible,
+.status_more_btn:focus-visible {
+    outline: 3px solid rgba(104, 44, 122, 0.35);
+    outline-offset: 2px;
 }
 
 /* Add Button */
@@ -194,7 +305,9 @@
 }
 .material_modal {
     background: #fff7ec;
-    width: 500px;
+    width: min(500px, calc(100vw - 2rem));
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
     padding: 40px;
     border-radius: 25px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
@@ -231,6 +344,29 @@
     color: #4a205a;
     font-size: 16px;
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.text_input[aria-invalid='true'],
+.number_input[aria-invalid='true'],
+.tiny_input[aria-invalid='true'] {
+    border-color: #d94848;
+    box-shadow: inset 0 2px 4px rgba(217, 72, 72, 0.18);
+}
+
+.field_error {
+    display: block;
+    color: #d94848;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    margin-top: 6px;
+}
+
+.field_hint {
+    display: block;
+    color: #7b7b7b;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    margin-top: 6px;
 }
 .short_input {
     width: 100px;
@@ -295,13 +431,14 @@
 
 .cancel_btn,
 .save_btn {
-    font-family: "Coolvetica", sans-serif;
+    font-family: 'Coolvetica', sans-serif;
     font-size: 18px;
     padding: 12px 30px;
     border: none;
     border-radius: 25px;
     cursor: pointer;
     color: white;
+    min-height: 44px;
 }
 
 .cancel_btn {
@@ -318,6 +455,87 @@
 
 .save_btn:hover {
     background: #a15fb5;
+}
+
+/* Delete Confirmation Modal */
+.delete_confirmation_modal {
+    background: #fff7ec;
+    border-radius: 24px;
+    padding: 35px 30px;
+    max-width: 380px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    text-align: center;
+}
+
+.delete_msg {
+    font-family: Coolvetica;
+    font-size: 20px;
+    color: #682c7a;
+    margin: 0;
+    line-height: 1.35;
+}
+
+.delete_subtext {
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    color: #777;
+}
+
+.delete_confirmation_actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 8px;
+    width: 100%;
+}
+
+.confirm_delete_btn,
+.cancel_delete_btn {
+    padding: 10px 14px;
+    border: none;
+    border-radius: 30px;
+    font-family: Coolvetica;
+    font-size: 15px;
+    cursor: pointer;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    min-height: 40px;
+    flex: 1;
+}
+
+.confirm_delete_btn {
+    background: #c83333;
+    color: #fff7ec;
+}
+
+.confirm_delete_btn:hover {
+    background: #8d0e0e;
+    transform: scale(1.03);
+}
+
+.cancel_delete_btn {
+    background: #999999;
+    color: #fff7ec;
+}
+
+.cancel_delete_btn:hover {
+    background: #7c7c7c;
+    transform: scale(1.03);
+}
+
+.confirm_delete_btn:disabled,
+.cancel_delete_btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+    transform: none;
+}
+
+.delete_confirmation_modal[aria-busy='true'] {
+    pointer-events: none;
 }
 
 /* ==========================================
@@ -367,7 +585,7 @@
 
     /* Mobile Modal Fixes */
     .material_modal {
-        width: 90%;
+        width: min(560px, calc(100vw - 1.5rem));
         padding: 25px;
     }
     .modal_title {
@@ -383,6 +601,16 @@
         text-align: left;
     }
 
+    .product_cell {
+        gap: 10px;
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .product_actions {
+        width: 100%;
+    }
+
     /* Stack Modal Buttons for easy thumb tapping */
     .modal_actions {
         flex-direction: column;
@@ -391,5 +619,33 @@
     .cancel_btn,
     .save_btn {
         width: 100%;
+    }
+
+    .delete_confirmation_actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .confirm_delete_btn,
+    .cancel_delete_btn {
+        width: 100%;
+    }
+
+    .action_btn {
+        width: 100%;
+        min-height: 36px;
+        font-size: 13px;
+    }
+
+    .status_more_btn {
+        min-height: 34px;
+        padding: 6px 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .card.status_alert.pulse_glow.low_stock,
+    .card.status_alert.pulse_glow.out_of_stock {
+        animation: none;
     }
 }

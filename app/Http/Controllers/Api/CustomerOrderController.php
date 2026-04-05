@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Exceptions\InsufficientMaterialStockException;
 use App\Http\Controllers\Controller;
 use App\Models\CustomerOrder;
 use App\Models\CustomerOrderGroup;
 use App\Models\OrderTemplate;
 use App\Models\Product;
 use App\Models\RushFee;
+use App\Services\InventoryStockService;
 use App\Services\OrderPricingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -17,7 +19,8 @@ use Illuminate\Support\Facades\DB;
 class CustomerOrderController extends Controller
 {
     public function __construct(
-        protected OrderPricingService $pricingService
+        protected OrderPricingService $pricingService,
+        protected InventoryStockService $stockService,
     ) {
     }
 
@@ -254,6 +257,13 @@ class CustomerOrderController extends Controller
 
             // Store the order in a transaction
             [$group, $order] = DB::transaction(function () use ($validated, $pricing, $selectedOptions) {
+                $requirements = $this->stockService->deductForOrderLines([
+                    [
+                        'product_id' => (int) $validated['product_id'],
+                        'quantity' => (int) $validated['quantity'],
+                    ],
+                ]);
+
                 $group = CustomerOrderGroup::create([
                     'user_id' => Auth::id(),
                     'status' => 'waiting',
@@ -263,6 +273,8 @@ class CustomerOrderController extends Controller
                     'rush_fee_total' => $pricing['rush_fee_amount'],
                     'layout_fee_total' => $pricing['layout_fee_amount'],
                     'total_price' => $pricing['total_price'],
+                    'inventory_material_requirements' => $requirements,
+                    'inventory_deducted_at' => now(),
                 ]);
 
                 $order = CustomerOrder::create([
@@ -314,6 +326,12 @@ class CustomerOrderController extends Controller
                 'success' => false,
                 'message' => 'Validation failed',
                 'errors' => $e->errors(),
+            ], 422);
+        } catch (InsufficientMaterialStockException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'shortages' => $e->shortages,
             ], 422);
         } catch (\Exception $e) {
             logger()->error('Order creation failed', [

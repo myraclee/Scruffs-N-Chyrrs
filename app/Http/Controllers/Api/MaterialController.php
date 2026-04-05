@@ -43,6 +43,7 @@ class MaterialController extends Controller
             $validated = $request->validate([
                 'name' => 'required|string|max:255|unique:materials,name',
                 'units' => 'required|integer|min:0',
+                'low_stock_threshold' => 'required|integer|min:1',
                 'description' => 'nullable|string',
                 'products' => 'nullable|array',
                 'products.*.id' => 'integer|exists:products,id',
@@ -52,6 +53,7 @@ class MaterialController extends Controller
             $material = Material::create([
                 'name' => $validated['name'],
                 'units' => $validated['units'],
+                'low_stock_threshold' => $validated['low_stock_threshold'],
                 'description' => $validated['description'] ?? null,
             ]);
 
@@ -114,6 +116,7 @@ class MaterialController extends Controller
             $validated = $request->validate([
                 'name' => 'required|string|max:255|unique:materials,name,' . $material->id,
                 'units' => 'required|integer|min:0',
+                'low_stock_threshold' => 'required|integer|min:1',
                 'description' => 'nullable|string',
                 'products' => 'nullable|array',
                 'products.*.id' => 'integer|exists:products,id',
@@ -123,6 +126,7 @@ class MaterialController extends Controller
             $material->update([
                 'name' => $validated['name'],
                 'units' => $validated['units'],
+                'low_stock_threshold' => $validated['low_stock_threshold'],
                 'description' => $validated['description'] ?? null,
             ]);
 
