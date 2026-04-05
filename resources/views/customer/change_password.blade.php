@@ -81,18 +81,4 @@
         </form>
     </div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const form = document.querySelector(".change_password_form");
-            if (form) {
-                form.addEventListener("submit", function(event) {
-                    if (!form.checkValidity()) {
-                        event.preventDefault(); 
-                        event.stopPropagation();
-                    }
-                    form.classList.add("was-validated");
-                }, false);
-            }
-        });
-    </script>
 @endsection
