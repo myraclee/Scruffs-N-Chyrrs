@@ -1,0 +1,52 @@
+<?php
+
+namespace Tests\Feature;
+
+use Tests\TestCase;
+
+class InventoryUiContractTest extends TestCase
+{
+    public function test_inventory_blade_contains_threshold_inputs_and_status_cards(): void
+    {
+        $blade = file_get_contents(base_path('resources/views/owner/pages/inventory.blade.php'));
+
+        $this->assertIsString($blade);
+        $this->assertStringContainsString('id="newThresholdInput"', $blade);
+        $this->assertStringContainsString('id="editThresholdInput"', $blade);
+        $this->assertStringContainsString('id="lowStockCard"', $blade);
+        $this->assertStringContainsString('id="outOfStockCard"', $blade);
+    }
+
+    public function test_inventory_actions_use_standard_edit_delete_buttons_instead_of_emojis(): void
+    {
+        $script = file_get_contents(base_path('resources/js/owner/inventory_refactored.js'));
+
+        $this->assertIsString($script);
+        $this->assertStringContainsString('class="action_btn edit_btn"', $script);
+        $this->assertStringContainsString('class="action_btn delete_btn"', $script);
+        $this->assertStringNotContainsString('✏️', $script);
+        $this->assertStringNotContainsString('🗑️', $script);
+    }
+
+    public function test_inventory_status_cards_support_show_more_and_healthy_messages(): void
+    {
+        $script = file_get_contents(base_path('resources/js/owner/inventory_refactored.js'));
+
+        $this->assertIsString($script);
+        $this->assertStringContainsString('Stock Items High', $script);
+        $this->assertStringContainsString('All Items In Stock', $script);
+        $this->assertStringContainsString('Show More', $script);
+        $this->assertStringContainsString('low_stock_threshold', $script);
+    }
+
+    public function test_inventory_css_contains_status_state_and_pulse_styles(): void
+    {
+        $css = file_get_contents(base_path('resources/css/owner/pages/inventory.css'));
+
+        $this->assertIsString($css);
+        $this->assertStringContainsString('.card.status_healthy', $css);
+        $this->assertStringContainsString('.card.status_alert.pulse_glow.low_stock', $css);
+        $this->assertStringContainsString('.card.status_alert.pulse_glow.out_of_stock', $css);
+        $this->assertStringContainsString('.status_more_btn', $css);
+    }
+}

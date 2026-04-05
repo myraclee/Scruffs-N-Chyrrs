@@ -16,15 +16,19 @@ const openAddModalBtn = document.getElementById("openAddModalBtn");
 
 const newMaterialInput = document.getElementById("newMaterialInput");
 const newUnitsInput = document.getElementById("newUnitsInput");
+const newThresholdInput = document.getElementById("newThresholdInput");
 const saveAddMaterialBtn = document.getElementById("saveSimulatedMaterialBtn");
 
 const editMaterialName = document.getElementById("editMaterialName");
 const editMaterialUnits = document.getElementById("editMaterialUnits");
+const editThresholdInput = document.getElementById("editThresholdInput");
 const saveEditMaterialBtn = document.getElementById("saveEditMaterialBtn");
 
 const inventoryTableBody = document.getElementById("inventoryTableBody");
 const emptyInventoryRow = document.getElementById("emptyInventoryRow");
 
+const lowStockCard = document.getElementById("lowStockCard");
+const outOfStockCard = document.getElementById("outOfStockCard");
 const lowStockList = document.getElementById("lowStockList");
 const outOfStockList = document.getElementById("outOfStockList");
 
@@ -36,8 +40,11 @@ let currentRowBeingEdited = null;
 let isLoading = false;
 let isSaving = false;
 let lastFocusedElement = null;
+let showAllLowStockNames = false;
+let showAllOutOfStockNames = false;
 
-const LOW_STOCK_THRESHOLD = 5;
+const DEFAULT_LOW_STOCK_THRESHOLD = 5;
+const STATUS_CARD_NAME_CAP = 3;
 
 // ================= INITIALIZATION =================
 document.addEventListener("DOMContentLoaded", async () => {
@@ -48,7 +55,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         !openAddModalBtn ||
         !saveAddMaterialBtn ||
         !saveEditMaterialBtn ||
-        !inventoryTableBody
+        !inventoryTableBody ||
+        !newThresholdInput ||
+        !editThresholdInput ||
+        !lowStockCard ||
+        !outOfStockCard ||
+        !lowStockList ||
+        !outOfStockList
     ) {
         return;
     }
@@ -126,11 +139,20 @@ function setupEventListeners() {
     document.addEventListener("keydown", handleOverlayKeydown);
 
     // Clear field errors while user edits inputs
-    [newMaterialInput, newUnitsInput, editMaterialName, editMaterialUnits].forEach(
-        (input) => {
-            input?.addEventListener("input", () => clearFieldError(input));
-        },
-    );
+    [
+        newMaterialInput,
+        newUnitsInput,
+        newThresholdInput,
+        editMaterialName,
+        editMaterialUnits,
+        editThresholdInput,
+    ].forEach((input) => {
+        input?.addEventListener("input", () => clearFieldError(input));
+    });
+
+    [lowStockList, outOfStockList].forEach((listEl) => {
+        listEl?.addEventListener("click", handleStatusToggleClick);
+    });
 }
 
 /**
@@ -195,11 +217,13 @@ async function saveMaterial(mode) {
     const isAdd = mode === "add";
     const nameInput = isAdd ? newMaterialInput : editMaterialName;
     const unitsInput = isAdd ? newUnitsInput : editMaterialUnits;
+    const thresholdInput = isAdd ? newThresholdInput : editThresholdInput;
     const modal = isAdd ? addMaterialModal : editMaterialModal;
 
     clearModalErrors(modal);
     clearFieldError(nameInput);
     clearFieldError(unitsInput);
+    clearFieldError(thresholdInput);
 
     const name = nameInput.value.trim();
     if (!name) {
@@ -216,6 +240,24 @@ async function saveMaterial(mode) {
     const units = Number(unitsRaw);
     if (!Number.isInteger(units) || units < 0) {
         setFieldError(unitsInput, "Units must be a whole number 0 or greater");
+        return;
+    }
+
+    const thresholdRaw = thresholdInput.value.trim();
+    if (!/^\d+$/.test(thresholdRaw)) {
+        setFieldError(
+            thresholdInput,
+            "Low stock threshold must be a whole number 1 or greater",
+        );
+        return;
+    }
+
+    const lowStockThreshold = Number(thresholdRaw);
+    if (!Number.isInteger(lowStockThreshold) || lowStockThreshold < 1) {
+        setFieldError(
+            thresholdInput,
+            "Low stock threshold must be a whole number 1 or greater",
+        );
         return;
     }
 
@@ -280,6 +322,7 @@ async function saveMaterial(mode) {
         const data = {
             name,
             units: units,
+            low_stock_threshold: lowStockThreshold,
             products: products,
         };
 
@@ -304,6 +347,10 @@ async function saveMaterial(mode) {
 
         if (error.errors?.units?.length) {
             setFieldError(unitsInput, error.errors.units[0]);
+        }
+
+        if (error.errors?.low_stock_threshold?.length) {
+            setFieldError(thresholdInput, error.errors.low_stock_threshold[0]);
         }
 
         if (error.errors && Object.keys(error.errors).length > 0) {
@@ -340,6 +387,9 @@ async function openEditModal(btn, materialId) {
     clearModalErrors(editMaterialModal);
     editMaterialName.value = material.name;
     editMaterialUnits.value = material.units;
+    editThresholdInput.value = String(
+        normalizeLowStockThreshold(material.low_stock_threshold),
+    );
 
     // Reset all checkboxes
     editMaterialModal
@@ -447,11 +497,11 @@ function renderMaterials() {
             <td>${safeMaterialName}</td>
             <td class="text-center">${material.units}</td>
             <td>
-                <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="product_cell">
                     <span>${productText}</span>
-                    <div style="display: flex; gap: 10px;">
-                        <button type="button" class="edit_btn" onclick="openEditModal(this, ${material.id})" title="Edit material" aria-label="Edit ${safeMaterialName}">✏️</button>
-                        <button type="button" class="edit_btn" onclick="deleteMaterial(${material.id})" title="Delete material" aria-label="Delete ${safeMaterialName}" style="color: #D94848;">🗑️</button>
+                    <div class="product_actions">
+                        <button type="button" class="action_btn edit_btn" onclick="openEditModal(this, ${material.id})" title="Edit material" aria-label="Edit ${safeMaterialName}">Edit</button>
+                        <button type="button" class="action_btn delete_btn" onclick="deleteMaterial(${material.id})" title="Delete material" aria-label="Delete ${safeMaterialName}">Delete</button>
                     </div>
                 </div>
             </td>
@@ -464,36 +514,109 @@ function renderMaterials() {
  * Update status cards based on material data
  */
 function updateStatusCards() {
-    let lowStocks = [];
-    let outOfStocks = [];
+    const lowStocks = [];
+    const outOfStocks = [];
 
     materials_list.forEach((material) => {
-        if (material.units === 0) {
+        const units = Number(material.units || 0);
+        const lowStockThreshold = normalizeLowStockThreshold(
+            material.low_stock_threshold,
+        );
+
+        if (units === 0) {
             outOfStocks.push(material.name);
-        } else if (material.units <= LOW_STOCK_THRESHOLD) {
+        } else if (units <= lowStockThreshold) {
             lowStocks.push(material.name);
         }
     });
 
-    // Update low stock display
-    if (lowStocks.length > 0) {
-        lowStockList.innerHTML = lowStocks
-            .map((name) => `<p>${name}</p>`)
-            .join("");
-    } else {
-        lowStockList.innerHTML =
-            '<p class="empty_status">All levels healthy!</p>';
+    if (lowStocks.length <= STATUS_CARD_NAME_CAP) {
+        showAllLowStockNames = false;
     }
 
-    // Update out of stock display
-    if (outOfStocks.length > 0) {
-        outOfStockList.innerHTML = outOfStocks
-            .map((name) => `<p>${name}</p>`)
-            .join("");
-    } else {
-        outOfStockList.innerHTML =
-            '<p class="empty_status">All items are in stock.</p>';
+    if (outOfStocks.length <= STATUS_CARD_NAME_CAP) {
+        showAllOutOfStockNames = false;
     }
+
+    renderStatusCard(
+        lowStockCard,
+        lowStockList,
+        lowStocks,
+        "Stock Items High",
+        "low",
+        showAllLowStockNames,
+    );
+
+    renderStatusCard(
+        outOfStockCard,
+        outOfStockList,
+        outOfStocks,
+        "All Items In Stock",
+        "out",
+        showAllOutOfStockNames,
+    );
+}
+
+function renderStatusCard(
+    cardElement,
+    listElement,
+    names,
+    healthyMessage,
+    toggleType,
+    isExpanded,
+) {
+    const hasAlerts = names.length > 0;
+
+    cardElement.classList.toggle("status_alert", hasAlerts);
+    cardElement.classList.toggle("status_healthy", !hasAlerts);
+    cardElement.classList.toggle("pulse_glow", hasAlerts);
+
+    listElement.innerHTML = buildStatusListMarkup(
+        names,
+        healthyMessage,
+        toggleType,
+        isExpanded,
+    );
+}
+
+function buildStatusListMarkup(names, healthyMessage, toggleType, isExpanded) {
+    if (names.length === 0) {
+        return `<p class="empty_status">${escapeHtml(healthyMessage)}</p>`;
+    }
+
+    const visibleNames = isExpanded ? names : names.slice(0, STATUS_CARD_NAME_CAP);
+    const namesMarkup = visibleNames
+        .map((name) => `<p class="status_item">${escapeHtml(name)}</p>`)
+        .join("");
+
+    if (names.length <= STATUS_CARD_NAME_CAP) {
+        return namesMarkup;
+    }
+
+    const hiddenCount = names.length - STATUS_CARD_NAME_CAP;
+    const toggleText = isExpanded
+        ? "Show Less"
+        : `Show More (${hiddenCount} more)`;
+
+    return `${namesMarkup}<button type="button" class="status_more_btn" data-status-toggle="${toggleType}" aria-expanded="${isExpanded ? "true" : "false"}">${toggleText}</button>`;
+}
+
+function handleStatusToggleClick(event) {
+    const toggleButton = event.target.closest(".status_more_btn");
+    if (!toggleButton) {
+        return;
+    }
+
+    const toggleType = toggleButton.getAttribute("data-status-toggle");
+    if (toggleType === "low") {
+        showAllLowStockNames = !showAllLowStockNames;
+    }
+
+    if (toggleType === "out") {
+        showAllOutOfStockNames = !showAllOutOfStockNames;
+    }
+
+    updateStatusCards();
 }
 
 /**
@@ -503,6 +626,7 @@ function resetAddModal() {
     clearModalErrors(addMaterialModal);
     newMaterialInput.value = "";
     newUnitsInput.value = "";
+    newThresholdInput.value = String(DEFAULT_LOW_STOCK_THRESHOLD);
 
     addMaterialModal
         .querySelectorAll(".add_product_checkbox")
@@ -521,6 +645,7 @@ function resetEditModal() {
     clearModalErrors(editMaterialModal);
     editMaterialName.value = "";
     editMaterialUnits.value = "";
+    editThresholdInput.value = String(DEFAULT_LOW_STOCK_THRESHOLD);
 
     editMaterialModal
         .querySelectorAll(".edit_product_checkbox")
@@ -726,6 +851,15 @@ function getErrorId(input) {
 
     const productId = input.getAttribute("data-product-id") || "unknown";
     return `${input.className.replace(/\s+/g, "_")}_${productId}_error`;
+}
+
+function normalizeLowStockThreshold(value) {
+    const parsedValue = Number(value);
+    if (Number.isInteger(parsedValue) && parsedValue >= 1) {
+        return parsedValue;
+    }
+
+    return DEFAULT_LOW_STOCK_THRESHOLD;
 }
 
 function escapeHtml(value) {

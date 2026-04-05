@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property int $id
  * @property string $name
  * @property int $units
+ * @property int $low_stock_threshold
  * @property string|null $description
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
@@ -27,6 +28,7 @@ class Material extends Model
     protected $fillable = [
         'name',
         'units',
+        'low_stock_threshold',
         'description',
     ];
 
@@ -39,6 +41,7 @@ class Material extends Model
     {
         return [
             'units' => 'integer',
+            'low_stock_threshold' => 'integer',
         ];
     }
 

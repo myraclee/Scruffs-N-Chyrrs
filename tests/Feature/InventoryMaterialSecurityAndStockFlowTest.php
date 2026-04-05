@@ -97,6 +97,57 @@ class InventoryMaterialSecurityAndStockFlowTest extends TestCase
         ]);
     }
 
+    public function test_material_low_stock_threshold_defaults_to_five(): void
+    {
+        $material = Material::create([
+            'name' => 'Threshold Default '.uniqid(),
+            'units' => 9,
+        ]);
+
+        $material->refresh();
+
+        $this->assertSame(5, (int) $material->low_stock_threshold);
+        $this->assertDatabaseHas('materials', [
+            'id' => $material->id,
+            'low_stock_threshold' => 5,
+        ]);
+    }
+
+    public function test_owner_can_create_material_with_custom_low_stock_threshold(): void
+    {
+        $owner = User::factory()->create([
+            'user_type' => 'owner',
+        ]);
+
+        $response = $this->actingAs($owner)
+            ->postJson('/api/materials', [
+                'name' => 'Threshold Custom '.uniqid(),
+                'units' => 20,
+                'low_stock_threshold' => 3,
+            ]);
+
+        $response
+            ->assertCreated()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.low_stock_threshold', 3);
+    }
+
+    public function test_owner_cannot_create_material_with_threshold_below_one(): void
+    {
+        $owner = User::factory()->create([
+            'user_type' => 'owner',
+        ]);
+
+        $this->actingAs($owner)
+            ->postJson('/api/materials', [
+                'name' => 'Threshold Invalid '.uniqid(),
+                'units' => 12,
+                'low_stock_threshold' => 0,
+            ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('low_stock_threshold');
+    }
+
     public function test_checkout_deducts_stock_and_waiting_cancellation_restores_once(): void
     {
         $owner = User::factory()->create(['user_type' => 'owner']);

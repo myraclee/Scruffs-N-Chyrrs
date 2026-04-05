@@ -20,17 +20,17 @@
     </div>
 
     <div class="status_cards">
-        <div class="card low_stock">
+        <div class="card status_card low_stock status_healthy" id="lowStockCard">
             <h3>Low Stocks</h3>
             <div id="lowStockList" aria-live="polite">
-                <p class="empty_status" style="font-style: italic; opacity: 0.7;">Checking levels...</p>
+                <p class="empty_status">Checking levels...</p>
             </div>
         </div>
         
-        <div class="card out_of_stock">
+        <div class="card status_card out_of_stock status_healthy" id="outOfStockCard">
             <h3>Out of Stock</h3>
             <div id="outOfStockList" aria-live="polite">
-                <p class="empty_status" style="font-style: italic; opacity: 0.7;">Checking levels...</p>
+                <p class="empty_status">Checking levels...</p>
             </div>
         </div>
     </div>
@@ -71,7 +71,13 @@
 
         <div class="input_group">
             <label>Units</label>
-            <input type="number" id="newUnitsInput" class="number_input" style="width: 150px;" min="0">
+            <input type="number" id="newUnitsInput" class="number_input" style="width: 150px;" min="0" step="1" inputmode="numeric">
+        </div>
+
+        <div class="input_group">
+            <label>Low Stock Threshold</label>
+            <input type="number" id="newThresholdInput" class="number_input" style="width: 150px;" min="1" step="1" inputmode="numeric" value="5">
+            <small class="field_hint">Alert for this material when units are at or below this number.</small>
         </div>
 
         <div class="input_group">
@@ -101,7 +107,13 @@
 
         <div class="input_group">
             <label>Units</label>
-            <input type="number" id="editMaterialUnits" class="number_input" style="width: 150px;" min="0">
+            <input type="number" id="editMaterialUnits" class="number_input" style="width: 150px;" min="0" step="1" inputmode="numeric">
+        </div>
+
+        <div class="input_group">
+            <label>Low Stock Threshold</label>
+            <input type="number" id="editThresholdInput" class="number_input" style="width: 150px;" min="1" step="1" inputmode="numeric" value="5">
+            <small class="field_hint">Alert for this material when units are at or below this number.</small>
         </div>
 
         <div class="input_group">
