@@ -20,12 +20,18 @@ return new class () extends Migration {
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();
+
+            $table->integer('login_attempts')->default(0);
+            $table->timestamp('lockout_until')->nullable();
+            $table->boolean('is_locked')->default(false);
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
+            $table->string('code'); // 6-digit code
             $table->timestamp('created_at')->nullable();
+            $table->timestamp('expires_at')->nullable(); // Add this for the timeout logic
         });
 
         Schema::create('sessions', function (Blueprint $table) {

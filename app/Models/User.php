@@ -40,6 +40,9 @@ class User extends Authenticatable
         'contact_number',
         'password',
         'user_type',
+        'login_attempts',
+        'lockout_until',
+        'is_locked',
     ];
 
     /**
@@ -62,6 +65,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'lockout_until' => 'datetime', 
+            'is_locked' => 'boolean',
         ];
     }
 

@@ -45,6 +45,11 @@
     <form method="POST" action="{{ route('login.store') }}" novalidate>
         @csrf
 
+        {{-- Hidden input to pass lockout timestamp to JavaScript --}}
+        @if(session('lockout_until'))
+            <input type="hidden" id="lockout_timestamp" value="{{ session('lockout_until') }}">
+        @endif
+
         <div class="login_container">
             <label for="email">Email</label>
             <input class="login_textbox" type="email" id="email" name="email" placeholder="email@address.com" value="{{ old('email') }}" required maxlength="254" 
@@ -69,11 +74,6 @@
             @error('password')
                 <span class="server_error">{{ $message }}</span>
             @enderror
-            
-            {{-- Professional error message for incorrect credentials --}}
-            @if($errors->has('email') && !$errors->has('password'))
-                <span class="server_error">Invalid email or password.</span>
-            @endif
             
             <p class="forgot_password" style="margin-top: 10px;"><a href="{{ route('reset-password') }}">Forgot your password?</a></p>
         </div>
