@@ -201,11 +201,12 @@ document.addEventListener("DOMContentLoaded", () => {
             const text = err.textContent.trim();
 
             const isPermanentLock = text.includes("Account locked");
+            const isResetRequired = text.includes("Password reset required");
             const isInvalidCreds =
                 text.includes("Invalid email or password") ||
                 text.includes("Invalid credentials");
 
-            if (isPermanentLock) {
+            if (isPermanentLock || isResetRequired) {
                 // Apply red outlines to BOTH email and password
                 applyErrorStyles(emailInput);
                 applyErrorStyles(loginInput);

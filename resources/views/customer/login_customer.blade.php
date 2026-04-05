@@ -40,6 +40,41 @@
             margin-top: 6px;
             display: block;
         }
+
+        .unlock_option_wrap {
+            margin-top: 14px;
+            padding: 12px;
+            border-radius: 10px;
+            background: rgba(104, 44, 122, 0.06);
+            border: 1px solid rgba(104, 44, 122, 0.25);
+        }
+
+        .unlock_option_text {
+            margin: 0 0 10px;
+            color: #5d276f;
+            font-family: Coolvetica, sans-serif;
+            letter-spacing: 0.2px;
+        }
+
+        .unlock_email_input {
+            margin-bottom: 10px;
+        }
+
+        .unlock_option_button {
+            width: 100%;
+            border: 0;
+            border-radius: 8px;
+            padding: 10px 12px;
+            background: #682c7a;
+            color: #fff;
+            font-family: Coolvetica, sans-serif;
+            letter-spacing: 0.3px;
+            cursor: pointer;
+        }
+
+        .unlock_option_button:hover {
+            background: #542463;
+        }
     </style>
 
     <form method="POST" action="{{ route('login.store') }}" novalidate>
@@ -92,6 +127,25 @@
 
         <p class="signup_redirect">Don't have an account? <a href="{{ route('signup') }}">Sign Up</a></p>
     </form>
+
+    @if(session('show_unlock_option'))
+        <div class="unlock_option_wrap">
+            <p class="unlock_option_text">Final option: verify your email to unlock your account.</p>
+            <form method="POST" action="{{ route('account-unlock.send') }}" novalidate>
+                @csrf
+                <input
+                    class="login_textbox unlock_email_input"
+                    type="email"
+                    id="unlock_email"
+                    name="email"
+                    placeholder="email@address.com"
+                    value="{{ old('email') }}"
+                    required
+                >
+                <button type="submit" class="unlock_option_button">Unlock via Email Verification</button>
+            </form>
+        </div>
+    @endif
     
     <script
         src="https://challenges.cloudflare.com/turnstile/v0/api.js"

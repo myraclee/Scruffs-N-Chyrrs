@@ -33,6 +33,26 @@ class AuthController extends Controller
         return $rules;
     }
 
+    /**
+     * Issue and deliver a 6-digit verification code using the existing reset token table.
+     */
+    private function issueVerificationCode(User $user): void
+    {
+        $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $user->email],
+            [
+                'code' => $code,
+                'token' => \Illuminate\Support\Str::random(64),
+                'expires_at' => now()->addMinutes(15),
+                'created_at' => now(),
+            ]
+        );
+
+        Mail::to($user->email)->send(new PasswordResetCode($code, $user->first_name));
+    }
+
     public function showSignup()
     {
         return view('customer.signup');
@@ -109,7 +129,16 @@ class AuthController extends Controller
             if ($user->is_locked) {
                 return back()
                     ->withErrors(['password' => 'Account locked due to multiple failed attempts.'])
-                    ->withInput($request->only('email'));
+                    ->withInput($request->only('email'))
+                    ->with('show_unlock_option', true);
+            }
+
+            // User finished unlock verification but still needs to set a new password.
+            if ($user->must_reset_password) {
+                return back()
+                    ->withErrors(['password' => 'Password reset required before login. Use email verification to unlock your account.'])
+                    ->withInput($request->only('email'))
+                    ->with('show_unlock_option', true);
             }
 
             // Temporary lock
@@ -125,7 +154,8 @@ class AuthController extends Controller
             if ($user) {
                 $user->update([
                     'login_attempts' => 0,
-                    'lockout_until' => null
+                    'lockout_until' => null,
+                    'must_reset_password' => false,
                 ]);
             }
 
@@ -141,11 +171,15 @@ class AuthController extends Controller
             $user->increment('login_attempts');
 
             if ($user->login_attempts >= 5) {
-                $user->update(['is_locked' => true, 'lockout_until' => null]);
+                $user->update([
+                    'is_locked' => true,
+                    'lockout_until' => null,
+                ]);
 
                 return back()
                     ->withErrors(['password' => 'Account locked due to multiple failed attempts.'])
-                    ->withInput($request->only('email'));
+                    ->withInput($request->only('email'))
+                    ->with('show_unlock_option', true);
             }
 
             if ($user->login_attempts == 4) {
@@ -252,31 +286,46 @@ class AuthController extends Controller
                 ->onlyInput('email');
         }
 
-        $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $this->issueVerificationCode($user);
 
-        DB::table('password_reset_tokens')->updateOrInsert(
-            ['email' => $request->email],
-            [
-                'code' => $code,
-                'token' => \Illuminate\Support\Str::random(64),
-                'expires_at' => now()->addMinutes(15),
-                'created_at' => now(),
-            ]
-        );
-
-        Mail::to($request->email)->send(new PasswordResetCode($code, $user->first_name));
-
+        $request->session()->forget(['unlock_email', 'verified_reset_email']);
         $request->session()->put('reset_email', $request->email);
 
         return redirect()->route('enter-code')
             ->with('success', 'A verification code has been sent to your email.');
     }
 
+    public function sendUnlockCode(Request $request)
+    {
+        $request->validate([
+            'email' => $this->emailRules(),
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if ($user && ($user->is_locked || $user->must_reset_password)) {
+            $this->issueVerificationCode($user);
+        }
+
+        $request->session()->forget(['reset_email', 'verified_reset_email']);
+        $request->session()->put('unlock_email', $request->email);
+
+        return redirect()->route('enter-code')
+            ->with('success', 'If your account is eligible, a verification code has been sent to your email.');
+    }
+
     public function showEnterCode()
     {
-        if (!session('reset_email')) return redirect()->route('reset-password');
+        $hasResetFlow = session()->has('reset_email');
+        $hasUnlockFlow = session()->has('unlock_email');
 
-        return view('customer.password_page.enter_code');
+        if (!$hasResetFlow && !$hasUnlockFlow) {
+            return redirect()->route('reset-password');
+        }
+
+        return view('customer.password_page.enter_code', [
+            'isUnlockFlow' => $hasUnlockFlow && !$hasResetFlow,
+        ]);
     }
 
     public function verifyResetCode(Request $request)
@@ -285,9 +334,12 @@ class AuthController extends Controller
             'code' => ['required', 'string', 'size:6']
         ]);
 
-        $email = session('reset_email');
+        $isUnlockFlow = session()->has('unlock_email');
+        $email = $isUnlockFlow ? session('unlock_email') : session('reset_email');
 
-        if (!$email) return redirect()->route('reset-password');
+        if (!$email) {
+            return redirect()->route('reset-password');
+        }
 
         $resetToken = DB::table('password_reset_tokens')->where('email', $email)->first();
 
@@ -299,9 +351,29 @@ class AuthController extends Controller
             return back()->withErrors(['code' => 'The verification code has expired. Please request a new one.']);
         }
 
+        if ($isUnlockFlow) {
+            $user = User::where('email', $email)->first();
+
+            if ($user) {
+                $user->update([
+                    'is_locked' => false,
+                    'login_attempts' => 0,
+                    'lockout_until' => null,
+                    'must_reset_password' => true,
+                ]);
+            }
+        }
+
+        $request->session()->forget(['reset_email', 'unlock_email']);
+
         $request->session()->put('verified_reset_email', $email);
 
-        return redirect()->route('new-password')->with('success', 'Code verified successfully!');
+        return redirect()->route('new-password')->with(
+            'success',
+            $isUnlockFlow
+                ? 'Verification successful. Please create a new password to finish unlocking your account.'
+                : 'Code verified successfully!'
+        );
     }
 
     public function showNewPassword()
@@ -329,12 +401,16 @@ class AuthController extends Controller
         }
 
         $user->update([
-            'password' => Hash::make($request->new_password)
+            'password' => Hash::make($request->new_password),
+            'is_locked' => false,
+            'login_attempts' => 0,
+            'lockout_until' => null,
+            'must_reset_password' => false,
         ]);
 
         DB::table('password_reset_tokens')->where('email', $email)->delete();
 
-        $request->session()->forget(['reset_email', 'verified_reset_email']);
+        $request->session()->forget(['reset_email', 'unlock_email', 'verified_reset_email']);
 
         return redirect()->route('login')
             ->with('success', 'Password reset successfully! Please log in with your new password.');

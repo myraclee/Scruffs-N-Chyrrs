@@ -18,6 +18,7 @@ class AuthLoginSecuritySchemaTest extends TestCase
         $this->assertContains('login_attempts', $columns);
         $this->assertContains('lockout_until', $columns);
         $this->assertContains('is_locked', $columns);
+        $this->assertContains('must_reset_password', $columns);
     }
 
     public function test_failed_login_increments_login_attempts_without_query_errors(): void

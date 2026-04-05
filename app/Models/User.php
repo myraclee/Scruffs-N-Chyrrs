@@ -43,6 +43,7 @@ class User extends Authenticatable
         'login_attempts',
         'lockout_until',
         'is_locked',
+        'must_reset_password',
     ];
 
     /**
@@ -67,6 +68,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'lockout_until' => 'datetime', 
             'is_locked' => 'boolean',
+            'must_reset_password' => 'boolean',
         ];
     }
 

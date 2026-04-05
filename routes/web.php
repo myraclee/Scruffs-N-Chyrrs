@@ -51,6 +51,7 @@ Route::post('/signup', [AuthController::class, 'register'])->name('signup.store'
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::get('/owner/login', [AuthController::class, 'showOwnerLogin'])->name('owner.login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.store');
+Route::post('/account/unlock', [AuthController::class, 'sendUnlockCode'])->name('account-unlock.send');
 
 Route::middleware('auth')->group(function () {
     Route::get('/account', [AuthController::class, 'account'])->name('account');

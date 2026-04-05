@@ -43,7 +43,13 @@
     </style>
 
     <h1 class="header_enter_code">Verify Code</h1>
-    <p class="enter_code_description">Check your inbox! We've sent a verification code to your email.</p>
+    <p class="enter_code_description">
+        @if(($isUnlockFlow ?? false) === true)
+            Check your inbox! We've sent an unlock verification code to your email.
+        @else
+            Check your inbox! We've sent a verification code to your email.
+        @endif
+    </p>
     
     @if(session('success'))
         <div style="max-width: 500px; margin: 0 auto 20px; padding: 15px; background-color: #d4edda; border: 1px solid #c3e6cb; border-radius: 5px; color: #155724; font-family: Coolvetica;">
@@ -85,7 +91,13 @@
             <button type="submit" class="code_button">Verify</button>
         </div>
 
-        <p class="resend_text">Didn't get a code? <a href="{{ route('reset-password') }}">Request New Code</a></p>
+        <p class="resend_text">
+            @if(($isUnlockFlow ?? false) === true)
+                Need another code? <a href="{{ route('login') }}">Go back to login and request unlock again</a>
+            @else
+                Didn't get a code? <a href="{{ route('reset-password') }}">Request New Code</a>
+            @endif
+        </p>
     </form>
 
     <script>
