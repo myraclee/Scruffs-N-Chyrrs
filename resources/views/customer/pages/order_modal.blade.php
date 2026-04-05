@@ -61,6 +61,8 @@
                 </div>
             </div>
 
+            <div id="orderPlacementFeedback" class="order_modal_message error order_modal_message_shortage" hidden aria-live="polite" tabindex="-1"></div>
+
             <button type="button" class="order_modal_submit_btn" id="submitMasterOrderBtn">
                 <span id="submitBtnText">Place Order</span>
             </button>

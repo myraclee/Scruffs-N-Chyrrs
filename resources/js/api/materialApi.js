@@ -8,6 +8,70 @@ class MaterialAPI {
     this.isLoading = false;
   }
 
+  getCsrfToken() {
+    const token = document
+      .querySelector('meta[name="csrf-token"]')
+      ?.getAttribute('content');
+
+    return token || '';
+  }
+
+  getHttpErrorMessage(statusCode) {
+    if (statusCode === 419) {
+      return 'Session expired. Please refresh the page and sign in again.';
+    }
+
+    if (statusCode === 403) {
+      return 'You are not authorized to perform this action.';
+    }
+
+    if (statusCode === 401) {
+      return 'Authentication required. Please sign in and try again.';
+    }
+
+    return 'Request failed.';
+  }
+
+  async request(url, options = {}) {
+    const {
+      headers: customHeaders = {},
+      body,
+      ...requestOptions
+    } = options;
+
+    const shouldSetJsonContentType =
+      body !== undefined &&
+      body !== null &&
+      !(typeof FormData !== 'undefined' && body instanceof FormData);
+
+    const response = await fetch(url, {
+      ...requestOptions,
+      ...(body !== undefined ? { body } : {}),
+      headers: {
+        Accept: 'application/json',
+        'X-CSRF-TOKEN': this.getCsrfToken(),
+        'X-Requested-With': 'XMLHttpRequest',
+        ...(shouldSetJsonContentType ? { 'Content-Type': 'application/json' } : {}),
+        ...customHeaders,
+      },
+    });
+
+    const contentType = response.headers.get('content-type') || '';
+    const result = contentType.includes('application/json')
+      ? await response.json()
+      : { message: this.getHttpErrorMessage(response.status) };
+
+    if (!response.ok) {
+      const error = new Error(result.message || this.getHttpErrorMessage(response.status));
+      error.statusCode = response.status;
+      error.errors = result.errors || {};
+      error.shortages = result.shortages || [];
+      throw error;
+    }
+
+    return result;
+  }
+
   /**
    * Fetch all materials from database
    * @returns {Promise<Array>} Array of material objects with products relation
@@ -15,13 +79,7 @@ class MaterialAPI {
   async getAllMaterials() {
     try {
       this.isLoading = true;
-      const response = await fetch(this.baseUrl);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
+      const result = await this.request(this.baseUrl, { method: 'GET' });
 
       if (result.success) {
         return result.data || [];
@@ -44,13 +102,9 @@ class MaterialAPI {
   async getMaterial(materialId) {
     try {
       this.isLoading = true;
-      const response = await fetch(`${this.baseUrl}/${materialId}`);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
+      const result = await this.request(`${this.baseUrl}/${materialId}`, {
+        method: 'GET',
+      });
 
       if (result.success) {
         return result.data;
@@ -86,25 +140,10 @@ class MaterialAPI {
         throw new Error('Material units are required');
       }
 
-      const response = await fetch(this.baseUrl, {
+      const result = await this.request(this.baseUrl, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest'
-        },
         body: JSON.stringify(data)
       });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        // Handle validation errors
-        if (result.errors) {
-          const errorMessages = Object.values(result.errors).flat().join(', ');
-          throw new Error(errorMessages);
-        }
-        throw new Error(result.error || result.message || 'Failed to create material');
-      }
 
       if (result.success) {
         return result.data;
@@ -129,24 +168,10 @@ class MaterialAPI {
     try {
       this.isLoading = true;
 
-      const response = await fetch(`${this.baseUrl}/${materialId}`, {
+      const result = await this.request(`${this.baseUrl}/${materialId}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest'
-        },
         body: JSON.stringify(data)
       });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        if (result.errors) {
-          const errorMessages = Object.values(result.errors).flat().join(', ');
-          throw new Error(errorMessages);
-        }
-        throw new Error(result.error || result.message || 'Failed to update material');
-      }
 
       if (result.success) {
         return result.data;
@@ -170,19 +195,9 @@ class MaterialAPI {
     try {
       this.isLoading = true;
 
-      const response = await fetch(`${this.baseUrl}/${materialId}`, {
+      const result = await this.request(`${this.baseUrl}/${materialId}`, {
         method: 'DELETE',
-        headers: {
-          'X-Requested-With': 'XMLHttpRequest',
-          'Content-Type': 'application/json'
-        }
       });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || result.message || 'Failed to delete material');
-      }
 
       if (result.success) {
         return result;
@@ -207,20 +222,10 @@ class MaterialAPI {
     try {
       this.isLoading = true;
 
-      const response = await fetch(`${this.baseUrl}/${materialId}`, {
+      const result = await this.request(`${this.baseUrl}/${materialId}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest'
-        },
         body: JSON.stringify({ products })
       });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || result.message || 'Failed to update product associations');
-      }
 
       if (result.success) {
         return result.data;

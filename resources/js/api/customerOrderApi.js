@@ -43,6 +43,7 @@ class CustomerOrderAPI {
         statusCode: response.status,
         message: result.message || 'Request failed.',
         errors: result.errors || {},
+        shortages: Array.isArray(result.shortages) ? result.shortages : [],
       };
     }
 

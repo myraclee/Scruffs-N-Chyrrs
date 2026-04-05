@@ -36,12 +36,68 @@ document.addEventListener("DOMContentLoaded", () => {
     const emptyMessage = document.getElementById("emptyCartMsg");
     const grandTotalDisplay = document.getElementById("grandTotalDisplay");
     const modalTitle = document.getElementById("dynamicModalTitle");
+    const orderPlacementFeedback = document.getElementById(
+        "orderPlacementFeedback",
+    );
 
     const formatMoney = (amount) =>
         new Intl.NumberFormat("en-PH", {
             style: "currency",
             currency: "PHP",
         }).format(Number(amount || 0));
+
+    const escapeHtml = (value) =>
+        String(value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/\"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+
+    function clearOrderPlacementFeedback() {
+        if (!orderPlacementFeedback) {
+            return;
+        }
+
+        orderPlacementFeedback.hidden = true;
+        orderPlacementFeedback.classList.remove("active");
+        orderPlacementFeedback.innerHTML = "";
+    }
+
+    function renderShortageFeedback(shortages, fallbackMessage) {
+        if (!orderPlacementFeedback) {
+            return false;
+        }
+
+        const validShortages = Array.isArray(shortages)
+            ? shortages.filter((item) => item && item.material_name)
+            : [];
+
+        const shortageListItems = validShortages.map((item) => {
+            const materialName = escapeHtml(item.material_name);
+            const required = Number(item.required || 0);
+            const available = Number(item.available || 0);
+            const deficit = Math.max(
+                0,
+                Number(item.deficit ?? required - available),
+            );
+
+            return `<li><strong>${materialName}</strong>: Required ${required}, Available ${available}, Short by ${deficit}</li>`;
+        });
+
+        const message = fallbackMessage || "Insufficient material stock for this order.";
+
+        orderPlacementFeedback.innerHTML = `
+            <p class="order_modal_message_title">Unable to place order due to material shortage.</p>
+            <p class="order_modal_message_copy">${escapeHtml(message)}</p>
+            ${shortageListItems.length > 0 ? `<ul class="order_modal_shortage_list">${shortageListItems.join("")}</ul>` : ""}
+        `;
+        orderPlacementFeedback.hidden = false;
+        orderPlacementFeedback.classList.add("active");
+        orderPlacementFeedback.focus();
+
+        return true;
+    }
 
     function setButtonLoading(button, isLoading, loadingText) {
         if (!button) return;
@@ -197,9 +253,11 @@ document.addEventListener("DOMContentLoaded", () => {
         orderModal.classList.remove("active");
         orderModal.style.display = "none";
         document.body.style.overflow = "auto";
+        clearOrderPlacementFeedback();
     };
 
     window.openOrderModal = async function () {
+        clearOrderPlacementFeedback();
         orderModal.classList.add("active");
         orderModal.style.display = "flex";
         document.body.style.overflow = "hidden";
@@ -213,6 +271,8 @@ document.addEventListener("DOMContentLoaded", () => {
     cartContainer.addEventListener("click", async (event) => {
         const removeBtn = event.target.closest("button[data-remove-id]");
         if (!removeBtn) return;
+
+        clearOrderPlacementFeedback();
 
         const removeId = Number(removeBtn.dataset.removeId);
         if (!removeId) return;
@@ -229,6 +289,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     addItemBtn.addEventListener("click", async () => {
+        clearOrderPlacementFeedback();
+
         if (!templatePayload) {
             Toast.error("Order options are still loading. Please wait.");
             return;
@@ -277,6 +339,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     submitBtn.addEventListener("click", async () => {
+        clearOrderPlacementFeedback();
+
         const driveLink = driveLinkInput.value.trim();
         if (!driveLink) {
             Toast.warning("Please provide your main drive link before checkout.");
@@ -295,6 +359,14 @@ document.addEventListener("DOMContentLoaded", () => {
         setButtonLoading(submitBtn, false);
 
         if (!result.success) {
+            if (Array.isArray(result.shortages) && result.shortages.length > 0) {
+                renderShortageFeedback(result.shortages, result.message);
+                Toast.error(
+                    "Inventory shortage detected. Review the material details below.",
+                );
+                return;
+            }
+
             const firstError = result.errors
                 ? Object.values(result.errors).flat()[0]
                 : null;
@@ -302,6 +374,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+        clearOrderPlacementFeedback();
         Toast.success("Checkout complete! Redirecting to your orders...");
         window.closeOrderModal();
         window.location.href = "/account/orders";

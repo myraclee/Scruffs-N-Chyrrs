@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Exceptions\InsufficientMaterialStockException;
 use App\Models\CustomerCart;
 use App\Models\CustomerCartItem;
 use App\Models\CustomerOrder;
 use App\Models\CustomerOrderGroup;
 use App\Models\OrderTemplate;
 use App\Models\Product;
+use App\Services\InventoryStockService;
 use App\Services\OrderPricingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -18,7 +20,8 @@ use Illuminate\Support\Facades\DB;
 class CustomerCartController extends Controller
 {
     public function __construct(
-        protected OrderPricingService $pricingService
+        protected OrderPricingService $pricingService,
+        protected InventoryStockService $stockService,
     ) {
     }
 
@@ -204,41 +207,71 @@ class CustomerCartController extends Controller
             ], 422);
         }
 
-        $group = DB::transaction(function () use ($cart, $validated) {
-            $group = CustomerOrderGroup::create([
-                'user_id' => Auth::id(),
-                'status' => 'waiting',
-                'general_drive_link' => $validated['general_drive_link'],
-                'subtotal_price' => $cart->items->sum(fn ($item) => (float) $item->base_price),
-                'discount_total' => $cart->items->sum(fn ($item) => (float) $item->discount_amount),
-                'rush_fee_total' => $cart->items->sum(fn ($item) => (float) $item->rush_fee_amount),
-                'layout_fee_total' => $cart->items->sum(fn ($item) => (float) $item->layout_fee_amount),
-                'total_price' => $cart->items->sum(fn ($item) => (float) $item->total_price),
+        try {
+            $group = DB::transaction(function () use ($cart, $validated) {
+                $orderLines = $cart->items
+                    ->map(fn (CustomerCartItem $cartItem) => [
+                        'product_id' => (int) $cartItem->product_id,
+                        'quantity' => (int) $cartItem->quantity,
+                    ])
+                    ->values()
+                    ->all();
+
+                $requirements = $this->stockService->deductForOrderLines($orderLines);
+
+                $group = CustomerOrderGroup::create([
+                    'user_id' => Auth::id(),
+                    'status' => 'waiting',
+                    'general_drive_link' => $validated['general_drive_link'],
+                    'subtotal_price' => $cart->items->sum(fn ($item) => (float) $item->base_price),
+                    'discount_total' => $cart->items->sum(fn ($item) => (float) $item->discount_amount),
+                    'rush_fee_total' => $cart->items->sum(fn ($item) => (float) $item->rush_fee_amount),
+                    'layout_fee_total' => $cart->items->sum(fn ($item) => (float) $item->layout_fee_amount),
+                    'total_price' => $cart->items->sum(fn ($item) => (float) $item->total_price),
+                    'inventory_material_requirements' => $requirements,
+                    'inventory_deducted_at' => now(),
+                ]);
+
+                foreach ($cart->items as $cartItem) {
+                    CustomerOrder::create([
+                        'customer_order_group_id' => $group->id,
+                        'user_id' => Auth::id(),
+                        'product_id' => $cartItem->product_id,
+                        'order_template_id' => $cartItem->order_template_id,
+                        'rush_fee_id' => $cartItem->rush_fee_id,
+                        'selected_options' => $cartItem->selected_options,
+                        'quantity' => $cartItem->quantity,
+                        'special_instructions' => $cartItem->special_instructions,
+                        'base_price' => $cartItem->base_price,
+                        'discount_amount' => $cartItem->discount_amount,
+                        'rush_fee_amount' => $cartItem->rush_fee_amount,
+                        'layout_fee_amount' => $cartItem->layout_fee_amount,
+                        'total_price' => $cartItem->total_price,
+                        'status' => 'waiting',
+                    ]);
+                }
+
+                $cart->items()->delete();
+
+                return $group;
+            });
+        } catch (InsufficientMaterialStockException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'shortages' => $e->shortages,
+            ], 422);
+        } catch (\Throwable $e) {
+            logger()->error('Cart checkout failed during inventory deduction', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
 
-            foreach ($cart->items as $cartItem) {
-                CustomerOrder::create([
-                    'customer_order_group_id' => $group->id,
-                    'user_id' => Auth::id(),
-                    'product_id' => $cartItem->product_id,
-                    'order_template_id' => $cartItem->order_template_id,
-                    'rush_fee_id' => $cartItem->rush_fee_id,
-                    'selected_options' => $cartItem->selected_options,
-                    'quantity' => $cartItem->quantity,
-                    'special_instructions' => $cartItem->special_instructions,
-                    'base_price' => $cartItem->base_price,
-                    'discount_amount' => $cartItem->discount_amount,
-                    'rush_fee_amount' => $cartItem->rush_fee_amount,
-                    'layout_fee_amount' => $cartItem->layout_fee_amount,
-                    'total_price' => $cartItem->total_price,
-                    'status' => 'waiting',
-                ]);
-            }
-
-            $cart->items()->delete();
-
-            return $group;
-        });
+            return response()->json([
+                'success' => false,
+                'message' => 'Checkout failed. Please try again.',
+            ], 500);
+        }
 
         return response()->json([
             'success' => true,

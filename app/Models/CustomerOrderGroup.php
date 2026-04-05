@@ -29,6 +29,9 @@ class CustomerOrderGroup extends Model
         'rush_fee_total',
         'layout_fee_total',
         'total_price',
+        'inventory_material_requirements',
+        'inventory_deducted_at',
+        'inventory_restored_at',
     ];
 
     protected function casts(): array
@@ -39,6 +42,9 @@ class CustomerOrderGroup extends Model
             'rush_fee_total' => 'decimal:2',
             'layout_fee_total' => 'decimal:2',
             'total_price' => 'decimal:2',
+            'inventory_material_requirements' => 'array',
+            'inventory_deducted_at' => 'datetime',
+            'inventory_restored_at' => 'datetime',
         ];
     }
 
@@ -71,6 +77,14 @@ class CustomerOrderGroup extends Model
         }
 
         return in_array($nextStatus, static::allowedTransitions()[$this->status] ?? [], true);
+    }
+
+    public function shouldRestockOnCancellation(string $nextStatus): bool
+    {
+        return $nextStatus === 'cancelled'
+            && in_array($this->status, ['waiting', 'approved'], true)
+            && $this->inventory_deducted_at !== null
+            && $this->inventory_restored_at === null;
     }
 
     public function getStatusLabelAttribute(): string

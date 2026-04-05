@@ -22,14 +22,14 @@
     <div class="status_cards">
         <div class="card low_stock">
             <h3>Low Stocks</h3>
-            <div id="lowStockList">
+            <div id="lowStockList" aria-live="polite">
                 <p class="empty_status" style="font-style: italic; opacity: 0.7;">Checking levels...</p>
             </div>
         </div>
         
         <div class="card out_of_stock">
             <h3>Out of Stock</h3>
-            <div id="outOfStockList">
+            <div id="outOfStockList" aria-live="polite">
                 <p class="empty_status" style="font-style: italic; opacity: 0.7;">Checking levels...</p>
             </div>
         </div>
@@ -55,14 +55,14 @@
     </div>
 
     <div class="action_container">
-        <button id="openAddModalBtn" class="primary_button">Add Materials</button>
+        <button type="button" id="openAddModalBtn" class="primary_button">Add Materials</button>
     </div>
 </div>
 
-<div class="modal_overlay" id="modalOverlay">
+<div class="modal_overlay" id="modalOverlay" aria-hidden="true">
     
-    <div class="material_modal" id="addMaterialModal">
-        <h2 class="modal_title">Add New Materials</h2>
+    <div class="material_modal" id="addMaterialModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="addMaterialTitle" tabindex="-1">
+        <h2 class="modal_title" id="addMaterialTitle">Add New Materials</h2>
         
         <div class="input_group">
             <label>Materials</label>
@@ -86,13 +86,13 @@
         </div>
 
         <div class="modal_actions">
-            <button class="cancel_btn" onclick="closeAllModals()">Cancel</button>
-            <button class="save_btn" id="saveSimulatedMaterialBtn">Add Material</button>
+            <button type="button" class="cancel_btn" onclick="closeAllModals()">Cancel</button>
+            <button type="button" class="save_btn" id="saveSimulatedMaterialBtn">Add Material</button>
         </div>
     </div>
 
-    <div class="material_modal" id="editMaterialModal">
-        <h2 class="modal_title">Edit Materials</h2>
+    <div class="material_modal" id="editMaterialModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="editMaterialTitle" tabindex="-1">
+        <h2 class="modal_title" id="editMaterialTitle">Edit Materials</h2>
         
         <div class="input_group">
             <label>Materials</label>
@@ -116,8 +116,8 @@
         </div>
 
         <div class="modal_actions">
-            <button class="cancel_btn" onclick="closeAllModals()">Cancel</button>
-            <button class="save_btn" id="saveEditMaterialBtn">Save Changes</button>
+            <button type="button" class="cancel_btn" onclick="closeAllModals()">Cancel</button>
+            <button type="button" class="save_btn" id="saveEditMaterialBtn">Save Changes</button>
         </div>
     </div>
 
