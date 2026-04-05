@@ -24,6 +24,9 @@
     font-size: 50px;
     color: #682c7a;
     margin: 0;
+
+    animation: pageFadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.1s;
 }
 
 .aboutus_main_header p {
@@ -32,6 +35,9 @@
     color: #682c7a;
     margin: 0;
     line-height: 1.6;
+
+    animation: pageFadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.25s;
 }
 
 /* =============================================
