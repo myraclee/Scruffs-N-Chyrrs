@@ -7,6 +7,25 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property int $id
+ * @property int $user_id
+ * @property string $status
+ * @property string|null $general_drive_link
+ * @property string|null $subtotal_price
+ * @property string|null $discount_total
+ * @property string|null $rush_fee_total
+ * @property string|null $layout_fee_total
+ * @property string|null $total_price
+ * @property array<int, array<string, int|string>>|null $inventory_material_requirements
+ * @property \Illuminate\Support\Carbon|null $inventory_deducted_at
+ * @property \Illuminate\Support\Carbon|null $inventory_restored_at
+ * @property \Illuminate\Support\Carbon $created_at
+ * @property \Illuminate\Support\Carbon $updated_at
+ * @property-read string $status_label
+ * @property-read User $user
+ * @property-read \Illuminate\Database\Eloquent\Collection|CustomerOrder[] $orders
+ */
 class CustomerOrderGroup extends Model
 {
     use HasFactory;

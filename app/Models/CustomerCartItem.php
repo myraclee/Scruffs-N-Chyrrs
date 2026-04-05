@@ -6,6 +6,27 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int $customer_cart_id
+ * @property int $product_id
+ * @property int $order_template_id
+ * @property int|null $rush_fee_id
+ * @property array<string, int|string>|null $selected_options
+ * @property int $quantity
+ * @property string|null $special_instructions
+ * @property string $base_price
+ * @property string $discount_amount
+ * @property string $rush_fee_amount
+ * @property string $layout_fee_amount
+ * @property string $total_price
+ * @property \Illuminate\Support\Carbon $created_at
+ * @property \Illuminate\Support\Carbon $updated_at
+ * @property-read CustomerCart $cart
+ * @property-read Product $product
+ * @property-read OrderTemplate $orderTemplate
+ * @property-read RushFee $rushFee
+ */
 class CustomerCartItem extends Model
 {
     use HasFactory;
