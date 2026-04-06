@@ -61,6 +61,13 @@ class OwnerOrderAPI {
       body: JSON.stringify({ status }),
     });
   }
+
+  async updateOrderDetails(orderGroupId, payload) {
+    return this.request(`${this.baseUrl}/${orderGroupId}/details`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    });
+  }
 }
 
 export default new OwnerOrderAPI();
