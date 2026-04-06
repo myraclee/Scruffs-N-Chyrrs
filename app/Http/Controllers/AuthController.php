@@ -2,7 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Order;
 use App\Models\User;
+use App\Models\CustomerCart;
+use App\Models\CustomerOrder;
+use App\Models\CustomerOrderGroup;
 use App\Mail\PasswordResetCode;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -265,6 +269,78 @@ class AuthController extends Controller
         ]);
 
         return redirect()->route('account')->with('success', 'Password updated successfully!');
+    }
+
+    public function deleteAccount(Request $request)
+    {
+        $user = $request->user();
+
+        if (! $user) {
+            abort(403);
+        }
+
+        if ($user->isOwner()) {
+            return back()->withErrors([
+                'account_deletion' => 'Owner accounts cannot be deleted using this page.',
+            ]);
+        }
+
+        $request->validate([
+            'current_password' => ['required', 'string'],
+            'new_password_confirmation' => ['required', 'string', 'same:current_password'],
+        ], [
+            'new_password_confirmation.same' => 'The password confirmation does not match your current password.',
+        ]);
+
+        if (! Hash::check($request->current_password, $user->password)) {
+            return back()->withErrors(['current_password' => 'The current password is incorrect.']);
+        }
+
+        $finishedStatuses = ['completed', 'cancelled'];
+
+        $hasUnfinishedGroupedOrders = CustomerOrderGroup::query()
+            ->where('user_id', $user->id)
+            ->whereNotIn('status', $finishedStatuses)
+            ->exists();
+
+        $hasUnfinishedLineOrders = CustomerOrder::query()
+            ->where('user_id', $user->id)
+            ->whereNotIn('status', $finishedStatuses)
+            ->exists();
+
+        $hasUnfinishedLegacyOrders = Order::query()
+            ->where('user_id', $user->id)
+            ->whereNotIn('status', $finishedStatuses)
+            ->exists();
+
+        if ($hasUnfinishedGroupedOrders || $hasUnfinishedLineOrders || $hasUnfinishedLegacyOrders) {
+            return back()->withErrors([
+                'account_deletion' => 'Your account cannot be deleted while you still have pending or unfinished orders.',
+            ]);
+        }
+
+        $userId = $user->id;
+        $userEmail = $user->email;
+
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        DB::transaction(function () use ($userId, $userEmail): void {
+            // Explicit hard-delete for user-linked records, including nullable legacy foreign keys.
+            Order::query()->where('user_id', $userId)->delete();
+            CustomerCart::query()->where('user_id', $userId)->delete();
+            CustomerOrder::query()->where('user_id', $userId)->delete();
+            CustomerOrderGroup::query()->where('user_id', $userId)->delete();
+
+            DB::table('sessions')->where('user_id', $userId)->delete();
+            DB::table('password_reset_tokens')->where('email', $userEmail)->delete();
+
+            User::query()->whereKey($userId)->delete();
+        });
+
+        return redirect()->route('home')
+            ->with('success', 'Your account has been permanently deleted.');
     }
 
     public function showResetPassword()

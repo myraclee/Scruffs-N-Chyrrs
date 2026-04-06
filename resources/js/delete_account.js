@@ -1,10 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
     const form = document.querySelector(".change_password_form");
     const passwordInput = document.getElementById("current_password");
-    const confirmInput = document.getElementById("password_confirmation");
+    const confirmInput = document.getElementById("new_password_confirmation");
     const matchMsg = document.getElementById("match_message");
 
-    if (!form) return;
+    if (!form || !passwordInput || !confirmInput) return;
 
     // --- Eye Icon SVGs ---
     const eyeOpen = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     setupEye("toggle_current_password", "current_password");
-    setupEye("toggle_confirm_password", "password_confirmation");
+    setupEye("toggle_confirm_password", "new_password_confirmation");
 
     // --- Live Match Logic ---
     function checkMatch() {

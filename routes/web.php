@@ -60,6 +60,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/account/update', [AuthController::class, 'updateProfile'])->name('update-profile');
     Route::get('/account/change-password', [AuthController::class, 'showChangePassword'])->name('change-password');
     Route::get('/account/delete-account', [AuthController::class, 'showDeleteAccount'])->name('delete-account');
+    Route::post('/account/delete-account', [AuthController::class, 'deleteAccount'])->name('delete-account.destroy');
     Route::post('/account/update-password', [AuthController::class, 'updatePassword'])->name('update-password');
 });
 

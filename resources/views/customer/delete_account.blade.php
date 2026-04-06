@@ -22,7 +22,7 @@
 
         <p class="delete_message">Deleting your account means saying goodbye to everything! Your account and order history will be permanently erased. This action can’t be undone, and there’s no way to bring your data back once it’s gone.</p>
 
-        <form method="POST" action="{{ route('update-password') }}" class="change_password_form" novalidate>
+        <form method="POST" action="{{ route('delete-account.destroy') }}" class="change_password_form" novalidate>
             @csrf
 
             <div class="form_group">
@@ -52,6 +52,10 @@
                 @enderror
                 <span id="match_message" style="font-family: Coolvetica; font-size: 13px; margin-top: 5px; display: block;"></span>
             </div>
+
+            @error('account_deletion')
+                <span class="error_message account_delete_error">{{ $message }}</span>
+            @enderror
 
             <div class="form_actions">
                 <a href="{{ route('account') }}" class="action_btn cancel_btn">Cancel</a>
