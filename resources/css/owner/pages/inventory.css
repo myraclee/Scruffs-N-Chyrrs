@@ -442,13 +442,42 @@
 .consumed_list {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 14px;
+}
+
+.consumed_product_group {
+    border: 1px solid #e8d9ee;
+    border-radius: 12px;
+    background: #fbf6fd;
+    padding: 10px 12px;
+}
+
+.consumed_group_title {
+    margin: 0 0 8px;
+    font-family: Coolvetica;
+    color: #58246a;
+    font-size: 16px;
+    letter-spacing: 0.2px;
+}
+
+.consumed_group_rows {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.consumed_note_inline {
+    margin: 0 0 6px;
+    color: #7b6690;
+    font-family: Arial, sans-serif;
+    font-size: 11px;
 }
 .consumed_item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-left: 20px;
+    gap: 10px;
+    padding-left: 8px;
 }
 .checkbox_label {
     font-family: Coolvetica;
@@ -626,6 +655,14 @@
     }
     .consumed_note {
         text-align: left;
+    }
+
+    .consumed_item {
+        padding-left: 0;
+    }
+
+    .tiny_input {
+        width: 72px;
     }
 
     .product_cell {

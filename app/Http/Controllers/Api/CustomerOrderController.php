@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Exceptions\InvalidInventoryConfigurationException;
 use App\Exceptions\InsufficientMaterialStockException;
 use App\Http\Controllers\Controller;
 use App\Models\CustomerOrder;
@@ -264,6 +265,7 @@ class CustomerOrderController extends Controller
                     [
                         'product_id' => (int) $validated['product_id'],
                         'quantity' => (int) $validated['quantity'],
+                        'selected_options' => $selectedOptions,
                     ],
                 ]);
 
@@ -335,6 +337,12 @@ class CustomerOrderController extends Controller
                 'success' => false,
                 'message' => $e->getMessage(),
                 'shortages' => $e->shortages,
+            ], 422);
+        } catch (InvalidInventoryConfigurationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'configuration_issues' => $e->issues,
             ], 422);
         } catch (\Exception $e) {
             logger()->error('Order creation failed', [

@@ -44,6 +44,17 @@ class InventoryUiContractTest extends TestCase
         $this->assertStringContainsString('low_stock_threshold', $script);
     }
 
+    public function test_inventory_script_supports_option_based_consumption_mappings(): void
+    {
+        $script = file_get_contents(base_path('resources/js/owner/inventory_refactored.js'));
+
+        $this->assertIsString($script);
+        $this->assertStringContainsString('add_consumption_checkbox', $script);
+        $this->assertStringContainsString('edit_consumption_checkbox', $script);
+        $this->assertStringContainsString('order_template_option_type_id', $script);
+        $this->assertStringContainsString('Any Option (Fallback)', $script);
+    }
+
     public function test_inventory_delete_flow_uses_modal_and_not_browser_confirm(): void
     {
         $script = file_get_contents(base_path('resources/js/owner/inventory_refactored.js'));

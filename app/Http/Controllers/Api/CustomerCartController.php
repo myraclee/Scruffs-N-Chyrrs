@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Exceptions\InvalidInventoryConfigurationException;
 use App\Exceptions\InsufficientMaterialStockException;
 use App\Models\CustomerCart;
 use App\Models\CustomerCartItem;
@@ -224,6 +225,7 @@ class CustomerCartController extends Controller
                     ->map(fn (CustomerCartItem $cartItem) => [
                         'product_id' => (int) $cartItem->product_id,
                         'quantity' => (int) $cartItem->quantity,
+                        'selected_options' => $cartItem->selected_options ?? [],
                     ])
                     ->values()
                     ->all();
@@ -271,6 +273,12 @@ class CustomerCartController extends Controller
                 'success' => false,
                 'message' => $e->getMessage(),
                 'shortages' => $e->shortages,
+            ], 422);
+        } catch (InvalidInventoryConfigurationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'configuration_issues' => $e->issues,
             ], 422);
         } catch (\Throwable $e) {
             logger()->error('Cart checkout failed during inventory deduction', [

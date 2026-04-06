@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\CustomerOrderGroup;
 use App\Models\Material;
+use App\Models\MaterialConsumption;
 use App\Models\OrderTemplate;
 use App\Models\OrderTemplateLayoutFee;
 use App\Models\OrderTemplateMinOrder;
@@ -146,6 +147,77 @@ class InventoryMaterialSecurityAndStockFlowTest extends TestCase
             ])
             ->assertStatus(422)
             ->assertJsonValidationErrors('low_stock_threshold');
+    }
+
+    public function test_owner_can_create_material_with_fallback_and_option_specific_consumptions(): void
+    {
+        $owner = User::factory()->create([
+            'user_type' => 'owner',
+        ]);
+
+        $product = Product::create([
+            'name' => 'Consumption Product '.uniqid(),
+            'description' => 'Consumption config product',
+            'cover_image_path' => '/images/fixture.png',
+        ]);
+
+        $template = OrderTemplate::create([
+            'product_id' => $product->id,
+        ]);
+
+        $option = OrderTemplateOption::create([
+            'order_template_id' => $template->id,
+            'label' => 'Finish',
+            'position' => 1,
+        ]);
+
+        $optionType = OrderTemplateOptionType::create([
+            'order_template_option_id' => $option->id,
+            'type_name' => 'Glossy',
+            'is_available' => true,
+            'position' => 1,
+        ]);
+
+        $response = $this->actingAs($owner)
+            ->postJson('/api/materials', [
+                'name' => 'Spec Material '.uniqid(),
+                'units' => 25,
+                'low_stock_threshold' => 4,
+                'consumptions' => [
+                    [
+                        'product_id' => $product->id,
+                        'order_template_option_type_id' => null,
+                        'quantity' => 2,
+                    ],
+                    [
+                        'product_id' => $product->id,
+                        'order_template_option_type_id' => $optionType->id,
+                        'quantity' => 3,
+                    ],
+                ],
+            ]);
+
+        $response
+            ->assertCreated()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.consumptions.0.product_id', $product->id)
+            ->assertJsonPath('data.products.0.pivot.quantity', 2);
+
+        $materialId = (int) $response->json('data.id');
+
+        $this->assertDatabaseHas('material_consumptions', [
+            'material_id' => $materialId,
+            'product_id' => $product->id,
+            'order_template_option_type_id' => null,
+            'quantity' => 2,
+        ]);
+
+        $this->assertDatabaseHas('material_consumptions', [
+            'material_id' => $materialId,
+            'product_id' => $product->id,
+            'order_template_option_type_id' => $optionType->id,
+            'quantity' => 3,
+        ]);
     }
 
     public function test_checkout_deducts_stock_and_waiting_cancellation_restores_once(): void
@@ -327,6 +399,118 @@ class InventoryMaterialSecurityAndStockFlowTest extends TestCase
         );
     }
 
+    public function test_checkout_sums_fallback_and_selected_option_type_consumption_rules(): void
+    {
+        $customer = User::factory()->create(['user_type' => 'customer']);
+        $fixture = $this->createInventoryFixture(materialUnits: 30, pivotQuantity: 1);
+
+        MaterialConsumption::create([
+            'material_id' => $fixture['material']->id,
+            'product_id' => $fixture['product']->id,
+            'order_template_option_type_id' => $fixture['optionType']->id,
+            'quantity' => 2,
+        ]);
+
+        $this->actingAs($customer)
+            ->postJson('/api/customer-cart/items', [
+                'product_id' => $fixture['product']->id,
+                'order_template_id' => $fixture['template']->id,
+                'selected_options' => [
+                    (string) $fixture['option']->id => $fixture['optionType']->id,
+                ],
+                'quantity' => 2,
+            ])
+            ->assertCreated();
+
+        $checkoutResponse = $this->actingAs($customer)
+            ->postJson('/api/customer-cart/checkout', [
+                'general_drive_link' => 'https://drive.google.com/sum-rules-case',
+            ]);
+
+        $checkoutResponse
+            ->assertOk()
+            ->assertJsonPath('success', true);
+
+        $group = CustomerOrderGroup::findOrFail($checkoutResponse->json('data.order_group_id'));
+
+        $this->assertSame(
+            6,
+            (int) ($group->inventory_material_requirements[0]['required'] ?? 0),
+        );
+
+        $breakdown = $group->inventory_material_requirements[0]['breakdown'] ?? [];
+        $this->assertCount(2, $breakdown);
+
+        $fixture['material']->refresh();
+        $this->assertSame(24, (int) $fixture['material']->units);
+    }
+
+    public function test_direct_order_is_blocked_when_product_template_has_no_options(): void
+    {
+        $customer = User::factory()->create(['user_type' => 'customer']);
+
+        $product = Product::create([
+            'name' => 'No Option Product '.uniqid(),
+            'description' => 'Missing option configuration',
+            'cover_image_path' => '/images/fixture.png',
+        ]);
+
+        $material = Material::create([
+            'name' => 'No Option Material '.uniqid(),
+            'units' => 20,
+        ]);
+
+        $template = OrderTemplate::create([
+            'product_id' => $product->id,
+        ]);
+
+        OrderTemplatePricing::create([
+            'order_template_id' => $template->id,
+            'combination_key' => '99',
+            'price' => 100,
+        ]);
+
+        OrderTemplateMinOrder::create([
+            'order_template_id' => $template->id,
+            'min_quantity' => 1,
+        ]);
+
+        OrderTemplateLayoutFee::create([
+            'order_template_id' => $template->id,
+            'fee_amount' => 0,
+        ]);
+
+        MaterialConsumption::create([
+            'material_id' => $material->id,
+            'product_id' => $product->id,
+            'order_template_option_type_id' => null,
+            'quantity' => 1,
+        ]);
+
+        $response = $this->actingAs($customer)
+            ->postJson('/api/customer-orders', [
+                'product_id' => $product->id,
+                'order_template_id' => $template->id,
+                'selected_options' => ['dummy' => 99],
+                'quantity' => 1,
+                'general_drive_link' => 'https://drive.google.com/no-options-blocked',
+            ]);
+
+        $response
+            ->assertStatus(422)
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('configuration_issues.0.product_id', $product->id)
+            ->assertJsonPath(
+                'configuration_issues.0.issue',
+                'missing_template_or_options',
+            );
+
+        $this->assertDatabaseCount('customer_order_groups', 0);
+
+        $material->refresh();
+        $this->assertSame(20, (int) $material->units);
+    }
+
     /**
      * @return array{product: Product, material: Material, template: OrderTemplate, option: OrderTemplateOption, optionType: OrderTemplateOptionType}
      */
@@ -343,7 +527,10 @@ class InventoryMaterialSecurityAndStockFlowTest extends TestCase
             'units' => $materialUnits,
         ]);
 
-        $product->materials()->attach($material->id, [
+        MaterialConsumption::create([
+            'material_id' => $material->id,
+            'product_id' => $product->id,
+            'order_template_option_type_id' => null,
             'quantity' => $pivotQuantity,
         ]);
 

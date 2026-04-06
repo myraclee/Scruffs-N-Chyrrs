@@ -122,6 +122,39 @@ document.addEventListener("DOMContentLoaded", () => {
         return true;
     }
 
+    function renderConfigurationIssueFeedback(issues, fallbackMessage) {
+        if (!orderPlacementFeedback) {
+            return false;
+        }
+
+        const validIssues = Array.isArray(issues)
+            ? issues.filter((item) => item && item.product_name)
+            : [];
+
+        const issueItems = validIssues.map((item) => {
+            const productName = escapeHtml(item.product_name);
+            const issueLabel = escapeHtml(
+                item.issue || "missing_template_or_options",
+            );
+            return `<li><strong>${productName}</strong>: ${issueLabel}</li>`;
+        });
+
+        const message =
+            fallbackMessage ||
+            "Checkout is blocked because inventory mappings are incomplete for one or more products.";
+
+        orderPlacementFeedback.innerHTML = `
+            <p class="order_modal_message_title">Unable to place order due to inventory configuration.</p>
+            <p class="order_modal_message_copy">${escapeHtml(message)}</p>
+            ${issueItems.length > 0 ? `<ul class="order_modal_shortage_list">${issueItems.join("")}</ul>` : ""}
+        `;
+        orderPlacementFeedback.hidden = false;
+        orderPlacementFeedback.classList.add("active");
+        orderPlacementFeedback.focus();
+
+        return true;
+    }
+
     function setButtonLoading(button, isLoading, loadingText) {
         if (!button) return;
 
@@ -388,6 +421,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 renderShortageFeedback(result.shortages, result.message);
                 Toast.error(
                     "Inventory shortage detected. Review the material details below.",
+                );
+                return;
+            }
+
+            if (
+                Array.isArray(result.configuration_issues) &&
+                result.configuration_issues.length > 0
+            ) {
+                renderConfigurationIssueFeedback(
+                    result.configuration_issues,
+                    result.message,
+                );
+                Toast.error(
+                    "Inventory configuration issue detected. Please contact support or try again later.",
                 );
                 return;
             }

@@ -236,6 +236,104 @@ function setupEventListeners() {
 /**
  * Update product checkboxes dynamically from API products list
  */
+function buildConsumptionKey(productId, optionTypeId = null) {
+    return `${productId}:${optionTypeId ?? "any"}`;
+}
+
+function getProductOptionTypeEntries(product) {
+    const orderTemplate = product.order_template;
+    const options = Array.isArray(orderTemplate?.options)
+        ? orderTemplate.options
+        : [];
+
+    const entries = [];
+
+    options.forEach((option) => {
+        const optionTypes = Array.isArray(option.option_types)
+            ? option.option_types
+            : [];
+
+        optionTypes.forEach((optionType) => {
+            entries.push({
+                option_type_id: Number(optionType.id),
+                option_label: option.label,
+                option_type_name: optionType.type_name,
+                position: Number(optionType.position ?? 0),
+            });
+        });
+    });
+
+    return entries;
+}
+
+function buildConsumptionItemMarkup(modePrefix, product, optionTypeEntry = null) {
+    const productId = Number(product.id);
+    const optionTypeId = optionTypeEntry
+        ? Number(optionTypeEntry.option_type_id)
+        : null;
+    const key = buildConsumptionKey(productId, optionTypeId);
+
+    const labelText = optionTypeEntry
+        ? `${escapeHtml(optionTypeEntry.option_label)}: ${escapeHtml(optionTypeEntry.option_type_name)}`
+        : "Any Option (Fallback)";
+
+    const quantityAriaLabel = optionTypeEntry
+        ? `Quantity for ${product.name} - ${optionTypeEntry.option_label}: ${optionTypeEntry.option_type_name}`
+        : `Fallback quantity for ${product.name}`;
+
+    return `
+        <div class="consumed_item">
+            <label class="checkbox_label">
+                <input
+                    type="checkbox"
+                    class="${modePrefix}_consumption_checkbox"
+                    data-product-id="${productId}"
+                    data-option-type-id="${optionTypeId ?? ""}"
+                    data-consumption-key="${key}"
+                >
+                ${labelText}
+            </label>
+            <input
+                type="number"
+                class="tiny_input ${modePrefix}_consumption_quantity"
+                data-product-id="${productId}"
+                data-option-type-id="${optionTypeId ?? ""}"
+                data-consumption-key="${key}"
+                placeholder="qty"
+                min="0"
+                step="1"
+                inputmode="numeric"
+                value="0"
+                aria-label="${escapeHtml(quantityAriaLabel)}"
+            >
+        </div>
+    `;
+}
+
+function renderProductConsumptionGroup(modePrefix, product) {
+    const optionTypeEntries = getProductOptionTypeEntries(product);
+
+    const rowsMarkup = [buildConsumptionItemMarkup(modePrefix, product)];
+
+    optionTypeEntries.forEach((entry) => {
+        rowsMarkup.push(buildConsumptionItemMarkup(modePrefix, product, entry));
+    });
+
+    const optionInfo = optionTypeEntries.length
+        ? ""
+        : '<p class="consumed_note_inline">No template options found for this product. Only fallback mapping is available.</p>';
+
+    return `
+        <div class="consumed_product_group">
+            <p class="consumed_group_title">${escapeHtml(product.name)}</p>
+            ${optionInfo}
+            <div class="consumed_group_rows">
+                ${rowsMarkup.join("")}
+            </div>
+        </div>
+    `;
+}
+
 function updateProductCheckboxes() {
     // Get all consumed lists (both add and edit modals)
     const addConsumedList = addMaterialModal.querySelector(".consumed_list");
@@ -245,42 +343,26 @@ function updateProductCheckboxes() {
     addConsumedList.innerHTML = "";
     editConsumedList.innerHTML = "";
 
-    // Add checkboxes for each product from database
+    // Add mapping rows for each product from database
     products_list.forEach((product) => {
-        // Add modal checkbox
-        const addItem = document.createElement("div");
-        addItem.className = "consumed_item";
-        addItem.innerHTML = `
-            <label class="checkbox_label">
-                <input type="checkbox" class="add_product_checkbox" value="${product.id}" data-product-id="${product.id}">
-                ${escapeHtml(product.name)}
-            </label>
-            <input type="number" class="tiny_input add_quantity_input" data-product-id="${product.id}" placeholder="qty" min="0" step="1" inputmode="numeric" value="0" aria-label="Quantity for ${escapeHtml(product.name)}">
-        `;
-        addConsumedList.appendChild(addItem);
+        const addGroup = document.createElement("div");
+        addGroup.innerHTML = renderProductConsumptionGroup("add", product);
+        addConsumedList.appendChild(addGroup.firstElementChild);
 
-        // Edit modal checkbox
-        const editItem = document.createElement("div");
-        editItem.className = "consumed_item";
-        editItem.innerHTML = `
-            <label class="checkbox_label">
-                <input type="checkbox" class="edit_product_checkbox" value="${product.id}" data-product-id="${product.id}">
-                ${escapeHtml(product.name)}
-            </label>
-            <input type="number" class="tiny_input edit_quantity_input" data-product-id="${product.id}" placeholder="qty" min="0" step="1" inputmode="numeric" value="0" aria-label="Quantity for ${escapeHtml(product.name)}">
-        `;
-        editConsumedList.appendChild(editItem);
+        const editGroup = document.createElement("div");
+        editGroup.innerHTML = renderProductConsumptionGroup("edit", product);
+        editConsumedList.appendChild(editGroup.firstElementChild);
     });
 
     bindConsumedListEvents(
         addConsumedList,
-        ".add_product_checkbox",
-        ".add_quantity_input",
+        ".add_consumption_checkbox",
+        ".add_consumption_quantity",
     );
     bindConsumedListEvents(
         editConsumedList,
-        ".edit_product_checkbox",
-        ".edit_quantity_input",
+        ".edit_consumption_checkbox",
+        ".edit_consumption_quantity",
     );
 
     // Prevent invalid input in quantity fields
@@ -393,23 +475,26 @@ async function saveMaterial(mode) {
         }
     }
 
-    // Collect product associations with quantity validation
+    // Collect consumption rules with quantity validation
     const checkboxes = isAdd
-        ? Array.from(modal.querySelectorAll(".add_product_checkbox"))
-        : Array.from(modal.querySelectorAll(".edit_product_checkbox"));
+        ? Array.from(modal.querySelectorAll(".add_consumption_checkbox"))
+        : Array.from(modal.querySelectorAll(".edit_consumption_checkbox"));
 
-    const products = [];
-    let hasSelectedProduct = false;
+    const consumptions = [];
+    let quantitiesValid = true;
 
     checkboxes.forEach((checkbox) => {
         const productId = Number(checkbox.getAttribute("data-product-id"));
+        const optionTypeRaw = checkbox.getAttribute("data-option-type-id");
+        const optionTypeId = optionTypeRaw ? Number(optionTypeRaw) : null;
+        const key = checkbox.getAttribute("data-consumption-key");
         const quantityInput = isAdd
             ? modal.querySelector(
-                  `.add_quantity_input[data-product-id="${productId}"]`,
-              )
+                `.add_consumption_quantity[data-consumption-key="${key}"]`,
+            )
             : modal.querySelector(
-                  `.edit_quantity_input[data-product-id="${productId}"]`,
-              );
+                `.edit_consumption_quantity[data-consumption-key="${key}"]`,
+            );
 
         if (!quantityInput) {
             return;
@@ -432,38 +517,16 @@ async function saveMaterial(mode) {
         }
 
         const quantity = Number(quantityRaw);
-        products.push({
-            id: productId,
+
+        consumptions.push({
+            product_id: productId,
+            order_template_option_type_id: optionTypeId,
             quantity,
         });
     });
 
-    // Validate that at least one product is selected
-    if (!hasSelectedProduct) {
-        errors.push({
-            input: null,
-            message: "At least one product must be selected",
-            isProductError: true,
-        });
-    }
-
-    // Display all errors at once
-    if (errors.length > 0) {
-        errors.forEach((error) => {
-            if (error.input) {
-                setFieldError(error.input, error.message);
-            }
-        });
-
-        // Show toast for product selection error
-        if (errors.some((e) => e.isProductError)) {
-            Toast.error(
-                "Please select at least one product and set its quantity.",
-            );
-        } else {
-            Toast.error("Please fix all errors before saving.");
-        }
-
+    if (!quantitiesValid) {
+        Toast.error("Set quantity to 1 or higher for each selected consumption rule.");
         return;
     }
 
@@ -482,7 +545,7 @@ async function saveMaterial(mode) {
             name,
             units: units,
             low_stock_threshold: lowStockThreshold,
-            products: products,
+            consumptions,
         };
 
         if (isAdd) {
@@ -550,34 +613,62 @@ async function openEditModal(btn, materialId) {
         normalizeLowStockThreshold(material.low_stock_threshold),
     );
 
-    // Reset all checkboxes
+    // Reset all mapping checkboxes
     editMaterialModal
-        .querySelectorAll(".edit_product_checkbox")
+        .querySelectorAll(".edit_consumption_checkbox")
         .forEach((checkbox) => {
             checkbox.checked = false;
             const quantityInput = editMaterialModal.querySelector(
-                `.edit_quantity_input[data-product-id="${checkbox.getAttribute("data-product-id")}"]`,
+                `.edit_consumption_quantity[data-consumption-key="${checkbox.getAttribute("data-consumption-key")}"]`,
             );
             if (quantityInput) {
                 quantityInput.value = "0";
             }
         });
 
-    // Check boxes for associated products and set quantities
-    if (material.products && material.products.length > 0) {
-        material.products.forEach((product) => {
+    // Check rows for existing mappings and set quantities.
+    const consumptionRows = Array.isArray(material.consumptions)
+        ? material.consumptions
+        : [];
+
+    if (consumptionRows.length > 0) {
+        consumptionRows.forEach((consumption) => {
+            const productId = Number(consumption.product_id);
+            const optionTypeId = consumption.order_template_option_type_id
+                ? Number(consumption.order_template_option_type_id)
+                : null;
+            const key = buildConsumptionKey(productId, optionTypeId);
+
             const checkbox = editMaterialModal.querySelector(
-                `.edit_product_checkbox[data-product-id="${product.id}"]`,
+                `.edit_consumption_checkbox[data-consumption-key="${key}"]`,
             );
             const quantityInput = editMaterialModal.querySelector(
-                `.edit_quantity_input[data-product-id="${product.id}"]`,
+                `.edit_consumption_quantity[data-consumption-key="${key}"]`,
             );
 
             if (checkbox) {
                 checkbox.checked = true;
             }
             if (quantityInput) {
-                quantityInput.value = product.pivot?.quantity || 0;
+                quantityInput.value = Number(consumption.quantity || 0);
+            }
+        });
+    } else if (material.products && material.products.length > 0) {
+        // Legacy compatibility if API still returns only fallback product rows.
+        material.products.forEach((product) => {
+            const key = buildConsumptionKey(Number(product.id), null);
+            const checkbox = editMaterialModal.querySelector(
+                `.edit_consumption_checkbox[data-consumption-key="${key}"]`,
+            );
+            const quantityInput = editMaterialModal.querySelector(
+                `.edit_consumption_quantity[data-consumption-key="${key}"]`,
+            );
+
+            if (checkbox) {
+                checkbox.checked = true;
+            }
+            if (quantityInput) {
+                quantityInput.value = Number(product.pivot?.quantity || 0);
             }
         });
     }
@@ -721,13 +812,27 @@ function renderMaterials() {
         const row = document.createElement("tr");
         const safeMaterialName = escapeHtml(material.name);
 
-        // Get associated products display text
+        // Get associated consumption rules display text
         let productText = "None assigned";
-        let usageText = "-";
+        if (Array.isArray(material.consumptions) && material.consumptions.length > 0) {
+            productText = material.consumptions
+                .map((rule) => {
+                    const productName = escapeHtml(
+                        rule.product_name || "Unknown Product",
+                    );
+                    const optionLabel = rule.order_template_option_type_id
+                        ? escapeHtml(rule.option_type_name || "Unknown Option")
+                        : "Any Option";
 
-        if (material.products && material.products.length > 0) {
+                    return `${productName} - ${optionLabel} (x${Number(rule.quantity || 0)})`;
+                })
+                .join(", ");
+        } else if (material.products && material.products.length > 0) {
             productText = material.products
-                .map((p) => escapeHtml(p.name))
+                .map(
+                    (p) =>
+                        `${escapeHtml(p.name)} - Any Option (x${Number(p.pivot?.quantity || 0)})`,
+                )
                 .join(", ");
 
             // Create usage text showing quantities
@@ -873,13 +978,13 @@ function resetAddModal() {
     newThresholdInput.value = String(DEFAULT_LOW_STOCK_THRESHOLD);
 
     addMaterialModal
-        .querySelectorAll(".add_product_checkbox")
+        .querySelectorAll(".add_consumption_checkbox")
         .forEach((checkbox) => {
             checkbox.checked = false;
         });
 
     addMaterialModal
-        .querySelectorAll(".add_quantity_input")
+        .querySelectorAll(".add_consumption_quantity")
         .forEach((input) => {
             input.value = "0";
         });
@@ -892,13 +997,13 @@ function resetEditModal() {
     editThresholdInput.value = String(DEFAULT_LOW_STOCK_THRESHOLD);
 
     editMaterialModal
-        .querySelectorAll(".edit_product_checkbox")
+        .querySelectorAll(".edit_consumption_checkbox")
         .forEach((checkbox) => {
             checkbox.checked = false;
         });
 
     editMaterialModal
-        .querySelectorAll(".edit_quantity_input")
+        .querySelectorAll(".edit_consumption_quantity")
         .forEach((input) => {
             input.value = "0";
         });
@@ -1043,9 +1148,9 @@ function bindConsumedListEvents(list, checkboxSelector, quantitySelector) {
             return;
         }
 
-        const productId = checkbox.getAttribute("data-product-id");
+        const key = checkbox.getAttribute("data-consumption-key");
         const quantityInput = list.querySelector(
-            `${quantitySelector}[data-product-id="${productId}"]`,
+            `${quantitySelector}[data-consumption-key="${key}"]`,
         );
 
         if (!quantityInput) {
@@ -1116,6 +1221,11 @@ function clearFieldError(input) {
 function getErrorId(input) {
     if (input.id) {
         return `${input.id}_error`;
+    }
+
+    const consumptionKey = input.getAttribute("data-consumption-key");
+    if (consumptionKey) {
+        return `${input.className.replace(/\s+/g, "_")}_${consumptionKey.replace(/[^a-zA-Z0-9_-]/g, "_")}_error`;
     }
 
     const productId = input.getAttribute("data-product-id") || "unknown";
