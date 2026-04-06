@@ -45,10 +45,15 @@ class CustomerOrdersStatusAlignmentContractTest extends TestCase
 
         $this->assertIsString($css);
         $this->assertStringContainsString('.order_group_header', $css);
+        $this->assertStringContainsString('.order_group_header_actions', $css);
         $this->assertStringContainsString('.order_group_status_chip', $css);
+        $this->assertStringContainsString('flex-wrap: wrap;', $css);
+        $this->assertStringContainsString('justify-self: end;', $css);
+        $this->assertStringContainsString('max-width: 100%;', $css);
         $this->assertStringContainsString('white-space: nowrap;', $css);
         $this->assertStringContainsString('font-size: 11px;', $css);
         $this->assertStringContainsString('@media (max-width: 768px)', $css);
+        $this->assertStringContainsString('grid-template-columns: minmax(0, 1fr);', $css);
         $this->assertStringContainsString('font-size: 10px;', $css);
     }
 }
