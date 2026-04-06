@@ -415,4 +415,11 @@ class AuthController extends Controller
         return redirect()->route('login')
             ->with('success', 'Password reset successfully! Please log in with your new password.');
     }
+
+    public function showDeleteAccount()
+    {
+        return view('customer.delete_account', [
+            'user' => Auth::user()
+        ]);
+    }
 }

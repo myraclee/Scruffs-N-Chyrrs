@@ -371,10 +371,32 @@
 /* Footer */
 .info_section_footer {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     margin-top: 20px;
     padding-top: 16px;
     border-top: 2px solid #682c7a;
+}
+
+.delete_acc_btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #d32f2f;
+    color: #fff7ec;
+    font-family: "Coolvetica", sans-serif;
+    font-size: 15px;
+    text-decoration: none;
+    padding: 10px 26px;
+    border-radius: 50px;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 16px rgba(122, 44, 67, 0.3);
+}
+
+.delete_acc_btn:hover {
+    background: #d32f2f;
+    color: #fff7ec;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(122, 44, 44, 0.4);
 }
 
 .password_btn {

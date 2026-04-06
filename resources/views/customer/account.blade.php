@@ -87,6 +87,9 @@
         </div>
 
         <div class="info_section_footer">
+            <a href="{{ route('delete-account') }}" class="delete_acc_btn">
+                <span>Delete Account</span>
+            </a>
             <a href="{{ route('change-password') }}" class="password_btn">
                 <span>Change Password</span>
             </a>
