@@ -70,8 +70,7 @@ class OrderPricingService
         int $quantity,
         ?int $rushFeeId = null,
         ?string $specialInstructions = null
-    ): array
-    {
+    ): array {
         $selectedOptions = $this->normalizeSelectedOptions($template, $selectedOptions);
 
         $validation = $this->validateSelectedOptions($template, $selectedOptions);
@@ -82,25 +81,12 @@ class OrderPricingService
         try {
             $template->loadMissing(['pricings', 'discounts', 'layoutFee', 'options.optionTypes']);
 
-            $combinationKey = $this->buildCombinationKey($selectedOptions);
-
-            $pricing = $template->pricings
-                ->first(fn ($item) => $item->combination_key === $combinationKey);
-
-            // Backward compatibility: older data stores readable keys like "matte_2x2".
-            if (! $pricing) {
-                $legacyKey = $this->buildLegacyCombinationKey($template, $selectedOptions);
-
-                if ($legacyKey !== '') {
-                    $pricing = $template->pricings
-                        ->first(fn ($item) => $item->combination_key === $legacyKey);
-                }
-            }
+            $pricing = $this->findPricingForSelectedOptions($template, $selectedOptions);
 
             if (!$pricing) {
                 return [
                     'success' => false,
-                    'message' => 'Invalid option combination selected',
+                    'message' => 'Selected option combination is not configured for pricing yet. Please choose another combination or contact support.',
                 ];
             }
 
@@ -161,6 +147,43 @@ class OrderPricingService
         return implode(',', $ids);
     }
 
+    private function findPricingForSelectedOptions(OrderTemplate $template, array $selectedOptions): mixed
+    {
+        $selectedTypeIds = $this->canonicalizeTypeIds(
+            array_values($selectedOptions)
+        );
+
+        if (empty($selectedTypeIds)) {
+            return null;
+        }
+
+        $canonicalNumericKey = implode(',', $selectedTypeIds);
+        $legacyKey = $this->buildLegacyCombinationKey($template, $selectedOptions);
+        $labelKey = $this->buildLabelCombinationKey($template, $selectedOptions);
+
+        $candidateKeys = array_values(array_filter(array_unique([
+            $canonicalNumericKey,
+            $legacyKey,
+            $labelKey,
+        ]), static fn ($value) => $value !== ''));
+
+        $directMatch = $template->pricings
+            ->first(fn ($item) => in_array((string) $item->combination_key, $candidateKeys, true));
+
+        if ($directMatch) {
+            return $directMatch;
+        }
+
+        return $template->pricings->first(function ($item) use ($template, $selectedTypeIds): bool {
+            $resolvedIds = $this->resolveCombinationKeyToTypeIds(
+                $template,
+                (string) $item->combination_key
+            );
+
+            return !empty($resolvedIds) && $resolvedIds === $selectedTypeIds;
+        });
+    }
+
     private function parseLayoutCountFromNotes(?string $specialInstructions): int
     {
         if ($specialInstructions === null) {
@@ -199,6 +222,159 @@ class OrderPricingService
         }
 
         return implode('_', array_filter($segments));
+    }
+
+    private function buildLabelCombinationKey(OrderTemplate $template, array $selectedOptions): string
+    {
+        $segments = [];
+
+        foreach ($template->options->sortBy('position') as $option) {
+            $optionKey = (string) $option->id;
+
+            if (! array_key_exists($optionKey, $selectedOptions) && ! array_key_exists($option->id, $selectedOptions)) {
+                continue;
+            }
+
+            $selectedValue = $selectedOptions[$optionKey] ?? $selectedOptions[$option->id];
+
+            $selectedType = $option->optionTypes
+                ->first(fn ($type) => (int) $type->id === (int) $selectedValue);
+
+            if (! $selectedType) {
+                return '';
+            }
+
+            $segments[] = trim((string) $selectedType->type_name);
+        }
+
+        return implode(' | ', array_filter($segments, static fn ($segment) => $segment !== ''));
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    private function resolveCombinationKeyToTypeIds(OrderTemplate $template, string $combinationKey): array
+    {
+        $trimmedKey = trim($combinationKey);
+        if ($trimmedKey === '') {
+            return [];
+        }
+
+        if (preg_match('/^\d+(\s*,\s*\d+)*$/', $trimmedKey) === 1) {
+            return $this->canonicalizeTypeIds(
+                preg_split('/\s*,\s*/', $trimmedKey) ?: []
+            );
+        }
+
+        $orderedOptions = $template->options->sortBy('position')->values();
+
+        if (str_contains($trimmedKey, '|')) {
+            $segments = array_values(array_filter(
+                array_map(static fn ($value) => trim($value), explode('|', $trimmedKey)),
+                static fn ($value) => $value !== ''
+            ));
+
+            if ($orderedOptions->count() === count($segments)) {
+                $resolved = [];
+
+                foreach ($orderedOptions as $index => $option) {
+                    $resolvedTypeId = $this->resolveTypeIdByOptionAndToken(
+                        $option->optionTypes,
+                        $segments[$index]
+                    );
+
+                    if ($resolvedTypeId === null) {
+                        $resolved = [];
+                        break;
+                    }
+
+                    $resolved[] = $resolvedTypeId;
+                }
+
+                if (! empty($resolved)) {
+                    return $this->canonicalizeTypeIds($resolved);
+                }
+            }
+        }
+
+        $tokens = array_values(array_filter(
+            preg_split('/\||_/', $trimmedKey) ?: [],
+            static fn ($value) => trim((string) $value) !== ''
+        ));
+
+        if (empty($tokens)) {
+            return [];
+        }
+
+        $typeNameMap = [];
+        foreach ($orderedOptions as $option) {
+            foreach ($option->optionTypes as $type) {
+                $normalized = $this->normalizeOptionToken((string) $type->type_name);
+                if ($normalized === '') {
+                    continue;
+                }
+
+                if (! array_key_exists($normalized, $typeNameMap)) {
+                    $typeNameMap[$normalized] = [];
+                }
+
+                $typeNameMap[$normalized][] = (int) $type->id;
+            }
+        }
+
+        $resolvedIds = [];
+
+        foreach ($tokens as $token) {
+            $normalizedToken = $this->normalizeOptionToken((string) $token);
+            if ($normalizedToken === '' || ! array_key_exists($normalizedToken, $typeNameMap)) {
+                return [];
+            }
+
+            $resolvedIds[] = (int) $typeNameMap[$normalizedToken][0];
+        }
+
+        return $this->canonicalizeTypeIds($resolvedIds);
+    }
+
+    private function resolveTypeIdByOptionAndToken($optionTypes, string $token): ?int
+    {
+        $normalizedToken = $this->normalizeOptionToken($token);
+        if ($normalizedToken === '') {
+            return null;
+        }
+
+        $match = $optionTypes->first(function ($type) use ($normalizedToken): bool {
+            return $this->normalizeOptionToken((string) $type->type_name) === $normalizedToken;
+        });
+
+        return $match ? (int) $match->id : null;
+    }
+
+    /**
+     * @param array<int, int|string> $typeIds
+     * @return array<int, int>
+     */
+    private function canonicalizeTypeIds(array $typeIds): array
+    {
+        $normalized = array_values(array_filter(array_map(
+            static fn ($value): int => (int) $value,
+            $typeIds
+        ), static fn ($value): bool => $value > 0));
+
+        $normalized = array_values(array_unique($normalized));
+        sort($normalized);
+
+        return $normalized;
+    }
+
+    private function normalizeOptionToken(string $token): string
+    {
+        $normalized = trim($token);
+        if ($normalized === '') {
+            return '';
+        }
+
+        return $this->normalizeLegacySegment($normalized);
     }
 
     private function normalizeLegacySegment(string $segment): string

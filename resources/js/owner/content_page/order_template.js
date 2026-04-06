@@ -164,6 +164,7 @@ function createSpecLabelRow() {
 function createSpecRow() {
     const row = document.createElement("div");
     row.className = "product_option_specification_container spec_input_row";
+    row.dataset.optionTypeId = "";
 
     const avail = document.createElement("div");
     avail.className = "product_availability";
@@ -177,6 +178,7 @@ function createSpecRow() {
     const nameInput = document.createElement("input");
     nameInput.type = "text";
     nameInput.addEventListener("input", () => {
+        row.dataset.optionTypeId = "";
         clearError(nameInput);
         updateTabLockStates();
     });
@@ -566,9 +568,18 @@ function generateCombinations() {
 
     const savedData = {};
     container.querySelectorAll(".combination_row").forEach((row) => {
+        const combinationKey = row.dataset.combinationKey || "";
         const label = row.querySelector(".combination_label").textContent;
+        const priceValue = row.querySelector(".combination_price_input").value;
+
+        if (combinationKey) {
+            savedData[combinationKey] = {
+                price: priceValue,
+            };
+        }
+
         savedData[label] = {
-            price: row.querySelector(".combination_price_input").value,
+            price: priceValue,
         };
     });
 
@@ -577,21 +588,33 @@ function generateCombinations() {
     const groups = getAllOptions()
         .map((opt) =>
             Array.from(opt.querySelectorAll(".spec_input_row"))
-                .map((row) =>
-                    row
+                .map((row) => ({
+                    label: row
                         .querySelector(".product_option_name input")
                         .value.trim(),
-                )
-                .filter((v) => v !== ""),
+                    typeId: row.dataset.optionTypeId
+                        ? Number(row.dataset.optionTypeId)
+                        : null,
+                }))
+                .filter((spec) => spec.label !== ""),
         )
         .filter((group) => group.length > 0);
 
     if (groups.length === 0) return;
 
     cartesian(groups).forEach((combo) => {
-        const labelText = combo.join(" | ");
+        const labelText = combo.map((item) => item.label).join(" | ");
+        const comboTypeIds = combo
+            .map((item) => Number(item.typeId || 0))
+            .filter((id) => Number.isInteger(id) && id > 0);
+        const canonicalKey =
+            comboTypeIds.length === combo.length
+                ? [...comboTypeIds].sort((a, b) => a - b).join(",")
+                : labelText;
+
         const row = document.createElement("div");
         row.className = "combination_row";
+        row.dataset.combinationKey = canonicalKey;
 
         const label = document.createElement("span");
         label.className = "combination_label";
@@ -610,7 +633,11 @@ function generateCombinations() {
             updateTabLockStates();
         });
 
-        if (savedData[labelText]) priceInput.value = savedData[labelText].price;
+        if (savedData[canonicalKey]) {
+            priceInput.value = savedData[canonicalKey].price;
+        } else if (savedData[labelText]) {
+            priceInput.value = savedData[labelText].price;
+        }
 
         row.appendChild(label);
         row.appendChild(priceInput);
@@ -782,7 +809,9 @@ function collectProductData() {
     const combinations = {};
     document.querySelectorAll(".combination_row").forEach((row) => {
         const label = row.querySelector(".combination_label").textContent;
-        combinations[label] = row
+        const combinationKey = row.dataset.combinationKey || label;
+
+        combinations[combinationKey] = row
             .querySelector(".combination_price_input")
             .value.trim();
     });
@@ -878,11 +907,11 @@ function setupSaveButton() {
                     discounts:
                         data.discountEnabled && data.discountRows.length > 0
                             ? data.discountRows.map((row, idx) => ({
-                                  min_quantity: parseInt(row.qty) || 0,
-                                  price_reduction:
-                                      parseFloat(row.reduction) || 0,
-                                  position: idx,
-                              }))
+                                min_quantity: parseInt(row.qty) || 0,
+                                price_reduction:
+                                    parseFloat(row.reduction) || 0,
+                                position: idx,
+                            }))
                             : [],
                     min_order:
                         data.minOrderEnabled && data.minOrderQty
@@ -1033,7 +1062,7 @@ function createProductCard(template) {
             .filter((s) => s.is_available)
             .forEach((spec) => {
                 const option = document.createElement("option");
-                option.value = spec.type_name;
+                option.value = String(spec.id || "");
                 option.textContent = spec.type_name;
                 select.appendChild(option);
             });
@@ -1050,11 +1079,63 @@ function createProductCard(template) {
     const priceDiv = document.createElement("div");
     priceDiv.className = "product_card_price";
 
+    const toCanonicalNumericKey = (rawValue) => {
+        const trimmed = String(rawValue || "").trim();
+        if (!/^\d+(\s*,\s*\d+)*$/.test(trimmed)) {
+            return "";
+        }
+
+        const ids = trimmed
+            .split(",")
+            .map((value) => Number(value.trim()))
+            .filter((value) => Number.isInteger(value) && value > 0)
+            .sort((a, b) => a - b);
+
+        return ids.length > 0 ? ids.join(",") : "";
+    };
+
+    const normalizePricingToken = (token) =>
+        String(token || "")
+            .trim()
+            .toLowerCase()
+            .replace(/\s*(inch|inches)\s*$/i, "")
+            .replace(/[^a-z0-9]+/gi, "_")
+            .replace(/^_+|_+$/g, "");
+
     function updateCardPrice() {
-        const key = selects.map((s) => s.value).join(" | ");
-        const pricing = template.pricings.find(
-            (p) => p.combination_key === key,
-        );
+        const selectedTypeIds = selects
+            .map((select) => Number(select.value || 0))
+            .filter((value) => Number.isInteger(value) && value > 0)
+            .sort((a, b) => a - b);
+
+        const canonicalNumericKey = selectedTypeIds.join(",");
+        const selectedLabels = selects
+            .map((select) => select.options[select.selectedIndex]?.text?.trim() || "")
+            .filter((label) => label !== "");
+        const labelKey = selectedLabels.join(" | ");
+        const legacyKey = selectedLabels
+            .map((segment) => normalizePricingToken(segment))
+            .filter((segment) => segment !== "")
+            .join("_");
+
+        const pricing = template.pricings.find((pricingItem) => {
+            const storedKey = String(pricingItem.combination_key || "");
+
+            if (canonicalNumericKey && toCanonicalNumericKey(storedKey) === canonicalNumericKey) {
+                return true;
+            }
+
+            if (labelKey && storedKey.trim() === labelKey) {
+                return true;
+            }
+
+            if (legacyKey && normalizePricingToken(storedKey) === legacyKey) {
+                return true;
+            }
+
+            return false;
+        });
+
         const price = pricing?.price;
         priceDiv.textContent = price ? `₱${parseFloat(price).toFixed(2)}` : "—";
     }
@@ -1099,7 +1180,7 @@ function createProductCard(template) {
         // If it's an object with min_quantity property, extract that; otherwise treat as value
         minOrder =
             typeof minOrderData === "object" &&
-            minOrderData.min_quantity != null
+                minOrderData.min_quantity != null
                 ? parseInt(minOrderData.min_quantity)
                 : parseInt(minOrderData);
     }
@@ -1118,7 +1199,7 @@ function createProductCard(template) {
         // If it's an object with fee_amount property, extract that; otherwise treat as value
         layoutFee =
             typeof layoutFeeData === "object" &&
-            layoutFeeData.fee_amount != null
+                layoutFeeData.fee_amount != null
                 ? parseFloat(layoutFeeData.fee_amount)
                 : parseFloat(layoutFeeData);
     }
@@ -1175,6 +1256,7 @@ function openEditModal(templateId) {
 
         opt.option_types.forEach((optType) => {
             const row = createSpecRow();
+            row.dataset.optionTypeId = String(optType.id || "");
             row.querySelector(".product_availability input").checked =
                 optType.is_available;
             row.querySelector(".product_option_name input").value =
@@ -1191,6 +1273,7 @@ function openEditModal(templateId) {
     template.pricings.forEach((pricing) => {
         const row = document.createElement("div");
         row.className = "combination_row";
+        row.dataset.combinationKey = String(pricing.combination_key || "");
         const label = document.createElement("span");
         label.className = "combination_label";
         label.textContent = pricing.combination_key;
@@ -1242,7 +1325,7 @@ function openEditModal(templateId) {
         // Extract min_quantity from object if needed
         const minQtyValue =
             typeof minOrderData === "object" &&
-            minOrderData.min_quantity != null
+                minOrderData.min_quantity != null
                 ? minOrderData.min_quantity
                 : minOrderData;
         document.getElementById("minOrderQty").value = minQtyValue;
@@ -1262,7 +1345,7 @@ function openEditModal(templateId) {
         // Extract fee_amount from object if needed
         const feeAmountValue =
             typeof layoutFeeData === "object" &&
-            layoutFeeData.fee_amount != null
+                layoutFeeData.fee_amount != null
                 ? layoutFeeData.fee_amount
                 : layoutFeeData;
         document.getElementById("layoutFeeAmount").value = feeAmountValue;
