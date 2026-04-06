@@ -55,6 +55,26 @@ class InventoryUiContractTest extends TestCase
         $this->assertStringContainsString('Any Option (Fallback)', $script);
     }
 
+    public function test_inventory_render_initializes_usage_text_for_every_row(): void
+    {
+        $script = file_get_contents(base_path('resources/js/owner/inventory_refactored.js'));
+
+        $this->assertIsString($script);
+        $this->assertStringContainsString('let usageText = "-";', $script);
+        $this->assertStringContainsString('usageText = material.consumptions', $script);
+        $this->assertStringContainsString('<td class="text-center">${usageText}</td>', $script);
+    }
+
+    public function test_inventory_load_flow_distinguishes_fetch_and_render_failures(): void
+    {
+        $script = file_get_contents(base_path('resources/js/owner/inventory_refactored.js'));
+
+        $this->assertIsString($script);
+        $this->assertStringContainsString('Error loading inventory data:', $script);
+        $this->assertStringContainsString('Error rendering inventory UI:', $script);
+        $this->assertStringContainsString('Failed to render inventory. Please refresh the page.', $script);
+    }
+
     public function test_inventory_delete_flow_uses_modal_and_not_browser_confirm(): void
     {
         $script = file_get_contents(base_path('resources/js/owner/inventory_refactored.js'));

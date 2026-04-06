@@ -102,31 +102,45 @@ async function loadMaterialsAndProducts() {
         return;
     }
 
+    isLoading = true;
+
     try {
-        isLoading = true;
         // Show loading state
         if (emptyInventoryRow) {
             emptyInventoryRow.innerHTML =
                 '<td colspan="5" class="text-center" style="padding: 60px; color: #682C7A; font-style: italic;">Loading inventory...</td>';
         }
 
-        const [materials, products] = await Promise.all([
-            MaterialAPI.getAllMaterials(),
-            ProductAPI.getAllProducts(),
-        ]);
+        try {
+            const [materials, products] = await Promise.all([
+                MaterialAPI.getAllMaterials(),
+                ProductAPI.getAllProducts(),
+            ]);
 
-        materials_list = materials;
-        products_list = products;
+            materials_list = materials;
+            products_list = products;
+        } catch (error) {
+            console.error("Error loading inventory data:", error);
+            Toast.error("Failed to load inventory from database");
+            if (emptyInventoryRow) {
+                emptyInventoryRow.innerHTML =
+                    '<td colspan="5" class="text-center" style="padding: 60px; color: #999;">Error loading inventory</td>';
+            }
 
-        renderMaterials();
-        updateProductCheckboxes();
-        updateStatusCards();
-    } catch (error) {
-        console.error("Error loading inventory:", error);
-        Toast.error("Failed to load inventory from database");
-        if (emptyInventoryRow) {
-            emptyInventoryRow.innerHTML =
-                '<td colspan="5" class="text-center" style="padding: 60px; color: #999;">Error loading inventory</td>';
+            return;
+        }
+
+        try {
+            renderMaterials();
+            updateProductCheckboxes();
+            updateStatusCards();
+        } catch (error) {
+            console.error("Error rendering inventory UI:", error);
+            Toast.error("Failed to render inventory. Please refresh the page.");
+            if (emptyInventoryRow) {
+                emptyInventoryRow.innerHTML =
+                    '<td colspan="5" class="text-center" style="padding: 60px; color: #999;">Error rendering inventory</td>';
+            }
         }
     } finally {
         isLoading = false;
@@ -814,6 +828,7 @@ function renderMaterials() {
 
         // Get associated consumption rules display text
         let productText = "None assigned";
+        let usageText = "-";
         if (Array.isArray(material.consumptions) && material.consumptions.length > 0) {
             productText = material.consumptions
                 .map((rule) => {
@@ -827,6 +842,9 @@ function renderMaterials() {
                     return `${productName} - ${optionLabel} (x${Number(rule.quantity || 0)})`;
                 })
                 .join(", ");
+            usageText = material.consumptions
+                .map((rule) => `${Number(rule.quantity || 0)}`)
+                .join("<br>");
         } else if (material.products && material.products.length > 0) {
             productText = material.products
                 .map(
