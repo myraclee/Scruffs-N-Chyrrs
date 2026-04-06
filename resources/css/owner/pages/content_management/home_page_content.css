@@ -280,7 +280,7 @@
 }
 
 .image_slot.plus::before {
-    content: "+";
+    content: '+';
     font-size: 40px;
     color: #682c7a;
 }
@@ -393,6 +393,10 @@
     z-index: 1000;
 }
 
+#addSampleModal {
+    z-index: 1000;
+}
+
 .add_sample_modal_box {
     background: #fff7ec;
     width: 500px;
@@ -481,7 +485,7 @@
 }
 
 .sample_image_slot.plus::before {
-    content: "+";
+    content: '+';
     font-size: 42px;
     color: #682c7a;
 }
@@ -616,6 +620,10 @@
     z-index: 1000;
 }
 
+#deleteConfirmModal {
+    z-index: 1010;
+}
+
 .delete_confirm_box {
     background: #fff7ec;
     padding: 25px 30px;
@@ -644,9 +652,7 @@
     cursor: pointer;
     font-family: Coolvetica;
     font-size: 14px;
-    transition:
-        background-color 0.2s ease,
-        transform 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
 .delete_confirm_box button:hover {
@@ -801,9 +807,7 @@
     font-family: Coolvetica;
     font-size: 13px;
     cursor: pointer;
-    transition:
-        background-color 0.2s ease,
-        color 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .edit_sample_btn {

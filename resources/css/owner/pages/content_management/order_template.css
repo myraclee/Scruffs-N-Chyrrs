@@ -49,6 +49,10 @@ select:focus {
     box-sizing: border-box;
 }
 
+#templateModalOverlay {
+    z-index: 9999;
+}
+
 .add_template_modal.active {
     opacity: 1;
     visibility: visible;
@@ -1107,6 +1111,14 @@ select:focus {
     pointer-events: none;
 }
 
+#deleteTemplateModalOverlay {
+    z-index: 10010;
+}
+
+#rushDeleteConfirmOverlay {
+    z-index: 10010;
+}
+
 .modal_overlay.active {
     opacity: 1;
     visibility: visible;
@@ -1356,6 +1368,10 @@ select:focus {
     overflow-y: auto;
     padding: 20px;
     box-sizing: border-box;
+}
+
+#rushFeeModalOverlay {
+    z-index: 9999;
 }
 
 .rush_fees_modal.active {

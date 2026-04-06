@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\CustomerCartItem;
+use App\Models\CustomerOrder;
 use App\Models\OrderTemplate;
 use App\Models\OrderTemplateOption;
 use App\Models\OrderTemplateOptionType;
@@ -10,6 +12,8 @@ use App\Models\OrderTemplatePricing;
 use App\Models\OrderTemplateDiscount;
 use App\Models\OrderTemplateMinOrder;
 use App\Models\OrderTemplateLayoutFee;
+use App\Support\SchemaMismatchDetector;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -37,6 +41,19 @@ class OrderTemplateController extends Controller
                 'success' => true,
                 'data' => $templates,
             ]);
+        } catch (QueryException $e) {
+            if (SchemaMismatchDetector::isMissingOrderTemplateDeletedAt($e)) {
+                return response()->json(
+                    SchemaMismatchDetector::buildPayload('Failed to fetch order templates due to database schema mismatch.'),
+                    500
+                );
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch order templates',
+                'error' => $e->getMessage(),
+            ], 500);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -333,6 +350,12 @@ class OrderTemplateController extends Controller
      */
     public function destroy(OrderTemplate $orderTemplate): JsonResponse
     {
+        $usage = $this->getTemplateUsageCounts($orderTemplate);
+
+        if ($usage['active_order_count'] > 0 || $usage['cart_item_count'] > 0) {
+            return $this->buildTemplateInUseResponse($usage);
+        }
+
         try {
             $orderTemplate->delete();
 
@@ -340,6 +363,18 @@ class OrderTemplateController extends Controller
                 'success' => true,
                 'message' => 'Order template deleted successfully',
             ]);
+        } catch (QueryException $e) {
+            if ($this->isForeignKeyConstraintViolation($e)) {
+                $latestUsage = $this->getTemplateUsageCounts($orderTemplate);
+
+                return $this->buildTemplateInUseResponse($latestUsage);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete order template',
+                'error' => $e->getMessage(),
+            ], 500);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -484,5 +519,45 @@ class OrderTemplateController extends Controller
         $normalized = preg_replace('/[^a-z0-9]+/i', '_', $normalized) ?? $normalized;
 
         return trim($normalized, '_');
+    }
+
+    /**
+     * @return array{active_order_count:int, order_count:int, cart_item_count:int}
+     */
+    private function getTemplateUsageCounts(OrderTemplate $orderTemplate): array
+    {
+        $activeOrderStatuses = ['waiting', 'approved', 'preparing', 'ready'];
+        $activeOrderCount = CustomerOrder::where('order_template_id', $orderTemplate->id)
+            ->whereIn('status', $activeOrderStatuses)
+            ->count();
+
+        return [
+            'active_order_count' => $activeOrderCount,
+            // Keep legacy key for backwards compatibility in frontend consumers.
+            'order_count' => $activeOrderCount,
+            'cart_item_count' => CustomerCartItem::where('order_template_id', $orderTemplate->id)->count(),
+        ];
+    }
+
+    /**
+     * @param array{active_order_count:int, order_count:int, cart_item_count:int} $usage
+     */
+    private function buildTemplateInUseResponse(array $usage): JsonResponse
+    {
+        return response()->json([
+            'success' => false,
+            'message' => 'Cannot delete order template because it is currently used by active orders or cart items.',
+            'error_code' => 'order_template_in_use',
+            'active_order_count' => $usage['active_order_count'],
+            'order_count' => $usage['order_count'],
+            'cart_item_count' => $usage['cart_item_count'],
+        ], 409);
+    }
+
+    private function isForeignKeyConstraintViolation(QueryException $e): bool
+    {
+        $sqlState = (string) $e->getCode();
+
+        return $sqlState === '23000' || $sqlState === '23503';
     }
 }

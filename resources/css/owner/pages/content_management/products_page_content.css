@@ -95,6 +95,10 @@
     z-index: 999;
 }
 
+#products_modal {
+    z-index: 999;
+}
+
 .products_modal_content {
     background: #fff7ec;
     padding: 30px;
@@ -225,9 +229,7 @@
     font-size: 40px;
     color: #682c7a;
     cursor: pointer;
-    transition:
-        background-color 0.2s ease,
-        border-color 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .products_add_box:hover {
@@ -277,9 +279,7 @@
     cursor: pointer;
     flex-shrink: 0;
     overflow: hidden;
-    transition:
-        background-color 0.2s ease,
-        border-color 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .products_price_box:hover {
@@ -445,9 +445,7 @@
     font-size: 15px;
     color: #fff7ec;
     cursor: pointer;
-    transition:
-        transform 0.2s ease,
-        background-color 0.2s ease;
+    transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
 .products_button_delete:hover {
@@ -484,6 +482,10 @@
     z-index: 10000;
 }
 
+#products_delete_confirm_modal {
+    z-index: 10000;
+}
+
 .delete_products_modal_content {
     background: #fff7ec;
     padding: 30px;
@@ -517,9 +519,7 @@
     cursor: pointer;
     font-family: Coolvetica;
     font-size: 14px;
-    transition:
-        background-color 0.2s ease,
-        transform 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
 .products_button_confirm_delete:hover {

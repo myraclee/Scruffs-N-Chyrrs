@@ -54,7 +54,11 @@ async function loadProductsFromAPI() {
         dispatchProductsUpdated();
     } catch (error) {
         console.error("Error loading products:", error);
-        Toast.error("Failed to load products from database");
+        if (error?.status === 500 && error?.payload?.error_code === "schema_mismatch") {
+            Toast.error(error?.payload?.hint || "Database schema is out of date. Run migrations and refresh.");
+        } else {
+            Toast.error("Failed to load products from database");
+        }
         products_container.innerHTML = '<p style="color: #999;">No products uploaded yet.</p>';
     }
 }

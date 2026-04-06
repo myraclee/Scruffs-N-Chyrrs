@@ -34,7 +34,18 @@ class OrderTemplateAPI {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        let errorData = null;
+
+        try {
+          errorData = await response.json();
+        } catch {
+          errorData = null;
+        }
+
+        const apiError = new Error(errorData?.message || `HTTP ${response.status}: ${response.statusText}`);
+        apiError.status = response.status;
+        apiError.payload = errorData;
+        throw apiError;
       }
 
       const data = await response.json();
@@ -152,8 +163,18 @@ class OrderTemplateAPI {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP ${response.status}`);
+        let errorData = null;
+
+        try {
+          errorData = await response.json();
+        } catch {
+          errorData = null;
+        }
+
+        const apiError = new Error(errorData?.message || `HTTP ${response.status}`);
+        apiError.status = response.status;
+        apiError.payload = errorData;
+        throw apiError;
       }
 
       const data = await response.json();

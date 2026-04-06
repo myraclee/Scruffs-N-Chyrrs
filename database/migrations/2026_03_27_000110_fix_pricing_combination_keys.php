@@ -1,13 +1,9 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
-use App\Models\OrderTemplate;
 
-return new class extends Migration
-{
+return new class () extends Migration {
     /**
      * Run the migrations.
      */
@@ -20,7 +16,7 @@ return new class extends Migration
         //   - Glossy (type_id: 2)
         // Pricings should use numeric keys: "1" and "2"
 
-        $orderTemplate = OrderTemplate::find(1);
+        $orderTemplate = DB::table('order_templates')->where('id', 1)->first();
         if ($orderTemplate) {
             // Delete old pricings that have text keys
             DB::table('order_template_pricings')

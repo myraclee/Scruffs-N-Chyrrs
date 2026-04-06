@@ -255,7 +255,9 @@
 
 /* ==================== MODAL OVERLAY (SHARED) ==================== */
 
-.modal_overlay {
+#manageCategoriesOverlay,
+#deleteCategoryConfirmOverlay,
+#deleteFaqModalOverlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -270,9 +272,23 @@
     justify-content: center;
 }
 
-.modal_overlay.active {
+#manageCategoriesOverlay.active,
+#deleteCategoryConfirmOverlay.active,
+#deleteFaqModalOverlay.active {
     display: flex;
     opacity: 1;
+}
+
+#manageCategoriesOverlay {
+    z-index: 1000;
+}
+
+#deleteCategoryConfirmOverlay {
+    z-index: 1010;
+}
+
+#deleteFaqModalOverlay {
+    z-index: 1010;
 }
 
 /* ==================== MANAGE CATEGORIES MODAL ==================== */

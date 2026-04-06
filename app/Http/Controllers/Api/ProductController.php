@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductNoteImage;
 use App\Models\ProductPriceImage;
+use App\Support\SchemaMismatchDetector;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
@@ -31,6 +33,19 @@ class ProductController extends Controller
                 'success' => true,
                 'data' => $products,
             ]);
+        } catch (QueryException $e) {
+            if (SchemaMismatchDetector::isMissingOrderTemplateDeletedAt($e)) {
+                return response()->json(
+                    SchemaMismatchDetector::buildPayload('Failed to fetch products due to database schema mismatch.'),
+                    500
+                );
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch products',
+                'error' => $e->getMessage(),
+            ], 500);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
