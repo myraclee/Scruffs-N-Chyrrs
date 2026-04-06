@@ -134,6 +134,7 @@ Route::prefix('api/customer-cart')->middleware('auth')->group(function () {
 Route::prefix('api/owner/orders')->middleware(['auth', 'owner'])->group(function () {
     Route::get('/', [OwnerOrderController::class, 'index']);
     Route::get('{orderGroup}', [OwnerOrderController::class, 'show'])->whereNumber('orderGroup');
+    Route::patch('{orderGroup}/details', [OwnerOrderController::class, 'updateDetails'])->whereNumber('orderGroup');
     Route::patch('{orderGroup}/status', [OwnerOrderController::class, 'updateStatus'])->whereNumber('orderGroup');
 });
 

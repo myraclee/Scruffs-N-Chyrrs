@@ -61,6 +61,13 @@
             <div class="details_drive_link">
                 <h3 class="bold_purple" style="font-size: 20px;">Uploaded Drive:</h3>
                 <a href="#" target="_blank" class="brand_placeholder" id="detailDriveLink" style="text-decoration: underline;">No drive link submitted</a>
+                <input
+                    type="url"
+                    id="detailDriveLinkInput"
+                    class="detail_drive_link_input"
+                    placeholder="https://drive.google.com/..."
+                    style="display: none;"
+                >
             </div>
 
             <div class="table_responsive_wrapper">
@@ -100,6 +107,11 @@
             </div>
 
             <div class="details_footer">
+                <div class="details_edit_actions" id="detailEditActions">
+                    <button class="edit_modal_btn" id="detailEditBtn" type="button">Edit</button>
+                    <button class="save_modal_btn" id="detailSaveBtn" type="button" style="display: none;">Save Changes</button>
+                    <button class="cancel_modal_btn" id="detailCancelBtn" type="button" style="display: none;">Cancel</button>
+                </div>
                 <button class="close_modal_btn" id="closeDetailsModalBtn">Close</button>
             </div>
         </div>
