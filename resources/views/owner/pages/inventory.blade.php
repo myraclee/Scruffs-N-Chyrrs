@@ -88,7 +88,7 @@
         <div class="input_group">
             <div class="consumed_header">
                 <label>Products Consumed <span style="color: #d94848;">*</span></label>
-                <span class="consumed_note">Set fallback and option-specific<br>consumption quantities per product.</span>
+                <span class="consumed_note">Option-specific mappings are checked first.<br>Any Option fallback applies only when no specific mapping matches.</span>
             </div>
             
             <div class="consumed_list">
@@ -127,7 +127,7 @@
         <div class="input_group">
             <div class="consumed_header">
                 <label>Products Consumed <span style="color: #d94848;">*</span></label>
-                <span class="consumed_note">Set fallback and option-specific consumption quantities per product.</span>
+                <span class="consumed_note">Option-specific mappings are checked first.<br>Any Option fallback applies only when no specific mapping matches.</span>
             </div>
             
             <div class="consumed_list">

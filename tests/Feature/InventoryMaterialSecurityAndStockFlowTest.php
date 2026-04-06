@@ -399,7 +399,7 @@ class InventoryMaterialSecurityAndStockFlowTest extends TestCase
         );
     }
 
-    public function test_checkout_sums_fallback_and_selected_option_type_consumption_rules(): void
+    public function test_checkout_prefers_selected_option_type_rules_over_fallback_rules(): void
     {
         $customer = User::factory()->create(['user_type' => 'customer']);
         $fixture = $this->createInventoryFixture(materialUnits: 30, pivotQuantity: 1);
@@ -434,15 +434,77 @@ class InventoryMaterialSecurityAndStockFlowTest extends TestCase
         $group = CustomerOrderGroup::findOrFail($checkoutResponse->json('data.order_group_id'));
 
         $this->assertSame(
-            6,
+            4,
             (int) ($group->inventory_material_requirements[0]['required'] ?? 0),
         );
 
         $breakdown = $group->inventory_material_requirements[0]['breakdown'] ?? [];
-        $this->assertCount(2, $breakdown);
+        $this->assertCount(1, $breakdown);
+        $this->assertSame('selected_option_type', $breakdown[0]['source'] ?? null);
 
         $fixture['material']->refresh();
-        $this->assertSame(24, (int) $fixture['material']->units);
+        $this->assertSame(26, (int) $fixture['material']->units);
+    }
+
+    public function test_checkout_ignores_unrelated_fallback_shortage_when_selected_option_rules_exist(): void
+    {
+        $customer = User::factory()->create(['user_type' => 'customer']);
+        $fixture = $this->createInventoryFixture(materialUnits: 10, pivotQuantity: 1);
+
+        MaterialConsumption::create([
+            'material_id' => $fixture['material']->id,
+            'product_id' => $fixture['product']->id,
+            'order_template_option_type_id' => $fixture['optionType']->id,
+            'quantity' => 1,
+        ]);
+
+        $unrelatedFallbackMaterial = Material::create([
+            'name' => 'Unrelated fallback '.uniqid(),
+            'units' => 0,
+        ]);
+
+        MaterialConsumption::create([
+            'material_id' => $unrelatedFallbackMaterial->id,
+            'product_id' => $fixture['product']->id,
+            'order_template_option_type_id' => null,
+            'quantity' => 5,
+        ]);
+
+        $this->actingAs($customer)
+            ->postJson('/api/customer-cart/items', [
+                'product_id' => $fixture['product']->id,
+                'order_template_id' => $fixture['template']->id,
+                'selected_options' => [
+                    (string) $fixture['option']->id => $fixture['optionType']->id,
+                ],
+                'quantity' => 1,
+            ])
+            ->assertCreated();
+
+        $checkoutResponse = $this->actingAs($customer)
+            ->postJson('/api/customer-cart/checkout', [
+                'general_drive_link' => 'https://drive.google.com/selected-only-checkout',
+            ]);
+
+        $checkoutResponse
+            ->assertOk()
+            ->assertJsonPath('success', true);
+
+        $group = CustomerOrderGroup::findOrFail($checkoutResponse->json('data.order_group_id'));
+        $requirements = $group->inventory_material_requirements ?? [];
+        $requiredMaterialIds = array_map(
+            fn (array $row): int => (int) ($row['material_id'] ?? 0),
+            $requirements,
+        );
+
+        $this->assertContains((int) $fixture['material']->id, $requiredMaterialIds);
+        $this->assertNotContains((int) $unrelatedFallbackMaterial->id, $requiredMaterialIds);
+
+        $fixture['material']->refresh();
+        $unrelatedFallbackMaterial->refresh();
+
+        $this->assertSame(9, (int) $fixture['material']->units);
+        $this->assertSame(0, (int) $unrelatedFallbackMaterial->units);
     }
 
     public function test_direct_order_is_blocked_when_product_template_has_no_options(): void

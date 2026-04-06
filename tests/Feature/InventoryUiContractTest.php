@@ -33,6 +33,15 @@ class InventoryUiContractTest extends TestCase
         $this->assertStringNotContainsString('🗑️', $script);
     }
 
+    public function test_inventory_blade_explains_option_precedence_in_helper_text(): void
+    {
+        $blade = file_get_contents(base_path('resources/views/owner/pages/inventory.blade.php'));
+
+        $this->assertIsString($blade);
+        $this->assertStringContainsString('Option-specific mappings are checked first.', $blade);
+        $this->assertStringContainsString('Any Option fallback applies only when no specific mapping matches.', $blade);
+    }
+
     public function test_inventory_status_cards_support_show_more_and_healthy_messages(): void
     {
         $script = file_get_contents(base_path('resources/js/owner/inventory_refactored.js'));
