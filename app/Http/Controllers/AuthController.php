@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\CustomerCart;
 use App\Models\CustomerOrder;
 use App\Models\CustomerOrderGroup;
+use App\Models\Product;
 use App\Mail\PasswordResetCode;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,6 +19,16 @@ use Illuminate\Validation\Rules;
 
 class AuthController extends Controller
 {
+    /**
+     * @var list<string>
+     */
+    private const FINISHED_ORDER_STATUSES = ['completed', 'cancelled'];
+
+    /**
+     * @var list<string>
+     */
+    private const DASHBOARD_PENDING_ORDER_STATUSES = ['waiting', 'approved', 'preparing', 'ready'];
+
     /**
      * Centralized email validation rules.
      */
@@ -303,21 +314,19 @@ class AuthController extends Controller
             return back()->withErrors(['current_password' => 'The current password is incorrect.']);
         }
 
-        $finishedStatuses = ['completed', 'cancelled'];
-
         $hasUnfinishedGroupedOrders = CustomerOrderGroup::query()
             ->where('user_id', $user->id)
-            ->whereNotIn('status', $finishedStatuses)
+            ->whereNotIn('status', self::FINISHED_ORDER_STATUSES)
             ->exists();
 
         $hasUnfinishedLineOrders = CustomerOrder::query()
             ->where('user_id', $user->id)
-            ->whereNotIn('status', $finishedStatuses)
+            ->whereNotIn('status', self::FINISHED_ORDER_STATUSES)
             ->exists();
 
         $hasUnfinishedLegacyOrders = Order::query()
             ->where('user_id', $user->id)
-            ->whereNotIn('status', $finishedStatuses)
+            ->whereNotIn('status', self::FINISHED_ORDER_STATUSES)
             ->exists();
 
         if ($hasUnfinishedGroupedOrders || $hasUnfinishedLineOrders || $hasUnfinishedLegacyOrders) {
@@ -334,6 +343,8 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         DB::transaction(function () use ($userId, $userEmail): void {
+            $this->archiveDeletedAccountDashboardContributions($userId);
+
             // Explicit hard-delete for user-linked records, including nullable legacy foreign keys.
             Order::query()->where('user_id', $userId)->delete();
             CustomerCart::query()->where('user_id', $userId)->delete();
@@ -348,6 +359,183 @@ class AuthController extends Controller
 
         return redirect()->route('home')
             ->with('success', 'Your account has been permanently deleted.');
+    }
+
+    private function archiveDeletedAccountDashboardContributions(int $userId): void
+    {
+        $groups = CustomerOrderGroup::query()
+            ->where('user_id', $userId)
+            ->get(['id', 'status', 'total_price', 'created_at']);
+
+        if ($groups->isEmpty()) {
+            return;
+        }
+
+        $dailyAggregates = [];
+        $nonCancelledGroupDateById = [];
+
+        foreach ($groups as $group) {
+            $metricDate = $group->created_at?->toDateString() ?? now()->toDateString();
+
+            if (! isset($dailyAggregates[$metricDate])) {
+                $dailyAggregates[$metricDate] = [
+                    'total_sales' => 0.0,
+                    'items_sold' => 0,
+                    'total_orders' => 0,
+                    'received_payment' => 0,
+                    'pending_payment' => 0,
+                    'canceled_orders' => 0,
+                ];
+            }
+
+            $dailyAggregates[$metricDate]['total_orders']++;
+
+            if ($group->status === 'completed') {
+                $dailyAggregates[$metricDate]['received_payment']++;
+            }
+
+            if (in_array($group->status, self::DASHBOARD_PENDING_ORDER_STATUSES, true)) {
+                $dailyAggregates[$metricDate]['pending_payment']++;
+            }
+
+            if ($group->status === 'cancelled') {
+                $dailyAggregates[$metricDate]['canceled_orders']++;
+                continue;
+            }
+
+            $dailyAggregates[$metricDate]['total_sales'] += (float) $group->total_price;
+            $nonCancelledGroupDateById[(int) $group->id] = $metricDate;
+        }
+
+        $monthlyProductAggregates = [];
+
+        if ($nonCancelledGroupDateById !== []) {
+            $orders = CustomerOrder::query()
+                ->whereIn('customer_order_group_id', array_keys($nonCancelledGroupDateById))
+                ->get(['customer_order_group_id', 'product_id', 'quantity', 'created_at']);
+
+            $productNames = Product::query()
+                ->whereIn('id', $orders->pluck('product_id')->unique()->values())
+                ->pluck('name', 'id');
+
+            foreach ($orders as $order) {
+                $groupId = (int) $order->customer_order_group_id;
+                $metricDate = $nonCancelledGroupDateById[$groupId] ?? null;
+
+                if ($metricDate !== null) {
+                    $dailyAggregates[$metricDate]['items_sold'] += (int) $order->quantity;
+                }
+
+                $orderCreatedAt = $order->created_at ?? now();
+                $year = (int) $orderCreatedAt->format('Y');
+                $month = (int) $orderCreatedAt->format('n');
+                $productId = (int) $order->product_id;
+                $monthlyKey = $year.'-'.$month.'-'.$productId;
+
+                if (! isset($monthlyProductAggregates[$monthlyKey])) {
+                    $monthlyProductAggregates[$monthlyKey] = [
+                        'year' => $year,
+                        'month' => $month,
+                        'product_id' => $productId,
+                        'product_name' => (string) ($productNames[$productId] ?? 'Unknown Product'),
+                        'total_quantity' => 0,
+                    ];
+                }
+
+                $monthlyProductAggregates[$monthlyKey]['total_quantity'] += (int) $order->quantity;
+            }
+        }
+
+        foreach ($dailyAggregates as $metricDate => $aggregate) {
+            $this->persistDailyDashboardContribution($metricDate, $aggregate);
+        }
+
+        foreach ($monthlyProductAggregates as $aggregate) {
+            $this->persistMonthlyProductContribution($aggregate);
+        }
+    }
+
+    /**
+     * @param array{
+     *   total_sales: float,
+     *   items_sold: int,
+     *   total_orders: int,
+     *   received_payment: int,
+     *   pending_payment: int,
+     *   canceled_orders: int
+     * } $aggregate
+     */
+    private function persistDailyDashboardContribution(string $metricDate, array $aggregate): void
+    {
+        $now = now();
+
+        $existing = DB::table('dashboard_deleted_account_daily_metrics')
+            ->where('metric_date', $metricDate)
+            ->first();
+
+        if ($existing) {
+            DB::table('dashboard_deleted_account_daily_metrics')
+                ->where('metric_date', $metricDate)
+                ->update([
+                    'total_sales' => round((float) $existing->total_sales + (float) $aggregate['total_sales'], 2),
+                    'items_sold' => (int) $existing->items_sold + (int) $aggregate['items_sold'],
+                    'total_orders' => (int) $existing->total_orders + (int) $aggregate['total_orders'],
+                    'received_payment' => (int) $existing->received_payment + (int) $aggregate['received_payment'],
+                    'pending_payment' => (int) $existing->pending_payment + (int) $aggregate['pending_payment'],
+                    'canceled_orders' => (int) $existing->canceled_orders + (int) $aggregate['canceled_orders'],
+                    'updated_at' => $now,
+                ]);
+
+            return;
+        }
+
+        DB::table('dashboard_deleted_account_daily_metrics')->insert([
+            'metric_date' => $metricDate,
+            'total_sales' => round((float) $aggregate['total_sales'], 2),
+            'items_sold' => (int) $aggregate['items_sold'],
+            'total_orders' => (int) $aggregate['total_orders'],
+            'received_payment' => (int) $aggregate['received_payment'],
+            'pending_payment' => (int) $aggregate['pending_payment'],
+            'canceled_orders' => (int) $aggregate['canceled_orders'],
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+    }
+
+    /**
+     * @param array{year: int, month: int, product_id: int, product_name: string, total_quantity: int} $aggregate
+     */
+    private function persistMonthlyProductContribution(array $aggregate): void
+    {
+        $now = now();
+
+        $existing = DB::table('dashboard_deleted_account_monthly_product_sales')
+            ->where('year', $aggregate['year'])
+            ->where('month', $aggregate['month'])
+            ->where('product_id', $aggregate['product_id'])
+            ->first();
+
+        if ($existing) {
+            DB::table('dashboard_deleted_account_monthly_product_sales')
+                ->where('id', $existing->id)
+                ->update([
+                    'product_name' => $aggregate['product_name'],
+                    'total_quantity' => (int) $existing->total_quantity + (int) $aggregate['total_quantity'],
+                    'updated_at' => $now,
+                ]);
+
+            return;
+        }
+
+        DB::table('dashboard_deleted_account_monthly_product_sales')->insert([
+            'year' => $aggregate['year'],
+            'month' => $aggregate['month'],
+            'product_id' => $aggregate['product_id'],
+            'product_name' => $aggregate['product_name'],
+            'total_quantity' => $aggregate['total_quantity'],
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
     }
 
     public function showResetPassword()

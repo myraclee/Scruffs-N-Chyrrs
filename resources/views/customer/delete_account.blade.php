@@ -20,7 +20,7 @@
         <span class="change_section_line"></span>
     </div>
 
-        <p class="delete_message">Deleting your account means saying goodbye to everything! Your account and order history will be permanently erased. This action can’t be undone, and there’s no way to bring your data back once it’s gone.</p>
+        <p class="delete_message">Deleting your account means saying goodbye to everything. Your personal account data and detailed order history will be permanently erased. Only anonymized aggregate totals used for owner dashboard reporting are retained. This action can’t be undone, and there’s no way to bring your data back once it’s gone.</p>
 
         <form method="POST" action="{{ route('delete-account.destroy') }}" class="change_password_form" novalidate>
             @csrf

@@ -11,6 +11,7 @@ use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -142,6 +143,71 @@ class OwnerDashboardApiTest extends TestCase
             ->assertJsonPath('data.charts.monthly_sales.values_by_month.3.0', 6)
             ->assertJsonPath('data.charts.monthly_sales.labels_by_month.3.1', 'Posters')
             ->assertJsonPath('data.charts.monthly_sales.values_by_month.3.1', 3);
+    }
+
+    public function test_owner_dashboard_metrics_api_includes_archived_deleted_account_contributions(): void
+    {
+        CarbonImmutable::setTestNow(CarbonImmutable::create(2026, 4, 7, 10, 0, 0));
+
+        $owner = User::factory()->create([
+            'user_type' => 'owner',
+        ]);
+
+        $customer = User::factory()->create();
+
+        [$liveProduct, $liveTemplate] = $this->createProductWithTemplate('Live Product');
+        [$archivedProduct] = $this->createProductWithTemplate('Archived Product');
+
+        $this->createGroupedOrder(
+            customer: $customer,
+            product: $liveProduct,
+            template: $liveTemplate,
+            status: 'completed',
+            totalPrice: 100,
+            quantity: 2,
+            createdAt: CarbonImmutable::parse('2026-04-07 09:00:00'),
+        );
+
+        DB::table('dashboard_deleted_account_daily_metrics')->insert([
+            'metric_date' => '2026-04-07',
+            'total_sales' => 55,
+            'items_sold' => 3,
+            'total_orders' => 2,
+            'received_payment' => 1,
+            'pending_payment' => 1,
+            'canceled_orders' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('dashboard_deleted_account_monthly_product_sales')->insert([
+            'year' => 2026,
+            'month' => 4,
+            'product_id' => $archivedProduct->id,
+            'product_name' => $archivedProduct->name,
+            'total_quantity' => 4,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this
+            ->actingAs($owner)
+            ->getJson('/api/owner/dashboard/metrics?year=2026&month=3');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.weekly_report.total_sales', 155)
+            ->assertJsonPath('data.weekly_report.items_sold', 5)
+            ->assertJsonPath('data.weekly_sales.total_orders', 3)
+            ->assertJsonPath('data.weekly_sales.received_payment', 2)
+            ->assertJsonPath('data.weekly_sales.pending_payment', 1)
+            ->assertJsonPath('data.weekly_sales.canceled_orders', 0)
+            ->assertJsonPath('data.charts.monthly_revenue.3', 155)
+            ->assertJsonPath('data.charts.monthly_sales.labels_by_month.3.0', 'Archived Product')
+            ->assertJsonPath('data.charts.monthly_sales.values_by_month.3.0', 4)
+            ->assertJsonPath('data.charts.monthly_sales.labels_by_month.3.1', 'Live Product')
+            ->assertJsonPath('data.charts.monthly_sales.values_by_month.3.1', 2);
     }
 
     public function test_non_owner_user_is_forbidden_from_dashboard_metrics_api(): void
