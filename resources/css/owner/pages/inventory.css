@@ -320,7 +320,16 @@
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
     display: none;
     flex-direction: column;
+    overflow-y: auto;
+    scrollbar-width: none; /* For Firefox */
+    -ms-overflow-style: none; /* For Internet Explorer/Edge */
 }
+
+/* For Chrome, Safari, and Opera */
+.material_modal::-webkit-scrollbar {
+    display: none;
+}
+
 .material_modal.active {
     display: flex;
 }
@@ -338,7 +347,7 @@
     display: block;
     font-family: Coolvetica;
     color: #682c7a;
-    font-size: 20px;
+    font-size: 15px;
     margin-bottom: 5px;
 }
 .text_input,
@@ -446,7 +455,7 @@
 }
 
 .consumed_product_group {
-    border: 1px solid #e8d9ee;
+    border: 2px solid #682c7a;
     border-radius: 12px;
     background: #fbf6fd;
     padding: 10px 12px;
@@ -458,12 +467,12 @@
     color: #58246a;
     font-size: 16px;
     letter-spacing: 0.2px;
+    font-weight: 600;
 }
 
 .consumed_group_rows {
     display: flex;
     flex-direction: column;
-    gap: 6px;
 }
 
 .consumed_note_inline {
@@ -476,8 +485,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 10px;
     padding-left: 8px;
+    border-top: 1px solid #682c7a;
+    padding: 5px;
 }
 .checkbox_label {
     font-family: Coolvetica;
