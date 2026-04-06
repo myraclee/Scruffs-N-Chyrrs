@@ -73,17 +73,24 @@ class AuthController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        $user = User::create([
-            'first_name' => $request->first_name,
-            'last_name' => $request->last_name,
-            'email' => $request->email,
-            'contact_number' => $request->contact_number,
-            'password' => Hash::make($request->password),
-        ]);
+        $user = DB::transaction(function () use ($request): User {
+            $isFirstSignup = ! User::query()->lockForUpdate()->exists();
+
+            return User::create([
+                'first_name' => $request->first_name,
+                'last_name' => $request->last_name,
+                'email' => $request->email,
+                'contact_number' => $request->contact_number,
+                'password' => Hash::make($request->password),
+                'user_type' => $isFirstSignup ? 'owner' : 'customer',
+            ]);
+        });
 
         Auth::login($user);
 
-        return redirect()->route('home');
+        return $user->isOwner()
+            ? redirect()->route('owner.dashboard')
+            : redirect()->route('home');
     }
 
     public function showLogin()
