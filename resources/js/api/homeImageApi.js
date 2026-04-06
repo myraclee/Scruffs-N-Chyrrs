@@ -129,8 +129,16 @@ class HomeImageAPI {
             const result = await response.json();
 
             if (!response.ok) {
+                const firstValidationMessage =
+                    result?.errors && typeof result.errors === "object"
+                        ? Object.values(result.errors)[0]?.[0]
+                        : null;
+
                 const errorMsg =
-                    result.message || result.error || "Failed to sync home images";
+                    firstValidationMessage ||
+                    result.message ||
+                    result.error ||
+                    "Failed to sync home images";
                 throw new Error(errorMsg);
             }
 

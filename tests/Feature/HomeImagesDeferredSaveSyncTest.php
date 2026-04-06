@@ -68,7 +68,7 @@ class HomeImagesDeferredSaveSyncTest extends TestCase
         $this->assertTrue(Storage::disk('public')->exists($newImage->image_path));
     }
 
-    public function test_sync_with_empty_payload_removes_all_images(): void
+    public function test_sync_with_empty_payload_fails_validation_and_keeps_existing_images(): void
     {
         Storage::fake('public');
 
@@ -88,13 +88,14 @@ class HomeImagesDeferredSaveSyncTest extends TestCase
         $response = $this->post('/api/home-images/sync', []);
 
         $response
-            ->assertOk()
-            ->assertJsonPath('success', true)
-            ->assertJsonCount(0, 'data');
+            ->assertStatus(422)
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('message', 'Validation failed')
+            ->assertJsonPath('errors.images.0', 'At least one home page image is required.');
 
-        $this->assertDatabaseCount('home_images', 0);
-        $this->assertFalse(Storage::disk('public')->exists($imageA->image_path));
-        $this->assertFalse(Storage::disk('public')->exists($imageB->image_path));
+        $this->assertDatabaseCount('home_images', 2);
+        $this->assertTrue(Storage::disk('public')->exists($imageA->image_path));
+        $this->assertTrue(Storage::disk('public')->exists($imageB->image_path));
     }
 
     private function fakeImage(string $filename): UploadedFile

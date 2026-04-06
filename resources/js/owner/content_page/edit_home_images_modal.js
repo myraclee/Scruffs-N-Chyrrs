@@ -132,6 +132,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     saveBtn.onclick = async () => {
+        if (tempImages.length < 1) {
+            Toast.error("At least one home page image is required.");
+            return;
+        }
+
         try {
             saveBtn.disabled = true;
             saveBtn.textContent = "Saving...";
@@ -161,7 +166,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             Toast.success("Home images updated successfully!");
         } catch (error) {
             console.error("Error saving home images:", error);
-            Toast.error("Failed to save home images");
+            Toast.error(error.message || "Failed to save home images");
         } finally {
             saveBtn.disabled = false;
             saveBtn.textContent = "Save";

@@ -117,6 +117,21 @@ class HomeImageController extends Controller
             }
             $orderedKeptIds = array_values(array_unique($orderedKeptIds));
 
+            $newUploadCount = 0;
+            if ($request->hasFile('images')) {
+                $newUploadCount = count($request->file('images'));
+            }
+
+            if ((count($orderedKeptIds) + $newUploadCount) < 1) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => [
+                        'images' => ['At least one home page image is required.'],
+                    ],
+                    'message' => 'Validation failed',
+                ], 422);
+            }
+
             foreach ($existingImages as $existingImage) {
                 if (!in_array($existingImage->id, $orderedKeptIds, true)) {
                     if (Storage::disk('public')->exists($existingImage->image_path)) {
