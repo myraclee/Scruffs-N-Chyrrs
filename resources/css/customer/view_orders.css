@@ -201,7 +201,7 @@
 }
 
 .orders_page_title {
-    font-family: "SuperDream", sans-serif;
+    font-family: 'SuperDream', sans-serif;
     font-size: 42px;
     color: #682c7a;
     margin: 0;
@@ -210,7 +210,7 @@
 }
 
 .orders_page_subtitle {
-    font-family: "Coolvetica", sans-serif;
+    font-family: 'Coolvetica', sans-serif;
     font-size: 18px;
     color: rgba(104, 44, 122, 0.6);
     margin: 0;
@@ -223,7 +223,7 @@
     gap: 10px;
     padding: 14px 20px;
     border-radius: 16px;
-    font-family: "Coolvetica", sans-serif;
+    font-family: 'Coolvetica', sans-serif;
     font-size: 14px;
     animation: orders_fade_up 0.4s ease both;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -264,7 +264,7 @@
 }
 
 .section_title {
-    font-family: "SuperDream", sans-serif;
+    font-family: 'SuperDream', sans-serif;
     font-size: 30px;
     color: #682c7a;
     margin: 0;
@@ -285,8 +285,7 @@
     border: 2px solid #682c7a;
     border-radius: 28px;
     padding: 30px 34px;
-    box-shadow:
-        0 6px 28px rgba(104, 44, 122, 0.09),
+    box-shadow: 0 6px 28px rgba(104, 44, 122, 0.09),
         0 0 0 5px rgba(104, 44, 122, 0.04);
     animation: orders_fade_up 0.55s 0.1s cubic-bezier(0.34, 1.4, 0.64, 1) both;
 }
@@ -332,7 +331,7 @@
 }
 
 .empty_message {
-    font-family: "Coolvetica", sans-serif;
+    font-family: 'Coolvetica', sans-serif;
     font-size: 20px;
     color: #682c7a;
     margin: 0;
@@ -346,7 +345,7 @@
     color: white;
     padding: 12px 28px;
     border-radius: 50px;
-    font-family: "Coolvetica", sans-serif;
+    font-family: 'Coolvetica', sans-serif;
     font-size: 16px;
     font-weight: 600;
     text-decoration: none;
@@ -403,7 +402,7 @@
 }
 
 .orders_category_header::before {
-    content: "";
+    content: '';
     position: absolute;
     top: 0;
     left: -100%;
@@ -456,7 +455,7 @@
 }
 
 .category_title {
-    font-family: "Coolvetica", sans-serif;
+    font-family: 'Coolvetica', sans-serif;
     font-size: 22px;
     color: #682c7a;
     margin: 0;
@@ -473,7 +472,7 @@
     background: white;
     border: 2px solid #682c7a;
     border-radius: 50px;
-    font-family: "Coolvetica", sans-serif;
+    font-family: 'Coolvetica', sans-serif;
     font-size: 13px;
     color: #682c7a;
     font-weight: 700;
@@ -522,10 +521,107 @@
 }
 
 .orders_placeholder p {
-    font-family: "Coolvetica", sans-serif;
+    font-family: 'Coolvetica', sans-serif;
     font-size: 16px;
     color: rgba(104, 44, 122, 0.5);
     margin: 0;
+}
+
+/* Order Group Cards */
+.order_group_card {
+    margin: 18px 22px;
+    background: #fffcf8;
+    border: 2px solid rgba(104, 44, 122, 0.2);
+    border-left: 4px solid #682c7a;
+    border-radius: 16px;
+    padding: 18px;
+    transition: all 0.2s ease;
+}
+
+.order_group_card:hover {
+    border-color: #682c7a;
+    box-shadow: 0 4px 12px rgba(104, 44, 122, 0.08);
+}
+
+.order_group_header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed rgba(104, 44, 122, 0.2);
+}
+
+.order_group_number {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: 'Coolvetica', sans-serif;
+    font-size: 14px;
+    color: #682c7a;
+    font-weight: 600;
+}
+
+.order_group_status_chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    white-space: nowrap;
+    padding: 5px 9px;
+    border-radius: 999px;
+    border: 1px solid #682c7a;
+    background: #f9f0ff;
+    color: #682c7a;
+    font-family: 'Coolvetica', sans-serif;
+    font-size: 11px;
+    line-height: 1.1;
+    letter-spacing: 0.2px;
+}
+
+.order_group_items {
+    margin: 0;
+    padding-left: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-family: 'Coolvetica', sans-serif;
+    font-size: 13px;
+    color: #4a4a4a;
+}
+
+.order_group_item {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.order_group_item_label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.order_group_item_price {
+    flex-shrink: 0;
+}
+
+.order_group_footer {
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-family: 'Coolvetica', sans-serif;
+    font-size: 12px;
+    color: #666;
+}
+
+.order_group_footer strong {
+    color: #682c7a;
 }
 
 /* Responsive */
@@ -539,8 +635,7 @@
         font-size: 32px;
     }
 
-    .cart_section,
-    .orders_category {
+    .cart_section {
         padding: 24px 20px;
     }
 
@@ -563,6 +658,24 @@
 
     .orders_placeholder {
         padding: 32px 20px;
+    }
+
+    .order_group_card {
+        margin: 16px 20px;
+        padding: 16px;
+    }
+
+    .order_group_header {
+        gap: 8px;
+    }
+
+    .order_group_status_chip {
+        font-size: 10px;
+        padding: 4px 8px;
+    }
+
+    .order_group_footer {
+        font-size: 11px;
     }
 
     .orders_spark.s11,
@@ -599,6 +712,29 @@
 
     .category_title {
         font-size: 16px;
+    }
+
+    .order_group_card {
+        margin: 14px 14px;
+        padding: 14px;
+    }
+
+    .order_group_status_chip {
+        font-size: 9px;
+        padding: 4px 7px;
+    }
+
+    .order_group_number {
+        font-size: 13px;
+    }
+
+    .order_group_items {
+        font-size: 12px;
+        padding-left: 16px;
+    }
+
+    .order_group_footer {
+        font-size: 10px;
     }
 
     .browse_products_btn {

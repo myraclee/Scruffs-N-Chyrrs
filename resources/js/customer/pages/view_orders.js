@@ -167,26 +167,26 @@ function renderOrderGroups(container, groups, emptyMessage) {
       const lines = (group.orders || [])
         .map(
           (item) => `
-					<li style="display:flex;justify-content:space-between;gap:8px;">
-						<span>${item.product_name} x${item.quantity}</span>
-						<strong>${money(item.total_price)}</strong>
+          <li class="order_group_item">
+            <span class="order_group_item_label">${item.product_name} x${item.quantity}</span>
+            <strong class="order_group_item_price">${money(item.total_price)}</strong>
 					</li>
 				`,
         )
         .join("");
 
       return `
-				<article class="file_spec_row" style="margin:18px 22px;">
-					<div class="file_spec_row_header">
-						<span class="file_spec_number">Order #${group.id}</span>
-						<span style="font-family:'Coolvetica',sans-serif;font-size:12px;background:#f9f0ff;border:1px solid #682c7a;border-radius:999px;padding:5px 10px;color:#682c7a;">${group.status_label}</span>
+        <article class="order_group_card">
+          <div class="order_group_header">
+            <span class="order_group_number">Order #${group.id}</span>
+            <span class="order_group_status_chip" title="${group.status_label}">${group.status_label}</span>
 					</div>
-					<ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-family:'Coolvetica',sans-serif;font-size:13px;color:#4a4a4a;">
+          <ul class="order_group_items">
 						${lines}
 					</ul>
-					<div style="margin-top:10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-family:'Coolvetica',sans-serif;font-size:12px;color:#666;">
+          <div class="order_group_footer">
 						<span>Placed: ${new Date(group.created_at).toLocaleString()}</span>
-						<strong style="color:#682c7a;">Total: ${money(group.totals?.total_price)}</strong>
+            <strong>Total: ${money(group.totals?.total_price)}</strong>
 					</div>
 				</article>
 			`;
