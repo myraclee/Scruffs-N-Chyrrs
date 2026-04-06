@@ -74,6 +74,18 @@ class InventoryUiContractTest extends TestCase
         $this->assertStringContainsString('<td class="text-center">${usageText}</td>', $script);
     }
 
+    public function test_inventory_save_flow_tracks_selected_consumption_and_blocks_invalid_inputs(): void
+    {
+        $script = file_get_contents(base_path('resources/js/owner/inventory_refactored.js'));
+
+        $this->assertIsString($script);
+        $this->assertStringContainsString('let hasSelectedProduct = false;', $script);
+        $this->assertStringContainsString('if (!hasSelectedProduct)', $script);
+        $this->assertStringContainsString('if (errors.length > 0)', $script);
+        $this->assertStringContainsString('Please fix the highlighted fields.', $script);
+        $this->assertStringNotContainsString('let quantitiesValid = true;', $script);
+    }
+
     public function test_inventory_load_flow_distinguishes_fetch_and_render_failures(): void
     {
         $script = file_get_contents(base_path('resources/js/owner/inventory_refactored.js'));

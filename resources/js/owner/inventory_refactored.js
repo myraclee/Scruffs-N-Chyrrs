@@ -380,8 +380,8 @@ function updateProductCheckboxes() {
     );
 
     // Prevent invalid input in quantity fields
-    preventInvalidQuantityInput(addConsumedList, ".add_quantity_input");
-    preventInvalidQuantityInput(editConsumedList, ".edit_quantity_input");
+    preventInvalidQuantityInput(addConsumedList, ".add_consumption_quantity");
+    preventInvalidQuantityInput(editConsumedList, ".edit_consumption_quantity");
 }
 
 /**
@@ -495,7 +495,7 @@ async function saveMaterial(mode) {
         : Array.from(modal.querySelectorAll(".edit_consumption_checkbox"));
 
     const consumptions = [];
-    let quantitiesValid = true;
+    let hasSelectedProduct = false;
 
     checkboxes.forEach((checkbox) => {
         const productId = Number(checkbox.getAttribute("data-product-id"));
@@ -539,8 +539,29 @@ async function saveMaterial(mode) {
         });
     });
 
-    if (!quantitiesValid) {
-        Toast.error("Set quantity to 1 or higher for each selected consumption rule.");
+    if (!hasSelectedProduct) {
+        const firstCheckbox = checkboxes[0] || null;
+        if (firstCheckbox) {
+            setFieldError(
+                firstCheckbox,
+                "Select at least one product consumption mapping",
+            );
+        }
+        Toast.error("Select at least one product consumption mapping.");
+        return;
+    }
+
+    if (errors.length > 0) {
+        errors.forEach(({ input, message }) => {
+            setFieldError(input, message);
+        });
+
+        const firstErrorInput = errors[0]?.input;
+        if (firstErrorInput && typeof firstErrorInput.focus === "function") {
+            firstErrorInput.focus();
+        }
+
+        Toast.error("Please fix the highlighted fields.");
         return;
     }
 
