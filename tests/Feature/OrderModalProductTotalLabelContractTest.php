@@ -24,4 +24,17 @@ class OrderModalProductTotalLabelContractTest extends TestCase
         $this->assertStringContainsString('Cart Total', $script);
         $this->assertStringContainsString('grandTotalLabelText', $script);
     }
+
+    public function test_order_modal_contains_inline_drive_link_validation_contract(): void
+    {
+        $markup = file_get_contents(resource_path('views/customer/pages/order_modal.blade.php'));
+        $script = file_get_contents(resource_path('js/customer/pages/order_modal.js'));
+
+        $this->assertNotFalse($markup);
+        $this->assertNotFalse($script);
+        $this->assertStringContainsString('id="generalDriveLinkError"', $markup);
+        $this->assertStringContainsString('order_modal_drive_hint', $markup);
+        $this->assertStringContainsString('validateDriveLinkInput', $script);
+        $this->assertStringContainsString('isValidGoogleDriveUrl', $script);
+    }
 }

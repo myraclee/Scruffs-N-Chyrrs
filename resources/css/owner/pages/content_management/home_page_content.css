@@ -280,7 +280,7 @@
 }
 
 .image_slot.plus::before {
-    content: "+";
+    content: '+';
     font-size: 40px;
     color: #682c7a;
 }
@@ -390,6 +390,10 @@
     display: none;
     justify-content: center;
     align-items: center;
+    z-index: 1000;
+}
+
+#addSampleModal {
     z-index: 1000;
 }
 
@@ -525,7 +529,7 @@ p#sampleImageError {
 }
 
 .sample_image_slot.plus::before {
-    content: "+";
+    content: '+';
     font-size: 42px;
     color: #682c7a;
 }
@@ -643,6 +647,10 @@ p#sampleImageError {
     z-index: 1000;
 }
 
+#deleteConfirmModal {
+    z-index: 1010;
+}
+
 .delete_confirm_box {
     background: #fff7ec;
     padding: 25px 30px;
@@ -671,9 +679,7 @@ p#sampleImageError {
     cursor: pointer;
     font-family: Coolvetica;
     font-size: 14px;
-    transition:
-        background-color 0.2s ease,
-        transform 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
 .delete_confirm_box button:hover {
@@ -817,9 +823,7 @@ p#sampleImageError {
     font-family: Coolvetica;
     font-size: 13px;
     cursor: pointer;
-    transition:
-        background-color 0.2s ease,
-        color 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .edit_sample_btn {

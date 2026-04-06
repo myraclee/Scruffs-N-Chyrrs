@@ -105,7 +105,7 @@ class CustomerOrder extends Model
      */
     public function orderTemplate(): BelongsTo
     {
-        return $this->belongsTo(OrderTemplate::class);
+        return $this->belongsTo(OrderTemplate::class)->withTrashed();
     }
 
     /**

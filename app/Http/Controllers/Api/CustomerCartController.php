@@ -11,6 +11,7 @@ use App\Models\CustomerOrder;
 use App\Models\CustomerOrderGroup;
 use App\Models\OrderTemplate;
 use App\Models\Product;
+use App\Rules\GoogleDriveUrl;
 use App\Services\InventoryStockService;
 use App\Services\OrderPricingService;
 use Illuminate\Http\JsonResponse;
@@ -204,8 +205,10 @@ class CustomerCartController extends Controller
 
     public function checkout(Request $request): JsonResponse
     {
+        $this->normalizeGeneralDriveLink($request);
+
         $validated = $request->validate([
-            'general_drive_link' => 'required|string|max:2048',
+            'general_drive_link' => ['required', 'string', 'max:2048', new GoogleDriveUrl()],
         ]);
 
         $cart = $this->getCartWithRelations();
@@ -328,6 +331,17 @@ class CustomerCartController extends Controller
         if (!$owned) {
             abort(403, 'Unauthorized cart item access');
         }
+    }
+
+    private function normalizeGeneralDriveLink(Request $request): void
+    {
+        if (! $request->has('general_drive_link')) {
+            return;
+        }
+
+        $request->merge([
+            'general_drive_link' => GoogleDriveUrl::normalize($request->input('general_drive_link')),
+        ]);
     }
 
     private function transformCart(CustomerCart $cart): array

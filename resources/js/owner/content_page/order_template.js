@@ -978,6 +978,43 @@ function setupDeleteButton() {
                 closeModal();
             } catch (error) {
                 console.error("Error deleting order template:", error);
+
+                if (error?.status === 409) {
+                    const activeOrderCount = Number(
+                        error?.payload?.active_order_count ??
+                        error?.payload?.order_count ??
+                        0,
+                    );
+                    const cartItemCount = Number(
+                        error?.payload?.cart_item_count ?? 0,
+                    );
+
+                    const usageLabels = [];
+
+                    if (activeOrderCount > 0) {
+                        usageLabels.push(
+                            `${activeOrderCount} active order${activeOrderCount === 1 ? "" : "s"}`,
+                        );
+                    }
+
+                    if (cartItemCount > 0) {
+                        usageLabels.push(
+                            `${cartItemCount} cart item${cartItemCount === 1 ? "" : "s"}`,
+                        );
+                    }
+
+                    const usageSuffix =
+                        usageLabels.length > 0
+                            ? ` (${usageLabels.join(", ")})`
+                            : "";
+
+                    toast.error(
+                        `Cannot delete order template because it is currently in use${usageSuffix}.`,
+                    );
+
+                    return;
+                }
+
                 toast.error(error.message || "Failed to delete order template");
             } finally {
                 isLoading = false;
@@ -1005,7 +1042,11 @@ async function loadOrderTemplates() {
         renderProducts();
     } catch (error) {
         console.error("Error loading order templates:", error);
-        toast.error("Failed to load order templates");
+        if (error?.status === 500 && error?.payload?.error_code === "schema_mismatch") {
+            toast.error(error?.payload?.hint || "Database schema is out of date. Run migrations and refresh.");
+        } else {
+            toast.error("Failed to load order templates");
+        }
     } finally {
         isLoading = false;
     }

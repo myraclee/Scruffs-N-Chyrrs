@@ -9,6 +9,7 @@ use App\Models\CustomerOrder;
 use App\Models\CustomerOrderGroup;
 use App\Models\OrderTemplate;
 use App\Models\Product;
+use App\Rules\GoogleDriveUrl;
 use App\Models\RushFee;
 use App\Services\InventoryStockService;
 use App\Services\OrderPricingService;
@@ -197,6 +198,8 @@ class CustomerOrderController extends Controller
     public function store(Request $request): JsonResponse
     {
         try {
+            $this->normalizeGeneralDriveLink($request);
+
             // Ensure user is authenticated
             if (!Auth::check()) {
                 return response()->json([
@@ -213,7 +216,7 @@ class CustomerOrderController extends Controller
                 'quantity' => 'required|integer|min:1',
                 'rush_fee_id' => 'nullable|exists:rush_fees,id',
                 'special_instructions' => 'nullable|string|max:1000',
-                'general_drive_link' => 'nullable|string|max:2048',
+                'general_drive_link' => ['nullable', 'string', 'max:2048', new GoogleDriveUrl()],
             ]);
 
             $product = Product::findOrFail($validated['product_id']);
@@ -407,5 +410,16 @@ class CustomerOrderController extends Controller
             'created_at' => $group->created_at?->toISOString(),
             'updated_at' => $group->updated_at?->toISOString(),
         ];
+    }
+
+    private function normalizeGeneralDriveLink(Request $request): void
+    {
+        if (! $request->has('general_drive_link')) {
+            return;
+        }
+
+        $request->merge([
+            'general_drive_link' => GoogleDriveUrl::normalize($request->input('general_drive_link')),
+        ]);
     }
 }

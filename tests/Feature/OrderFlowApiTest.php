@@ -62,7 +62,7 @@ class OrderFlowApiTest extends TestCase
         $this->assertDatabaseCount('customer_cart_items', 1);
 
         $checkoutResponse = $this->postJson('/api/customer-cart/checkout', [
-            'general_drive_link' => 'https://drive.google.com/order-folder',
+            'general_drive_link' => 'https://drive.google.com/drive/folders/order-folder',
         ]);
 
         $checkoutResponse
@@ -120,6 +120,136 @@ class OrderFlowApiTest extends TestCase
             ->assertJsonPath('success', false);
     }
 
+    public function test_checkout_rejects_invalid_main_drive_link(): void
+    {
+        $customer = User::factory()->create();
+
+        $response = $this
+            ->actingAs($customer)
+            ->postJson('/api/customer-cart/checkout', [
+                'general_drive_link' => 'https://example.com/not-drive-link',
+            ]);
+
+        $response
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['general_drive_link']);
+    }
+
+    public function test_direct_single_order_accepts_blank_main_drive_link_when_optional(): void
+    {
+        $customer = User::factory()->create();
+        $fixture = $this->createTemplateFixture('Optional Drive Link Product');
+
+        $material = Material::create([
+            'name' => 'Optional Drive Material '.uniqid(),
+            'units' => 25,
+        ]);
+
+        MaterialConsumption::create([
+            'material_id' => $material->id,
+            'product_id' => $fixture['product']->id,
+            'order_template_option_type_id' => $fixture['option_type']->id,
+            'quantity' => 1,
+        ]);
+
+        $response = $this
+            ->actingAs($customer)
+            ->postJson('/api/customer-orders', [
+                'product_id' => $fixture['product']->id,
+                'order_template_id' => $fixture['template']->id,
+                'selected_options' => [
+                    (string) $fixture['option']->id => $fixture['option_type']->id,
+                ],
+                'quantity' => 1,
+                'general_drive_link' => '   ',
+            ]);
+
+        $response
+            ->assertCreated()
+            ->assertJsonPath('success', true);
+
+        $this->assertDatabaseHas('customer_order_groups', [
+            'id' => $response->json('data.order_group_id'),
+            'general_drive_link' => null,
+        ]);
+    }
+
+    public function test_direct_single_order_rejects_invalid_main_drive_link_when_provided(): void
+    {
+        $customer = User::factory()->create();
+        $fixture = $this->createTemplateFixture('Invalid Drive Link Product');
+
+        $response = $this
+            ->actingAs($customer)
+            ->postJson('/api/customer-orders', [
+                'product_id' => $fixture['product']->id,
+                'order_template_id' => $fixture['template']->id,
+                'selected_options' => [
+                    (string) $fixture['option']->id => $fixture['option_type']->id,
+                ],
+                'quantity' => 1,
+                'general_drive_link' => 'https://not-google-drive.example/order-folder',
+            ]);
+
+        $response
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['general_drive_link']);
+    }
+
+    public function test_owner_edit_rejects_invalid_main_drive_link(): void
+    {
+        $owner = User::factory()->create(['user_type' => 'owner']);
+        $customer = User::factory()->create();
+        $fixture = $this->createTemplateFixture('Owner Invalid Drive Link Product');
+
+        $group = CustomerOrderGroup::create([
+            'user_id' => $customer->id,
+            'status' => 'waiting',
+            'general_drive_link' => 'https://drive.google.com/drive/folders/owner-valid-folder',
+            'subtotal_price' => 100,
+            'discount_total' => 0,
+            'rush_fee_total' => 0,
+            'layout_fee_total' => 0,
+            'total_price' => 100,
+        ]);
+
+        $order = CustomerOrder::create([
+            'customer_order_group_id' => $group->id,
+            'user_id' => $customer->id,
+            'product_id' => $fixture['product']->id,
+            'order_template_id' => $fixture['template']->id,
+            'selected_options' => [
+                (string) $fixture['option']->id => $fixture['option_type']->id,
+            ],
+            'quantity' => 1,
+            'base_price' => 100,
+            'discount_amount' => 0,
+            'rush_fee_amount' => 0,
+            'layout_fee_amount' => 0,
+            'total_price' => 100,
+            'status' => 'waiting',
+        ]);
+
+        $response = $this
+            ->actingAs($owner)
+            ->patchJson("/api/owner/orders/{$group->id}/details", [
+                'general_drive_link' => 'https://example.com/owner-invalid-link',
+                'orders' => [[
+                    'id' => $order->id,
+                    'selected_options' => [
+                        (string) $fixture['option']->id => $fixture['option_type']->id,
+                    ],
+                    'quantity' => 1,
+                    'rush_fee_id' => null,
+                    'special_instructions' => null,
+                ]],
+            ]);
+
+        $response
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['general_drive_link']);
+    }
+
     public function test_owner_can_view_details_and_update_grouped_order_status_with_transition_rules(): void
     {
         $owner = User::factory()->create(['user_type' => 'owner']);
@@ -143,7 +273,7 @@ class OrderFlowApiTest extends TestCase
         $group = CustomerOrderGroup::create([
             'user_id' => $customer->id,
             'status' => 'waiting',
-            'general_drive_link' => 'https://drive.google.com/sample-owner-order',
+            'general_drive_link' => 'https://drive.google.com/drive/folders/sample-owner-order',
             'subtotal_price' => 100,
             'discount_total' => 0,
             'rush_fee_total' => 0,
@@ -265,7 +395,7 @@ class OrderFlowApiTest extends TestCase
         $group = CustomerOrderGroup::create([
             'user_id' => $customer->id,
             'status' => 'waiting',
-            'general_drive_link' => 'https://drive.google.com/original-link',
+            'general_drive_link' => 'https://drive.google.com/drive/folders/original-link',
             'subtotal_price' => 200,
             'discount_total' => 0,
             'rush_fee_total' => 0,
@@ -301,7 +431,7 @@ class OrderFlowApiTest extends TestCase
         $response = $this
             ->actingAs($owner)
             ->patchJson("/api/owner/orders/{$group->id}/details", [
-                'general_drive_link' => 'https://drive.google.com/updated-link',
+                'general_drive_link' => 'https://drive.google.com/drive/folders/updated-link',
                 'orders' => [[
                     'id' => $order->id,
                     'selected_options' => [
@@ -316,7 +446,7 @@ class OrderFlowApiTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonPath('success', true)
-            ->assertJsonPath('data.general_drive_link', 'https://drive.google.com/updated-link')
+            ->assertJsonPath('data.general_drive_link', 'https://drive.google.com/drive/folders/updated-link')
             ->assertJsonPath('data.orders.0.quantity', 4)
             ->assertJsonPath('data.orders.0.rush_fee_id', $rushFee->id)
             ->assertJsonPath('data.orders.0.special_instructions', 'front.png,back.png')
@@ -327,7 +457,7 @@ class OrderFlowApiTest extends TestCase
 
         $this->assertDatabaseHas('customer_order_groups', [
             'id' => $group->id,
-            'general_drive_link' => 'https://drive.google.com/updated-link',
+            'general_drive_link' => 'https://drive.google.com/drive/folders/updated-link',
             'subtotal_price' => 480.00,
             'rush_fee_total' => 48.00,
             'layout_fee_total' => 0.00,
@@ -381,7 +511,7 @@ class OrderFlowApiTest extends TestCase
         $response = $this
             ->actingAs($owner)
             ->patchJson("/api/owner/orders/{$group->id}/details", [
-                'general_drive_link' => 'https://drive.google.com/should-not-save',
+                'general_drive_link' => 'https://drive.google.com/drive/folders/should-not-save',
                 'orders' => [[
                     'id' => $order->id,
                     'selected_options' => [

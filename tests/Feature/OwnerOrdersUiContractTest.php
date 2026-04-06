@@ -15,6 +15,7 @@ class OwnerOrdersUiContractTest extends TestCase
         $this->assertStringContainsString('id="detailSaveBtn"', $blade);
         $this->assertStringContainsString('id="detailCancelBtn"', $blade);
         $this->assertStringContainsString('id="detailDriveLinkInput"', $blade);
+        $this->assertStringContainsString('id="detailDriveLinkHint"', $blade);
     }
 
     public function test_owner_orders_script_wires_details_edit_mode_and_payload_fields(): void
@@ -28,6 +29,8 @@ class OwnerOrdersUiContractTest extends TestCase
         $this->assertStringContainsString('data-edit-quantity-order-id', $script);
         $this->assertStringContainsString('data-edit-rush-order-id', $script);
         $this->assertStringContainsString('general_drive_link', $script);
+        $this->assertStringContainsString('isValidGoogleDriveUrl', $script);
+        $this->assertStringContainsString('detailDriveLinkHint', $script);
         $this->assertStringContainsString('selected_options', $script);
         $this->assertStringContainsString('rush_fee_id', $script);
         $this->assertStringContainsString('special_instructions', $script);

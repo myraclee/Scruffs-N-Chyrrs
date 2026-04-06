@@ -31,6 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const notesInput = document.getElementById("itemFileName");
     const rushFeeSelect = document.getElementById("rushFeeSelect");
     const driveLinkInput = document.getElementById("generalDriveLink");
+    const driveLinkError = document.getElementById("generalDriveLinkError");
     const optionsContainer = document.getElementById("dynamicOptionsContainer");
     const cartContainer = document.getElementById("cartItemsContainer");
     const emptyMessage = document.getElementById("emptyCartMsg");
@@ -54,6 +55,117 @@ document.addEventListener("DOMContentLoaded", () => {
             .replace(/>/g, "&gt;")
             .replace(/\"/g, "&quot;")
             .replace(/'/g, "&#39;");
+
+    const normalizeDriveLink = (value) =>
+        typeof value === "string" ? value.trim() : "";
+
+    const driveLinkIdPattern = /^[A-Za-z0-9_-]+$/;
+
+    function isValidGoogleDriveUrl(url) {
+        try {
+            const parsedUrl = new URL(url);
+
+            if (parsedUrl.protocol !== "https:") {
+                return false;
+            }
+
+            if (parsedUrl.hostname !== "drive.google.com") {
+                return false;
+            }
+
+            const normalizedPath =
+                parsedUrl.pathname.replace(/\/+$/, "") || "/";
+
+            if (
+                normalizedPath === "/" ||
+                normalizedPath === "/drive" ||
+                normalizedPath.startsWith("/drive/")
+            ) {
+                return true;
+            }
+
+            if (/^\/drive\/folders\/[A-Za-z0-9_-]+$/.test(normalizedPath)) {
+                return true;
+            }
+
+            if (/^\/file\/d\/[A-Za-z0-9_-]+(?:\/.*)?$/.test(normalizedPath)) {
+                return true;
+            }
+
+            if (normalizedPath === "/open" || normalizedPath === "/uc") {
+                const id = parsedUrl.searchParams.get("id");
+                return Boolean(id && driveLinkIdPattern.test(id));
+            }
+
+            return false;
+        } catch {
+            return false;
+        }
+    }
+
+    function clearDriveLinkError() {
+        if (!driveLinkInput || !driveLinkError) {
+            return;
+        }
+
+        driveLinkInput.classList.remove("input_error");
+        driveLinkInput.removeAttribute("aria-invalid");
+        driveLinkError.hidden = true;
+        driveLinkError.textContent = "";
+    }
+
+    function setDriveLinkError(message) {
+        if (!driveLinkInput || !driveLinkError) {
+            return;
+        }
+
+        driveLinkInput.classList.add("input_error");
+        driveLinkInput.setAttribute("aria-invalid", "true");
+        driveLinkError.hidden = false;
+        driveLinkError.textContent = message;
+    }
+
+    function validateDriveLinkInput({ required = true } = {}) {
+        const normalizedLink = normalizeDriveLink(driveLinkInput?.value || "");
+
+        if (driveLinkInput && driveLinkInput.value !== normalizedLink) {
+            driveLinkInput.value = normalizedLink;
+        }
+
+        if (!normalizedLink) {
+            if (!required) {
+                clearDriveLinkError();
+                return {
+                    valid: true,
+                    value: "",
+                };
+            }
+
+            setDriveLinkError(
+                "Please provide your main Google Drive link before checkout.",
+            );
+            return {
+                valid: false,
+                value: "",
+            };
+        }
+
+        if (!isValidGoogleDriveUrl(normalizedLink)) {
+            setDriveLinkError(
+                "Enter a valid Google Drive URL (drive.google.com) using an accepted Drive format.",
+            );
+            return {
+                valid: false,
+                value: normalizedLink,
+            };
+        }
+
+        clearDriveLinkError();
+        return {
+            valid: true,
+            value: normalizedLink,
+        };
+    }
 
     const resolveGrandTotalLabel = (items = []) => {
         const currentProductLabel = `${product?.name ?? "Product"} Total`;
@@ -312,10 +424,12 @@ document.addEventListener("DOMContentLoaded", () => {
         orderModal.style.display = "none";
         document.body.style.overflow = "auto";
         clearOrderPlacementFeedback();
+        clearDriveLinkError();
     };
 
     window.openOrderModal = async function () {
         clearOrderPlacementFeedback();
+        clearDriveLinkError();
         orderModal.classList.add("active");
         orderModal.style.display = "flex";
         document.body.style.overflow = "hidden";
@@ -325,6 +439,20 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     closeBtn.addEventListener("click", window.closeOrderModal);
+
+    driveLinkInput?.addEventListener("input", () => {
+        const currentValue = normalizeDriveLink(driveLinkInput.value || "");
+        if (!currentValue) {
+            clearDriveLinkError();
+            return;
+        }
+
+        validateDriveLinkInput({ required: true });
+    });
+
+    driveLinkInput?.addEventListener("blur", () => {
+        validateDriveLinkInput({ required: true });
+    });
 
     cartContainer.addEventListener("click", async (event) => {
         const removeBtn = event.target.closest("button[data-remove-id]");
@@ -399,11 +527,15 @@ document.addEventListener("DOMContentLoaded", () => {
     submitBtn.addEventListener("click", async () => {
         clearOrderPlacementFeedback();
 
-        const driveLink = driveLinkInput.value.trim();
-        if (!driveLink) {
-            Toast.warning("Please provide your main drive link before checkout.");
+        const driveLinkValidation = validateDriveLinkInput({ required: true });
+        if (!driveLinkValidation.valid) {
+            Toast.warning(
+                "Please use a valid Google Drive URL before checkout.",
+            );
             return;
         }
+
+        const driveLink = driveLinkValidation.value;
 
         if (!cartPayload?.items || cartPayload.items.length === 0) {
             Toast.warning("Your cart is empty. Add at least one item.");

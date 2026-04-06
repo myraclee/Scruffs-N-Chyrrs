@@ -69,7 +69,7 @@ class CartPricingDynamicFeesTest extends TestCase
                 'quantity' => 2,
                 'rush_fee_id' => $fixture['rush_fee']->id,
                 'special_instructions' => 'layout-one,layout-two,layout-three',
-                'general_drive_link' => 'https://drive.google.com/direct-order-folder',
+                'general_drive_link' => 'https://drive.google.com/drive/folders/direct-order-folder',
             ]);
 
         $response
@@ -176,7 +176,7 @@ class CartPricingDynamicFeesTest extends TestCase
         $checkoutResponse = $this
             ->actingAs($customer)
             ->postJson('/api/customer-cart/checkout', [
-                'general_drive_link' => 'https://drive.google.com/cart-checkout-folder',
+                'general_drive_link' => 'https://drive.google.com/drive/folders/cart-checkout-folder',
             ]);
 
         $checkoutResponse

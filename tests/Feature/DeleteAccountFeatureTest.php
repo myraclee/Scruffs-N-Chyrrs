@@ -187,6 +187,10 @@ class DeleteAccountFeatureTest extends TestCase
             'expires_at' => now()->addMinutes(15),
         ]);
 
+        $today = now()->toDateString();
+        $currentYear = (int) now()->format('Y');
+        $currentMonth = (int) now()->format('n');
+
         $response = $this
             ->actingAs($user)
             ->from(route('delete-account'))
@@ -197,6 +201,28 @@ class DeleteAccountFeatureTest extends TestCase
             ->assertSessionHas('success', 'Your account has been permanently deleted.');
 
         $this->assertGuest();
+
+        $dailyContribution = DB::table('dashboard_deleted_account_daily_metrics')
+            ->where('metric_date', $today)
+            ->first();
+
+        $this->assertNotNull($dailyContribution);
+        $this->assertSame(50.0, (float) $dailyContribution->total_sales);
+        $this->assertSame(1, (int) $dailyContribution->items_sold);
+        $this->assertSame(2, (int) $dailyContribution->total_orders);
+        $this->assertSame(1, (int) $dailyContribution->received_payment);
+        $this->assertSame(0, (int) $dailyContribution->pending_payment);
+        $this->assertSame(1, (int) $dailyContribution->canceled_orders);
+
+        $monthlyContribution = DB::table('dashboard_deleted_account_monthly_product_sales')
+            ->where('year', $currentYear)
+            ->where('month', $currentMonth)
+            ->where('product_id', $product->id)
+            ->first();
+
+        $this->assertNotNull($monthlyContribution);
+        $this->assertSame($product->name, (string) $monthlyContribution->product_name);
+        $this->assertSame(1, (int) $monthlyContribution->total_quantity);
 
         $this->assertDatabaseMissing('users', ['id' => $user->id]);
         $this->assertDatabaseMissing('customer_order_groups', ['user_id' => $user->id]);

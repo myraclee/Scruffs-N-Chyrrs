@@ -33,19 +33,32 @@ class OwnerDashboardMetricsService
         $weekStart = $now->startOfWeek(CarbonImmutable::MONDAY)->startOfDay();
         $weekEnd = $now->endOfWeek(CarbonImmutable::SUNDAY)->endOfDay();
 
+        $archivedWeekly = DB::table('dashboard_deleted_account_daily_metrics')
+            ->whereBetween('metric_date', [$weekStart->toDateString(), $weekEnd->toDateString()])
+            ->selectRaw('COALESCE(SUM(total_sales), 0) as total_sales')
+            ->selectRaw('COALESCE(SUM(items_sold), 0) as items_sold')
+            ->selectRaw('COALESCE(SUM(total_orders), 0) as total_orders')
+            ->selectRaw('COALESCE(SUM(received_payment), 0) as received_payment')
+            ->selectRaw('COALESCE(SUM(pending_payment), 0) as pending_payment')
+            ->selectRaw('COALESCE(SUM(canceled_orders), 0) as canceled_orders')
+            ->first();
+
         $weeklyGroupsQuery = CustomerOrderGroup::query()
             ->whereBetween('created_at', [$weekStart, $weekEnd]);
 
-        $weeklyTotalSales = (float) (clone $weeklyGroupsQuery)
+        $weeklyLiveSales = (float) (clone $weeklyGroupsQuery)
             ->where('status', '!=', 'cancelled')
             ->sum('total_price');
 
-        $weeklyItemsSold = (int) CustomerOrder::query()
+        $weeklyLiveItemsSold = (int) CustomerOrder::query()
             ->whereHas('orderGroup', function ($query) use ($weekStart, $weekEnd): void {
                 $query->whereBetween('created_at', [$weekStart, $weekEnd])
                     ->where('status', '!=', 'cancelled');
             })
             ->sum('quantity');
+
+        $weeklyTotalSales = $weeklyLiveSales + (float) ($archivedWeekly->total_sales ?? 0);
+        $weeklyItemsSold = $weeklyLiveItemsSold + (int) ($archivedWeekly->items_sold ?? 0);
 
         $lowStockItemName = Material::query()
             ->whereColumn('units', '<=', 'low_stock_threshold')
@@ -53,18 +66,23 @@ class OwnerDashboardMetricsService
             ->orderBy('name')
             ->value('name');
 
-        $weeklyTotalOrders = (int) (clone $weeklyGroupsQuery)->count();
-        $weeklyReceivedPayment = (int) (clone $weeklyGroupsQuery)
+        $weeklyLiveTotalOrders = (int) (clone $weeklyGroupsQuery)->count();
+        $weeklyLiveReceivedPayment = (int) (clone $weeklyGroupsQuery)
             ->where('status', 'completed')
             ->count();
 
-        $weeklyPendingPayment = (int) (clone $weeklyGroupsQuery)
+        $weeklyLivePendingPayment = (int) (clone $weeklyGroupsQuery)
             ->whereIn('status', self::PENDING_STATUSES)
             ->count();
 
-        $weeklyCanceledOrders = (int) (clone $weeklyGroupsQuery)
+        $weeklyLiveCanceledOrders = (int) (clone $weeklyGroupsQuery)
             ->where('status', 'cancelled')
             ->count();
+
+        $weeklyTotalOrders = $weeklyLiveTotalOrders + (int) ($archivedWeekly->total_orders ?? 0);
+        $weeklyReceivedPayment = $weeklyLiveReceivedPayment + (int) ($archivedWeekly->received_payment ?? 0);
+        $weeklyPendingPayment = $weeklyLivePendingPayment + (int) ($archivedWeekly->pending_payment ?? 0);
+        $weeklyCanceledOrders = $weeklyLiveCanceledOrders + (int) ($archivedWeekly->canceled_orders ?? 0);
 
         $monthlyRevenue = $this->buildMonthlyRevenue($selectedYear);
         $monthlySales = $this->buildMonthlySalesBreakdown($selectedYear);
@@ -101,11 +119,21 @@ class OwnerDashboardMetricsService
             ->orderBy('created_at')
             ->value('created_at');
 
-        $firstOrderYear = $firstOrderCreatedAt
-            ? CarbonImmutable::parse((string) $firstOrderCreatedAt)->year
-            : $currentYear;
+        $firstArchivedMetricDate = DB::table('dashboard_deleted_account_daily_metrics')
+            ->orderBy('metric_date')
+            ->value('metric_date');
 
-        $startYear = min(self::LAUNCH_YEAR, $firstOrderYear, $currentYear);
+        $candidateYears = [self::LAUNCH_YEAR, $currentYear];
+
+        if ($firstOrderCreatedAt) {
+            $candidateYears[] = CarbonImmutable::parse((string) $firstOrderCreatedAt)->year;
+        }
+
+        if ($firstArchivedMetricDate) {
+            $candidateYears[] = CarbonImmutable::parse((string) $firstArchivedMetricDate)->year;
+        }
+
+        $startYear = min($candidateYears);
 
         return range($startYear, $currentYear);
     }
@@ -151,11 +179,18 @@ class OwnerDashboardMetricsService
         $monthlyRevenue = [];
 
         for ($month = 1; $month <= 12; $month++) {
-            $monthlyRevenue[] = round((float) CustomerOrderGroup::query()
+            $liveRevenue = (float) CustomerOrderGroup::query()
                 ->whereYear('created_at', $year)
                 ->whereMonth('created_at', $month)
                 ->where('status', '!=', 'cancelled')
-                ->sum('total_price'), 2);
+                ->sum('total_price');
+
+            $archivedRevenue = (float) DB::table('dashboard_deleted_account_daily_metrics')
+                ->whereYear('metric_date', $year)
+                ->whereMonth('metric_date', $month)
+                ->sum('total_sales');
+
+            $monthlyRevenue[] = round($liveRevenue + $archivedRevenue, 2);
         }
 
         return $monthlyRevenue;
@@ -173,7 +208,7 @@ class OwnerDashboardMetricsService
         for ($monthIndex = 0; $monthIndex < 12; $monthIndex++) {
             $month = $monthIndex + 1;
 
-            $rows = DB::table('customer_orders as customer_orders')
+            $liveRows = DB::table('customer_orders as customer_orders')
                 ->join('customer_order_groups as groups', 'groups.id', '=', 'customer_orders.customer_order_group_id')
                 ->join('products as products', 'products.id', '=', 'customer_orders.product_id')
                 ->whereYear('customer_orders.created_at', $year)
@@ -187,6 +222,49 @@ class OwnerDashboardMetricsService
                 ->groupBy('customer_orders.product_id', 'products.name')
                 ->orderByDesc('total_quantity')
                 ->get();
+
+            $archivedRows = DB::table('dashboard_deleted_account_monthly_product_sales')
+                ->where('year', $year)
+                ->where('month', $month)
+                ->select([
+                    'product_id',
+                    'product_name',
+                    DB::raw('SUM(total_quantity) as total_quantity'),
+                ])
+                ->groupBy('product_id', 'product_name')
+                ->get();
+
+            $combinedByProductId = [];
+
+            foreach ($liveRows as $row) {
+                $key = (string) $row->product_id;
+
+                if (! isset($combinedByProductId[$key])) {
+                    $combinedByProductId[$key] = [
+                        'product_name' => (string) $row->product_name,
+                        'total_quantity' => 0,
+                    ];
+                }
+
+                $combinedByProductId[$key]['total_quantity'] += (int) $row->total_quantity;
+            }
+
+            foreach ($archivedRows as $row) {
+                $key = (string) $row->product_id;
+
+                if (! isset($combinedByProductId[$key])) {
+                    $combinedByProductId[$key] = [
+                        'product_name' => (string) $row->product_name,
+                        'total_quantity' => 0,
+                    ];
+                }
+
+                $combinedByProductId[$key]['total_quantity'] += (int) $row->total_quantity;
+            }
+
+            $rows = collect(array_values($combinedByProductId))
+                ->sortByDesc('total_quantity')
+                ->values();
 
             $monthKey = (string) $monthIndex;
 
@@ -209,7 +287,7 @@ class OwnerDashboardMetricsService
                 ->all();
 
             $topTotal = array_sum($values);
-            $overallTotal = (int) $rows->sum(fn ($row): int => (int) $row->total_quantity);
+            $overallTotal = (int) $rows->sum(fn (array $row): int => (int) $row['total_quantity']);
             $othersTotal = $overallTotal - $topTotal;
 
             if ($othersTotal > 0) {

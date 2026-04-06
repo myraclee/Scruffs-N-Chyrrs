@@ -68,6 +68,7 @@
                     placeholder="https://drive.google.com/..."
                     style="display: none;"
                 >
+                <p id="detailDriveLinkHint" class="detail_drive_link_hint" style="display: none;">Accepted: <code>https://drive.google.com/drive/folders/{id}</code>, <code>https://drive.google.com/file/d/{id}/view</code>, <code>https://drive.google.com/open?id={id}</code>, <code>https://drive.google.com/uc?id={id}</code>.</p>
             </div>
 
             <div class="table_responsive_wrapper">
