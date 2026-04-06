@@ -44,6 +44,9 @@ class CustomerOrderAPI {
         message: result.message || 'Request failed.',
         errors: result.errors || {},
         shortages: Array.isArray(result.shortages) ? result.shortages : [],
+        configuration_issues: Array.isArray(result.configuration_issues)
+          ? result.configuration_issues
+          : [],
       };
     }
 

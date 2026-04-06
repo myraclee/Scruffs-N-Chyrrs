@@ -95,4 +95,12 @@ class Product extends Model
             ->withPivot('quantity')
             ->withTimestamps();
     }
+
+    /**
+     * Get option-aware material consumption mappings for this product.
+     */
+    public function materialConsumptions(): HasMany
+    {
+        return $this->hasMany(MaterialConsumption::class);
+    }
 }

@@ -41,7 +41,7 @@
                 <tr>
                     <th>Materials</th>
                     <th class="text-center">Units</th>
-                    <th>Product</th>
+                    <th>Consumption Rules</th>
                 </tr>
             </thead>
             <tbody id="inventoryTableBody">
@@ -83,7 +83,7 @@
         <div class="input_group">
             <div class="consumed_header">
                 <label>Products Consumed</label>
-                <span class="consumed_note">One material is consumed for<br>every amount of this quantity:</span>
+                <span class="consumed_note">Set fallback and option-specific<br>consumption quantities per product.</span>
             </div>
             
             <div class="consumed_list">
@@ -119,7 +119,7 @@
         <div class="input_group">
             <div class="consumed_header">
                 <label>Products Consumed</label>
-                <span class="consumed_note">One material is consumed for every amount of this quantity:</span>
+                <span class="consumed_note">Set fallback and option-specific consumption quantities per product.</span>
             </div>
             
             <div class="consumed_list">

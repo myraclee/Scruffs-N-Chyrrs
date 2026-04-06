@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
@@ -51,5 +52,13 @@ class OrderTemplateOptionType extends Model
     public function option(): BelongsTo
     {
         return $this->belongsTo(OrderTemplateOption::class, 'order_template_option_id');
+    }
+
+    /**
+     * Get material consumption mappings that depend on this option type.
+     */
+    public function materialConsumptions(): HasMany
+    {
+        return $this->hasMany(MaterialConsumption::class, 'order_template_option_type_id');
     }
 }

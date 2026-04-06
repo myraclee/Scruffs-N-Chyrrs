@@ -19,7 +19,11 @@ class ProductController extends Controller
     public function index(): JsonResponse
     {
         try {
-            $products = Product::with(['priceImages', 'noteImages'])
+            $products = Product::with([
+                'priceImages',
+                'noteImages',
+                'orderTemplate.options.optionTypes',
+            ])
                 ->orderBy('created_at', 'desc')
                 ->get();
 
@@ -113,9 +117,14 @@ class ProductController extends Controller
     {
         try {
             $product = Product::findOrFail($productId);
+
             return response()->json([
                 'success' => true,
-                'data' => $product->load(['priceImages', 'noteImages']),
+                'data' => $product->load([
+                    'priceImages',
+                    'noteImages',
+                    'orderTemplate.options.optionTypes',
+                ]),
             ]);
         } catch (\Exception $e) {
             return response()->json([
