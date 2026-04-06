@@ -121,13 +121,23 @@ class InventoryStockService
             $lineRules = collect($consumptionRules->get($line['product_id'], collect()));
             $selectedIds = $line['selected_option_type_ids'];
 
-            $matchedRules = $lineRules->filter(function (MaterialConsumption $rule) use ($selectedIds): bool {
-                if ($rule->order_template_option_type_id === null) {
-                    return true;
-                }
+            $selectedOptionRules = $lineRules
+                ->filter(function (MaterialConsumption $rule) use ($selectedIds): bool {
+                    if ($rule->order_template_option_type_id === null) {
+                        return false;
+                    }
 
-                return in_array((int) $rule->order_template_option_type_id, $selectedIds, true);
-            });
+                    return in_array((int) $rule->order_template_option_type_id, $selectedIds, true);
+                })
+                ->values();
+
+            $fallbackRules = $lineRules
+                ->filter(fn (MaterialConsumption $rule): bool => $rule->order_template_option_type_id === null)
+                ->values();
+
+            $matchedRules = $selectedOptionRules->isNotEmpty()
+                ? $selectedOptionRules
+                : $fallbackRules;
 
             if ($matchedRules->isEmpty()) {
                 $legacyProduct = $legacyProducts->get($line['product_id']);
