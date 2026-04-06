@@ -50,6 +50,7 @@
         "dev": [
             "@php artisan route:clear",
             "@php artisan config:clear",
+            "@php artisan cache:clear",
             "@php artisan view:clear",
             "npm run build",
             "Composer\\Config::disableProcessTimeout",
