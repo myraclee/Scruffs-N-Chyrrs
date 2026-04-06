@@ -58,11 +58,13 @@
         "clear": [
             "@php artisan route:clear",
             "@php artisan config:clear",
+            "@php artisan cache:clear",
             "@php artisan view:clear"
         ],
         "reset": [
             "@php artisan route:clear",
             "@php artisan config:clear",
+            "@php artisan cache:clear",
             "@php artisan view:clear",
             "composer install",
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
@@ -71,9 +73,9 @@
             "npm install",
             "npm run build"
         ],
-		"db-reset": [
+        "db-reset": [
             "@php artisan migrate:fresh --force --drop-views",
-			"@php artisan db:seed --class=FAQSeeder"
+            "@php artisan db:seed --class=FAQSeeder"
         ],
         "test": [
             "@php artisan config:clear --ansi",
