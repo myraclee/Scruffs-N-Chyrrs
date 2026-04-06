@@ -6,7 +6,7 @@
 
 /* Headers */
 .welcome_header {
-    font-family: "SuperDream", sans-serif;
+    font-family: 'SuperDream', sans-serif;
     font-size: 55px;
     color: #682c7a;
     margin-bottom: 40px;
@@ -15,10 +15,10 @@
 }
 .welcome_name {
     color: #a15fb5;
-    font-family: "SuperDream", sans-serif;
+    font-family: 'SuperDream', sans-serif;
 }
 .section_title {
-    font-family: "Coolvetica", sans-serif;
+    font-family: 'Coolvetica', sans-serif;
     font-size: 22px;
     color: #312e2e;
     text-align: center;
@@ -46,18 +46,18 @@
 }
 
 .card_label {
-    font-family: "Coolvetica", sans-serif;
+    font-family: 'Coolvetica', sans-serif;
     font-size: 22px;
     color: #682c7a;
     font-weight: bold;
 }
 .card_value {
-    font-family: "Coolvetica", sans-serif;
+    font-family: 'Coolvetica', sans-serif;
     font-size: 32px;
     font-weight: bold;
 }
 .card_value_small {
-    font-family: "Coolvetica", sans-serif;
+    font-family: 'Coolvetica', sans-serif;
     font-size: 20px;
     font-weight: bold;
 }
@@ -114,12 +114,12 @@
 /* Re-styling labels/values for the smaller cards */
 .sales_card .card_label {
     font-size: 18px;
-    font-family: "Coolvetica", sans-serif;
+    font-family: 'Coolvetica', sans-serif;
     font-weight: bold;
 }
 .sales_card .card_value {
     font-size: 28px;
-    font-family: "Coolvetica", sans-serif;
+    font-family: 'Coolvetica', sans-serif;
     font-weight: bold;
 }
 
@@ -141,7 +141,7 @@
     box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.05);
 }
 .chart_title {
-    font-family: "Coolvetica", sans-serif;
+    font-family: 'Coolvetica', sans-serif;
     font-size: 26px;
     color: #682c7a; /* Changed to Purple! */
     text-align: center;
@@ -153,6 +153,14 @@
     position: relative;
     height: 350px;
     width: 100%;
+}
+
+.chart_hint {
+    margin: 16px 0 0;
+    text-align: center;
+    font-family: 'Coolvetica', sans-serif;
+    font-size: 16px;
+    color: #682c7a;
 }
 
 /* Responsive Adjustments */
@@ -204,7 +212,7 @@
 }
 
 .year_dropdown {
-    font-family: "Coolvetica", sans-serif;
+    font-family: 'Coolvetica', sans-serif;
     font-size: 20px; /* Slightly larger than the month dropdown to show hierarchy */
     color: #682c7a;
     border: 2px solid #682c7a;
@@ -233,7 +241,7 @@
     margin-bottom: 0; /* Overrides the default margin so it aligns with the dropdown */
 }
 .month_dropdown {
-    font-family: "Coolvetica", sans-serif;
+    font-family: 'Coolvetica', sans-serif;
     font-size: 16px;
     color: #682c7a;
     border: 2px solid #682c7a;

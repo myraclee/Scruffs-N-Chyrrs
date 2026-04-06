@@ -12,6 +12,8 @@ use App\Http\Controllers\Api\RushFeeController;
 use App\Http\Controllers\Api\CustomerOrderController;
 use App\Http\Controllers\Api\CustomerCartController;
 use App\Http\Controllers\Api\OwnerOrderController;
+use App\Http\Controllers\Api\OwnerDashboardController as ApiOwnerDashboardController;
+use App\Http\Controllers\OwnerDashboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -139,6 +141,11 @@ Route::prefix('api/owner/orders')->middleware(['auth', 'owner'])->group(function
     Route::patch('{orderGroup}/status', [OwnerOrderController::class, 'updateStatus'])->whereNumber('orderGroup');
 });
 
+Route::prefix('api/owner/dashboard')->middleware(['auth', 'owner'])->group(function () {
+    Route::get('metrics', [ApiOwnerDashboardController::class, 'index'])
+        ->name('api.owner.dashboard.metrics');
+});
+
 
 // FAQ ROUTES - Public read, auth required for write operations
 Route::prefix('api/faqs')->group(function () {
@@ -192,14 +199,8 @@ Route::prefix('products')->group(function () {
 // OWNER ROUTES
 Route::middleware(['auth', 'owner'])->group(function () {
 
-    // THE UPDATED DASHBOARD ROUTE!
-    Route::get('/owner/pages/dashboard', function () {
-        $launchYear = 2026;
-        $currentYear = now()->year;
-        $availableYears = range($launchYear, $currentYear);
-
-        return view('owner.pages.dashboard', compact('availableYears', 'currentYear'));
-    })->name('owner.dashboard');
+    Route::get('/owner/pages/dashboard', [OwnerDashboardController::class, 'index'])
+        ->name('owner.dashboard');
 
     Route::get('/owner/pages/inventory', function () {
         return view('owner.pages.inventory');

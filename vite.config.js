@@ -65,6 +65,7 @@ export default defineConfig({
                 "resources/js/customer/pages/payment_customer.js",
                 "resources/js/owner/animations.js",
                 "resources/js/owner/inventory_refactored.js",
+                "resources/js/owner/pages/dashboard.js",
                 "resources/js/owner/pages/orders.js",
                 "resources/js/owner/content_page/main_content_page.js",
                 "resources/js/owner/content_page/products_page_content_refactored.js",
