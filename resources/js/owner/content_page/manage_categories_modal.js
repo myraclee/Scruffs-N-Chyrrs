@@ -12,8 +12,8 @@ let categories = [];
 let editingCategoryId = null;
 let pendingDeleteId = null;
 let isLoading = false;
-let isSaving = false; 
-let formMode = "create"; // Defaults to create since inputs are unlocked
+let isSaving = false;
+let formMode = "idle";
 
 // ================= DOM ELEMENTS =================
 let modalOverlay,
@@ -21,7 +21,8 @@ let modalOverlay,
     categoryForm,
     categoryNameInput,
     sortOrderInput,
-    submitBtn;
+    submitBtn,
+    createModeBtn;
 let categoryTableBody, addCategoryBtn, deleteConfirmOverlay;
 let deleteConfirmMessage, deleteConfirmYesBtn, deleteConfirmNoBtn;
 
@@ -45,13 +46,15 @@ function initializeElements() {
     deleteConfirmYesBtn = document.getElementById("deleteCategoryConfirmYes");
     deleteConfirmNoBtn = document.getElementById("deleteCategoryConfirmNo");
     submitBtn = categoryForm.querySelector(".submit_btn");
+    createModeBtn = document.getElementById("enterCreateModeBtn");
 
-    // Inputs are enabled by default now
-    setSaveButtonState(false, "Save");
+    setInputsEnabled(false);
+    setSaveButtonState(true, "Save");
 }
 
 function setupEventListeners() {
     addCategoryBtn?.addEventListener("click", () => openCategoryModal(null));
+    createModeBtn?.addEventListener("click", enterCreateMode);
 
     // Form cancel button
     const closeCategoryFormBtn = document.getElementById("closeCategoryFormBtn");
@@ -135,7 +138,7 @@ function renderCategoryList() {
         editBtn.addEventListener("click", (event) => {
             event.preventDefault();
             event.stopPropagation();
-            openCategoryModal(category.id);
+            enterEditMode(category.id);
         });
         deleteBtn.addEventListener("click", (event) => {
             event.preventDefault();
@@ -148,26 +151,51 @@ function renderCategoryList() {
 }
 
 // ================= MODAL OPERATIONS =================
+function enterCreateMode() {
+    formMode = "create";
+    editingCategoryId = null;
+    isSaving = false;
+    categoryForm.reset();
+    clearFieldErrors();
+    setInputsEnabled(true);
+    setSaveButtonState(false, "Save");
+    categoryNameInput?.focus();
+}
+
+function enterEditMode(categoryId) {
+    if (categoryId === null || categoryId === undefined) {
+        Toast.error("Select a category to edit first.");
+        return;
+    }
+
+    openCategoryModal(categoryId);
+}
+
 function openCategoryModal(categoryId = null) {
     editingCategoryId = categoryId;
-    isSaving = false; 
+    isSaving = false;
 
     clearFieldErrors();
 
     if (categoryId === null) {
-        formMode = "create";
+        formMode = "idle";
         categoryForm.reset();
-        setSaveButtonState(false, "Save");
+        setInputsEnabled(false);
+        setSaveButtonState(true, "Save");
     } else {
         // Edit existing category
         const category = categories.find((c) => c.id === categoryId);
-        if (category) {
-            formMode = "edit";
-            categoryNameInput.value = category.name;
-            sortOrderInput.value = category.sort_order;
-            setSaveButtonState(false, "Save");
-            categoryNameInput.focus();
+        if (!category) {
+            Toast.error("Select a category to edit first.");
+            return;
         }
+
+        formMode = "edit";
+        categoryNameInput.value = category.name;
+        sortOrderInput.value = category.sort_order;
+        setInputsEnabled(true);
+        setSaveButtonState(false, "Save");
+        categoryNameInput.focus();
     }
 
     showModal();
@@ -175,12 +203,13 @@ function openCategoryModal(categoryId = null) {
 
 function closeCategoryModal() {
     hideModal();
-    formMode = "create";
+    formMode = "idle";
     editingCategoryId = null;
     isSaving = false;
     categoryForm.reset();
     clearFieldErrors();
-    setSaveButtonState(false, "Save");
+    setInputsEnabled(false);
+    setSaveButtonState(true, "Save");
 }
 
 function showModal() {
@@ -191,6 +220,16 @@ function showModal() {
 function hideModal() {
     modalOverlay?.classList.remove("active");
     categoryModal?.classList.remove("active");
+}
+
+function setInputsEnabled(enabled) {
+    if (categoryNameInput) {
+        categoryNameInput.disabled = !enabled;
+    }
+
+    if (sortOrderInput) {
+        sortOrderInput.disabled = !enabled;
+    }
 }
 
 // ================= SET SAVE BUTTON STATE =================
@@ -207,6 +246,11 @@ async function saveCategory(e) {
 
     const submitter = e.submitter;
     if (submitter && !submitter.classList.contains("submit_btn")) {
+        return;
+    }
+
+    if (formMode === "idle") {
+        Toast.error("Choose Create New or Edit an existing category first.");
         return;
     }
 

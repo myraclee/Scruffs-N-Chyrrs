@@ -6,9 +6,20 @@ const currentOrdersContent = document.getElementById("currentOrdersContent");
 const completedOrdersContent = document.getElementById("completedOrdersContent");
 const currentOrdersCount = document.getElementById("currentOrdersCount");
 const completedOrdersCount = document.getElementById("completedOrdersCount");
+const orderEditModal = document.getElementById("orderEditModal");
+const orderEditCloseBtn = document.getElementById("orderEditCloseBtn");
+const orderEditCancelBtn = document.getElementById("orderEditCancelBtn");
+const orderEditSaveBtn = document.getElementById("orderEditSaveBtn");
+const orderEditDriveLink = document.getElementById("orderEditDriveLink");
+const orderEditItems = document.getElementById("orderEditItems");
 
 const CURRENT_STATUSES = new Set(["waiting", "approved", "preparing", "ready"]);
 const COMPLETED_STATUSES = new Set(["completed", "cancelled"]);
+const EDITABLE_STATUS = "waiting";
+
+let activeEditGroupId = null;
+let activeEditDraft = null;
+let isSavingOrderEdit = false;
 
 const money = (value) =>
   new Intl.NumberFormat("en-PH", {
@@ -34,6 +45,7 @@ window.toggleOrdersCategory = function toggleOrdersCategory(category) {
 
 document.addEventListener("DOMContentLoaded", async () => {
   openCurrentOrdersByDefault();
+  bindOrderEditEvents();
   await loadPageData();
   bindCartEvents();
 });
@@ -164,6 +176,11 @@ function renderOrderGroups(container, groups, emptyMessage) {
 
   container.innerHTML = groups
     .map((group) => {
+      const canEdit = Boolean(group?.is_editable ?? group?.status === EDITABLE_STATUS);
+      const editAction = canEdit
+        ? `<button type="button" class="order_group_edit_btn" data-edit-order-group="${group.id}">Edit</button>`
+        : "";
+
       const lines = (group.orders || [])
         .map(
           (item) => `
@@ -179,7 +196,10 @@ function renderOrderGroups(container, groups, emptyMessage) {
         <article class="order_group_card">
           <div class="order_group_header">
             <span class="order_group_number">Order #${group.id}</span>
-            <span class="order_group_status_chip" title="${group.status_label}">${group.status_label}</span>
+					<div class="order_group_header_actions">
+              <span class="order_group_status_chip" title="${group.status_label}">${group.status_label}</span>
+						${editAction}
+					</div>
 					</div>
           <ul class="order_group_items">
 						${lines}
@@ -196,6 +216,375 @@ function renderOrderGroups(container, groups, emptyMessage) {
 
 function renderOrderPlaceholders(container, message) {
   container.innerHTML = `<div class="orders_placeholder"><p>${message}</p></div>`;
+}
+
+function bindOrderEditEvents() {
+  currentOrdersContent?.addEventListener("click", async (event) => {
+    const editBtn = event.target.closest("button[data-edit-order-group]");
+    if (!editBtn) return;
+
+    const orderGroupId = Number(editBtn.dataset.editOrderGroup);
+    if (!orderGroupId) return;
+
+    await openOrderEditModal(orderGroupId);
+  });
+
+  orderEditCloseBtn?.addEventListener("click", () => {
+    closeOrderEditModal();
+  });
+
+  orderEditCancelBtn?.addEventListener("click", () => {
+    closeOrderEditModal();
+  });
+
+  orderEditModal?.addEventListener("click", (event) => {
+    if (event.target === orderEditModal) {
+      closeOrderEditModal();
+    }
+  });
+
+  orderEditDriveLink?.addEventListener("input", () => {
+    if (!activeEditDraft) return;
+
+    activeEditDraft.general_drive_link = (orderEditDriveLink.value || "").trim();
+    if (orderEditDriveLink.value !== activeEditDraft.general_drive_link) {
+      orderEditDriveLink.value = activeEditDraft.general_drive_link;
+    }
+  });
+
+  orderEditItems?.addEventListener("change", handleOrderEditItemMutation);
+  orderEditItems?.addEventListener("input", handleOrderEditItemMutation);
+
+  orderEditSaveBtn?.addEventListener("click", async () => {
+    await saveOrderEdit();
+  });
+}
+
+function setOrderEditModalVisible(isVisible) {
+  if (!orderEditModal) return;
+
+  orderEditModal.classList.toggle("open", isVisible);
+  orderEditModal.setAttribute("aria-hidden", isVisible ? "false" : "true");
+}
+
+function closeOrderEditModal() {
+  if (isSavingOrderEdit) return;
+
+  setOrderEditModalVisible(false);
+  activeEditGroupId = null;
+  activeEditDraft = null;
+
+  if (orderEditItems) {
+    orderEditItems.innerHTML = "";
+  }
+
+  if (orderEditDriveLink) {
+    orderEditDriveLink.value = "";
+  }
+}
+
+async function openOrderEditModal(orderGroupId) {
+  const response = await CustomerOrderAPI.getOrderGroup(orderGroupId);
+
+  if (!response.success) {
+    Toast.error(response.message || "Unable to load order details for editing.");
+    return;
+  }
+
+  const group = response.data;
+  if (!group || group.status !== EDITABLE_STATUS) {
+    Toast.error("Only orders waiting for approval can be edited.");
+    await loadPageData();
+    return;
+  }
+
+  activeEditGroupId = group.id;
+  activeEditDraft = createOrderEditDraft(group);
+
+  renderOrderEditDraft();
+  setOrderEditModalVisible(true);
+}
+
+function createOrderEditDraft(group) {
+  const rushFeeOptions = Array.isArray(group?.rush_fee_options)
+    ? group.rush_fee_options
+    : [];
+
+  const orders = Array.isArray(group?.orders)
+    ? group.orders.map((order) => {
+      const optionSchema = Array.isArray(order?.option_schema)
+        ? order.option_schema
+        : [];
+
+      return {
+        id: Number(order?.id || 0),
+        product_name: order?.product_name || "Unnamed Product",
+        quantity: Number(order?.quantity || 1),
+        min_order_quantity: Number(order?.min_order_quantity || 1),
+        rush_fee_id:
+          order?.rush_fee_id === null || order?.rush_fee_id === undefined
+            ? null
+            : Number(order.rush_fee_id),
+        special_instructions: order?.special_instructions || "",
+        options: optionSchema.map((option) => {
+          const types = Array.isArray(option?.types) ? option.types : [];
+          const fallbackTypeId = types.length > 0 ? Number(types[0].id) : null;
+          const selectedTypeId =
+            option?.selected_type_id === null || option?.selected_type_id === undefined
+              ? fallbackTypeId
+              : Number(option.selected_type_id);
+
+          return {
+            id: Number(option?.id || 0),
+            label: option?.label || "Option",
+            selected_type_id: selectedTypeId,
+            types: types.map((type) => ({
+              id: Number(type?.id || 0),
+              type_name: type?.type_name || "",
+            })),
+          };
+        }),
+      };
+    })
+    : [];
+
+  return {
+    general_drive_link: (group?.general_drive_link || "").trim(),
+    rush_fee_options: rushFeeOptions,
+    orders,
+  };
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function renderOrderEditDraft() {
+  if (!activeEditDraft || !orderEditItems || !orderEditDriveLink) {
+    return;
+  }
+
+  orderEditDriveLink.value = activeEditDraft.general_drive_link || "";
+
+  const rushFeeOptions = activeEditDraft.rush_fee_options || [];
+
+  orderEditItems.innerHTML = activeEditDraft.orders
+    .map((order, index) => {
+      const optionFields = order.options
+        .map((option) => {
+          const optionChoices = option.types
+            .map((type) => {
+              const selected = Number(type.id) === Number(option.selected_type_id);
+              return `<option value="${type.id}" ${selected ? "selected" : ""}>${escapeHtml(type.type_name)}</option>`;
+            })
+            .join("");
+
+          return `
+            <label class="order_edit_field">
+              <span class="order_edit_field_label">${escapeHtml(option.label)}</span>
+              <select class="order_edit_select" data-edit-order-id="${order.id}" data-edit-option-id="${option.id}">
+                ${optionChoices}
+              </select>
+            </label>
+          `;
+        })
+        .join("");
+
+      const rushFeeChoices = [
+        `<option value="">No rush fee</option>`,
+        ...rushFeeOptions.map((rushFee) => {
+          const primaryTimeframe = Array.isArray(rushFee?.timeframes) && rushFee.timeframes.length > 0
+            ? ` (${rushFee.timeframes[0].label})`
+            : "";
+          const selected = Number(order.rush_fee_id) === Number(rushFee.id);
+
+          return `<option value="${rushFee.id}" ${selected ? "selected" : ""}>${escapeHtml(rushFee.label)}${escapeHtml(primaryTimeframe)}</option>`;
+        }),
+      ].join("");
+
+      return `
+        <section class="order_edit_item" data-edit-order-item-id="${order.id}">
+          <div class="order_edit_item_header">
+            <h4>Item ${index + 1}: ${escapeHtml(order.product_name)}</h4>
+          </div>
+
+          <div class="order_edit_option_grid">
+            ${optionFields}
+          </div>
+
+          <div class="order_edit_field_grid">
+            <label class="order_edit_field">
+              <span class="order_edit_field_label">Quantity</span>
+              <input
+                type="number"
+                min="${order.min_order_quantity}"
+                step="1"
+                class="order_edit_input"
+                data-edit-order-id="${order.id}"
+                data-edit-qty="true"
+                value="${order.quantity}"
+              >
+              <span class="order_edit_hint">Minimum: ${order.min_order_quantity}</span>
+            </label>
+
+            <label class="order_edit_field">
+              <span class="order_edit_field_label">Rush Fee</span>
+              <select class="order_edit_select" data-edit-order-id="${order.id}" data-edit-rush="true">
+                ${rushFeeChoices}
+              </select>
+            </label>
+          </div>
+
+          <label class="order_edit_field order_edit_field_full">
+            <span class="order_edit_field_label">Special Instructions / File Names</span>
+            <textarea class="order_edit_textarea" data-edit-order-id="${order.id}" data-edit-notes="true">${escapeHtml(order.special_instructions)}</textarea>
+          </label>
+        </section>
+      `;
+    })
+    .join("");
+}
+
+function handleOrderEditItemMutation(event) {
+  if (!activeEditDraft) return;
+
+  const target = event.target;
+  const orderId = Number(target.dataset.editOrderId);
+  if (!orderId) return;
+
+  const draftOrder = activeEditDraft.orders.find((item) => item.id === orderId);
+  if (!draftOrder) return;
+
+  if (target.dataset.editOptionId) {
+    const optionId = Number(target.dataset.editOptionId);
+    const draftOption = draftOrder.options.find((option) => option.id === optionId);
+    if (draftOption) {
+      draftOption.selected_type_id = Number(target.value || 0);
+    }
+    return;
+  }
+
+  if (target.dataset.editQty) {
+    const minValue = Number(draftOrder.min_order_quantity || 1);
+    const parsed = Number(target.value);
+    draftOrder.quantity = Number.isFinite(parsed) && parsed >= minValue ? parsed : minValue;
+    if (Number(target.value) !== draftOrder.quantity) {
+      target.value = String(draftOrder.quantity);
+    }
+    return;
+  }
+
+  if (target.dataset.editRush) {
+    draftOrder.rush_fee_id = target.value ? Number(target.value) : null;
+    return;
+  }
+
+  if (target.dataset.editNotes) {
+    draftOrder.special_instructions = target.value || "";
+  }
+}
+
+function buildOrderEditPayload() {
+  if (!activeEditDraft) {
+    return null;
+  }
+
+  const orders = activeEditDraft.orders.map((order) => {
+    if (!Array.isArray(order.options) || order.options.length === 0) {
+      return null;
+    }
+
+    const selectedOptions = {};
+
+    for (const option of order.options) {
+      if (!option.selected_type_id || option.selected_type_id <= 0) {
+        return null;
+      }
+
+      selectedOptions[String(option.id)] = Number(option.selected_type_id);
+    }
+
+    const minOrder = Number(order.min_order_quantity || 1);
+    const quantity = Number(order.quantity || minOrder);
+
+    if (!Number.isFinite(quantity) || quantity < minOrder) {
+      return null;
+    }
+
+    return {
+      id: Number(order.id),
+      selected_options: selectedOptions,
+      quantity,
+      rush_fee_id: order.rush_fee_id ? Number(order.rush_fee_id) : null,
+      special_instructions: (order.special_instructions || "").trim() || null,
+    };
+  });
+
+  if (orders.some((entry) => entry === null)) {
+    return null;
+  }
+
+  return {
+    general_drive_link: (activeEditDraft.general_drive_link || "").trim() || null,
+    orders,
+  };
+}
+
+async function saveOrderEdit() {
+  if (isSavingOrderEdit || !activeEditGroupId) {
+    return;
+  }
+
+  const payload = buildOrderEditPayload();
+  if (!payload) {
+    Toast.error("Please complete all required edit fields with valid values.");
+    return;
+  }
+
+  isSavingOrderEdit = true;
+  if (orderEditSaveBtn) {
+    orderEditSaveBtn.disabled = true;
+    orderEditSaveBtn.textContent = "Saving...";
+  }
+
+  const response = await CustomerOrderAPI.updateOrderDetails(activeEditGroupId, payload);
+
+  isSavingOrderEdit = false;
+  if (orderEditSaveBtn) {
+    orderEditSaveBtn.disabled = false;
+    orderEditSaveBtn.textContent = "Save Changes";
+  }
+
+  if (!response.success) {
+    if (response.error_code === "customer_order_not_editable") {
+      Toast.error(response.message || "This order is no longer editable.");
+      closeOrderEditModal();
+      await loadPageData();
+      return;
+    }
+
+    if (Array.isArray(response.errors?.general_drive_link) && response.errors.general_drive_link.length > 0) {
+      Toast.error(response.errors.general_drive_link[0]);
+      return;
+    }
+
+    if (Array.isArray(response.shortages) && response.shortages.length > 0) {
+      Toast.error("Unable to apply changes because inventory stock is insufficient.");
+      return;
+    }
+
+    Toast.error(response.message || "Unable to update order details.");
+    return;
+  }
+
+  Toast.success("Order details updated successfully.");
+  closeOrderEditModal();
+  await loadPageData();
 }
 
 function bindCartEvents() {

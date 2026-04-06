@@ -309,6 +309,21 @@
                         </div>
                     </div>
 
+                    <div class="rush_image_section">
+                        <label class="rush_field_label">Image</label>
+                        <button type="button" class="image_slot plus rush_image_upload_slot" id="rushImageUploadSlot" aria-label="Upload rush fee image"></button>
+                        <input type="file" id="rushFeeImageInput" class="rush_image_input_hidden" accept="image/*" />
+                        <p class="rush_image_upload_status" id="rushImageUploadStatus">No image uploaded.</p>
+
+                        <div class="rush_image_preview_wrap hidden" id="rushImagePreviewWrap">
+                            <div class="rush_image_preview_stage" id="rushImagePreviewStage">
+                                <img id="rushImagePreview" class="rush_image_preview" alt="Rush fee image preview" />
+                            </div>
+                            <button type="button" class="rush_image_fullscreen_btn" id="rushImageFullscreenBtn" aria-label="View rush fee image full screen">↕</button>
+                            <button type="button" class="rush_image_remove_btn" id="rushImageRemoveBtn">Remove</button>
+                        </div>
+                    </div>
+
                     {{-- Timeframe rows --}}
                     <div class="rush_timeframes_section">
                         <div class="rush_tf_col_headers">
@@ -369,13 +384,12 @@
             <form id="categoryForm">
                 <div class="form_group">
                     <label for="categoryNameInput">Category Label</label>
-                    {{-- FIX: Inputs are no longer disabled, error is a <p> tag to match others --}}
-                    <input type="text" id="categoryNameInput" placeholder="Enter category label" maxlength="255" />
+                    <input type="text" id="categoryNameInput" placeholder="Enter category label" maxlength="255" disabled />
                     <p class="field_error hidden">Category name is required.</p>
                 </div>
                 <div class="form_group">
                     <label for="sortOrderInput">Sort Order (1-99)</label>
-                    <input type="text" id="sortOrderInput" placeholder="Enter sort order" inputmode="numeric" />
+                    <input type="text" id="sortOrderInput" placeholder="Enter sort order" inputmode="numeric" disabled />
                     <p class="field_error hidden">Sort order is required.</p>
                 </div>
 
@@ -402,8 +416,8 @@
                     </div>
                 </div>
 
-                {{-- FIX: Create Mode Button Removed --}}
                 <div class="form_actions">
+                    <button type="button" class="cancel_btn" id="enterCreateModeBtn">Create New</button>
                     <button type="button" class="cancel_btn" id="closeCategoryFormBtn">Cancel</button>
                     <button type="submit" class="submit_btn">Save</button>
                 </div>

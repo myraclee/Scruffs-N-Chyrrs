@@ -42,6 +42,7 @@ class CustomerOrderAPI {
         success: false,
         statusCode: response.status,
         message: result.message || 'Request failed.',
+        error_code: result.error_code || null,
         errors: result.errors || {},
         shortages: Array.isArray(result.shortages) ? result.shortages : [],
         configuration_issues: Array.isArray(result.configuration_issues)
@@ -125,6 +126,21 @@ class CustomerOrderAPI {
       return {
         success: false,
         message: 'Unable to load order details.',
+      };
+    }
+  }
+
+  async updateOrderDetails(orderGroupId, payload) {
+    try {
+      return await this.request(`${this.orderBaseUrl}/${orderGroupId}/details`, {
+        method: 'PATCH',
+        body: JSON.stringify(payload),
+      });
+    } catch (error) {
+      console.error('Error updating order details:', error);
+      return {
+        success: false,
+        message: 'Unable to update order details.',
       };
     }
   }

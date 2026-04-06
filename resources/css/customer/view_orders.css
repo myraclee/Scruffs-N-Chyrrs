@@ -553,6 +553,12 @@
     border-bottom: 1px dashed rgba(104, 44, 122, 0.2);
 }
 
+.order_group_header_actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .order_group_number {
     min-width: 0;
     overflow: hidden;
@@ -579,6 +585,29 @@
     font-size: 11px;
     line-height: 1.1;
     letter-spacing: 0.2px;
+}
+
+.order_group_edit_btn {
+    border: 1px solid #682c7a;
+    background: #682c7a;
+    color: #fff7ec;
+    border-radius: 999px;
+    padding: 5px 10px;
+    font-family: 'Coolvetica', sans-serif;
+    font-size: 11px;
+    line-height: 1.1;
+    cursor: pointer;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.order_group_edit_btn:hover {
+    background: #4c1c5b;
+    transform: translateY(-1px);
+}
+
+.order_group_edit_btn:focus-visible {
+    outline: 2px solid #dcbae6;
+    outline-offset: 2px;
 }
 
 .order_group_items {
@@ -622,6 +651,182 @@
 
 .order_group_footer strong {
     color: #682c7a;
+}
+
+/* Customer Order Edit Modal */
+.order_edit_modal_overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10010;
+    padding: 20px;
+}
+
+.order_edit_modal_overlay.open {
+    display: flex;
+}
+
+.order_edit_modal {
+    width: min(920px, 100%);
+    max-height: 90vh;
+    overflow-y: auto;
+    background: #fff7ec;
+    border: 2px solid #682c7a;
+    border-radius: 24px;
+    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.24);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.order_edit_modal_header {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+.order_edit_modal_title {
+    margin: 0;
+    color: #682c7a;
+    font-family: 'SuperDream', sans-serif;
+    font-size: 28px;
+}
+
+.order_edit_modal_subtitle {
+    margin: 6px 0 0;
+    color: rgba(104, 44, 122, 0.72);
+    font-family: 'Coolvetica', sans-serif;
+    font-size: 14px;
+}
+
+.order_edit_icon_btn {
+    border: 1px solid rgba(104, 44, 122, 0.4);
+    background: #fff;
+    color: #682c7a;
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    font-family: 'Coolvetica', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.order_edit_drive_link_block {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.order_edit_items {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.order_edit_item {
+    background: #fffcf8;
+    border: 2px solid rgba(104, 44, 122, 0.2);
+    border-radius: 14px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.order_edit_item_header h4 {
+    margin: 0;
+    color: #682c7a;
+    font-family: 'Coolvetica', sans-serif;
+    font-size: 18px;
+}
+
+.order_edit_option_grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.order_edit_field_grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.order_edit_field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.order_edit_field_full {
+    width: 100%;
+}
+
+.order_edit_label,
+.order_edit_field_label {
+    color: #682c7a;
+    font-family: 'Coolvetica', sans-serif;
+    font-size: 13px;
+}
+
+.order_edit_input,
+.order_edit_select,
+.order_edit_textarea {
+    border: 1.5px solid #dcbae6;
+    border-radius: 12px;
+    padding: 9px 10px;
+    background: #fff;
+    color: #312e2e;
+    font-family: 'Coolvetica', sans-serif;
+    font-size: 14px;
+}
+
+.order_edit_textarea {
+    min-height: 72px;
+    resize: vertical;
+}
+
+.order_edit_hint {
+    margin: 0;
+    color: #8b6199;
+    font-family: 'Coolvetica', sans-serif;
+    font-size: 11px;
+}
+
+.order_edit_modal_footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.order_edit_secondary_btn,
+.order_edit_primary_btn {
+    border-radius: 999px;
+    padding: 10px 18px;
+    border: none;
+    font-family: 'Coolvetica', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.order_edit_secondary_btn {
+    background: #b9a8c2;
+    color: #fff;
+}
+
+.order_edit_primary_btn {
+    background: #682c7a;
+    color: #fff7ec;
+}
+
+.order_edit_primary_btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
 }
 
 /* Responsive */
@@ -669,13 +874,35 @@
         gap: 8px;
     }
 
+    .order_group_header_actions {
+        gap: 6px;
+    }
+
     .order_group_status_chip {
+        font-size: 10px;
+        padding: 4px 8px;
+    }
+
+    .order_group_edit_btn {
         font-size: 10px;
         padding: 4px 8px;
     }
 
     .order_group_footer {
         font-size: 11px;
+    }
+
+    .order_edit_modal {
+        padding: 18px;
+    }
+
+    .order_edit_modal_title {
+        font-size: 24px;
+    }
+
+    .order_edit_option_grid,
+    .order_edit_field_grid {
+        grid-template-columns: 1fr;
     }
 
     .orders_spark.s11,
@@ -724,6 +951,11 @@
         padding: 4px 7px;
     }
 
+    .order_group_edit_btn {
+        font-size: 9px;
+        padding: 4px 7px;
+    }
+
     .order_group_number {
         font-size: 13px;
     }
@@ -735,6 +967,30 @@
 
     .order_group_footer {
         font-size: 10px;
+    }
+
+    .order_edit_modal_overlay {
+        padding: 12px;
+    }
+
+    .order_edit_modal {
+        max-height: 94vh;
+        padding: 14px;
+    }
+
+    .order_edit_modal_header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .order_edit_modal_footer {
+        width: 100%;
+        flex-direction: column-reverse;
+    }
+
+    .order_edit_secondary_btn,
+    .order_edit_primary_btn {
+        width: 100%;
     }
 
     .browse_products_btn {

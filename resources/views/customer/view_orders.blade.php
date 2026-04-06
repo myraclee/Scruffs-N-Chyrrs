@@ -125,6 +125,36 @@
 
     </div>
 
+    <div class="order_edit_modal_overlay" id="orderEditModal" aria-hidden="true">
+        <div class="order_edit_modal" role="dialog" aria-modal="true" aria-labelledby="orderEditTitle">
+            <div class="order_edit_modal_header">
+                <div>
+                    <h3 id="orderEditTitle" class="order_edit_modal_title">Edit Waiting Order</h3>
+                    <p class="order_edit_modal_subtitle">Update options, quantity, rush fee, notes, and drive link before approval.</p>
+                </div>
+                <button type="button" class="order_edit_icon_btn" id="orderEditCloseBtn" aria-label="Close edit modal">✕</button>
+            </div>
+
+            <div class="order_edit_drive_link_block">
+                <label for="orderEditDriveLink" class="order_edit_label">Main Drive Link</label>
+                <input
+                    type="url"
+                    id="orderEditDriveLink"
+                    class="order_edit_input"
+                    placeholder="https://drive.google.com/drive/folders/..."
+                >
+                <p class="order_edit_hint">Optional. Provide a valid Google Drive link for this order group.</p>
+            </div>
+
+            <div class="order_edit_items" id="orderEditItems"></div>
+
+            <div class="order_edit_modal_footer">
+                <button type="button" class="order_edit_secondary_btn" id="orderEditCancelBtn">Cancel</button>
+                <button type="button" class="order_edit_primary_btn" id="orderEditSaveBtn">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
     <div class="orders_container">
     <span class="placeholder_payment">
         <a href="javascript:void(0)" onclick="openPaymentModal(event)">TestButton</a>

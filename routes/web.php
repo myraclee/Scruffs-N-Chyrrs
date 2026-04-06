@@ -123,6 +123,7 @@ Route::prefix('api/customer-orders')->group(function () {
         Route::get('/', [CustomerOrderController::class, 'index']);
         Route::get('{orderGroup}', [CustomerOrderController::class, 'show'])->whereNumber('orderGroup');
         Route::post('/', [CustomerOrderController::class, 'store']);
+        Route::patch('{orderGroup}/details', [CustomerOrderController::class, 'updateDetails'])->whereNumber('orderGroup');
     });
 });
 
