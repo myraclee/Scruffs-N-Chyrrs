@@ -41,12 +41,14 @@
                 <tr>
                     <th>Materials</th>
                     <th class="text-center">Units</th>
-                    <th>Consumption Rules</th>
+                    <th>Products</th>
+                    <th class="text-center">Usage</th>
+                    <th class="text-center">Actions</th>
                 </tr>
             </thead>
             <tbody id="inventoryTableBody">
                 <tr id="emptyInventoryRow">
-                    <td colspan="3" class="text-center" style="padding: 60px; color: #682C7A; font-style: italic;">
+                    <td colspan="5" class="text-center" style="padding: 60px; color: #682C7A; font-style: italic;">
                         No materials found. Start by adding new stock below!
                     </td>
                 </tr>
@@ -66,23 +68,26 @@
         
         <div class="input_group">
             <label>Materials</label>
-            <input type="text" id="newMaterialInput" class="text_input" placeholder="e.g. Glossy Lamination">
+            <input type="text" id="newMaterialInput" class="text_input" placeholder="e.g. Glossy Lamination" maxlength="150">
         </div>
 
-        <div class="input_group">
-            <label>Units</label>
-            <input type="number" id="newUnitsInput" class="number_input" style="width: 150px;" min="0" step="1" inputmode="numeric">
-        </div>
+        <div class="half_input">
+            <div class="input_group units_input">
+                <label>Units</label>
+                <input type="number" id="newUnitsInput" class="number_input" style="width: 150px;" min="0" step="1" inputmode="numeric">
+                <small class="field_hint">Material in stock</small>
+            </div>
 
-        <div class="input_group">
-            <label>Low Stock Threshold</label>
-            <input type="number" id="newThresholdInput" class="number_input" style="width: 150px;" min="1" step="1" inputmode="numeric" value="5">
-            <small class="field_hint">Alert for this material when units are at or below this number.</small>
+            <div class="input_group lowstock_input">
+                <label>Low Stock</label>
+                <input type="number" id="newThresholdInput" class="number_input" style="width: 150px;" min="1" step="1" inputmode="numeric" value="5">
+                <small class="field_hint">Warn at or below this level</small>
+            </div>
         </div>
 
         <div class="input_group">
             <div class="consumed_header">
-                <label>Products Consumed</label>
+                <label>Products Consumed <span style="color: #d94848;">*</span></label>
                 <span class="consumed_note">Set fallback and option-specific<br>consumption quantities per product.</span>
             </div>
             
@@ -102,23 +107,26 @@
         
         <div class="input_group">
             <label>Materials</label>
-            <input type="text" id="editMaterialName" class="text_input">
+            <input type="text" id="editMaterialName" class="text_input" placeholder="e.g. Glossy Lamination" maxlength="150">
         </div>
 
-        <div class="input_group">
-            <label>Units</label>
-            <input type="number" id="editMaterialUnits" class="number_input" style="width: 150px;" min="0" step="1" inputmode="numeric">
-        </div>
+        <div class="half_input">
+            <div class="input_group units_input">
+                <label>Units</label>
+                <input type="number" id="editMaterialUnits" class="number_input" style="width: 150px;" min="0" step="1" inputmode="numeric">
+                <small class="field_hint">Material in stock</small>
+            </div>
 
-        <div class="input_group">
-            <label>Low Stock Threshold</label>
-            <input type="number" id="editThresholdInput" class="number_input" style="width: 150px;" min="1" step="1" inputmode="numeric" value="5">
-            <small class="field_hint">Alert for this material when units are at or below this number.</small>
+            <div class="input_group lowstock_input">
+                <label>Low Stock</label>
+                <input type="number" id="editThresholdInput" class="number_input" style="width: 150px;" min="1" step="1" inputmode="numeric" value="5">
+                <small class="field_hint">Warn at or below this level</small>
+            </div>
         </div>
 
         <div class="input_group">
             <div class="consumed_header">
-                <label>Products Consumed</label>
+                <label>Products Consumed <span style="color: #d94848;">*</span></label>
                 <span class="consumed_note">Set fallback and option-specific consumption quantities per product.</span>
             </div>
             
@@ -142,7 +150,6 @@
         </p>
         <small class="delete_subtext">This action cannot be undone.</small>
         <div class="delete_confirmation_actions">
-            <button type="button" class="cancel_delete_btn" id="deleteMaterialCancelBtn">Cancel</button>
             <button type="button" class="confirm_delete_btn" id="deleteMaterialConfirmBtn">Delete Material</button>
         </div>
     </div>
