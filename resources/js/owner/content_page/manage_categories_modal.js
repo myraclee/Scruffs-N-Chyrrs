@@ -1,7 +1,7 @@
 /**
  * Manage Categories Modal - Admin CRUD
  * Handles category management with database persistence via API
- * Fixed: Double submission prevention
+ * Fixed: Double submission prevention, Auto-enabled inputs
  */
 
 import ManageCategoriesAPI from "../../api/manage_categories_api.js";
@@ -12,8 +12,8 @@ let categories = [];
 let editingCategoryId = null;
 let pendingDeleteId = null;
 let isLoading = false;
-let isSaving = false; // Prevent double submissions
-let formMode = "idle"; // idle | create | edit
+let isSaving = false; 
+let formMode = "create"; // Defaults to create since inputs are unlocked
 
 // ================= DOM ELEMENTS =================
 let modalOverlay,
@@ -21,8 +21,7 @@ let modalOverlay,
     categoryForm,
     categoryNameInput,
     sortOrderInput,
-    submitBtn,
-    createModeBtn;
+    submitBtn;
 let categoryTableBody, addCategoryBtn, deleteConfirmOverlay;
 let deleteConfirmMessage, deleteConfirmYesBtn, deleteConfirmNoBtn;
 
@@ -41,31 +40,22 @@ function initializeElements() {
     sortOrderInput = document.getElementById("sortOrderInput");
     categoryTableBody = document.getElementById("categoryTableBody");
     addCategoryBtn = document.getElementById("addCategoryBtn");
-    deleteConfirmOverlay = document.getElementById(
-        "deleteCategoryConfirmOverlay",
-    );
-    deleteConfirmMessage = document.getElementById(
-        "deleteCategoryConfirmMessage",
-    );
+    deleteConfirmOverlay = document.getElementById("deleteCategoryConfirmOverlay");
+    deleteConfirmMessage = document.getElementById("deleteCategoryConfirmMessage");
     deleteConfirmYesBtn = document.getElementById("deleteCategoryConfirmYes");
     deleteConfirmNoBtn = document.getElementById("deleteCategoryConfirmNo");
-    createModeBtn = document.getElementById("enterCreateModeBtn");
     submitBtn = categoryForm.querySelector(".submit_btn");
 
-    // Inputs are intentionally read-only until edit mode is activated.
-    setInputsEnabled(false);
-    setSaveButtonState(true, "Save");
+    // Inputs are enabled by default now
+    setSaveButtonState(false, "Save");
 }
 
 function setupEventListeners() {
     addCategoryBtn?.addEventListener("click", () => openCategoryModal(null));
 
     // Form cancel button
-    const closeCategoryFormBtn = document.getElementById(
-        "closeCategoryFormBtn",
-    );
+    const closeCategoryFormBtn = document.getElementById("closeCategoryFormBtn");
     closeCategoryFormBtn?.addEventListener("click", closeCategoryModal);
-    createModeBtn?.addEventListener("click", enterCreateMode);
 
     categoryForm?.addEventListener("submit", saveCategory);
 
@@ -76,6 +66,13 @@ function setupEventListeners() {
             value = "99";
         }
         e.target.value = value;
+        // Clear error on type
+        clearFieldError(sortOrderInput);
+    });
+
+    categoryNameInput?.addEventListener("input", () => {
+        // Clear error on type
+        clearFieldError(categoryNameInput);
     });
 
     deleteConfirmYesBtn?.addEventListener("click", confirmDelete);
@@ -112,7 +109,7 @@ function renderCategoryList() {
         categoryTableBody.innerHTML = `
       <tr>
         <td colspan="3" style="text-align: center; padding: 20px; color: #999;">
-                    No categories yet. Click "Create New" then "Save" to add one.
+                    No categories yet. Type a name and click "Save" to add one.
         </td>
       </tr>
     `;
@@ -153,16 +150,14 @@ function renderCategoryList() {
 // ================= MODAL OPERATIONS =================
 function openCategoryModal(categoryId = null) {
     editingCategoryId = categoryId;
-    isSaving = false; // Reset saving state
+    isSaving = false; 
 
     clearFieldErrors();
 
     if (categoryId === null) {
-        // Default modal state: view-only until user selects Edit.
-        formMode = "idle";
+        formMode = "create";
         categoryForm.reset();
-        setInputsEnabled(false);
-        setSaveButtonState(true, "Save");
+        setSaveButtonState(false, "Save");
     } else {
         // Edit existing category
         const category = categories.find((c) => c.id === categoryId);
@@ -170,7 +165,6 @@ function openCategoryModal(categoryId = null) {
             formMode = "edit";
             categoryNameInput.value = category.name;
             sortOrderInput.value = category.sort_order;
-            setInputsEnabled(true);
             setSaveButtonState(false, "Save");
             categoryNameInput.focus();
         }
@@ -179,31 +173,14 @@ function openCategoryModal(categoryId = null) {
     showModal();
 }
 
-function enterCreateMode() {
+function closeCategoryModal() {
+    hideModal();
     formMode = "create";
     editingCategoryId = null;
     isSaving = false;
-
+    categoryForm.reset();
     clearFieldErrors();
-    categoryForm.reset();
-    setInputsEnabled(true);
-    setSaveButtonState(false, "Create");
-    categoryNameInput.focus();
-}
-
-function closeCategoryModal() {
-    hideModal();
-    formMode = "idle";
-    editingCategoryId = null;
-    isSaving = false;
-    categoryForm.reset();
-    setInputsEnabled(false);
-    setSaveButtonState(true, "Save");
-}
-
-function setInputsEnabled(enabled) {
-    categoryNameInput.disabled = !enabled;
-    sortOrderInput.disabled = !enabled;
+    setSaveButtonState(false, "Save");
 }
 
 function showModal() {
@@ -228,40 +205,35 @@ function setSaveButtonState(disabled, label = "Save") {
 async function saveCategory(e) {
     e.preventDefault();
 
-    // Poka-yoke: ignore submit events from non-save controls.
     const submitter = e.submitter;
     if (submitter && !submitter.classList.contains("submit_btn")) {
         return;
     }
 
-    // Prevent double submission
     if (isSaving) {
-        return;
-    }
-
-    if (formMode === "idle") {
-        Toast.error("Choose Create New or Edit an existing category first.");
-        return;
-    }
-
-    if (formMode === "edit" && editingCategoryId === null) {
-        Toast.error("Select a category to edit first.");
         return;
     }
 
     const name = categoryNameInput.value.trim();
     const sortOrder = parseInt(sortOrderInput.value) || 1;
+    let hasValidationError = false;
 
-    // Validation
+    // Custom Validation to trigger red borders instead of browser popups
     if (!name) {
         showFieldError(categoryNameInput, "Category name is required");
-        return;
+        hasValidationError = true;
+    } else {
+        clearFieldError(categoryNameInput);
     }
 
-    if (sortOrder < 1 || sortOrder > 99) {
+    if (!sortOrderInput.value || sortOrder < 1 || sortOrder > 99) {
         showFieldError(sortOrderInput, "Sort order must be between 1 and 99");
-        return;
+        hasValidationError = true;
+    } else {
+        clearFieldError(sortOrderInput);
     }
+
+    if (hasValidationError) return;
 
     const hasDuplicateSortOrder = categories.some(
         (category) => {
@@ -287,17 +259,14 @@ async function saveCategory(e) {
 
     try {
         isSaving = true;
-        setSaveButtonState(true, formMode === "create" ? "Create" : "Save");
-        clearFieldErrors();
+        setSaveButtonState(true, "Saving...");
 
         const categoryData = { name, sort_order: sortOrder };
 
         if (formMode === "create") {
-            // Create new
             await ManageCategoriesAPI.createCategory(categoryData);
             Toast.success("Category created successfully");
         } else {
-            // Update existing
             await ManageCategoriesAPI.updateCategory(
                 editingCategoryId,
                 categoryData,
@@ -308,12 +277,11 @@ async function saveCategory(e) {
         closeCategoryModal();
         await loadCategories();
 
-        // Notify parent that categories changed
         window.dispatchEvent(new CustomEvent("categoriesChanged"));
     } catch (error) {
         handleSaveError(error);
         isSaving = false;
-        setSaveButtonState(false, formMode === "create" ? "Create" : "Save");
+        setSaveButtonState(false, "Save");
     }
 }
 
@@ -345,7 +313,6 @@ async function confirmDelete() {
         Toast.success("Category deleted successfully");
         await loadCategories();
 
-        // Notify parent that categories changed
         window.dispatchEvent(new CustomEvent("categoriesChanged"));
     } catch (error) {
         cancelDelete();
@@ -372,6 +339,14 @@ function showFieldError(field, message) {
     field.classList.add("input_error");
 }
 
+function clearFieldError(field) {
+    const errorElement = field.nextElementSibling;
+    if (errorElement && errorElement.classList.contains("field_error")) {
+        errorElement.classList.add("hidden");
+    }
+    field.classList.remove("input_error");
+}
+
 function clearFieldErrors() {
     document.querySelectorAll(".field_error").forEach((el) => {
         el.classList.add("hidden");
@@ -383,7 +358,6 @@ function clearFieldErrors() {
 
 function handleSaveError(error) {
     if (error.errors) {
-        // Field-specific errors
         Object.keys(error.errors).forEach((field) => {
             const input =
                 document.getElementById(field + "Input") ||

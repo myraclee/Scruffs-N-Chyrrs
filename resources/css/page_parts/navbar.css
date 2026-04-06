@@ -506,28 +506,4 @@ a:hover .person_icon {
 
     }
 
-/* ==========================================
-   NUCLEAR OPTION: KILL POPUP UNDERLINES
-   ========================================== */
-.account_popup a,
-.account_popup .popup_item,
-.account_popup .popup_item.active,
-.account_popup .popup_item:hover,
-.account_popup .popup_item:focus {
-    text-decoration: none !important;
-    border: none !important;
-    border-bottom: none !important;
-    box-shadow: none !important;
-    outline: none !important;
-    background-image: none !important;
-}
-
-/* Kills any animated lines drawn by pseudo-elements */
-.account_popup .popup_item::after,
-.account_popup .popup_item::before,
-.account_popup .popup_item.active::after,
-.account_popup .popup_item.active::before {
-    display: none !important;
-    content: none !important;
-}
 }

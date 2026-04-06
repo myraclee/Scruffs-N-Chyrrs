@@ -22,7 +22,6 @@
         <button class="content_option" data-section="faqs">FAQs</button>
     </div>
 
-
     {{-- ===================== HOME PAGE ===================== --}}
     <section class="content_section" id="contentHomePage">
 
@@ -52,7 +51,6 @@
             </div>
         </div>
 
-
         <div class="content_homepage_product">
             <div class="header_separator">
                 <span class="acct_section_spark">✦</span>
@@ -68,12 +66,14 @@
                 <div class="add_sample_modal_box">
                     <h2>Add Sample Products</h2>
                     <p class="add_sample_description">Display your product samples!</p>
+                    
                     <h3>Sample Title</h3>
                     <input type="text" id="sampleNameInput" placeholder="Enter product sample name" maxlength="60"/>
-                    <p class="sample_name_error" id="sampleNameError">Sample name is required.</p>
+                    <p class="sample_name_error hidden" id="sampleNameError">Sample name is required.</p>
+                    
                     <h3>Sample Images</h3>
                     <div class="sample_image_grid" id="sampleImageGrid"></div>
-                    <p class="sample_images_error" id="sampleImageError">At least one image is required.</p>
+                    <p class="sample_images_error hidden" id="sampleImageError">At least one image is required.</p>
                     <p class="sample_image_counter" id="sampleImageCounter">0 / 5 images selected</p>
                     <div class="sample_image_actions">
                         <div class="left_sample_actions"></div>
@@ -115,23 +115,29 @@
             <div class="products_modal_content">
                 <h2 id="products_modal_title">Add Product</h2>
                 <p>Display your products and its price list!</p>
+                
                 <label>Product Name</label>
                 <input type="text" id="products_title_input" class="products_title_input" placeholder="Enter product name" maxlength="60"/>
-                <span id="products_title_error" class="products_error_message"></span>
+                <p id="products_title_error" class="products_error_message hidden">Product name is required.</p>
+                
                 <label>Product Description</label>
                 <textarea id="products_description_input" class="products_description_input" placeholder="Enter product description (optional)" maxlength="200" rows="3"></textarea>
+                
                 <label>Main Cover Image</label>
                 <div id="products_main_image_wrapper">
                     <div id="products_main_add_box" class="products_add_box">+</div>
                     <img id="products_main_image_preview" alt="Main Image Preview" style="display:none" />
                     <button id="products_remove_main_image_btn" class="products_button_remove" style="display:none">Remove</button>
                 </div>
-                <span id="products_cover_error" class="products_error_message"></span>
+                <p id="products_cover_error" class="products_image_error hidden">At least one image is required.</p>
+                
                 <label>Price List Images</label>
                 <div id="products_price_images_wrapper" class="products_price_wrapper"></div>
-                <span id="products_prices_error" class="products_error_message"></span>
+                <p id="products_prices_error" class="products_image_error hidden">At least one image is required.</p>
+                
                 <label>Image Notes</label>
                 <div id="products_image_notes_wrapper" class="products_image_notes_wrapper"></div>
+                
                 <div class="products_modal_actions">
                     <button id="products_delete_btn" class="products_button_delete" style="display:none">Delete</button>
                     <div class="products_modal_actions_right">
@@ -166,10 +172,6 @@
         <button id="open_add_template_btn" class="add_template_button">Add New Template</button>
 
         {{-- Add / Edit Template Modal --}}
-        {{--
-            Change #4: The overlay click-to-close listener has been removed from
-            the JS. This modal can only be closed via the Cancel button.
-        --}}
         <div class="add_template_modal" id="templateModalOverlay">
             <div class="add_template_modal_box" id="templateModal">
                 <h2 class="modal_title" id="templateModalTitle">Add New Template</h2>
@@ -261,7 +263,7 @@
             </div>
         </div>
 
-        {{-- Delete Confirmation Modal (still closes on outside click — intentional) --}}
+        {{-- Delete Confirmation Modal --}}
         <div class="modal_overlay" id="deleteTemplateModalOverlay">
             <div class="delete_confirm_box template_delete_box">
                 <p class="delete_msg">Do you wish to delete the<br>selected template?</p>
@@ -297,33 +299,13 @@
                         </div>
 
                         <div class="rush_range_amounts_row">
-                            {{-- SEPARATE DIV FOR MIN + ERROR --}}
                             <div class="rush_input_group">
                                 <input type="text" id="rushRangeMin" class="rush_range_amount_input" placeholder="Min (₱)" />
                             </div>
-
                             <span class="rush_range_separator">–</span>
-
-                            {{-- SEPARATE DIV FOR MAX --}}
                             <div class="rush_input_group">
                                 <input type="text" id="rushRangeMax" class="rush_range_amount_input" placeholder="Max (₱, blank = ∞)" />
                             </div>
-                        </div>
-                    </div>
-
-                    <div class="rush_image_section">
-                        <label class="rush_field_label" for="rushFeeImageInput">Rush Fee Image (Optional)</label>
-                        <div class="rush_input_group">
-                            <button type="button" id="rushImageUploadSlot" class="image_slot plus rush_image_upload_slot" aria-label="Upload rush fee image"></button>
-                            <input type="file" id="rushFeeImageInput" class="rush_image_input_hidden" accept="image/jpeg,image/png,image/gif,image/webp" />
-                        </div>
-                        <p class="rush_image_upload_status" id="rushImageUploadStatus">No image uploaded.</p>
-                        <div class="rush_image_preview_wrap hidden" id="rushImagePreviewWrap">
-                            <div class="rush_image_preview_stage" id="rushImagePreviewStage">
-                                <img id="rushImagePreview" class="rush_image_preview" alt="Rush fee preview image" />
-                            </div>
-                            <button type="button" class="rush_image_fullscreen_btn" id="rushImageFullscreenBtn" title="Toggle fullscreen" aria-label="Fullscreen">⛶</button>
-                            <button type="button" class="rush_image_remove_btn" id="rushImageRemoveBtn">Remove</button>
                         </div>
                     </div>
 
@@ -387,13 +369,14 @@
             <form id="categoryForm">
                 <div class="form_group">
                     <label for="categoryNameInput">Category Label</label>
-                    <input type="text" id="categoryNameInput" placeholder="Enter category label" maxlength="255" required disabled />
-                    <span class="field_error hidden"></span>
+                    {{-- FIX: Inputs are no longer disabled, error is a <p> tag to match others --}}
+                    <input type="text" id="categoryNameInput" placeholder="Enter category label" maxlength="255" />
+                    <p class="field_error hidden">Category name is required.</p>
                 </div>
                 <div class="form_group">
                     <label for="sortOrderInput">Sort Order (1-99)</label>
-                    <input type="text" id="sortOrderInput" placeholder="Enter sort order" inputmode="numeric" required disabled />
-                    <span class="field_error hidden"></span>
+                    <input type="text" id="sortOrderInput" placeholder="Enter sort order" inputmode="numeric" />
+                    <p class="field_error hidden">Sort order is required.</p>
                 </div>
 
                 {{-- Categories List --}}
@@ -419,8 +402,8 @@
                     </div>
                 </div>
 
+                {{-- FIX: Create Mode Button Removed --}}
                 <div class="form_actions">
-                    <button type="button" class="create_mode_btn" id="enterCreateModeBtn">Create New</button>
                     <button type="button" class="cancel_btn" id="closeCategoryFormBtn">Cancel</button>
                     <button type="submit" class="submit_btn">Save</button>
                 </div>

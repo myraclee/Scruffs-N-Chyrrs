@@ -329,13 +329,13 @@
 .form_group {
     display: flex;
     flex-direction: column;
-    gap: 10px;
 }
 
 .form_group label {
     font-family: Coolvetica;
     font-size: 20px;
     color: #682c7a;
+    margin-bottom: 5px;
 }
 
 .form_group input {
@@ -347,6 +347,7 @@
     border-radius: 30px;
     border: 2px solid #682c7a;
     font-size: 15px;
+    margin-bottom: 2px; /* Pulls error text closer */
 }
 
 .form_group input:focus {
@@ -354,20 +355,25 @@
     border-color: #4c1c5b;
 }
 
+/* FIX: Red border for errors */
 .form_group input.input_error {
-    border-color: #c83333;
-    box-shadow: 0 0 0 3px rgba(200, 51, 51, 0.1);
+    border-color: #c83333 !important;
 }
 
+/* FIX: Flush left, red error text */
 .field_error {
     font-family: Coolvetica;
-    font-size: 12px;
-    color: #c83333;
-    margin-top: -4px;
+    font-size: 13px !important;
+    color: #c83333 !important;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    margin-left: 0 !important;
+    text-align: left;
+    display: block;
 }
 
 .field_error.hidden {
-    display: none;
+    display: none !important;
 }
 
 #sortOrderInput {
@@ -487,8 +493,7 @@
 }
 
 .submit_btn,
-.cancel_btn,
-.create_mode_btn {
+.cancel_btn {
     padding: 8px 14px;
     border: none;
     border-radius: 30px;
@@ -501,46 +506,17 @@
 }
 
 .submit_btn {
-    border: none;
-    padding: 8px 14px;
-    width: 90px;
-    height: 35px;
     background: #682c7a;
-    border-radius: 30px;
-    font-family: Coolvetica;
-    font-size: 15px;
     color: #fff7ec;
-    cursor: pointer;
-    transition: transform 0.2s ease;
 }
 
 .submit_btn:hover {
     transform: scale(1.05);
 }
 
-.create_mode_btn {
-    width: 120px;
-    margin-right: auto;
-    background: #2f7d64;
-    color: #fff7ec;
-}
-
-.create_mode_btn:hover {
-    transform: scale(1.05);
-}
-
 .cancel_btn {
-    border: none;
-    padding: 8px 14px;
-    width: 90px;
-    height: 35px;
     background: #999999;
-    border-radius: 30px;
-    font-family: Coolvetica;
-    font-size: 15px;
     color: #fff7ec;
-    cursor: pointer;
-    transition: transform 0.2s ease;
 }
 
 .cancel_btn:hover {
@@ -947,7 +923,6 @@
 
     .submit_btn,
     .cancel_btn,
-    .create_mode_btn,
     .confirm_delete_btn,
     .cancel_delete_btn,
     .save_faq,
