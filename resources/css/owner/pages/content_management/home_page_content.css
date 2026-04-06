@@ -112,7 +112,7 @@
 .product_samples_wrapper {
     display: flex;
     flex-wrap: wrap;
-    gap: 40px;
+    gap: 20px;
 }
 
 .product_sample_main_container {
@@ -280,7 +280,7 @@
 }
 
 .image_slot.plus::before {
-    content: '+';
+    content: "+";
     font-size: 40px;
     color: #682c7a;
 }
@@ -481,7 +481,7 @@
 }
 
 .sample_image_slot.plus::before {
-    content: '+';
+    content: "+";
     font-size: 42px;
     color: #682c7a;
 }
@@ -644,7 +644,9 @@
     cursor: pointer;
     font-family: Coolvetica;
     font-size: 14px;
-    transition: background-color 0.2s ease, transform 0.2s ease;
+    transition:
+        background-color 0.2s ease,
+        transform 0.2s ease;
 }
 
 .delete_confirm_box button:hover {
@@ -726,7 +728,7 @@
 
     border: 2px solid #682c7a;
     border-radius: 20px;
-    padding: 12px;
+    padding: 10px;
     width: 160px;
 
     background: #fff7ec;
@@ -788,24 +790,29 @@
     display: flex;
     gap: 8px;
     width: 100%;
-    justify-content: center;
+    justify-content: right;
 }
 
 .edit_sample_btn,
 .delete_sample_btn {
-    flex: 1;
     height: 28px;
     border-radius: 30px;
     border: 2px solid #682c7a;
     font-family: Coolvetica;
     font-size: 13px;
     cursor: pointer;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
 }
 
 .edit_sample_btn {
     background-color: #fff7ec;
+    border-radius: 30px;
+    border: 2px solid #682c7a;
     color: #682c7a;
+    width: 60px;
+    height: 25px;
 }
 
 .edit_sample_btn:hover {
