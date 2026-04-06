@@ -41,9 +41,6 @@ const deleteMaterialConfirmModal = document.getElementById(
 const deleteMaterialConfirmMessage = document.getElementById(
     "deleteMaterialConfirmMessage",
 );
-const deleteMaterialCancelBtn = document.getElementById(
-    "deleteMaterialCancelBtn",
-);
 const deleteMaterialConfirmBtn = document.getElementById(
     "deleteMaterialConfirmBtn",
 );
@@ -65,6 +62,7 @@ let isDeletingMaterial = false;
 
 const DEFAULT_LOW_STOCK_THRESHOLD = 5;
 const STATUS_CARD_NAME_CAP = 3;
+const MAX_MATERIAL_NAME_LENGTH = 150;
 
 // ================= INITIALIZATION =================
 document.addEventListener("DOMContentLoaded", async () => {
@@ -85,7 +83,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         !deleteMaterialConfirmOverlay ||
         !deleteMaterialConfirmModal ||
         !deleteMaterialConfirmMessage ||
-        !deleteMaterialCancelBtn ||
         !deleteMaterialConfirmBtn
     ) {
         return;
@@ -94,6 +91,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     setModalVisibility(false);
     await loadMaterialsAndProducts();
     setupEventListeners();
+    preventInvalidNumberInput();
 });
 
 /**
@@ -109,7 +107,7 @@ async function loadMaterialsAndProducts() {
         // Show loading state
         if (emptyInventoryRow) {
             emptyInventoryRow.innerHTML =
-                '<td colspan="3" class="text-center" style="padding: 60px; color: #682C7A; font-style: italic;">Loading inventory...</td>';
+                '<td colspan="5" class="text-center" style="padding: 60px; color: #682C7A; font-style: italic;">Loading inventory...</td>';
         }
 
         const [materials, products] = await Promise.all([
@@ -128,11 +126,52 @@ async function loadMaterialsAndProducts() {
         Toast.error("Failed to load inventory from database");
         if (emptyInventoryRow) {
             emptyInventoryRow.innerHTML =
-                '<td colspan="3" class="text-center" style="padding: 60px; color: #999;">Error loading inventory</td>';
+                '<td colspan="5" class="text-center" style="padding: 60px; color: #999;">Error loading inventory</td>';
         }
     } finally {
         isLoading = false;
     }
+}
+
+/**
+ * Prevent typing 'e', '+', '-' in number inputs (lowstock and units)
+ */
+function preventInvalidNumberInput() {
+    const numberInputs = [
+        newUnitsInput,
+        newThresholdInput,
+        editMaterialUnits,
+        editThresholdInput,
+    ];
+
+    numberInputs.forEach((input) => {
+        if (!input) return;
+
+        input.addEventListener("keydown", (e) => {
+            // Prevent 'e', 'E', '+', '-', '.'
+            if (
+                e.key === "e" ||
+                e.key === "E" ||
+                e.key === "+" ||
+                e.key === "-" ||
+                e.key === "."
+            ) {
+                e.preventDefault();
+            }
+        });
+
+        // Also prevent pasting invalid values
+        input.addEventListener("paste", (e) => {
+            e.preventDefault();
+            const pastedText = (
+                e.clipboardData || window.clipboardData
+            ).getData("text");
+            const cleanedText = pastedText.replace(/[^0-9]/g, "");
+            if (cleanedText) {
+                input.value = cleanedText;
+            }
+        });
+    });
 }
 
 /**
@@ -169,10 +208,6 @@ function setupEventListeners() {
 
             closeDeleteMaterialConfirm();
         }
-    });
-
-    deleteMaterialCancelBtn.addEventListener("click", () => {
-        closeDeleteMaterialConfirm();
     });
 
     deleteMaterialConfirmBtn.addEventListener("click", async () => {
@@ -247,10 +282,47 @@ function updateProductCheckboxes() {
         ".edit_product_checkbox",
         ".edit_quantity_input",
     );
+
+    // Prevent invalid input in quantity fields
+    preventInvalidQuantityInput(addConsumedList, ".add_quantity_input");
+    preventInvalidQuantityInput(editConsumedList, ".edit_quantity_input");
 }
 
 /**
- * Save material (add or edit)
+ * Prevent invalid input in quantity fields
+ */
+function preventInvalidQuantityInput(container, selector) {
+    const quantityInputs = container.querySelectorAll(selector);
+
+    quantityInputs.forEach((input) => {
+        input.addEventListener("keydown", (e) => {
+            // Prevent 'e', 'E', '+', '-', '.'
+            if (
+                e.key === "e" ||
+                e.key === "E" ||
+                e.key === "+" ||
+                e.key === "-" ||
+                e.key === "."
+            ) {
+                e.preventDefault();
+            }
+        });
+
+        input.addEventListener("paste", (e) => {
+            e.preventDefault();
+            const pastedText = (
+                e.clipboardData || window.clipboardData
+            ).getData("text");
+            const cleanedText = pastedText.replace(/[^0-9]/g, "");
+            if (cleanedText) {
+                input.value = cleanedText;
+            }
+        });
+    });
+}
+
+/**
+ * Save material (add or edit) with comprehensive validation
  */
 async function saveMaterial(mode) {
     if (isSaving) {
@@ -263,45 +335,62 @@ async function saveMaterial(mode) {
     const thresholdInput = isAdd ? newThresholdInput : editThresholdInput;
     const modal = isAdd ? addMaterialModal : editMaterialModal;
 
+    // Clear all previous errors
     clearModalErrors(modal);
-    clearFieldError(nameInput);
-    clearFieldError(unitsInput);
-    clearFieldError(thresholdInput);
 
+    // Collect all validation errors
+    const errors = [];
+
+    // Validate material name
     const name = nameInput.value.trim();
     if (!name) {
-        setFieldError(nameInput, "Material name is required");
-        return;
+        errors.push({ input: nameInput, message: "Material name is required" });
+    } else if (name.length > MAX_MATERIAL_NAME_LENGTH) {
+        errors.push({
+            input: nameInput,
+            message: `Material name must be ${MAX_MATERIAL_NAME_LENGTH} characters or less`,
+        });
     }
 
+    // Validate units
     const unitsRaw = unitsInput.value.trim();
-    if (!/^\d+$/.test(unitsRaw)) {
-        setFieldError(unitsInput, "Units must be a whole number 0 or greater");
-        return;
+    if (!unitsRaw) {
+        errors.push({ input: unitsInput, message: "Units is required" });
+    } else if (!/^\d+$/.test(unitsRaw)) {
+        errors.push({
+            input: unitsInput,
+            message: "Units must be a whole number 0 or greater",
+        });
+    } else {
+        const units = Number(unitsRaw);
+        if (!Number.isInteger(units) || units < 0) {
+            errors.push({
+                input: unitsInput,
+                message: "Units must be a whole number 0 or greater",
+            });
+        }
     }
 
-    const units = Number(unitsRaw);
-    if (!Number.isInteger(units) || units < 0) {
-        setFieldError(unitsInput, "Units must be a whole number 0 or greater");
-        return;
-    }
-
+    // Validate low stock threshold
     const thresholdRaw = thresholdInput.value.trim();
-    if (!/^\d+$/.test(thresholdRaw)) {
-        setFieldError(
-            thresholdInput,
-            "Low stock threshold must be a whole number 1 or greater",
-        );
-        return;
-    }
-
-    const lowStockThreshold = Number(thresholdRaw);
-    if (!Number.isInteger(lowStockThreshold) || lowStockThreshold < 1) {
-        setFieldError(
-            thresholdInput,
-            "Low stock threshold must be a whole number 1 or greater",
-        );
-        return;
+    if (!thresholdRaw) {
+        errors.push({
+            input: thresholdInput,
+            message: "Low stock threshold is required",
+        });
+    } else if (!/^\d+$/.test(thresholdRaw)) {
+        errors.push({
+            input: thresholdInput,
+            message: "Low stock must be 1 or greater",
+        });
+    } else {
+        const lowStockThreshold = Number(thresholdRaw);
+        if (!Number.isInteger(lowStockThreshold) || lowStockThreshold < 1) {
+            errors.push({
+                input: thresholdInput,
+                message: "Low stock must be 1 or greater",
+            });
+        }
     }
 
     // Collect product associations with quantity validation
@@ -310,50 +399,77 @@ async function saveMaterial(mode) {
         : Array.from(modal.querySelectorAll(".edit_product_checkbox"));
 
     const products = [];
-    let quantitiesValid = true;
+    let hasSelectedProduct = false;
 
     checkboxes.forEach((checkbox) => {
         const productId = Number(checkbox.getAttribute("data-product-id"));
         const quantityInput = isAdd
             ? modal.querySelector(
-                `.add_quantity_input[data-product-id="${productId}"]`,
-            )
+                  `.add_quantity_input[data-product-id="${productId}"]`,
+              )
             : modal.querySelector(
-                `.edit_quantity_input[data-product-id="${productId}"]`,
-            );
+                  `.edit_quantity_input[data-product-id="${productId}"]`,
+              );
 
         if (!quantityInput) {
             return;
         }
-
-        clearFieldError(quantityInput);
 
         if (!checkbox.checked) {
             quantityInput.value = "0";
             return;
         }
 
+        hasSelectedProduct = true;
+
         const quantityRaw = quantityInput.value.trim();
         if (!/^\d+$/.test(quantityRaw) || Number(quantityRaw) < 1) {
-            setFieldError(quantityInput, "Required (1+)");
-            quantitiesValid = false;
+            errors.push({
+                input: quantityInput,
+                message: "Required (1+)",
+            });
             return;
         }
 
         const quantity = Number(quantityRaw);
-
-        if (checkbox.checked) {
-            products.push({
-                id: productId,
-                quantity,
-            });
-        }
+        products.push({
+            id: productId,
+            quantity,
+        });
     });
 
-    if (!quantitiesValid) {
-        Toast.error("Set quantity to 1 or higher for each selected product.");
+    // Validate that at least one product is selected
+    if (!hasSelectedProduct) {
+        errors.push({
+            input: null,
+            message: "At least one product must be selected",
+            isProductError: true,
+        });
+    }
+
+    // Display all errors at once
+    if (errors.length > 0) {
+        errors.forEach((error) => {
+            if (error.input) {
+                setFieldError(error.input, error.message);
+            }
+        });
+
+        // Show toast for product selection error
+        if (errors.some((e) => e.isProductError)) {
+            Toast.error(
+                "Please select at least one product and set its quantity.",
+            );
+        } else {
+            Toast.error("Please fix all errors before saving.");
+        }
+
         return;
     }
+
+    // Get validated values
+    const units = Number(unitsRaw);
+    const lowStockThreshold = Number(thresholdRaw);
 
     // Disable save button
     const saveBtn = isAdd ? saveAddMaterialBtn : saveEditMaterialBtn;
@@ -477,9 +593,7 @@ async function openEditModal(btn, materialId) {
  */
 window.deleteMaterial = function (triggerOrId, maybeMaterialId) {
     const materialId =
-        typeof triggerOrId === "number"
-            ? triggerOrId
-            : Number(maybeMaterialId);
+        typeof triggerOrId === "number" ? triggerOrId : Number(maybeMaterialId);
 
     if (!Number.isInteger(materialId)) {
         Toast.error("Material not found");
@@ -503,14 +617,13 @@ function openDeleteMaterialConfirm(materialId, materialName, triggerElement) {
     pendingDeleteMaterialName = materialName;
     deleteMaterialTriggerElement = triggerElement || document.activeElement;
 
-    deleteMaterialConfirmMessage.textContent =
-        `Are you sure you want to delete the material "${materialName}"?`;
+    deleteMaterialConfirmMessage.textContent = `Are you sure you want to delete the material "${materialName}"?`;
 
     setDeleteModalBusyState(false);
     deleteMaterialConfirmOverlay.classList.add("active");
     deleteMaterialConfirmOverlay.setAttribute("aria-hidden", "false");
     deleteMaterialConfirmModal.setAttribute("aria-hidden", "false");
-    deleteMaterialCancelBtn.focus();
+    deleteMaterialConfirmBtn.focus();
 }
 
 function closeDeleteMaterialConfirm(force = false) {
@@ -552,7 +665,9 @@ async function confirmDeleteMaterial() {
     } catch (error) {
         console.error("Error deleting material:", error);
         if (error?.statusCode === 419) {
-            Toast.error("Session expired. Refresh this page and sign in again.");
+            Toast.error(
+                "Session expired. Refresh this page and sign in again.",
+            );
             return;
         }
 
@@ -569,7 +684,6 @@ function setDeleteModalBusyState(isBusy) {
     isDeletingMaterial = isBusy;
 
     deleteMaterialConfirmBtn.disabled = isBusy;
-    deleteMaterialCancelBtn.disabled = isBusy;
     deleteMaterialConfirmBtn.textContent = isBusy
         ? "Deleting..."
         : "Delete Material";
@@ -586,7 +700,7 @@ function setDeleteModalBusyState(isBusy) {
 window.openEditModal = openEditModal;
 
 /**
- * Render materials table from API data
+ * Render materials table from API data with new columns
  */
 function renderMaterials() {
     inventoryTableBody.innerHTML = "";
@@ -595,7 +709,7 @@ function renderMaterials() {
         const emptyRow = document.createElement("tr");
         emptyRow.id = "emptyInventoryRow";
         emptyRow.innerHTML = `
-            <td colspan="3" class="text-center" style="padding: 60px; color: #682C7A; font-style: italic;">
+            <td colspan="5" class="text-center" style="padding: 60px; color: #682C7A; font-style: italic;">
                 No materials found. Start by adding new stock below!
             </td>
         `;
@@ -609,25 +723,28 @@ function renderMaterials() {
 
         // Get associated products display text
         let productText = "None assigned";
+        let usageText = "-";
+
         if (material.products && material.products.length > 0) {
             productText = material.products
-                .map(
-                    (p) =>
-                        `${escapeHtml(p.name)} (x${Number(p.pivot?.quantity || 0)})`,
-                )
+                .map((p) => escapeHtml(p.name))
                 .join(", ");
+
+            // Create usage text showing quantities
+            usageText = material.products
+                .map((p) => `${Number(p.pivot?.quantity || 0)}`)
+                .join("<br>");
         }
 
         row.innerHTML = `
             <td>${safeMaterialName}</td>
             <td class="text-center">${material.units}</td>
-            <td>
-                <div class="product_cell">
-                    <span>${productText}</span>
-                    <div class="product_actions">
-                        <button type="button" class="action_btn edit_btn" onclick="openEditModal(this, ${material.id})" title="Edit material" aria-label="Edit ${safeMaterialName}">Edit</button>
-                        <button type="button" class="action_btn delete_btn" onclick="deleteMaterial(this, ${material.id})" title="Delete material" aria-label="Delete ${safeMaterialName}">Delete</button>
-                    </div>
+            <td>${productText}</td>
+            <td class="text-center">${usageText}</td>
+            <td class="text-center">
+                <div class="product_actions" style="justify-content: center;">
+                    <button type="button" class="action_btn edit_btn" onclick="openEditModal(this, ${material.id})" title="Edit material" aria-label="Edit ${safeMaterialName}">Edit</button>
+                    <button type="button" class="action_btn delete_btn" onclick="deleteMaterial(this, ${material.id})" title="Delete material" aria-label="Delete ${safeMaterialName}">Delete</button>
                 </div>
             </td>
         `;
@@ -709,7 +826,9 @@ function buildStatusListMarkup(names, healthyMessage, toggleType, isExpanded) {
         return `<p class="empty_status">${escapeHtml(healthyMessage)}</p>`;
     }
 
-    const visibleNames = isExpanded ? names : names.slice(0, STATUS_CARD_NAME_CAP);
+    const visibleNames = isExpanded
+        ? names
+        : names.slice(0, STATUS_CARD_NAME_CAP);
     const namesMarkup = visibleNames
         .map((name) => `<p class="status_item">${escapeHtml(name)}</p>`)
         .join("");
@@ -837,9 +956,8 @@ function setModalVisibility(isVisible, targetModal = null) {
 
 function handleOverlayKeydown(event) {
     const isFormModalActive = modalOverlay.classList.contains("active");
-    const isDeleteModalActive = deleteMaterialConfirmOverlay.classList.contains(
-        "active",
-    );
+    const isDeleteModalActive =
+        deleteMaterialConfirmOverlay.classList.contains("active");
 
     if (!isFormModalActive && !isDeleteModalActive) {
         return;
@@ -953,7 +1071,9 @@ function bindConsumedListEvents(list, checkboxSelector, quantitySelector) {
 }
 
 function clearModalErrors(modal) {
-    modal.querySelectorAll(".field_error").forEach((errorEl) => errorEl.remove());
+    modal
+        .querySelectorAll(".field_error")
+        .forEach((errorEl) => errorEl.remove());
 
     modal.querySelectorAll("[aria-invalid='true']").forEach((input) => {
         input.removeAttribute("aria-invalid");
