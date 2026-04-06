@@ -89,6 +89,8 @@
     font-family: Coolvetica;
     margin-bottom: 20px;
     text-align: center;
+
+    animation: acct_fade_up 0.3s cubic-bezier(0.34, 1.4, 0.64, 1) both;
 }
 
 .change_section_spark {
