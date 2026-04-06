@@ -13,6 +13,7 @@ use App\Models\OrderTemplateLayoutFee;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class OrderTemplateController extends Controller
 {
@@ -96,11 +97,26 @@ class OrderTemplateController extends Controller
                     }
                 }
 
+                $template->load('options.optionTypes');
+
                 // Create pricings
                 foreach ($validated['pricings'] as $pricingData) {
+                    $normalizedKey = $this->normalizePricingKeyForTemplate(
+                        $template,
+                        (string) $pricingData['combination_key']
+                    );
+
+                    if ($normalizedKey === null) {
+                        throw ValidationException::withMessages([
+                            'pricings' => [
+                                "Invalid pricing combination key: {$pricingData['combination_key']}.",
+                            ],
+                        ]);
+                    }
+
                     OrderTemplatePricing::create([
                         'order_template_id' => $template->id,
-                        'combination_key' => $pricingData['combination_key'],
+                        'combination_key' => $normalizedKey,
                         'price' => $pricingData['price'],
                     ]);
                 }
@@ -236,11 +252,26 @@ class OrderTemplateController extends Controller
                     }
                 }
 
+                $orderTemplate->load('options.optionTypes');
+
                 // Create new pricings
                 foreach ($validated['pricings'] as $pricingData) {
+                    $normalizedKey = $this->normalizePricingKeyForTemplate(
+                        $orderTemplate,
+                        (string) $pricingData['combination_key']
+                    );
+
+                    if ($normalizedKey === null) {
+                        throw ValidationException::withMessages([
+                            'pricings' => [
+                                "Invalid pricing combination key: {$pricingData['combination_key']}.",
+                            ],
+                        ]);
+                    }
+
                     OrderTemplatePricing::create([
                         'order_template_id' => $orderTemplate->id,
-                        'combination_key' => $pricingData['combination_key'],
+                        'combination_key' => $normalizedKey,
                         'price' => $pricingData['price'],
                     ]);
                 }
@@ -316,5 +347,142 @@ class OrderTemplateController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    private function normalizePricingKeyForTemplate(OrderTemplate $template, string $combinationKey): ?string
+    {
+        $typeIds = $this->resolveCombinationKeyToTypeIds($template, $combinationKey);
+
+        if (empty($typeIds)) {
+            return null;
+        }
+
+        return implode(',', $typeIds);
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    private function resolveCombinationKeyToTypeIds(OrderTemplate $template, string $combinationKey): array
+    {
+        $trimmedKey = trim($combinationKey);
+        if ($trimmedKey === '') {
+            return [];
+        }
+
+        if (preg_match('/^\d+(\s*,\s*\d+)*$/', $trimmedKey) === 1) {
+            return $this->canonicalizeTypeIds(
+                preg_split('/\s*,\s*/', $trimmedKey) ?: []
+            );
+        }
+
+        $orderedOptions = $template->options->sortBy('position')->values();
+
+        if (str_contains($trimmedKey, '|')) {
+            $segments = array_values(array_filter(
+                array_map(static fn ($value) => trim($value), explode('|', $trimmedKey)),
+                static fn ($value) => $value !== ''
+            ));
+
+            if ($orderedOptions->count() === count($segments)) {
+                $resolved = [];
+
+                foreach ($orderedOptions as $index => $option) {
+                    $resolvedTypeId = $this->resolveTypeIdByOptionToken(
+                        $option->optionTypes,
+                        $segments[$index]
+                    );
+
+                    if ($resolvedTypeId === null) {
+                        $resolved = [];
+                        break;
+                    }
+
+                    $resolved[] = $resolvedTypeId;
+                }
+
+                if (! empty($resolved)) {
+                    return $this->canonicalizeTypeIds($resolved);
+                }
+            }
+        }
+
+        $tokens = array_values(array_filter(
+            preg_split('/\||_/', $trimmedKey) ?: [],
+            static fn ($value) => trim((string) $value) !== ''
+        ));
+
+        if (empty($tokens)) {
+            return [];
+        }
+
+        $typeNameMap = [];
+        foreach ($orderedOptions as $option) {
+            foreach ($option->optionTypes as $type) {
+                $normalized = $this->normalizePricingToken((string) $type->type_name);
+                if ($normalized === '') {
+                    continue;
+                }
+
+                if (! array_key_exists($normalized, $typeNameMap)) {
+                    $typeNameMap[$normalized] = [];
+                }
+
+                $typeNameMap[$normalized][] = (int) $type->id;
+            }
+        }
+
+        $resolvedIds = [];
+
+        foreach ($tokens as $token) {
+            $normalizedToken = $this->normalizePricingToken((string) $token);
+            if ($normalizedToken === '' || ! array_key_exists($normalizedToken, $typeNameMap)) {
+                return [];
+            }
+
+            $resolvedIds[] = (int) $typeNameMap[$normalizedToken][0];
+        }
+
+        return $this->canonicalizeTypeIds($resolvedIds);
+    }
+
+    private function resolveTypeIdByOptionToken($optionTypes, string $token): ?int
+    {
+        $normalizedToken = $this->normalizePricingToken($token);
+        if ($normalizedToken === '') {
+            return null;
+        }
+
+        $matchedType = $optionTypes->first(function ($type) use ($normalizedToken): bool {
+            return $this->normalizePricingToken((string) $type->type_name) === $normalizedToken;
+        });
+
+        return $matchedType ? (int) $matchedType->id : null;
+    }
+
+    /**
+     * @param array<int, int|string> $typeIds
+     * @return array<int, int>
+     */
+    private function canonicalizeTypeIds(array $typeIds): array
+    {
+        $normalized = array_values(array_filter(array_map(
+            static fn ($value): int => (int) $value,
+            $typeIds
+        ), static fn ($value): bool => $value > 0));
+
+        $normalized = array_values(array_unique($normalized));
+        sort($normalized);
+
+        return $normalized;
+    }
+
+    private function normalizePricingToken(string $token): string
+    {
+        $normalized = strtolower(trim($token));
+        $normalized = preg_replace('/\s*(inch|inches)\s*$/i', '', $normalized) ?? $normalized;
+        $normalized = preg_replace('/[^a-z0-9]+/i', '_', $normalized) ?? $normalized;
+
+        return trim($normalized, '_');
     }
 }
