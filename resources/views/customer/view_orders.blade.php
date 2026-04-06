@@ -1,11 +1,12 @@
 @extends('layouts.customer_layout')
 
 @section('page_css')
-@vite(['resources/css/customer/view_orders.css'])
+@vite(['resources/css/customer/view_orders.css','resources/css/customer/payment_customer.css'])
+
 @endsection
 
 @section('page_js')
-@vite('resources/js/customer/pages/view_orders.js')
+@vite(['resources/js/customer/pages/view_orders.js', 'resources/js/customer/pages/payment_customer.js'])
 @endsection
 
 @section('content')
@@ -123,6 +124,14 @@
         </div>
 
     </div>
+
+    <div class="orders_container">
+    <span class="placeholder_payment">
+        <a href="javascript:void(0)" onclick="openPaymentModal(event)">TestButton</a>
+    </span>
+</div>
+
+@include('customer.pages.payment_customer')
 
 </div>
 

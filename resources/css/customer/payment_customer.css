@@ -1,0 +1,376 @@
+/* resources/css/customer/payment_customer.css */
+
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* Modal Container - matches change_password_container */
+.modal-container {
+    max-width: 560px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 30px;
+    background-color: #fff7ec;
+    border-radius: 30px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 2px solid #6b3282;
+    position: relative;
+    animation: acct_fade_up 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+/* Stars (reuse from your CSS) */
+.star {
+    position: absolute;
+    font-size: 20px;
+    color: #682c7a;
+    line-height: 1;
+    pointer-events: none;
+}
+.star_tl {
+    top: -13px;
+    left: -13px;
+    animation: twinkle 2.4s ease-in-out infinite;
+    animation-delay: 0s;
+}
+.star_tr {
+    top: -13px;
+    right: -13px;
+    animation: twinkle 2.4s ease-in-out infinite;
+    animation-delay: 0.6s;
+}
+.star_bl {
+    bottom: -13px;
+    left: -13px;
+    animation: twinkle 2.4s ease-in-out infinite;
+    animation-delay: 1.2s;
+}
+.star_br {
+    bottom: -13px;
+    right: -13px;
+    animation: twinkle 2.4s ease-in-out infinite;
+    animation-delay: 1.8s;
+}
+
+@keyframes twinkle {
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+    }
+    20% {
+        opacity: 0.15;
+        transform: scale(0.55) rotate(30deg);
+    }
+    40% {
+        opacity: 0.9;
+        transform: scale(1.1) rotate(-10deg);
+    }
+    60% {
+        opacity: 0.2;
+        transform: scale(0.6) rotate(25deg);
+    }
+    80% {
+        opacity: 1;
+        transform: scale(1.05) rotate(-5deg);
+    }
+}
+
+@keyframes acct_fade_up {
+    from {
+        opacity: 0;
+        transform: translateY(18px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Modal Header */
+.modal-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+.modal-brand-logo {
+    max-height: 55px;
+    width: auto;
+    object-fit: contain;
+}
+
+/* Modal Body */
+.modal-body {
+    margin-bottom: 20px;
+}
+
+/* Warning specific */
+.warning-icon {
+    font-size: 3rem;
+    text-align: center;
+    margin-bottom: 10px;
+}
+.warning-title {
+    font-family: "SuperDream", sans-serif;
+    font-size: 28px;
+    text-align: center;
+    color: #6b3282;
+    margin-bottom: 15px;
+}
+.warning-text {
+    font-family: "Coolvetica", sans-serif;
+    font-size: 15px;
+    text-align: center;
+    color: #333;
+    line-height: 1.5;
+}
+
+/* Confirmation specific */
+.confirmation-icon {
+    font-size: 3rem;
+    text-align: center;
+    color: #4caf50;
+    margin-bottom: 10px;
+}
+.confirmation-title {
+    font-family: "SuperDream", sans-serif;
+    font-size: 26px;
+    text-align: center;
+    color: #6b3282;
+    margin-bottom: 15px;
+}
+.confirmation-text {
+    font-family: "Coolvetica", sans-serif;
+    font-size: 15px;
+    text-align: center;
+    color: #333;
+}
+
+/* Payment Modal Form Elements */
+.form_group {
+    margin-bottom: 20px;
+}
+.form_group label {
+    font-family: "Coolvetica", sans-serif;
+    font-size: 17px;
+    color: #6b3282;
+    display: block;
+    margin-bottom: 8px;
+}
+.form_input,
+.payment-select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #dcbae6;
+    border-radius: 30px;
+    font-family: sans-serif;
+    font-size: 14px;
+    color: #333;
+    background-color: #fffbf5;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+.form_input:focus,
+.payment-select:focus {
+    outline: none;
+    border-color: #6b3282;
+}
+.error_message {
+    font-family: "Coolvetica", sans-serif;
+    font-size: 12px;
+    color: #d32f2f;
+    margin-top: 5px;
+    display: none;
+}
+
+/* QR Section */
+.qr-section {
+    text-align: center;
+    background: #faf0e1;
+    border-radius: 24px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+.qr-code-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+.qr-code-img {
+    width: 150px;
+    height: 150px;
+    object-fit: contain;
+    background: white;
+    border-radius: 20px;
+    padding: 8px;
+    border: 1px solid #dcbae6;
+}
+.qr-amount-text {
+    font-family: "Coolvetica", sans-serif;
+    font-size: 16px;
+    color: #333;
+}
+.qr-amount-text strong {
+    color: #6b3282;
+    font-size: 18px;
+}
+
+/* Upload Box */
+.upload-box {
+    border: 2px dashed #dcbae6;
+    border-radius: 24px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    background: #fffbf5;
+    transition: 0.2s;
+}
+.upload-box:hover {
+    border-color: #6b3282;
+}
+.upload-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    font-family: "Coolvetica", sans-serif;
+    color: #888;
+}
+.upload-icon {
+    font-size: 2rem;
+}
+.upload-hint {
+    font-size: 11px;
+}
+.upload-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+.upload-preview img {
+    max-width: 100%;
+    max-height: 180px;
+    border-radius: 16px;
+    border: 1px solid #dcbae6;
+}
+.preview-actions {
+    display: flex;
+    gap: 12px;
+}
+.preview-btn {
+    background: #eee;
+    border: none;
+    padding: 6px 16px;
+    border-radius: 40px;
+    font-family: "Coolvetica", sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.preview-btn:hover {
+    background: #ddd;
+}
+.remove-btn {
+    background: #ffebee;
+    color: #b71c1c;
+}
+.remove-btn:hover {
+    background: #ffcdd2;
+}
+
+/* Modal Footer Buttons */
+.modal-footer {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 20px;
+}
+.action_btn {
+    font-family: "Coolvetica", sans-serif;
+    letter-spacing: 0.5px;
+    text-align: center;
+    border-radius: 50px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 10px 20px;
+    font-size: 15px;
+    min-width: 100px;
+}
+.submit_btn {
+    background-color: #6b3282;
+    color: #fff7ec;
+}
+.submit_btn:hover {
+    transform: scale(1.03);
+    background-color: #7e3e96;
+}
+.cancel_btn {
+    background-color: #999999;
+    color: #fff7ec;
+}
+.cancel_btn:hover {
+    transform: scale(1.03);
+    background-color: #aaaaaa;
+}
+
+/* Mobile Responsive */
+@media (max-width: 600px) {
+    body {
+        overflow-x: hidden;
+    }
+    .modal-container {
+        width: calc(100% - 30px);
+        padding: 20px;
+        margin: 10px auto;
+    }
+    .modal-footer {
+        flex-direction: column-reverse;
+        gap: 10px;
+    }
+    .action_btn {
+        width: 100%;
+    }
+    .qr-code-img {
+        width: 120px;
+        height: 120px;
+    }
+    .warning-title,
+    .confirmation-title {
+        font-size: 24px;
+    }
+    .preview-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+    .preview-btn {
+        width: 100%;
+    }
+}
+
+/* Scrollbar inside modal */
+.modal-container::-webkit-scrollbar {
+    width: 6px;
+}
+.modal-container::-webkit-scrollbar-track {
+    background: #f0e6d8;
+    border-radius: 10px;
+}
+.modal-container::-webkit-scrollbar-thumb {
+    background: #6b3282;
+    border-radius: 10px;
+}
