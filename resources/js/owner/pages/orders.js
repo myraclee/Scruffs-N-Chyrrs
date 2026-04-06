@@ -24,6 +24,7 @@ const detailCustomerName = document.getElementById("detailCustomerName");
 const detailCustomerContact = document.getElementById("detailCustomerContact");
 const detailCustomerEmail = document.getElementById("detailCustomerEmail");
 const detailDriveLink = document.getElementById("detailDriveLink");
+const detailDriveLinkHint = document.getElementById("detailDriveLinkHint");
 const detailItemsBody = document.getElementById("detailItemsBody");
 const detailOrderTotal = document.getElementById("detailOrderTotal");
 
@@ -60,6 +61,52 @@ const statusLabel = {
 };
 
 const NON_EDITABLE_STATUSES = ["completed", "cancelled"];
+
+const normalizeDriveLink = (value) =>
+    typeof value === "string" ? value.trim() : "";
+
+const driveLinkIdPattern = /^[A-Za-z0-9_-]+$/;
+
+function isValidGoogleDriveUrl(url) {
+    try {
+        const parsedUrl = new URL(url);
+
+        if (parsedUrl.protocol !== "https:") {
+            return false;
+        }
+
+        if (parsedUrl.hostname !== "drive.google.com") {
+            return false;
+        }
+
+        const normalizedPath = parsedUrl.pathname.replace(/\/+$/, "") || "/";
+
+        if (
+            normalizedPath === "/" ||
+            normalizedPath === "/drive" ||
+            normalizedPath.startsWith("/drive/")
+        ) {
+            return true;
+        }
+
+        if (/^\/drive\/folders\/[A-Za-z0-9_-]+$/.test(normalizedPath)) {
+            return true;
+        }
+
+        if (/^\/file\/d\/[A-Za-z0-9_-]+(?:\/.*)?$/.test(normalizedPath)) {
+            return true;
+        }
+
+        if (normalizedPath === "/open" || normalizedPath === "/uc") {
+            const id = parsedUrl.searchParams.get("id");
+            return Boolean(id && driveLinkIdPattern.test(id));
+        }
+
+        return false;
+    } catch {
+        return false;
+    }
+}
 
 document.addEventListener("DOMContentLoaded", async () => {
     bindEvents();
@@ -229,7 +276,15 @@ function bindEvents() {
             return;
         }
 
-        detailDraft.general_drive_link = detailDriveLinkInput.value.trim();
+        const normalizedDriveLink = normalizeDriveLink(
+            detailDriveLinkInput.value,
+        );
+
+        if (detailDriveLinkInput.value !== normalizedDriveLink) {
+            detailDriveLinkInput.value = normalizedDriveLink;
+        }
+
+        detailDraft.general_drive_link = normalizedDriveLink;
     });
 
     detailItemsBody?.addEventListener("input", handleDetailInputChange);
@@ -290,11 +345,11 @@ async function loadOrders() {
                             <span class="status_label">Order Status:</span>
                             <select class="status_select ${statusClass(group.status)}" data-status-order="${group.id}" data-current-status="${group.status}">
                                 ${Object.entries(statusLabel)
-                                    .map(
-                                        ([value, label]) =>
-                                            `<option value="${value}" ${group.status === value ? "selected" : ""}>${label}</option>`,
-                                    )
-                                    .join("")}
+                    .map(
+                        ([value, label]) =>
+                            `<option value="${value}" ${group.status === value ? "selected" : ""}>${label}</option>`,
+                    )
+                    .join("")}
                             </select>
                         </div>
 
@@ -434,6 +489,9 @@ function renderDriveLink() {
         const driveLink = (currentDetailGroup?.general_drive_link || "").trim();
         detailDriveLink.style.display = "inline";
         detailDriveLinkInput.style.display = "none";
+        if (detailDriveLinkHint) {
+            detailDriveLinkHint.style.display = "none";
+        }
 
         if (driveLink) {
             detailDriveLink.textContent = driveLink;
@@ -452,6 +510,9 @@ function renderDriveLink() {
 
     detailDriveLink.style.display = "none";
     detailDriveLinkInput.style.display = "block";
+    if (detailDriveLinkHint) {
+        detailDriveLinkHint.style.display = "block";
+    }
     detailDriveLinkInput.value = detailDraft?.general_drive_link || "";
 }
 
@@ -541,25 +602,25 @@ function renderOptionEditors(orderDraft) {
     return `
     <div class="detail_option_fields">
       ${optionSchema
-          .map((option) => {
-              const optionId = Number(option.id);
-              const selectedOptionTypeId = Number(
-                  orderDraft.selected_options?.[String(optionId)] ??
-                      orderDraft.selected_options?.[optionId] ??
-                      option.selected_type_id ??
-                      "",
-              );
+            .map((option) => {
+                const optionId = Number(option.id);
+                const selectedOptionTypeId = Number(
+                    orderDraft.selected_options?.[String(optionId)] ??
+                    orderDraft.selected_options?.[optionId] ??
+                    option.selected_type_id ??
+                    "",
+                );
 
-              const typeOptions = (option.types || [])
-                  .map((type) => {
-                      const typeId = Number(type.id);
-                      const isSelected = selectedOptionTypeId === typeId;
+                const typeOptions = (option.types || [])
+                    .map((type) => {
+                        const typeId = Number(type.id);
+                        const isSelected = selectedOptionTypeId === typeId;
 
-                      return `<option value="${typeId}" ${isSelected ? "selected" : ""}>${escapeHtml(type.type_name || "Option")}</option>`;
-                  })
-                  .join("");
+                        return `<option value="${typeId}" ${isSelected ? "selected" : ""}>${escapeHtml(type.type_name || "Option")}</option>`;
+                    })
+                    .join("");
 
-              return `
+                return `
         <label class="detail_option_field">
           <span class="detail_option_field_label">${escapeHtml(option.label || "Option")}</span>
           <select class="detail_option_select" data-edit-order-id="${orderDraft.id}" data-edit-option-id="${optionId}">
@@ -567,8 +628,8 @@ function renderOptionEditors(orderDraft) {
           </select>
         </label>
       `;
-          })
-          .join("")}
+            })
+            .join("")}
     </div>
   `;
 }
@@ -629,7 +690,7 @@ function createDetailDraft(group) {
                 min_order_quantity: Number(order.min_order_quantity || 1),
                 rush_fee_id:
                     order.rush_fee_id === null ||
-                    order.rush_fee_id === undefined
+                        order.rush_fee_id === undefined
                         ? null
                         : Number(order.rush_fee_id),
                 special_instructions: order.special_instructions || "",
@@ -794,6 +855,13 @@ async function saveDetailsEdits() {
 function validateDetailDraft(draft) {
     if (!draft || !Array.isArray(draft.orders) || draft.orders.length === 0) {
         return "At least one order line is required.";
+    }
+
+    const normalizedDriveLink = normalizeDriveLink(draft.general_drive_link);
+    draft.general_drive_link = normalizedDriveLink;
+
+    if (normalizedDriveLink && !isValidGoogleDriveUrl(normalizedDriveLink)) {
+        return "Main Drive Link must be a valid Google Drive URL.";
     }
 
     for (const order of draft.orders) {

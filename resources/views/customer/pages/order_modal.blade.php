@@ -13,7 +13,11 @@
         <div class="order_modal_form">
             <div class="order_modal_section">
                 <h3 class="order_modal_section_title">Main Drive Link</h3>
-                <input type="text" id="generalDriveLink" class="order_modal_drive_input" placeholder="Paste your main Google Drive folder link here..." required>
+                <div class="order_modal_drive_input_wrapper">
+                    <input type="text" id="generalDriveLink" class="order_modal_drive_input" placeholder="Paste your main Google Drive folder link here..." required>
+                </div>
+                <p class="order_modal_drive_hint">Accepted: <code>https://drive.google.com/drive/folders/{id}</code>, <code>https://drive.google.com/file/d/{id}/view</code>, <code>https://drive.google.com/open?id={id}</code>, <code>https://drive.google.com/uc?id={id}</code>.</p>
+                <p id="generalDriveLinkError" class="order_modal_drive_error" hidden></p>
             </div>
 
             <div class="order_modal_price_divider"></div>

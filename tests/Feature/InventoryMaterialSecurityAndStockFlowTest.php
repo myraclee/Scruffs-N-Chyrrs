@@ -240,7 +240,7 @@ class InventoryMaterialSecurityAndStockFlowTest extends TestCase
 
         $checkoutResponse = $this->actingAs($customer)
             ->postJson('/api/customer-cart/checkout', [
-                'general_drive_link' => 'https://drive.google.com/test-checkout',
+                'general_drive_link' => 'https://drive.google.com/drive/folders/test-checkout',
             ]);
 
         $checkoutResponse
@@ -304,7 +304,7 @@ class InventoryMaterialSecurityAndStockFlowTest extends TestCase
 
         $response = $this->actingAs($customer)
             ->postJson('/api/customer-cart/checkout', [
-                'general_drive_link' => 'https://drive.google.com/test-shortage',
+                'general_drive_link' => 'https://drive.google.com/drive/folders/test-shortage',
             ]);
 
         $response
@@ -340,7 +340,7 @@ class InventoryMaterialSecurityAndStockFlowTest extends TestCase
 
         $checkoutResponse = $this->actingAs($customer)
             ->postJson('/api/customer-cart/checkout', [
-                'general_drive_link' => 'https://drive.google.com/no-restore-case',
+                'general_drive_link' => 'https://drive.google.com/drive/folders/no-restore-case',
             ])
             ->assertOk();
 
@@ -381,7 +381,7 @@ class InventoryMaterialSecurityAndStockFlowTest extends TestCase
                     (string) $fixture['option']->id => $fixture['optionType']->id,
                 ],
                 'quantity' => 2,
-                'general_drive_link' => 'https://drive.google.com/direct-order',
+                'general_drive_link' => 'https://drive.google.com/drive/folders/direct-order',
             ]);
 
         $response
@@ -424,7 +424,7 @@ class InventoryMaterialSecurityAndStockFlowTest extends TestCase
 
         $checkoutResponse = $this->actingAs($customer)
             ->postJson('/api/customer-cart/checkout', [
-                'general_drive_link' => 'https://drive.google.com/sum-rules-case',
+                'general_drive_link' => 'https://drive.google.com/drive/folders/sum-rules-case',
             ]);
 
         $checkoutResponse
@@ -483,7 +483,7 @@ class InventoryMaterialSecurityAndStockFlowTest extends TestCase
 
         $checkoutResponse = $this->actingAs($customer)
             ->postJson('/api/customer-cart/checkout', [
-                'general_drive_link' => 'https://drive.google.com/selected-only-checkout',
+                'general_drive_link' => 'https://drive.google.com/drive/folders/selected-only-checkout',
             ]);
 
         $checkoutResponse
@@ -593,7 +593,7 @@ class InventoryMaterialSecurityAndStockFlowTest extends TestCase
 
         $checkoutResponse = $this->actingAs($customer)
             ->postJson('/api/customer-cart/checkout', [
-                'general_drive_link' => 'https://drive.google.com/dedupe-highest-checkout',
+                'general_drive_link' => 'https://drive.google.com/drive/folders/dedupe-highest-checkout',
             ]);
 
         $checkoutResponse
@@ -670,7 +670,7 @@ class InventoryMaterialSecurityAndStockFlowTest extends TestCase
 
         $response = $this->actingAs($customer)
             ->postJson('/api/customer-cart/checkout', [
-                'general_drive_link' => 'https://drive.google.com/missing-mapping',
+                'general_drive_link' => 'https://drive.google.com/drive/folders/missing-mapping',
             ]);
 
         $response
@@ -730,7 +730,7 @@ class InventoryMaterialSecurityAndStockFlowTest extends TestCase
                 'order_template_id' => $template->id,
                 'selected_options' => ['dummy' => 99],
                 'quantity' => 1,
-                'general_drive_link' => 'https://drive.google.com/no-options-blocked',
+                'general_drive_link' => 'https://drive.google.com/drive/folders/no-options-blocked',
             ]);
 
         $response

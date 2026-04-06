@@ -7,6 +7,7 @@ use App\Exceptions\InsufficientMaterialStockException;
 use App\Exceptions\InvalidInventoryConfigurationException;
 use App\Models\CustomerOrderGroup;
 use App\Models\RushFee;
+use App\Rules\GoogleDriveUrl;
 use App\Services\InventoryStockService;
 use App\Services\OrderPricingService;
 use Illuminate\Http\JsonResponse;
@@ -136,8 +137,10 @@ class OwnerOrderController extends Controller
             ], 422);
         }
 
+        $this->normalizeGeneralDriveLink($request);
+
         $validated = $request->validate([
-            'general_drive_link' => 'sometimes|nullable|string|max:2048',
+            'general_drive_link' => ['sometimes', 'nullable', 'string', 'max:2048', new GoogleDriveUrl()],
             'orders' => 'required|array|min:1',
             'orders.*.id' => 'required|integer',
             'orders.*.selected_options' => 'required|array|min:1',
@@ -536,5 +539,16 @@ class OwnerOrderController extends Controller
             })
             ->values()
             ->all();
+    }
+
+    private function normalizeGeneralDriveLink(Request $request): void
+    {
+        if (! $request->has('general_drive_link')) {
+            return;
+        }
+
+        $request->merge([
+            'general_drive_link' => GoogleDriveUrl::normalize($request->input('general_drive_link')),
+        ]);
     }
 }

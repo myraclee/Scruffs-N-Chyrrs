@@ -69,7 +69,7 @@ class OrderPricingCombinationCompatibilityTest extends TestCase
                     (string) $fixture['size_option']->id => $fixture['size_2x2']->id,
                 ],
                 'quantity' => 1,
-                'general_drive_link' => 'https://drive.google.com/compat-order',
+                'general_drive_link' => 'https://drive.google.com/drive/folders/compat-order',
             ]);
 
         $response

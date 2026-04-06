@@ -433,6 +433,32 @@
     box-shadow: 0 0 0 4px rgba(104, 44, 122, 0.1);
 }
 
+.order_modal_drive_input.input_error {
+    border-color: #d32f2f;
+    box-shadow: 0 0 0 4px rgba(211, 47, 47, 0.12);
+}
+
+.order_modal_drive_error {
+    margin: 8px 2px 0;
+    color: #c62828;
+    font-family: 'Coolvetica', sans-serif;
+    font-size: 13px;
+    line-height: 1.35;
+}
+
+.order_modal_drive_hint {
+    margin: 8px 2px 0;
+    color: #6b5f75;
+    font-family: 'Coolvetica', sans-serif;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.order_modal_drive_hint code {
+    font-family: 'Coolvetica', sans-serif;
+    color: #5b3a68;
+}
+
 .drive_input_icon {
     position: absolute;
     right: 14px;
