@@ -167,7 +167,6 @@ class MaterialController extends Controller
         try {
             DB::transaction(function () use ($material) {
                 $material->consumptions()->delete();
-                $material->products()->detach();
                 $material->delete();
             });
 
@@ -246,7 +245,10 @@ class MaterialController extends Controller
                 continue;
             }
 
-            $normalized[$key]['quantity'] += $quantity;
+            $normalized[$key]['quantity'] = max(
+                (int) $normalized[$key]['quantity'],
+                $quantity,
+            );
         }
 
         return array_values($normalized);
@@ -307,27 +309,6 @@ class MaterialController extends Controller
         if (! empty($rows)) {
             $material->consumptions()->createMany($rows);
         }
-
-        $legacyProductSync = [];
-        foreach ($rows as $row) {
-            if ($row['order_template_option_type_id'] !== null) {
-                continue;
-            }
-
-            $productId = (int) $row['product_id'];
-            if (! isset($legacyProductSync[$productId])) {
-                $legacyProductSync[$productId] = ['quantity' => 0];
-            }
-
-            $legacyProductSync[$productId]['quantity'] += (int) $row['quantity'];
-        }
-
-        if (! empty($legacyProductSync)) {
-            $material->products()->sync($legacyProductSync);
-            return;
-        }
-
-        $material->products()->detach();
     }
 
     /**

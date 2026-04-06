@@ -38,8 +38,8 @@ class InventoryUiContractTest extends TestCase
         $blade = file_get_contents(base_path('resources/views/owner/pages/inventory.blade.php'));
 
         $this->assertIsString($blade);
-        $this->assertStringContainsString('Option-specific mappings are checked first.', $blade);
-        $this->assertStringContainsString('Any Option fallback applies only when no specific mapping matches.', $blade);
+        $this->assertStringContainsString('Any Option fallback applies to all selections.', $blade);
+        $this->assertStringContainsString('If one material matches multiple rules, the highest quantity is used.', $blade);
     }
 
     public function test_inventory_status_cards_support_show_more_and_healthy_messages(): void

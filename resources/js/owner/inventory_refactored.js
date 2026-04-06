@@ -41,6 +41,9 @@ const deleteMaterialConfirmModal = document.getElementById(
 const deleteMaterialConfirmMessage = document.getElementById(
     "deleteMaterialConfirmMessage",
 );
+const deleteMaterialCancelBtn = document.getElementById(
+    "deleteMaterialCancelBtn",
+);
 const deleteMaterialConfirmBtn = document.getElementById(
     "deleteMaterialConfirmBtn",
 );
@@ -83,6 +86,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         !deleteMaterialConfirmOverlay ||
         !deleteMaterialConfirmModal ||
         !deleteMaterialConfirmMessage ||
+        !deleteMaterialCancelBtn ||
         !deleteMaterialConfirmBtn
     ) {
         return;
@@ -224,6 +228,14 @@ function setupEventListeners() {
         }
     });
 
+    deleteMaterialCancelBtn.addEventListener("click", () => {
+        if (isDeletingMaterial) {
+            return;
+        }
+
+        closeDeleteMaterialConfirm();
+    });
+
     deleteMaterialConfirmBtn.addEventListener("click", async () => {
         await confirmDeleteMaterial();
     });
@@ -254,33 +266,39 @@ function buildConsumptionKey(productId, optionTypeId = null) {
     return `${productId}:${optionTypeId ?? "any"}`;
 }
 
-function getProductOptionTypeEntries(product) {
+function getProductOptionGroups(product) {
     const orderTemplate = product.order_template;
     const options = Array.isArray(orderTemplate?.options)
         ? orderTemplate.options
         : [];
 
-    const entries = [];
+    return options
+        .map((option) => {
+            const optionTypes = Array.isArray(option.option_types)
+                ? option.option_types
+                : [];
 
-    options.forEach((option) => {
-        const optionTypes = Array.isArray(option.option_types)
-            ? option.option_types
-            : [];
-
-        optionTypes.forEach((optionType) => {
-            entries.push({
-                option_type_id: Number(optionType.id),
+            return {
                 option_label: option.label,
-                option_type_name: optionType.type_name,
-                position: Number(optionType.position ?? 0),
-            });
-        });
-    });
-
-    return entries;
+                option_types: optionTypes
+                    .filter((optionType) => optionType.is_available !== false)
+                    .map((optionType) => ({
+                        option_type_id: Number(optionType.id),
+                        option_type_name: optionType.type_name,
+                        position: Number(optionType.position ?? 0),
+                    }))
+                    .sort((a, b) => a.position - b.position),
+            };
+        })
+        .filter((group) => group.option_types.length > 0);
 }
 
-function buildConsumptionItemMarkup(modePrefix, product, optionTypeEntry = null) {
+function buildConsumptionItemMarkup(
+    modePrefix,
+    product,
+    optionGroupLabel = null,
+    optionTypeEntry = null,
+) {
     const productId = Number(product.id);
     const optionTypeId = optionTypeEntry
         ? Number(optionTypeEntry.option_type_id)
@@ -288,11 +306,11 @@ function buildConsumptionItemMarkup(modePrefix, product, optionTypeEntry = null)
     const key = buildConsumptionKey(productId, optionTypeId);
 
     const labelText = optionTypeEntry
-        ? `${escapeHtml(optionTypeEntry.option_label)}: ${escapeHtml(optionTypeEntry.option_type_name)}`
+        ? `${escapeHtml(optionTypeEntry.option_type_name)}`
         : "Any Option (Fallback)";
 
     const quantityAriaLabel = optionTypeEntry
-        ? `Quantity for ${product.name} - ${optionTypeEntry.option_label}: ${optionTypeEntry.option_type_name}`
+        ? `Quantity for ${product.name} - ${optionGroupLabel}: ${optionTypeEntry.option_type_name}`
         : `Fallback quantity for ${product.name}`;
 
     return `
@@ -325,25 +343,51 @@ function buildConsumptionItemMarkup(modePrefix, product, optionTypeEntry = null)
 }
 
 function renderProductConsumptionGroup(modePrefix, product) {
-    const optionTypeEntries = getProductOptionTypeEntries(product);
+    const optionGroups = getProductOptionGroups(product);
 
-    const rowsMarkup = [buildConsumptionItemMarkup(modePrefix, product)];
+    const fallbackMarkup = `
+        <div class="consumed_option_group">
+            <p class="consumed_option_group_title">Any Option Fallback</p>
+            <div class="consumed_group_rows">
+                ${buildConsumptionItemMarkup(modePrefix, product)}
+            </div>
+        </div>
+    `;
 
-    optionTypeEntries.forEach((entry) => {
-        rowsMarkup.push(buildConsumptionItemMarkup(modePrefix, product, entry));
-    });
+    const groupedOptionMarkup = optionGroups
+        .map((group) => {
+            const rows = group.option_types
+                .map((entry) =>
+                    buildConsumptionItemMarkup(
+                        modePrefix,
+                        product,
+                        group.option_label,
+                        entry,
+                    ),
+                )
+                .join("");
 
-    const optionInfo = optionTypeEntries.length
+            return `
+                <div class="consumed_option_group">
+                    <p class="consumed_option_group_title">${escapeHtml(group.option_label)}</p>
+                    <div class="consumed_group_rows">
+                        ${rows}
+                    </div>
+                </div>
+            `;
+        })
+        .join("");
+
+    const optionInfo = optionGroups.length
         ? ""
         : '<p class="consumed_note_inline">No template options found for this product. Only fallback mapping is available.</p>';
 
     return `
         <div class="consumed_product_group">
             <p class="consumed_group_title">${escapeHtml(product.name)}</p>
+            ${fallbackMarkup}
             ${optionInfo}
-            <div class="consumed_group_rows">
-                ${rowsMarkup.join("")}
-            </div>
+            ${groupedOptionMarkup}
         </div>
     `;
 }
@@ -749,7 +793,7 @@ function openDeleteMaterialConfirm(materialId, materialName, triggerElement) {
     deleteMaterialConfirmOverlay.classList.add("active");
     deleteMaterialConfirmOverlay.setAttribute("aria-hidden", "false");
     deleteMaterialConfirmModal.setAttribute("aria-hidden", "false");
-    deleteMaterialConfirmBtn.focus();
+    deleteMaterialCancelBtn.focus();
 }
 
 function closeDeleteMaterialConfirm(force = false) {
@@ -809,6 +853,7 @@ async function confirmDeleteMaterial() {
 function setDeleteModalBusyState(isBusy) {
     isDeletingMaterial = isBusy;
 
+    deleteMaterialCancelBtn.disabled = isBusy;
     deleteMaterialConfirmBtn.disabled = isBusy;
     deleteMaterialConfirmBtn.textContent = isBusy
         ? "Deleting..."

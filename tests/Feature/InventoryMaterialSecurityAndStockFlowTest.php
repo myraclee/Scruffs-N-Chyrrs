@@ -446,7 +446,7 @@ class InventoryMaterialSecurityAndStockFlowTest extends TestCase
         $this->assertSame(26, (int) $fixture['material']->units);
     }
 
-    public function test_checkout_ignores_unrelated_fallback_shortage_when_selected_option_rules_exist(): void
+    public function test_checkout_applies_fallback_rules_and_blocks_when_fallback_material_is_insufficient(): void
     {
         $customer = User::factory()->create(['user_type' => 'customer']);
         $fixture = $this->createInventoryFixture(materialUnits: 10, pivotQuantity: 1);
@@ -487,24 +487,199 @@ class InventoryMaterialSecurityAndStockFlowTest extends TestCase
             ]);
 
         $checkoutResponse
+            ->assertStatus(422)
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('shortages.0.material_id', $unrelatedFallbackMaterial->id)
+            ->assertJsonPath('shortages.0.required', 5)
+            ->assertJsonPath('shortages.0.available', 0)
+            ->assertJsonPath('shortages.0.deficit', 5);
+
+        $fixture['material']->refresh();
+        $unrelatedFallbackMaterial->refresh();
+
+        $this->assertSame(10, (int) $fixture['material']->units);
+        $this->assertSame(0, (int) $unrelatedFallbackMaterial->units);
+    }
+
+    public function test_checkout_deduplicates_same_material_and_uses_highest_quantity_across_selected_options(): void
+    {
+        $customer = User::factory()->create(['user_type' => 'customer']);
+
+        $product = Product::create([
+            'name' => 'Dedup Product '.uniqid(),
+            'description' => 'Dedupe fixture',
+            'cover_image_path' => '/images/fixture.png',
+        ]);
+
+        $material = Material::create([
+            'name' => 'Dedup Material '.uniqid(),
+            'units' => 40,
+        ]);
+
+        $template = OrderTemplate::create([
+            'product_id' => $product->id,
+        ]);
+
+        $typeOption = OrderTemplateOption::create([
+            'order_template_id' => $template->id,
+            'label' => 'Type',
+            'position' => 1,
+        ]);
+
+        $kisscutType = OrderTemplateOptionType::create([
+            'order_template_option_id' => $typeOption->id,
+            'type_name' => 'Kisscut',
+            'is_available' => true,
+            'position' => 1,
+        ]);
+
+        $laminationOption = OrderTemplateOption::create([
+            'order_template_id' => $template->id,
+            'label' => 'Lamination',
+            'position' => 2,
+        ]);
+
+        $glossyType = OrderTemplateOptionType::create([
+            'order_template_option_id' => $laminationOption->id,
+            'type_name' => 'Glossy',
+            'is_available' => true,
+            'position' => 1,
+        ]);
+
+        MaterialConsumption::create([
+            'material_id' => $material->id,
+            'product_id' => $product->id,
+            'order_template_option_type_id' => $kisscutType->id,
+            'quantity' => 2,
+        ]);
+
+        MaterialConsumption::create([
+            'material_id' => $material->id,
+            'product_id' => $product->id,
+            'order_template_option_type_id' => $glossyType->id,
+            'quantity' => 5,
+        ]);
+
+        $combinationIds = [$kisscutType->id, $glossyType->id];
+        sort($combinationIds);
+
+        OrderTemplatePricing::create([
+            'order_template_id' => $template->id,
+            'combination_key' => implode(',', $combinationIds),
+            'price' => 120,
+        ]);
+
+        OrderTemplateMinOrder::create([
+            'order_template_id' => $template->id,
+            'min_quantity' => 1,
+        ]);
+
+        OrderTemplateLayoutFee::create([
+            'order_template_id' => $template->id,
+            'fee_amount' => 0,
+        ]);
+
+        $this->actingAs($customer)
+            ->postJson('/api/customer-cart/items', [
+                'product_id' => $product->id,
+                'order_template_id' => $template->id,
+                'selected_options' => [
+                    (string) $typeOption->id => $kisscutType->id,
+                    (string) $laminationOption->id => $glossyType->id,
+                ],
+                'quantity' => 3,
+            ])
+            ->assertCreated();
+
+        $checkoutResponse = $this->actingAs($customer)
+            ->postJson('/api/customer-cart/checkout', [
+                'general_drive_link' => 'https://drive.google.com/dedupe-highest-checkout',
+            ]);
+
+        $checkoutResponse
             ->assertOk()
             ->assertJsonPath('success', true);
 
         $group = CustomerOrderGroup::findOrFail($checkoutResponse->json('data.order_group_id'));
         $requirements = $group->inventory_material_requirements ?? [];
-        $requiredMaterialIds = array_map(
-            fn (array $row): int => (int) ($row['material_id'] ?? 0),
-            $requirements,
+
+        $this->assertSame(15, (int) ($requirements[0]['required'] ?? 0));
+        $this->assertSame(
+            'highest_quantity_wins',
+            (string) ($requirements[0]['breakdown'][0]['dedupe_strategy'] ?? ''),
         );
+        $this->assertSame(2, (int) ($requirements[0]['breakdown'][0]['material_match_count'] ?? 0));
 
-        $this->assertContains((int) $fixture['material']->id, $requiredMaterialIds);
-        $this->assertNotContains((int) $unrelatedFallbackMaterial->id, $requiredMaterialIds);
+        $material->refresh();
+        $this->assertSame(25, (int) $material->units);
+    }
 
-        $fixture['material']->refresh();
-        $unrelatedFallbackMaterial->refresh();
+    public function test_checkout_blocks_when_product_has_no_material_mapping_rows(): void
+    {
+        $customer = User::factory()->create(['user_type' => 'customer']);
 
-        $this->assertSame(9, (int) $fixture['material']->units);
-        $this->assertSame(0, (int) $unrelatedFallbackMaterial->units);
+        $product = Product::create([
+            'name' => 'No Mapping Product '.uniqid(),
+            'description' => 'No mapping fixture',
+            'cover_image_path' => '/images/fixture.png',
+        ]);
+
+        $template = OrderTemplate::create([
+            'product_id' => $product->id,
+        ]);
+
+        $option = OrderTemplateOption::create([
+            'order_template_id' => $template->id,
+            'label' => 'Type',
+            'position' => 1,
+        ]);
+
+        $optionType = OrderTemplateOptionType::create([
+            'order_template_option_id' => $option->id,
+            'type_name' => 'Diecut',
+            'is_available' => true,
+            'position' => 1,
+        ]);
+
+        OrderTemplatePricing::create([
+            'order_template_id' => $template->id,
+            'combination_key' => (string) $optionType->id,
+            'price' => 100,
+        ]);
+
+        OrderTemplateMinOrder::create([
+            'order_template_id' => $template->id,
+            'min_quantity' => 1,
+        ]);
+
+        OrderTemplateLayoutFee::create([
+            'order_template_id' => $template->id,
+            'fee_amount' => 0,
+        ]);
+
+        $this->actingAs($customer)
+            ->postJson('/api/customer-cart/items', [
+                'product_id' => $product->id,
+                'order_template_id' => $template->id,
+                'selected_options' => [
+                    (string) $option->id => $optionType->id,
+                ],
+                'quantity' => 2,
+            ])
+            ->assertCreated();
+
+        $response = $this->actingAs($customer)
+            ->postJson('/api/customer-cart/checkout', [
+                'general_drive_link' => 'https://drive.google.com/missing-mapping',
+            ]);
+
+        $response
+            ->assertStatus(422)
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('configuration_issues.0.product_id', $product->id)
+            ->assertJsonPath('configuration_issues.0.issue', 'missing_product_option_mappings');
+
+        $this->assertDatabaseCount('customer_order_groups', 0);
     }
 
     public function test_direct_order_is_blocked_when_product_template_has_no_options(): void

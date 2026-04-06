@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Material;
+use App\Models\MaterialConsumption;
 use App\Models\OrderTemplate;
 use App\Models\OrderTemplateOption;
 use App\Models\OrderTemplateOptionType;
@@ -243,6 +245,20 @@ class OrderPricingCombinationCompatibilityTest extends TestCase
             'type_name' => '3x3 inches',
             'is_available' => true,
             'position' => 2,
+        ]);
+
+        $material = Material::create([
+            'name' => $name . ' Material',
+            'units' => 1000,
+            'low_stock_threshold' => 5,
+            'description' => 'Fixture material for strict inventory mapping checks',
+        ]);
+
+        MaterialConsumption::create([
+            'material_id' => $material->id,
+            'product_id' => $product->id,
+            'order_template_option_type_id' => null,
+            'quantity' => 1,
         ]);
 
         return [

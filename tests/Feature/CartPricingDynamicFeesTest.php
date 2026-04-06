@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\CustomerCart;
 use App\Models\CustomerCartItem;
+use App\Models\Material;
+use App\Models\MaterialConsumption;
 use App\Models\OrderTemplate;
 use App\Models\OrderTemplateLayoutFee;
 use App\Models\OrderTemplateMinOrder;
@@ -222,6 +224,20 @@ class CartPricingDynamicFeesTest extends TestCase
             'type_name' => 'Matte',
             'is_available' => true,
             'position' => 1,
+        ]);
+
+        $material = Material::create([
+            'name' => $name . ' Material',
+            'units' => 1000,
+            'low_stock_threshold' => 5,
+            'description' => 'Fixture material for strict inventory mapping checks',
+        ]);
+
+        MaterialConsumption::create([
+            'material_id' => $material->id,
+            'product_id' => $product->id,
+            'order_template_option_type_id' => null,
+            'quantity' => 1,
         ]);
 
         OrderTemplatePricing::create([

@@ -6,6 +6,7 @@ use App\Exceptions\InvalidInventoryConfigurationException;
 use App\Exceptions\InsufficientMaterialStockException;
 use App\Models\Material;
 use App\Models\MaterialConsumption;
+use App\Models\OrderTemplateOptionType;
 use App\Models\Product;
 
 class InventoryStockService
@@ -110,16 +111,27 @@ class InventoryStockService
             ->get()
             ->groupBy('product_id');
 
-        $legacyProducts = Product::with('materials:id,name,units')
-            ->whereIn('id', $productIds)
+        $optionTypeLookup = OrderTemplateOptionType::query()
+            ->whereIn('id', $selectedOptionTypeIds)
             ->get()
             ->keyBy('id');
 
         $requirements = [];
+        $mappingIssues = [];
 
         foreach ($normalizedLines as $line) {
             $lineRules = collect($consumptionRules->get($line['product_id'], collect()));
             $selectedIds = $line['selected_option_type_ids'];
+            $product = $products->get($line['product_id']);
+
+            if ($lineRules->isEmpty()) {
+                $mappingIssues[] = [
+                    'product_id' => (int) $line['product_id'],
+                    'product_name' => (string) ($product?->name ?? 'Unknown Product'),
+                    'issue' => 'missing_product_option_mappings',
+                ];
+                continue;
+            }
 
             $selectedOptionRules = $lineRules
                 ->filter(function (MaterialConsumption $rule) use ($selectedIds): bool {
@@ -135,48 +147,56 @@ class InventoryStockService
                 ->filter(fn (MaterialConsumption $rule): bool => $rule->order_template_option_type_id === null)
                 ->values();
 
-            $matchedRules = $selectedOptionRules->isNotEmpty()
-                ? $selectedOptionRules
-                : $fallbackRules;
+            foreach ($selectedIds as $selectedId) {
+                $hasSpecificRule = $selectedOptionRules
+                    ->contains(fn (MaterialConsumption $rule): bool => (int) $rule->order_template_option_type_id === (int) $selectedId);
 
-            if ($matchedRules->isEmpty()) {
-                $legacyProduct = $legacyProducts->get($line['product_id']);
-
-                if (! $legacyProduct) {
+                if ($hasSpecificRule || $fallbackRules->isNotEmpty()) {
                     continue;
                 }
 
-                foreach ($legacyProduct->materials as $material) {
-                    $perUnit = (int) ($material->pivot->quantity ?? 0);
+                $optionType = $optionTypeLookup->get((int) $selectedId);
 
-                    if ($perUnit <= 0) {
-                        continue;
-                    }
+                $mappingIssues[] = [
+                    'product_id' => (int) $line['product_id'],
+                    'product_name' => (string) ($product?->name ?? 'Unknown Product'),
+                    'issue' => 'missing_selected_option_material_mapping',
+                    'order_template_option_type_id' => (int) $selectedId,
+                    'option_type_name' => (string) ($optionType?->type_name ?? 'Unknown Option'),
+                ];
+            }
 
-                    $required = $line['quantity'] * $perUnit;
+            $candidateRules = $selectedOptionRules
+                ->concat($fallbackRules)
+                ->values();
 
-                    $this->appendRequirement($requirements, [
-                        'material_id' => (int) $material->id,
-                        'material_name' => (string) $material->name,
-                        'required' => $required,
-                    ], [
-                        'product_id' => (int) $legacyProduct->id,
-                        'product_name' => (string) $legacyProduct->name,
-                        'source' => 'legacy_product_fallback',
-                        'order_template_option_type_id' => null,
-                        'option_type_name' => null,
-                        'order_quantity' => (int) $line['quantity'],
-                        'consumption_quantity' => (int) $perUnit,
-                        'required' => (int) $required,
-                    ]);
-                }
-
+            if ($candidateRules->isEmpty()) {
                 continue;
             }
 
-            foreach ($matchedRules as $matchedRule) {
-                $perUnit = (int) $matchedRule->quantity;
+            $candidateRulesByMaterial = $candidateRules
+                ->groupBy(fn (MaterialConsumption $rule): int => (int) $rule->material_id);
 
+            foreach ($candidateRulesByMaterial as $ruleGroup) {
+                $chosenRule = $ruleGroup
+                    ->sort(function (MaterialConsumption $a, MaterialConsumption $b): int {
+                        $quantityCompare = (int) $b->quantity <=> (int) $a->quantity;
+                        if ($quantityCompare !== 0) {
+                            return $quantityCompare;
+                        }
+
+                        $aSpecific = $a->order_template_option_type_id !== null ? 1 : 0;
+                        $bSpecific = $b->order_template_option_type_id !== null ? 1 : 0;
+
+                        return $bSpecific <=> $aSpecific;
+                    })
+                    ->first();
+
+                if (! $chosenRule) {
+                    continue;
+                }
+
+                $perUnit = (int) $chosenRule->quantity;
                 if ($perUnit <= 0) {
                     continue;
                 }
@@ -184,24 +204,33 @@ class InventoryStockService
                 $required = $line['quantity'] * $perUnit;
 
                 $this->appendRequirement($requirements, [
-                    'material_id' => (int) $matchedRule->material_id,
-                    'material_name' => (string) ($matchedRule->material?->name ?? 'Unknown Material'),
+                    'material_id' => (int) $chosenRule->material_id,
+                    'material_name' => (string) ($chosenRule->material?->name ?? 'Unknown Material'),
                     'required' => $required,
                 ], [
-                    'product_id' => (int) $matchedRule->product_id,
-                    'product_name' => (string) ($matchedRule->product?->name ?? 'Unknown Product'),
-                    'source' => $matchedRule->order_template_option_type_id === null
+                    'product_id' => (int) $chosenRule->product_id,
+                    'product_name' => (string) ($chosenRule->product?->name ?? 'Unknown Product'),
+                    'source' => $chosenRule->order_template_option_type_id === null
                         ? 'any_option_fallback'
                         : 'selected_option_type',
-                    'order_template_option_type_id' => $matchedRule->order_template_option_type_id !== null
-                        ? (int) $matchedRule->order_template_option_type_id
+                    'order_template_option_type_id' => $chosenRule->order_template_option_type_id !== null
+                        ? (int) $chosenRule->order_template_option_type_id
                         : null,
-                    'option_type_name' => (string) ($matchedRule->optionType?->type_name ?? ''),
+                    'option_type_name' => (string) ($chosenRule->optionType?->type_name ?? ''),
                     'order_quantity' => (int) $line['quantity'],
                     'consumption_quantity' => (int) $perUnit,
+                    'material_match_count' => (int) $ruleGroup->count(),
+                    'dedupe_strategy' => 'highest_quantity_wins',
                     'required' => (int) $required,
                 ]);
             }
+        }
+
+        if (! empty($mappingIssues)) {
+            throw new InvalidInventoryConfigurationException(
+                $mappingIssues,
+                'Checkout is blocked: one or more selected options are missing material mappings.'
+            );
         }
 
         return array_values($requirements);
@@ -315,7 +344,7 @@ class InventoryStockService
     }
 
     /**
-        * @param array<int, array<string, mixed>> $requirements
+     * @param array<int, array<string, mixed>> $requirements
      */
     public function restoreFromRequirements(array $requirements): void
     {
@@ -348,16 +377,16 @@ class InventoryStockService
     }
 
     /**
-        * @param array<int, array{
-        *     product_id:int,
-        *     quantity:int,
-        *     selected_options?:array<int|string, int|string>,
-        *     selected_option_type_ids?:array<int, int>
-        * }> $orderLines
-        * @return array<int, array<string, mixed>>
+      * @param array<int, array{
+      *     product_id:int,
+      *     quantity:int,
+      *     selected_options?:array<int|string, int|string>,
+      *     selected_option_type_ids?:array<int, int>
+      * }> $orderLines
+      * @return array<int, array<string, mixed>>
      *
      * @throws InsufficientMaterialStockException
-        * @throws InvalidInventoryConfigurationException
+      * @throws InvalidInventoryConfigurationException
      */
     public function deductForOrderLines(array $orderLines): array
     {

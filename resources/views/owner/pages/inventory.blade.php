@@ -88,7 +88,7 @@
         <div class="input_group">
             <div class="consumed_header">
                 <label>Products Consumed <span style="color: #d94848;">*</span></label>
-                <span class="consumed_note">Option-specific mappings are checked first.<br>Any Option fallback applies only when no specific mapping matches.</span>
+                <span class="consumed_note">Any Option fallback applies to all selections.<br>If one material matches multiple rules, the highest quantity is used.</span>
             </div>
             
             <div class="consumed_list">
@@ -127,7 +127,7 @@
         <div class="input_group">
             <div class="consumed_header">
                 <label>Products Consumed <span style="color: #d94848;">*</span></label>
-                <span class="consumed_note">Option-specific mappings are checked first.<br>Any Option fallback applies only when no specific mapping matches.</span>
+                <span class="consumed_note">Any Option fallback applies to all selections.<br>If one material matches multiple rules, the highest quantity is used.</span>
             </div>
             
             <div class="consumed_list">
@@ -150,6 +150,7 @@
         </p>
         <small class="delete_subtext">This action cannot be undone.</small>
         <div class="delete_confirmation_actions">
+            <button type="button" class="cancel_delete_btn" id="deleteMaterialCancelBtn">Cancel</button>
             <button type="button" class="confirm_delete_btn" id="deleteMaterialConfirmBtn">Delete Material</button>
         </div>
     </div>

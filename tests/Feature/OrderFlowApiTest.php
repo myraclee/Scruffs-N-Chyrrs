@@ -28,6 +28,18 @@ class OrderFlowApiTest extends TestCase
         $customer = User::factory()->create();
         $fixture = $this->createTemplateFixture();
 
+        $material = Material::create([
+            'name' => 'Grouped Checkout Material '.uniqid(),
+            'units' => 50,
+        ]);
+
+        MaterialConsumption::create([
+            'material_id' => $material->id,
+            'product_id' => $fixture['product']->id,
+            'order_template_option_type_id' => $fixture['option_type']->id,
+            'quantity' => 1,
+        ]);
+
         $this->actingAs($customer);
 
         $addResponse = $this->postJson('/api/customer-cart/items', [

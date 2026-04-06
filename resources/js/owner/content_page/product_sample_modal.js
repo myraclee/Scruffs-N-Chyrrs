@@ -60,7 +60,7 @@ function validateSampleForm() {
     }
 
     const totalImages = existingSampleImages.length + currentSampleFiles.length;
-    const addBox = sampleImageGrid.querySelector(".sample_add_slot");
+    const addBox = sampleImageGrid.querySelector('.sample_add_slot');
 
     if (totalImages === 0) {
         if (addBox) addBox.classList.add("image_box_error");
@@ -84,7 +84,7 @@ function updateSampleCounter() {
     const total = existingSampleImages.length + currentSampleFiles.length;
     sampleImageCounter.textContent = `${total} / ${MAX_SAMPLE_IMAGES} images selected`;
 
-    const addBox = sampleImageGrid.querySelector(".sample_add_slot");
+    const addBox = sampleImageGrid.querySelector('.sample_add_slot');
     if (addBox) {
         addBox.style.display = total >= MAX_SAMPLE_IMAGES ? "none" : "flex";
         if (total > 0) {
@@ -99,7 +99,7 @@ function initSampleUploadBox() {
     const addBox = document.createElement("button");
 
     addBox.type = "button";
-    addBox.className = "image_slot plus sample_add_slot";
+    addBox.className = 'image_slot plus sample_add_slot';
     addBox.setAttribute("aria-label", "Add sample image");
 
     addBox.onclick = () => {
@@ -180,7 +180,7 @@ function buildSampleImageWrapper(src, isNew, identifier) {
 
 function populateSampleGrid() {
     initSampleUploadBox();
-    const addBox = sampleImageGrid.querySelector(".sample_add_slot");
+    const addBox = sampleImageGrid.querySelector('.sample_add_slot');
 
     existingSampleImages.forEach((img) => {
         const wrapper = buildSampleImageWrapper(
