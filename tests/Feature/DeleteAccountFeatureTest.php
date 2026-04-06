@@ -198,7 +198,16 @@ class DeleteAccountFeatureTest extends TestCase
 
         $response
             ->assertRedirect(route('home'))
-            ->assertSessionHas('success', 'Your account has been permanently deleted.');
+            ->assertSessionHas('success', 'Your account has been permanently deleted.')
+            ->assertHeader('Pragma', 'no-cache')
+            ->assertHeader('Expires', 'Fri, 01 Jan 1990 00:00:00 GMT')
+            ->assertHeader('Clear-Site-Data', '"cache", "cookies", "storage"');
+
+        $cacheControl = (string) $response->headers->get('Cache-Control');
+        $this->assertStringContainsString('no-store', $cacheControl);
+        $this->assertStringContainsString('no-cache', $cacheControl);
+        $this->assertStringContainsString('must-revalidate', $cacheControl);
+        $this->assertStringContainsString('max-age=0', $cacheControl);
 
         $this->assertGuest();
 

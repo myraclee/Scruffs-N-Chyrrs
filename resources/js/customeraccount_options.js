@@ -6,6 +6,28 @@ document.addEventListener("DOMContentLoaded", () => {
     const viewAccountButton = document.getElementById("viewAccountButton");
     const viewDashboardButton = document.getElementById("viewDashboardButton");
 
+    function clearAppClientAuthArtifacts() {
+        try {
+            sessionStorage.removeItem("auth_toast_message");
+        } catch (error) {
+            console.warn("Failed to clear session storage auth artifact", error);
+        }
+
+        try {
+            const keysToRemove = [];
+            for (let index = 0; index < localStorage.length; index += 1) {
+                const key = localStorage.key(index);
+                if (key && key.startsWith("form_state_")) {
+                    keysToRemove.push(key);
+                }
+            }
+
+            keysToRemove.forEach((key) => localStorage.removeItem(key));
+        } catch (error) {
+            console.warn("Failed to clear local storage auth artifacts", error);
+        }
+    }
+
     if (!trigger || !popup) return;
 
     // Toggle popup when clicking account trigger
@@ -43,7 +65,12 @@ document.addEventListener("DOMContentLoaded", () => {
         logoutButton.addEventListener("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
+            clearAppClientAuthArtifacts();
             logoutForm.submit();
+        });
+
+        logoutForm.addEventListener("submit", () => {
+            clearAppClientAuthArtifacts();
         });
     }
 });

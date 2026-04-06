@@ -10,6 +10,28 @@ document.addEventListener("DOMContentLoaded", () => {
     const logoutButton = document.getElementById("sidenavLogoutButton");
     const logoutForm = document.getElementById("ownerLogoutForm");
 
+    function clearAppClientAuthArtifacts() {
+        try {
+            sessionStorage.removeItem("auth_toast_message");
+        } catch (error) {
+            console.warn("Failed to clear session storage auth artifact", error);
+        }
+
+        try {
+            const keysToRemove = [];
+            for (let index = 0; index < localStorage.length; index += 1) {
+                const key = localStorage.key(index);
+                if (key && key.startsWith("form_state_")) {
+                    keysToRemove.push(key);
+                }
+            }
+
+            keysToRemove.forEach((key) => localStorage.removeItem(key));
+        } catch (error) {
+            console.warn("Failed to clear local storage auth artifacts", error);
+        }
+    }
+
     // --- 1. Sidenav Open/Close Logic ---
     function openNav() {
         body.classList.remove("sidenav-closed");
@@ -41,7 +63,14 @@ document.addEventListener("DOMContentLoaded", () => {
         logoutButton.addEventListener("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
+            clearAppClientAuthArtifacts();
             logoutForm.submit();
+        });
+    }
+
+    if (logoutForm) {
+        logoutForm.addEventListener("submit", () => {
+            clearAppClientAuthArtifacts();
         });
     }
 });

@@ -9,6 +9,7 @@ use App\Models\CustomerOrder;
 use App\Models\CustomerOrderGroup;
 use App\Models\Product;
 use App\Mail\PasswordResetCode;
+use Illuminate\Auth\SessionGuard;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +17,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class AuthController extends Controller
 {
@@ -239,7 +241,7 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('home');
+        return $this->buildSecureSignOutRedirect(routeName: 'home');
     }
 
     public function showEditProfile()
@@ -357,8 +359,58 @@ class AuthController extends Controller
             User::query()->whereKey($userId)->delete();
         });
 
-        return redirect()->route('home')
-            ->with('success', 'Your account has been permanently deleted.');
+        return $this->buildSecureSignOutRedirect(
+            routeName: 'home',
+            flashData: ['success' => 'Your account has been permanently deleted.'],
+        );
+    }
+
+    /**
+     * Build a hardened post-sign-out redirect response.
+     *
+     * This clears auth-related cookies where possible and asks modern browsers
+     * to clear cookies/storage/cache for the current origin.
+     *
+     * @param array<string, mixed> $flashData
+     */
+    private function buildSecureSignOutRedirect(string $routeName, array $flashData = []): RedirectResponse
+    {
+        $response = redirect()->route($routeName);
+
+        if ($flashData !== []) {
+            $response->with($flashData);
+        }
+
+        foreach ($this->getLogoutCookieNames() as $cookieName) {
+            $response->withCookie(cookie()->forget($cookieName));
+        }
+
+        $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+        $response->headers->set('Pragma', 'no-cache');
+        $response->headers->set('Expires', 'Fri, 01 Jan 1990 00:00:00 GMT');
+        $response->headers->set('Clear-Site-Data', '"cache", "cookies", "storage"');
+
+        return $response;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function getLogoutCookieNames(): array
+    {
+        $cookieNames = [
+            (string) config('session.cookie'),
+            'XSRF-TOKEN',
+        ];
+
+        $guard = Auth::guard('web');
+        if ($guard instanceof SessionGuard) {
+            /** @var string $recallerCookie */
+            $recallerCookie = $guard->getRecallerName();
+            $cookieNames[] = $recallerCookie;
+        }
+
+        return array_values(array_unique(array_filter($cookieNames)));
     }
 
     private function archiveDeletedAccountDashboardContributions(int $userId): void
@@ -649,7 +701,9 @@ class AuthController extends Controller
 
     public function showNewPassword()
     {
-        if (!session('verified_reset_email')) return redirect()->route('reset-password');
+        if (!session('verified_reset_email')) {
+            return redirect()->route('reset-password');
+        }
 
         return view('customer.password_page.new_password');
     }
@@ -662,7 +716,9 @@ class AuthController extends Controller
 
         $email = session('verified_reset_email');
 
-        if (!$email) return redirect()->route('reset-password');
+        if (!$email) {
+            return redirect()->route('reset-password');
+        }
 
         $user = User::where('email', $email)->first();
 
