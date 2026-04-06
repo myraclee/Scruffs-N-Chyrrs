@@ -27,8 +27,8 @@
             <button class="filter_btn" data-filter="approved">Order Approved</button>
             <button class="filter_btn" data-filter="preparing">Preparing Order</button>
             <button class="filter_btn" data-filter="ready">Ready for Ship</button>
-            <button class="filter_btn" data-filter="completed">Completed Orders</button>
-            <button class="filter_btn" data-filter="cancelled">Cancelled Orders</button>
+            <button class="filter_btn" data-filter="completed">Order Completed</button>
+            <button class="filter_btn" data-filter="cancelled">Order Cancelled</button>
         </div>
     </div>
 
@@ -100,8 +100,8 @@
                         <option value="approved">Order Approved</option>
                         <option value="preparing">Preparing Order</option>
                         <option value="ready">Ready for Shipping</option>
-                        <option value="completed">Completed Orders</option>
-                        <option value="cancelled">Cancelled Orders</option>
+                        <option value="completed">Order Completed</option>
+                        <option value="cancelled">Order Cancelled</option>
                     </select>
                 </div>
             </div>
@@ -124,6 +124,22 @@
         </div>
     </div>
 </div>
+
+<div class="modal_overlay" id="cancelConfirmModal" style="display: none; z-index: 1005;">
+        <div class="payment_modal_box" style="text-align: center; max-width: 400px; padding: 30px;">
+            <h3 class="payment_header" style="color: #d32f2f; margin-bottom: 10px;">Cancel Order?</h3>
+            <p class="payment_value" style="margin-bottom: 25px; font-size: 15px;">Are you sure you want to cancel this order? This action cannot be undone.</p>
+            
+            <div style="display: flex; gap: 15px; justify-content: center; margin-top: 10px;">
+                <button type="button" id="abortCancelBtn" style="flex: 1; padding: 12px; border-radius: 50px; background: transparent; border: 2px solid #ccc; color: #666; font-family: 'Coolvetica', sans-serif; font-size: 16px; cursor: pointer; transition: 0.2s;">
+                    No, Keep It
+                </button>
+                <button type="button" id="confirmCancelBtn" style="flex: 1; padding: 12px; border-radius: 50px; background: #d32f2f; border: none; color: white; font-family: 'Coolvetica', sans-serif; font-size: 16px; cursor: pointer; box-shadow: 0 4px 12px rgba(211, 47, 47, 0.2); transition: 0.2s;">
+                    Yes, Cancel
+                </button>
+            </div>
+        </div>
+    </div>
 
 @vite('resources/js/owner/pages/orders.js')
 @vite('resources/js/owner/animations.js')

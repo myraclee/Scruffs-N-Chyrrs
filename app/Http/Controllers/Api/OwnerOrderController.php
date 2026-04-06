@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Exceptions\InsufficientMaterialStockException;
 use App\Exceptions\InvalidInventoryConfigurationException;
 use App\Models\CustomerOrderGroup;
+use App\Models\Order;
 use App\Models\RushFee;
 use App\Services\InventoryStockService;
 use App\Services\OrderPricingService;
@@ -22,6 +23,161 @@ class OwnerOrderController extends Controller
     }
 
     public function index(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'status' => 'nullable|string',
+            'search' => 'nullable|string|max:120',
+            'per_page' => 'nullable|integer|min:1|max:100',
+        ]);
+
+        $perPage = (int) ($validated['per_page'] ?? 12);
+        $status = $validated['status'] ?? 'all'; 
+        
+        // 👉 ADDED THIS: Grab the search text the user typed
+        $search = trim((string) ($validated['search'] ?? '')); 
+        
+        // 1. Look at our REAL Order table
+        $query = Order::with(['user', 'items'])->latest();
+
+        // If they clicked a specific pill, filter the database!
+        if ($status !== 'all') {
+            $query->where('status', $status);
+        }
+
+        // 👉 ADDED THIS: The Search Bar Filter logic
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                // Search by Order ID
+                $q->where('id', 'like', "%{$search}%")
+                  // Or Search by Customer Name/Email
+                  ->orWhereHas('user', function ($userQuery) use ($search) {
+                      $userQuery->where('first_name', 'like', "%{$search}%")
+                                ->orWhere('last_name', 'like', "%{$search}%")
+                                ->orWhere('email', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $orders = $query->paginate($perPage);
+
+        // 2. Disguise our new data to look exactly like Aaron's old data format
+        // so his frontend JavaScript doesn't crash!
+        $mappedData = $orders->getCollection()->map(function ($order) {
+            return [
+                'id' => $order->id,
+                'status' => $order->status ?? 'pending',
+                'status_label' => ucfirst($order->status ?? 'Pending'),
+                'general_drive_link' => $order->general_gdrive_link,
+                'user' => [
+                    'id' => $order->user_id,
+                    'name' => $order->user ? trim($order->user->first_name . ' ' . $order->user->last_name) : 'Guest Customer',
+                    'email' => $order->user?->email ?? 'No email',
+                    'contact_number' => $order->user?->contact_number ?? 'No number',
+                ],
+                'totals' => [
+                    'subtotal_price' => (float) $order->grand_total,
+                    'discount_total' => 0,
+                    'rush_fee_total' => (float) $order->rush_fee,
+                    'layout_fee_total' => 0,
+                    'total_price' => (float) $order->grand_total,
+                ],
+                'items_count' => $order->items()->count(),
+                'orders' => $order->items->map(function($item) {
+                    return [
+                        'id' => $item->id,
+                        'product_name' => $item->category . ' (' . $item->type . ')',
+                        'quantity' => $item->quantity,
+                        'total_price' => (float) $item->item_total,
+                        'status' => 'pending'
+                    ];
+                })->values(),
+                'created_at' => $order->created_at?->toISOString(),
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $mappedData,
+            'meta' => [
+                'current_page' => $orders->currentPage(),
+                'last_page' => $orders->lastPage(),
+                'per_page' => $orders->perPage(),
+                'total' => $orders->total(),
+            ],
+        ]);
+    }
+
+
+    // =========================================================================
+    // NEW WORKING CODE FOR VIEW DETAILS MODAL
+    // =========================================================================
+    public function show($id): JsonResponse
+    {
+        // 1. Find the real order by ID
+        $order = Order::with(['user', 'items'])->findOrFail($id);
+
+        // 2. Disguise it for Aaron's Javascript Modal
+        $mappedData = [
+            'id' => $order->id,
+            'status' => $order->status ?? 'pending',
+            'status_label' => ucfirst($order->status ?? 'Pending'),
+            'general_drive_link' => $order->general_gdrive_link,
+            'user' => [
+                'id' => $order->user_id,
+                'name' => $order->user ? trim($order->user->first_name . ' ' . $order->user->last_name) : 'Guest Customer',
+                'email' => $order->user?->email ?? 'No email',
+                'contact_number' => $order->user?->contact_number ?? 'No number',
+            ],
+            'totals' => [
+                'subtotal_price' => (float) $order->grand_total,
+                'discount_total' => 0,
+                'rush_fee_total' => (float) $order->rush_fee,
+                'layout_fee_total' => 0,
+                'total_price' => (float) $order->grand_total,
+            ],
+            'items_count' => $order->items()->count(),
+            'orders' => $order->items->map(function($item) {
+                return [
+                    'id' => $item->id,
+                    'product_name' => $item->category . ' (' . $item->type . ')',
+                    'quantity' => $item->quantity,
+                    'total_price' => (float) $item->item_total,
+                    'status' => 'pending'
+                ];
+            })->values(),
+            'created_at' => $order->created_at?->toISOString(),
+        ];
+
+        return response()->json([
+            'success' => true,
+            'data' => $mappedData,
+        ]);
+    }
+
+    // =========================================================================
+    // NEW WORKING CODE FOR ORDER STATUS DROPDOWN
+    // =========================================================================
+    public function updateStatus(Request $request, $id): JsonResponse
+    {
+        // 1. Verify the status is valid
+        $validated = $request->validate([
+            'status' => 'required|in:waiting,approved,preparing,ready,completed,cancelled',
+        ]);
+
+        // 2. Find the real order and update it
+        $order = Order::findOrFail($id);
+        $order->update(['status' => $validated['status']]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Order status updated successfully!',
+            'data' => [] // Frontend just needs success confirmation
+        ]);
+    }
+    // =========================================================================
+    // AARON'S ORIGINAL CODE - COMMENTED OUT FOR TESTING NEW DASHBOARD
+    // =========================================================================
+    /*
     {
         $validated = $request->validate([
             'status' => 'nullable|in:all,waiting,approved,preparing,ready,completed,cancelled',
@@ -127,7 +283,7 @@ class OwnerOrderController extends Controller
             'message' => 'Order status updated successfully.',
             'data' => $this->transformGroup($orderGroup),
         ]);
-    }
+    } */
 
     public function updateDetails(Request $request, CustomerOrderGroup $orderGroup): JsonResponse
     {
