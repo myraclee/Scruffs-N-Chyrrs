@@ -84,7 +84,7 @@ class SignupFirstOwnerRuleTest extends TestCase
             'first_name' => 'Test',
             'last_name' => 'User',
             'email' => $email,
-            'contact_number' => '09171234567',
+            'contact_number' => '9171234567',
             'password' => 'ValidPassword123!',
             'password_confirmation' => 'ValidPassword123!',
         ];

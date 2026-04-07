@@ -17,7 +17,7 @@ class EmailInputValidationPolicyTest extends TestCase
             'first_name' => 'Test',
             'last_name' => 'User',
             'email' => 'alpha.user@GMAIL.COM',
-            'contact_number' => '09171234567',
+            'contact_number' => '9171234567',
             'password' => 'ValidPassword123!',
             'password_confirmation' => 'ValidPassword123!',
         ]);
@@ -35,7 +35,7 @@ class EmailInputValidationPolicyTest extends TestCase
             'first_name' => 'Test',
             'last_name' => 'User',
             'email' => 'alpha.user@yahoo.com',
-            'contact_number' => '09171234567',
+            'contact_number' => '9171234567',
             'password' => 'ValidPassword123!',
             'password_confirmation' => 'ValidPassword123!',
         ]);
@@ -51,7 +51,7 @@ class EmailInputValidationPolicyTest extends TestCase
             'first_name' => 'Test',
             'last_name' => 'User',
             'email' => 'alpha_user@gmail.com',
-            'contact_number' => '09171234567',
+            'contact_number' => '9171234567',
             'password' => 'ValidPassword123!',
             'password_confirmation' => 'ValidPassword123!',
         ]);
@@ -109,7 +109,7 @@ class EmailInputValidationPolicyTest extends TestCase
                 'first_name' => 'Profile',
                 'last_name' => 'User',
                 'email' => 'new.user@yahoo.com',
-                'contact_number' => '09171234567',
+                'contact_number' => '9171234567',
             ]);
 
         $invalidResponse
@@ -123,7 +123,7 @@ class EmailInputValidationPolicyTest extends TestCase
                 'first_name' => 'Profile',
                 'last_name' => 'User',
                 'email' => 'new.user@UST.EDU.PH',
-                'contact_number' => '09171234567',
+                'contact_number' => '9171234567',
             ]);
 
         $validResponse->assertRedirect(route('account'));
