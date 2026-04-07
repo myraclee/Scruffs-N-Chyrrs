@@ -205,7 +205,7 @@ class OrderManagementTestSeeder extends Seeder
             [
                 'first_name' => 'Seed',
                 'last_name' => 'Owner',
-                'contact_number' => '09170000001',
+                'contact_number' => '9170000001',
                 'password' => Hash::make('password'),
                 'user_type' => 'owner',
                 'email_verified_at' => now(),
@@ -225,7 +225,7 @@ class OrderManagementTestSeeder extends Seeder
                 [
                     'first_name' => 'Seed',
                     'last_name' => 'Customer '.($index + 1),
-                    'contact_number' => sprintf('09170000%03d', $index + 2),
+                    'contact_number' => sprintf('9170000%03d', $index + 2),
                     'password' => Hash::make('password123'),
                     'user_type' => 'customer',
                     'email_verified_at' => now(),
