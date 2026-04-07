@@ -13,12 +13,16 @@
 }
 
 .tnc_content {
-    background: #FFF7EC;
+    background: #fff7ec;
     width: 90%;
     max-width: 700px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
     padding: 25px;
     border-radius: 15px;
     position: relative;
+    box-sizing: border-box;
 }
 
 .tnc_close {
@@ -29,67 +33,171 @@
     border: none;
     background: none;
     font-size: 26px;
-    color: #682C7A;
+    color: #682c7a;
 
     cursor: pointer;
 }
 
-.tnc_header{
+.tnc_header {
+    flex-shrink: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
+    padding-bottom: 15px;
+    margin-bottom: 10px;
+    border-bottom: 2px solid rgba(104, 44, 122, 0.15);
 }
 
 .tnc_header > :first-child {
     height: 130px;
 }
 
-.tnc_header > :nth-child(2){ 
+.tnc_header > :nth-child(2) {
     margin-top: 20px;
 
     font-family: SuperDream;
     font-size: 40px;
-    color: #682C7A;
+    color: #682c7a;
 }
 
-.tnc_header > :nth-child(3){ 
+.tnc_header > :nth-child(3) {
     font-family: Coolvetica;
     font-size: 17px;
-    color: #682C7A;
+    color: #682c7a;
     text-align: center;
 }
 
 .tnc_body {
-    max-height: 60vh;
     overflow-y: auto;
+    flex-grow: 1;
+    padding-right: 10px;
 }
 
-.tnc_terms{
+.tnc_terms {
     padding: 20px 20px 0px 10px;
 }
 
-.tnc_terms > h3{
+.tnc_terms > h3 {
     font-family: Coolvetica;
     font-size: 18px;
-    color: #682C7A;
+    color: #682c7a;
 }
 
-.tnc_terms > p{
+.tnc_terms > p {
     margin-left: 20px;
 
     font-family: Coolvetica;
     font-size: 15px;
-    color: #682C7A;
+    color: #682c7a;
 
     text-align: justify;
 }
 
-.tnc_terms > ul{
+.tnc_terms > ul {
     list-style-type: disc;
-    padding-left: 40px;   
+    padding-left: 40px;
 }
 
-li{
-    color: #682C7A;
+li {
+    color: #682c7a;
     font-family: Coolvetica;
+}
+
+.tnc_footer {
+    flex-shrink: 0;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 2px solid rgba(104, 44, 122, 0.15);
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.accept_tnc_btn,
+.decline_tnc_btn {
+    padding: 10px 25px;
+    border-radius: 50px;
+    font-family: "Coolvetica", sans-serif;
+    font-size: 15px;
+    transition: 0.3s ease;
+    cursor: pointer;
+    width: auto;
+    min-width: 120px;
+}
+
+.accept_tnc_btn {
+    background-color: #ccc;
+    color: #666;
+    border: none;
+    cursor: not-allowed;
+}
+
+.accept_tnc_btn.unlocked {
+    background-color: #6b3282;
+    color: #fff0da;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(107, 50, 130, 0.3);
+}
+
+.accept_tnc_btn.unlocked:hover {
+    background-color: #451c52;
+    transform: scale(1.05);
+}
+
+/* =========================================
+   MOBILE RESPONSIVENESS
+   ========================================= */
+@media screen and (max-width: 768px) {
+    /* 1. Maximize the modal space and shrink padding */
+    .tnc_content {
+        width: 95%;
+        padding: 20px 15px;
+    }
+
+    /* 2. Scale down the logo so it doesn't break the container */
+    .tnc_header > :first-child {
+        height: auto;
+        max-width: 90%;
+        max-height: 80px;
+    }
+
+    /* 3. Shrink the massive header texts */
+    .tnc_header > :nth-child(2) {
+        font-size: 30px;
+        text-align: center;
+    }
+
+    .tnc_header > :nth-child(3) {
+        font-size: 14px;
+    }
+
+    /* 4. Kill the heavy margins/padding that push text off-screen */
+    .tnc_terms {
+        padding: 15px 0 0 0;
+    }
+
+    .tnc_terms > p {
+        margin-left: 0; /* This was the main culprit! */
+        font-size: 14px;
+        text-align: left; /* Justify causes weird spacing on mobile */
+    }
+
+    /* 5. Pull the bullet points inward */
+    .tnc_terms > ul {
+        padding-left: 20px;
+    }
+
+    li {
+        font-size: 14px;
+    }
+
+    .decline_tnc_btn {
+        background-color: transparent;
+        color: #6b3282;
+        border: 2px solid #6b3282;
+    }
+
+    .decline_tnc_btn:hover {
+        background-color: rgba(107, 50, 130, 0.1);
+    }
 }
