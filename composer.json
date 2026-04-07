@@ -77,7 +77,14 @@
         ],
         "db-reset": [
             "@php artisan migrate:fresh --force --drop-views",
-            "@php artisan db:seed --class=FAQSeeder"
+            "@php artisan db:seed --class=FAQSeeder",
+            "@php artisan db:seed --class=ContentInventorySeeder",
+            "@php artisan db:seed --class=OrderManagementTestSeeder"
+        ],
+        "seed": [
+            "@php artisan db:seed --class=FAQSeeder",
+            "@php artisan db:seed --class=ContentInventorySeeder",
+            "@php artisan db:seed --class=OrderManagementTestSeeder"
         ],
         "test": [
             "@php artisan config:clear --ansi",
