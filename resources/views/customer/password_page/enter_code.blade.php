@@ -52,13 +52,13 @@
     </p>
     
     @if(session('success'))
-        <div style="max-width: 500px; margin: 0 auto 20px; padding: 15px; background-color: #d4edda; border: 1px solid #c3e6cb; border-radius: 5px; color: #155724; font-family: Coolvetica;">
+        <div style="width: calc(100% - 40px); max-width: 500px; margin: 0 auto 20px; padding: 15px; background-color: #d4edda; border: 1px solid #c3e6cb; border-radius: 5px; color: #155724; font-family: Coolvetica; box-sizing: border-box;">
             {{ session('success') }}
         </div>
     @endif
 
     @if($errors->any() && !$errors->has('code'))
-        <div style="max-width: 500px; margin: 0 auto 20px; padding: 15px; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 5px; color: #721c24; font-family: Coolvetica;">
+        <div style="width: calc(100% - 40px); max-width: 500px; margin: 0 auto 20px; padding: 15px; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 5px; color: #721c24; font-family: Coolvetica; box-sizing: border-box;">
             @foreach($errors->all() as $error)
                 <p style="margin: 5px 0;">{{ $error }}</p>
             @endforeach
