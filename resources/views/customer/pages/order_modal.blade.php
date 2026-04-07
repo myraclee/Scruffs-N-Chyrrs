@@ -11,6 +11,17 @@
         </div>
 
         <div class="order_modal_form">
+            <div class="order_modal_section">
+                <h3 class="order_modal_section_title">Main Drive Link</h3>
+                <div class="order_modal_drive_input_wrapper">
+                    <input type="text" id="generalDriveLink" class="order_modal_drive_input" placeholder="Paste your main Google Drive folder link here..." required>
+                </div>
+                <p class="order_modal_drive_hint">Accepted: <code>https://drive.google.com/drive/folders/{id}</code>, <code>https://drive.google.com/file/d/{id}/view</code>, <code>https://drive.google.com/open?id={id}</code>, <code>https://drive.google.com/uc?id={id}</code>.</p>
+                <p id="generalDriveLinkError" class="order_modal_drive_error" hidden></p>
+            </div>
+
+            <div class="order_modal_price_divider"></div>
+
             <div class="order_modal_section" style="background: #f3e3f8; padding: 20px; border-radius: 16px; border: 2px solid #682c7a;">
                 <h3 class="order_modal_section_title">Add to Order</h3>
 
@@ -44,7 +55,7 @@
             </div>
 
             <div class="order_modal_section">
-                <h3 class="order_modal_section_title">Your Persistent Cart</h3>
+                <h3 class="order_modal_section_title">My Cart</h3>
                 <div id="cartItemsContainer" class="file_specs_container">
                     <p style="text-align: center; color: #666; font-family: 'Coolvetica', sans-serif; font-size: 14px; margin-top: 10px;" id="emptyCartMsg">Your cart is empty. Add an item above.</p>
                 </div>

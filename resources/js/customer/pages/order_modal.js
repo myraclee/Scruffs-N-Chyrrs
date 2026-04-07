@@ -2,6 +2,7 @@ import CustomerOrderAPI from "/resources/js/api/customerOrderApi.js";
 import Toast from "/resources/js/utils/toast.js";
 
 document.addEventListener("DOMContentLoaded", () => {
+    const MAIN_DRIVE_LINK_STORAGE_KEY = "customer_main_drive_link";
     const orderModal = document.getElementById("orderModal");
     if (!orderModal) return;
 
@@ -29,6 +30,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const quantityInput = document.getElementById("itemQuantity");
     const notesInput = document.getElementById("itemFileName");
     const rushFeeSelect = document.getElementById("rushFeeSelect");
+    const driveLinkInput = document.getElementById("generalDriveLink");
+    const driveLinkError = document.getElementById("generalDriveLinkError");
     const optionsContainer = document.getElementById("dynamicOptionsContainer");
     const cartContainer = document.getElementById("cartItemsContainer");
     const emptyMessage = document.getElementById("emptyCartMsg");
@@ -49,6 +52,116 @@ document.addEventListener("DOMContentLoaded", () => {
             .replace(/>/g, "&gt;")
             .replace(/\"/g, "&quot;")
             .replace(/'/g, "&#39;");
+
+    const normalizeDriveLink = (value) =>
+        typeof value === "string" ? value.trim() : "";
+
+    const driveLinkIdPattern = /^[A-Za-z0-9_-]+$/;
+
+    function isValidGoogleDriveUrl(url) {
+        try {
+            const parsedUrl = new URL(url);
+
+            if (parsedUrl.protocol !== "https:") {
+                return false;
+            }
+
+            if (parsedUrl.hostname !== "drive.google.com") {
+                return false;
+            }
+
+            const normalizedPath = parsedUrl.pathname.replace(/\/+$/, "") || "/";
+
+            if (
+                normalizedPath === "/" ||
+                normalizedPath === "/drive" ||
+                normalizedPath.startsWith("/drive/")
+            ) {
+                return true;
+            }
+
+            if (/^\/drive\/folders\/[A-Za-z0-9_-]+$/.test(normalizedPath)) {
+                return true;
+            }
+
+            if (/^\/file\/d\/[A-Za-z0-9_-]+(?:\/.*)?$/.test(normalizedPath)) {
+                return true;
+            }
+
+            if (normalizedPath === "/open" || normalizedPath === "/uc") {
+                const id = parsedUrl.searchParams.get("id");
+                return Boolean(id && driveLinkIdPattern.test(id));
+            }
+
+            return false;
+        } catch {
+            return false;
+        }
+    }
+
+    function clearDriveLinkError() {
+        if (!driveLinkInput || !driveLinkError) {
+            return;
+        }
+
+        driveLinkInput.classList.remove("input_error");
+        driveLinkInput.removeAttribute("aria-invalid");
+        driveLinkError.hidden = true;
+        driveLinkError.textContent = "";
+    }
+
+    function setDriveLinkError(message) {
+        if (!driveLinkInput || !driveLinkError) {
+            return;
+        }
+
+        driveLinkInput.classList.add("input_error");
+        driveLinkInput.setAttribute("aria-invalid", "true");
+        driveLinkError.hidden = false;
+        driveLinkError.textContent = message;
+    }
+
+    function validateDriveLinkInput({ required = true } = {}) {
+        const normalizedLink = normalizeDriveLink(driveLinkInput?.value || "");
+
+        if (driveLinkInput && driveLinkInput.value !== normalizedLink) {
+            driveLinkInput.value = normalizedLink;
+        }
+
+        if (!normalizedLink) {
+            if (!required) {
+                clearDriveLinkError();
+                return {
+                    valid: true,
+                    value: "",
+                };
+            }
+
+            setDriveLinkError(
+                "Please provide your main Google Drive link before adding to cart.",
+            );
+            return {
+                valid: false,
+                value: "",
+            };
+        }
+
+        if (!isValidGoogleDriveUrl(normalizedLink)) {
+            setDriveLinkError(
+                "Enter a valid Google Drive URL (drive.google.com) using an accepted Drive format.",
+            );
+            return {
+                valid: false,
+                value: normalizedLink,
+            };
+        }
+
+        clearDriveLinkError();
+        return {
+            valid: true,
+            value: normalizedLink,
+        };
+    }
 
 
     const resolveGrandTotalLabel = (items = []) => {
@@ -253,11 +366,27 @@ document.addEventListener("DOMContentLoaded", () => {
         orderModal.style.display = "flex";
         document.body.style.overflow = "hidden";
 
+        if (driveLinkInput) {
+            driveLinkInput.value = localStorage.getItem(MAIN_DRIVE_LINK_STORAGE_KEY) || "";
+            validateDriveLinkInput({ required: false });
+        }
+
         await ensureTemplateLoaded();
         await refreshCart();
     };
 
     closeBtn.addEventListener("click", window.closeOrderModal);
+
+    driveLinkInput?.addEventListener("input", () => {
+        const validation = validateDriveLinkInput({ required: false });
+        if (validation.valid && validation.value) {
+            localStorage.setItem(MAIN_DRIVE_LINK_STORAGE_KEY, validation.value);
+        }
+    });
+
+    driveLinkInput?.addEventListener("blur", () => {
+        validateDriveLinkInput({ required: true });
+    });
 
     cartContainer.addEventListener("click", async (event) => {
         const removeBtn = event.target.closest("button[data-remove-id]");
@@ -278,6 +407,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     addItemBtn.addEventListener("click", async () => {
+        const driveLinkValidation = validateDriveLinkInput({ required: true });
+        if (!driveLinkValidation.valid) {
+            Toast.warning("Main Drive Link is required and must be a valid Google Drive URL.");
+            return;
+        }
+
+        localStorage.setItem(MAIN_DRIVE_LINK_STORAGE_KEY, driveLinkValidation.value);
+
         if (!templatePayload) {
             Toast.error("Order options are still loading. Please wait.");
             return;

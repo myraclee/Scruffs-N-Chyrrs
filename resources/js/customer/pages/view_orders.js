@@ -12,8 +12,8 @@ const orderEditCancelBtn = document.getElementById("orderEditCancelBtn");
 const orderEditSaveBtn = document.getElementById("orderEditSaveBtn");
 const orderEditDriveLink = document.getElementById("orderEditDriveLink");
 const orderEditItems = document.getElementById("orderEditItems");
-const DRIVE_LINK_FIELD_ID = "cartGeneralDriveLink";
 const PLACE_ORDER_BUTTON_ID = "cartPlaceOrderBtn";
+const MAIN_DRIVE_LINK_STORAGE_KEY = "customer_main_drive_link";
 
 const CURRENT_STATUSES = new Set(["waiting", "approved", "preparing", "ready"]);
 const COMPLETED_STATUSES = new Set(["completed", "cancelled"]);
@@ -222,17 +222,6 @@ function renderCart(cart) {
         <span class="cart_total_label">Cart Total</span>
         <strong class="cart_total_value">${money(cart.totals?.total_price)}</strong>
 			</div>
-			<div class="cart_checkout_block">
-				<label for="${DRIVE_LINK_FIELD_ID}" class="cart_checkout_label">Main Drive Link <span class="label_required">*</span></label>
-				<input
-					type="url"
-					id="${DRIVE_LINK_FIELD_ID}"
-					class="cart_checkout_input"
-					placeholder="https://drive.google.com/drive/folders/..."
-					required
-				>
-				<p class="cart_checkout_hint">Accepted Drive Formats: /drive/folders/{id}, /file/d/{id}, /open?id={id}, /uc?id={id}</p>
-			</div>
 			<div class="cart_actions_row">
 				<a href="/products" class="browse_products_btn">
 					<span class="btn_sparkle">✦</span>
@@ -265,40 +254,31 @@ function setPlaceOrderLoading(isLoading) {
   }
 }
 
-function validateCartDriveLinkInput() {
-  const driveLinkInput = document.getElementById(DRIVE_LINK_FIELD_ID);
-  if (!driveLinkInput) {
+function getStoredDriveLinkValidation() {
+  const savedDriveLink = normalizeDriveLink(
+    localStorage.getItem(MAIN_DRIVE_LINK_STORAGE_KEY) || "",
+  );
+
+  if (!savedDriveLink) {
     return {
       valid: false,
       value: "",
-      message: "Drive link field is not available.",
+      message: "Main Drive Link is required. Set it in Product Order before checkout.",
     };
   }
 
-  const normalizedLink = normalizeDriveLink(driveLinkInput.value);
-  if (driveLinkInput.value !== normalizedLink) {
-    driveLinkInput.value = normalizedLink;
-  }
-
-  if (!normalizedLink) {
+  if (!isValidGoogleDriveUrl(savedDriveLink)) {
     return {
       valid: false,
-      value: "",
-      message: "Please provide your main Google Drive link before placing the order.",
-    };
-  }
-
-  if (!isValidGoogleDriveUrl(normalizedLink)) {
-    return {
-      valid: false,
-      value: normalizedLink,
-      message: "Enter a valid Google Drive URL (drive.google.com) using an accepted Drive format.",
+      value: savedDriveLink,
+      message:
+        "Saved Main Drive Link is invalid. Update it from Product Order before checkout.",
     };
   }
 
   return {
     valid: true,
-    value: normalizedLink,
+    value: savedDriveLink,
     message: "",
   };
 }
@@ -306,7 +286,7 @@ function validateCartDriveLinkInput() {
 async function placeCartOrder() {
   if (isPlacingOrder) return;
 
-  const validation = validateCartDriveLinkInput();
+  const validation = getStoredDriveLinkValidation();
   if (!validation.valid) {
     Toast.warning(validation.message);
     return false;
