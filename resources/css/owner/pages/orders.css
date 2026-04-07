@@ -1,6 +1,5 @@
 .orders_container {
     padding: 20px;
-    max-width: 1000px;
 }
 
 .header_animation {
@@ -75,7 +74,7 @@
 .search_wrapper {
     position: relative;
     width: 100%;
-    max-width: 600px;
+    max-width: 700px;
     margin-bottom: 25px;
 }
 .search_input {
@@ -83,14 +82,14 @@
     padding: 12px 20px;
     border: 2px solid #682c7a;
     border-radius: 25px;
-    font-family: "Coolvetica", sans-serif;
+    font-family: Arial;
     font-size: 16px;
     color: #682c7a;
     outline: none;
     background: transparent;
 }
 .search_input::placeholder {
-    color: #dcbae6;
+    color: #969595;
 }
 .search_icon {
     position: absolute;
