@@ -69,6 +69,14 @@ class OrderManagementTestSeeder extends Seeder
         $inventoryService = app(InventoryStockService::class);
 
         $customers = $this->seedUsers();
+        $ownerId = (int) User::query()
+            ->where('email', self::SEEDED_OWNER_EMAIL)
+            ->value('id');
+
+        if ($ownerId <= 0) {
+            throw new RuntimeException('Seed owner account is missing.');
+        }
+
         $customerIds = $customers->pluck('id')->map(fn ($id): int => (int) $id)->all();
 
         $this->cleanupExistingSeededOrders($customerIds);
@@ -149,11 +157,29 @@ class OrderManagementTestSeeder extends Seeder
                 $groupIndex,
                 $createdAt
             );
+            $paymentLifecycle = $this->resolvePaymentLifecyclePayload(
+                $status,
+                $groupIndex,
+                $createdAt,
+                $updatedAt,
+                $ownerId
+            );
+
+            $this->assertGroupPaymentConsistency($status, $paymentLifecycle);
 
             $group = new CustomerOrderGroup([
                 'user_id' => (int) $customer->id,
                 'status' => $status,
+                'payment_status' => $paymentLifecycle['payment_status'],
+                'cancellation_reason' => $paymentLifecycle['cancellation_reason'],
                 'general_drive_link' => $this->resolveDriveLink($groupIndex),
+                'payment_method' => $paymentLifecycle['payment_method'],
+                'payment_reference_number' => $paymentLifecycle['payment_reference_number'],
+                'payment_proof_path' => $paymentLifecycle['payment_proof_path'],
+                'payment_submitted_at' => $paymentLifecycle['payment_submitted_at'],
+                'payment_confirmed_at' => $paymentLifecycle['payment_confirmed_at'],
+                'payment_confirmed_by' => $paymentLifecycle['payment_confirmed_by'],
+                'payment_confirmation_note' => $paymentLifecycle['payment_confirmation_note'],
                 'subtotal_price' => round((float) collect($ordersPayload)->sum('base_price'), 2),
                 'discount_total' => round((float) collect($ordersPayload)->sum('discount_amount'), 2),
                 'rush_fee_total' => round((float) collect($ordersPayload)->sum('rush_fee_amount'), 2),
@@ -446,5 +472,132 @@ class OrderManagementTestSeeder extends Seeder
             'cancelled' => 8,
             default => 1,
         };
+    }
+
+    /**
+     * @return array{
+     *   payment_status:string,
+     *   cancellation_reason:?string,
+     *   payment_method:?string,
+     *   payment_reference_number:?string,
+     *   payment_proof_path:?string,
+     *   payment_submitted_at:?Carbon,
+     *   payment_confirmed_at:?Carbon,
+     *   payment_confirmed_by:?int,
+     *   payment_confirmation_note:?string
+     * }
+     */
+    private function resolvePaymentLifecyclePayload(
+        string $status,
+        int $groupIndex,
+        Carbon $createdAt,
+        Carbon $updatedAt,
+        int $ownerId
+    ): array {
+        $paymentMethod = CustomerOrderGroup::PAYMENT_METHODS[$groupIndex % count(CustomerOrderGroup::PAYMENT_METHODS)];
+        $referenceNumber = sprintf('SEEDPAY-%04d', $groupIndex + 1);
+        $proofPath = sprintf('payment-proofs/seed-group-%02d.png', $groupIndex + 1);
+
+        if ($status === 'waiting') {
+            return [
+                'payment_status' => 'awaiting_payment',
+                'cancellation_reason' => null,
+                'payment_method' => null,
+                'payment_reference_number' => null,
+                'payment_proof_path' => null,
+                'payment_submitted_at' => null,
+                'payment_confirmed_at' => null,
+                'payment_confirmed_by' => null,
+                'payment_confirmation_note' => null,
+            ];
+        }
+
+        if ($status === 'approved') {
+            $waitsForConfirmation = (intdiv($groupIndex, count(self::STATUSES)) % 2) === 0;
+
+            if ($waitsForConfirmation) {
+                $submittedAt = $createdAt->copy()->addHours(2);
+
+                return [
+                    'payment_status' => 'waiting_payment_confirmation',
+                    'cancellation_reason' => null,
+                    'payment_method' => $paymentMethod,
+                    'payment_reference_number' => $referenceNumber,
+                    'payment_proof_path' => $proofPath,
+                    'payment_submitted_at' => $submittedAt,
+                    'payment_confirmed_at' => null,
+                    'payment_confirmed_by' => null,
+                    'payment_confirmation_note' => null,
+                ];
+            }
+
+            return [
+                'payment_status' => 'awaiting_payment',
+                'cancellation_reason' => null,
+                'payment_method' => null,
+                'payment_reference_number' => null,
+                'payment_proof_path' => null,
+                'payment_submitted_at' => null,
+                'payment_confirmed_at' => null,
+                'payment_confirmed_by' => null,
+                'payment_confirmation_note' => null,
+            ];
+        }
+
+        if (in_array($status, ['preparing', 'ready', 'completed'], true)) {
+            $submittedAt = $createdAt->copy()->addHours(2);
+            $confirmedAt = $submittedAt->copy()->addHour();
+
+            return [
+                'payment_status' => 'payment_received',
+                'cancellation_reason' => null,
+                'payment_method' => $paymentMethod,
+                'payment_reference_number' => $referenceNumber,
+                'payment_proof_path' => $proofPath,
+                'payment_submitted_at' => $submittedAt,
+                'payment_confirmed_at' => $confirmedAt,
+                'payment_confirmed_by' => $ownerId,
+                'payment_confirmation_note' => 'Seeded payment confirmed for workflow coverage.',
+            ];
+        }
+
+        if ($status === 'cancelled') {
+            $ownerDeclined = ($groupIndex % 2) === 0;
+            $submittedAt = $ownerDeclined ? null : $createdAt->copy()->addHours(2);
+
+            return [
+                'payment_status' => 'payment_cancelled',
+                'cancellation_reason' => $ownerDeclined ? 'owner_declined' : 'customer_cancelled',
+                'payment_method' => $ownerDeclined ? null : $paymentMethod,
+                'payment_reference_number' => $ownerDeclined ? null : $referenceNumber,
+                'payment_proof_path' => $ownerDeclined ? null : $proofPath,
+                'payment_submitted_at' => $submittedAt,
+                'payment_confirmed_at' => null,
+                'payment_confirmed_by' => null,
+                'payment_confirmation_note' => null,
+            ];
+        }
+
+        throw new RuntimeException('Unsupported status for payment lifecycle mapping: '.$status);
+    }
+
+    /**
+     * @param array<string, mixed> $paymentLifecycle
+     */
+    private function assertGroupPaymentConsistency(string $status, array $paymentLifecycle): void
+    {
+        $paymentStatus = (string) ($paymentLifecycle['payment_status'] ?? '');
+
+        if (in_array($status, ['preparing', 'ready', 'completed'], true) && $paymentStatus !== 'payment_received') {
+            throw new RuntimeException("Invalid seed state: {$status} must have payment_received status.");
+        }
+
+        if ($paymentStatus === 'payment_received' && empty($paymentLifecycle['payment_confirmed_at'])) {
+            throw new RuntimeException('Invalid seed state: payment_received requires payment_confirmed_at.');
+        }
+
+        if ($paymentStatus === 'payment_cancelled' && empty($paymentLifecycle['cancellation_reason'])) {
+            throw new RuntimeException('Invalid seed state: payment_cancelled requires cancellation_reason.');
+        }
     }
 }
