@@ -60,7 +60,8 @@
     background: #fff7ec;
     border: 2px solid #682c7a;
     border-radius: 28px;
-    box-shadow: 0 10px 40px rgba(104, 44, 122, 0.2),
+    box-shadow:
+        0 10px 40px rgba(104, 44, 122, 0.2),
         0 0 0 5px rgba(104, 44, 122, 0.05);
     max-width: 680px;
     width: 100%;
@@ -118,7 +119,7 @@
     color: #682c7a;
     padding: 8px 20px;
     border-radius: 20px;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     border: none;
     cursor: pointer;
     white-space: nowrap;
@@ -146,7 +147,7 @@
     color: #666;
     border-radius: 30px;
     padding: 12px 25px;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     cursor: pointer;
     font-size: 16px;
     transition: all 0.2s;
@@ -170,7 +171,7 @@
 }
 
 .order_modal_title {
-    font-family: 'SuperDream', 'Coolvetica', sans-serif;
+    font-family: "SuperDream", "Coolvetica", sans-serif;
     font-size: 32px;
     color: #682c7a;
     margin: 0;
@@ -234,7 +235,7 @@
 
 .order_modal_product_details h3 {
     margin: 0 0 8px 0;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 22px;
     color: #682c7a;
     font-weight: 600;
@@ -242,7 +243,7 @@
 
 .order_modal_product_details p {
     margin: 0;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 14px;
     color: #666;
     line-height: 1.5;
@@ -263,7 +264,7 @@
 }
 
 .order_modal_section_title {
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 20px;
     font-weight: 600;
     color: #682c7a;
@@ -285,7 +286,7 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 16px;
     font-weight: 600;
     color: #682c7a;
@@ -301,7 +302,7 @@
     display: flex;
     align-items: center;
     gap: 4px;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 12px;
     color: rgba(104, 44, 122, 0.6);
     margin-top: 6px;
@@ -337,7 +338,7 @@
 }
 
 .order_modal_option_label {
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 15px;
     font-weight: 600;
     color: #682c7a;
@@ -356,7 +357,7 @@
     border-radius: 12px;
     background-color: white;
     color: #682c7a;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
@@ -367,7 +368,7 @@
 }
 
 .order_modal_option_type_btn::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 50%;
     left: 50%;
@@ -376,7 +377,9 @@
     border-radius: 50%;
     background: rgba(104, 44, 122, 0.1);
     transform: translate(-50%, -50%);
-    transition: width 0.3s ease, height 0.3s ease;
+    transition:
+        width 0.3s ease,
+        height 0.3s ease;
 }
 
 .order_modal_option_type_btn:hover::before {
@@ -413,24 +416,24 @@
 
 .order_modal_drive_input_wrapper {
     position: relative;
+    width: 100%;
 }
 
 .order_modal_drive_input {
-    width: 90%;
+    width: 100%;
     padding: 14px 48px 14px 16px;
-    border: 2px solid #dcbae6;
-    border-radius: 12px;
-    font-family: 'Coolvetica', sans-serif;
+    border: 2px solid #682c7a;
+    border-radius: 30px;
+    font-family: Arial;
     font-size: 14px;
     transition: all 0.2s ease;
     background-color: white;
     color: #333;
+    box-sizing: border-box;
 }
 
 .order_modal_drive_input:focus {
     outline: none;
-    border-color: #682c7a;
-    box-shadow: 0 0 0 4px rgba(104, 44, 122, 0.1);
 }
 
 .order_modal_drive_input.input_error {
@@ -441,7 +444,7 @@
 .order_modal_drive_error {
     margin: 8px 2px 0;
     color: #c62828;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 13px;
     line-height: 1.35;
 }
@@ -449,13 +452,13 @@
 .order_modal_drive_hint {
     margin: 8px 2px 0;
     color: #6b5f75;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 12px;
     line-height: 1.4;
 }
 
 .order_modal_drive_hint code {
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     color: #5b3a68;
 }
 
@@ -485,7 +488,7 @@
     color: #fff7ec;
     border: none;
     border-radius: 50px;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 13px;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -534,7 +537,7 @@
 }
 
 .file_spec_number {
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 14px;
     color: #682c7a;
     font-weight: 600;
@@ -573,7 +576,7 @@
 }
 
 .file_spec_label {
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 13px;
     color: #682c7a;
     margin-bottom: 6px;
@@ -593,13 +596,18 @@
 }
 
 .file_spec_input {
-    padding: 10px 12px;
-    border: 2px solid #dcbae6;
-    border-radius: 10px;
-    font-family: 'Coolvetica', sans-serif;
+    padding: 12px 16px;
+    border: 2px solid #682c7a;
+    border-radius: 30px;
+    font-family: Arial;
     font-size: 13px;
     transition: all 0.2s ease;
     background-color: white;
+}
+
+.required_star {
+    color: #d32f2f;
+    font-size: 14px;
 }
 
 .file_spec_input:focus {
@@ -609,7 +617,7 @@
 }
 
 .field_help {
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 11px;
     color: rgba(104, 44, 122, 0.5);
     margin-top: 4px;
@@ -619,9 +627,9 @@
 .order_modal_select {
     width: 100%;
     padding: 12px 16px;
-    border: 2px solid #dcbae6;
-    border-radius: 12px;
-    font-family: 'Coolvetica', sans-serif;
+    border: 2px solid #682c7a;
+    border-radius: 30px;
+    font-family: Arial;
     font-size: 14px;
     transition: all 0.2s ease;
     background-color: white;
@@ -646,7 +654,7 @@
 }
 
 .order_modal_price_title {
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 18px;
     font-weight: 600;
     color: #682c7a;
@@ -666,7 +674,7 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 10px;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 15px;
 }
 
@@ -707,7 +715,7 @@
     padding: 14px 18px;
     border-radius: 12px;
     margin-bottom: 18px;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 14px;
     display: flex;
     align-items: center;
@@ -776,7 +784,7 @@
     color: #682c7a;
     border: 2px solid #682c7a;
     border-radius: 50px;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
@@ -796,7 +804,7 @@
     color: white;
     border: none;
     border-radius: 50px;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
@@ -811,7 +819,7 @@
 }
 
 .order_modal_submit_btn::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: -100%;
@@ -898,7 +906,7 @@
 }
 
 .order_modal_auth_message p {
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 18px;
     color: #682c7a;
     margin: 0 0 24px 0;
@@ -915,7 +923,7 @@
     flex: 1;
     padding: 14px;
     border-radius: 50px;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-weight: 600;
     text-decoration: none;
     text-align: center;

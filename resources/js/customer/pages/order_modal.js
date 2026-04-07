@@ -220,7 +220,8 @@ document.addEventListener("DOMContentLoaded", () => {
             return `<li><strong>${materialName}</strong>: Required ${required}, Available ${available}, Short by ${deficit}</li>`;
         });
 
-        const message = fallbackMessage || "Insufficient material stock for this order.";
+        const message =
+            fallbackMessage || "Insufficient material stock for this order.";
 
         orderPlacementFeedback.innerHTML = `
             <p class="order_modal_message_title">Unable to place order due to material shortage.</p>
@@ -285,7 +286,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function readSelectedOptions() {
         const selected = {};
-        const selects = optionsContainer.querySelectorAll("select[data-option-id]");
+        const selects = optionsContainer.querySelectorAll(
+            "select[data-option-id]",
+        );
 
         for (const select of selects) {
             if (!select.value) {
@@ -310,7 +313,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const label = document.createElement("label");
             label.className = "file_spec_label";
-            label.textContent = `${option.label} *`;
+
+            // main text
+            const text = document.createTextNode(option.label + " ");
+
+            // asterisk
+            const star = document.createElement("span");
+            star.className = "required_star";
+            star.textContent = "*";
+
+            // append both
+            label.appendChild(text);
+            label.appendChild(star);
 
             const select = document.createElement("select");
             select.className = "order_modal_select";
@@ -387,14 +401,16 @@ document.addEventListener("DOMContentLoaded", () => {
                     <span>${optionSummary}</span>
                     <span style="font-weight:bold;color:#682c7a;">${formatMoney(item.total_price)}</span>
                 </div>
-                ${item.special_instructions ? `<div style="margin-top:8px;font-family:'Coolvetica',sans-serif;font-size:12px;color:#666;">Notes: ${item.special_instructions}</div>` : ""}
+                ${item.special_instructions ? `<div style="margin-top:8px;font-family:'Coolvetica',sans-serif;font-size:12px;color:#666;">Filename: ${item.special_instructions}</div>` : ""}
             `;
 
             cartContainer.appendChild(row);
         });
 
         updateGrandTotalLabel(cartPayload.items);
-        grandTotalDisplay.textContent = formatMoney(cartPayload.totals.total_price);
+        grandTotalDisplay.textContent = formatMoney(
+            cartPayload.totals.total_price,
+        );
     }
 
     async function refreshCart() {
@@ -412,7 +428,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if (templatePayload) return;
 
         try {
-            templatePayload = await CustomerOrderAPI.getOrderTemplate(productId);
+            templatePayload =
+                await CustomerOrderAPI.getOrderTemplate(productId);
             renderTemplateControls();
         } catch (error) {
             Toast.error("Unable to load product order configuration.");
@@ -503,7 +520,9 @@ document.addEventListener("DOMContentLoaded", () => {
             order_template_id: templatePayload.template.id,
             selected_options: selectedOptions,
             quantity,
-            rush_fee_id: rushFeeSelect.value ? Number(rushFeeSelect.value) : null,
+            rush_fee_id: rushFeeSelect.value
+                ? Number(rushFeeSelect.value)
+                : null,
             special_instructions: notesInput.value.trim() || null,
         });
 
@@ -549,7 +568,10 @@ document.addEventListener("DOMContentLoaded", () => {
         setButtonLoading(submitBtn, false);
 
         if (!result.success) {
-            if (Array.isArray(result.shortages) && result.shortages.length > 0) {
+            if (
+                Array.isArray(result.shortages) &&
+                result.shortages.length > 0
+            ) {
                 renderShortageFeedback(result.shortages, result.message);
                 Toast.error(
                     "Inventory shortage detected. Review the material details below.",
