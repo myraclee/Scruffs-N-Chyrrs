@@ -169,6 +169,10 @@
             </div>
 
         <p class="empty_order_template" id="emptyOrderTemplate">No order templates made yet.</p>
+        <div class="missing_template_indicator hidden" id="missingTemplateIndicator" aria-live="polite">
+            <p class="missing_template_indicator_title" id="missingTemplateIndicatorTitle">Template Coverage</p>
+            <p class="missing_template_indicator_text" id="missingTemplateIndicatorText"></p>
+        </div>
         <div id="productCardsContainer" class="product_cards_container"></div>
         <button id="open_add_template_btn" class="add_template_button">Add New Template</button>
 

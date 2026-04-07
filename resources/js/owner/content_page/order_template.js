@@ -5,10 +5,21 @@ import toast from "../../utils/toast.js";
 // ==================== PRODUCT STORE ====================
 
 let products = [];
+let productCatalog = [];
 let editingProductId = null;
 let pendingDeleteId = null;
 let isLoading = false;
 let currentTab = "details"; // "details" | "pricing" | "additional_fees"
+
+const missingTemplateIndicator = document.getElementById(
+    "missingTemplateIndicator",
+);
+const missingTemplateIndicatorTitle = document.getElementById(
+    "missingTemplateIndicatorTitle",
+);
+const missingTemplateIndicatorText = document.getElementById(
+    "missingTemplateIndicatorText",
+);
 
 // ==================== MODAL ====================
 
@@ -116,18 +127,78 @@ async function loadProductNamesFromAPI() {
         const response = await fetch("/api/products", {
             headers: { Accept: "application/json" },
         });
-        if (!response.ok) return;
+        if (!response.ok) {
+            updateMissingTemplateIndicator();
+            return;
+        }
         const data = await response.json();
         const productList = Array.isArray(data) ? data : (data.data ?? []);
+        productCatalog = Array.isArray(productList) ? productList : [];
         populateProductSelect(productList);
+        updateMissingTemplateIndicator();
     } catch (err) {
         console.warn("Order template: could not load product names.", err);
+        updateMissingTemplateIndicator();
     }
 }
 
 window.addEventListener("productsUpdated", (e) => {
-    populateProductSelect(e.detail ?? []);
+    const updatedProducts = Array.isArray(e.detail) ? e.detail : [];
+    productCatalog = updatedProducts;
+    populateProductSelect(updatedProducts);
+    updateMissingTemplateIndicator();
 });
+
+function updateMissingTemplateIndicator() {
+    if (
+        !missingTemplateIndicator ||
+        !missingTemplateIndicatorTitle ||
+        !missingTemplateIndicatorText
+    ) {
+        return;
+    }
+
+    if (!Array.isArray(productCatalog) || productCatalog.length === 0) {
+        missingTemplateIndicator.classList.add("hidden");
+        missingTemplateIndicator.classList.remove("indicator_ok");
+        missingTemplateIndicatorTitle.textContent = "Template Coverage";
+        missingTemplateIndicatorText.textContent = "";
+        return;
+    }
+
+    const configuredTemplateProductIds = new Set(
+        products
+            .map((template) => Number(template?.product?.id ?? template?.product_id ?? 0))
+            .filter((id) => Number.isInteger(id) && id > 0),
+    );
+
+    const missingProducts = productCatalog.filter((product) => {
+        const productId = Number(product?.id ?? 0);
+        return Number.isInteger(productId) && productId > 0 && !configuredTemplateProductIds.has(productId);
+    });
+
+    missingTemplateIndicator.classList.remove("hidden");
+
+    if (missingProducts.length === 0) {
+        missingTemplateIndicator.classList.add("indicator_ok");
+        missingTemplateIndicatorTitle.textContent = "Template Coverage: Complete";
+        missingTemplateIndicatorText.textContent =
+            "All products currently have an order template configured.";
+        return;
+    }
+
+    const previewNames = missingProducts
+        .slice(0, 3)
+        .map((product) => product?.name || "Unnamed Product")
+        .join(", ");
+
+    const additionalCount = missingProducts.length - 3;
+    const suffix = additionalCount > 0 ? ` (+${additionalCount} more)` : "";
+
+    missingTemplateIndicator.classList.remove("indicator_ok");
+    missingTemplateIndicatorTitle.textContent = `Template Coverage: ${missingProducts.length} Missing`;
+    missingTemplateIndicatorText.textContent = `Missing templates: ${previewNames}${suffix}.`;
+}
 
 // ==================== SPEC ROWS ====================
 
@@ -1040,6 +1111,7 @@ async function loadOrderTemplates() {
         isLoading = true;
         products = await orderTemplateApi.getAllOrderTemplates();
         renderProducts();
+        updateMissingTemplateIndicator();
     } catch (error) {
         console.error("Error loading order templates:", error);
         if (error?.status === 500 && error?.payload?.error_code === "schema_mismatch") {
@@ -1047,6 +1119,7 @@ async function loadOrderTemplates() {
         } else {
             toast.error("Failed to load order templates");
         }
+        updateMissingTemplateIndicator();
     } finally {
         isLoading = false;
     }
