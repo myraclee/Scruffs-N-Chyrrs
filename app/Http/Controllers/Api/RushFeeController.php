@@ -7,6 +7,7 @@ use App\Models\RushFeeTimeframe;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use App\Http\Controllers\Controller;
 
 class RushFeeController extends Controller
@@ -121,17 +122,22 @@ class RushFeeController extends Controller
             $validated = $request->validate([
                 'label' => 'required|string|max:255',
                 'min_price' => 'required|numeric|min:0',
-                'max_price' => 'required|numeric|min:0|gt:min_price',
+                'max_price' => 'nullable|numeric|min:0',
                 'image_url' => 'nullable|string|max:2048',
                 'timeframes' => 'required|array|min:1',
                 'timeframes.*.label' => 'required|string|max:255',
                 'timeframes.*.percentage' => 'required|numeric|min:0|max:100',
             ]);
 
+            $minPrice = (float) $validated['min_price'];
+            $maxPrice = $this->normalizeNullablePrice($validated, 'max_price');
+
+            $this->validateRangeConstraints($minPrice, $maxPrice);
+
             $rushFee = RushFee::create([
                 'label' => $validated['label'],
-                'min_price' => $validated['min_price'],
-                'max_price' => $validated['max_price'],
+                'min_price' => $minPrice,
+                'max_price' => $maxPrice,
                 'image_url' => $validated['image_url'] ?? '',
             ]);
 
@@ -178,8 +184,8 @@ class RushFeeController extends Controller
     {
         try {
             $validated = $request->validate([
-                'label' => 'nullable|string|max:255',
-                'min_price' => 'nullable|numeric|min:0',
+                'label' => 'sometimes|string|max:255',
+                'min_price' => 'sometimes|numeric|min:0',
                 'max_price' => 'nullable|numeric|min:0',
                 'image_url' => 'nullable|string|max:2048',
                 'timeframes' => 'nullable|array|min:1',
@@ -188,15 +194,27 @@ class RushFeeController extends Controller
                 'timeframes.*.percentage' => 'required|numeric|min:0|max:100',
             ]);
 
+            if (array_key_exists('min_price', $validated) || array_key_exists('max_price', $validated)) {
+                $effectiveMinPrice = array_key_exists('min_price', $validated)
+                    ? (float) $validated['min_price']
+                    : (float) $rushFee->min_price;
+
+                $effectiveMaxPrice = array_key_exists('max_price', $validated)
+                    ? $this->normalizeNullablePrice($validated, 'max_price')
+                    : ($rushFee->max_price !== null ? (float) $rushFee->max_price : null);
+
+                $this->validateRangeConstraints($effectiveMinPrice, $effectiveMaxPrice, (int) $rushFee->id);
+            }
+
             // Update main rush fee fields
-            if (isset($validated['label'])) {
+            if (array_key_exists('label', $validated)) {
                 $rushFee->label = $validated['label'];
             }
-            if (isset($validated['min_price'])) {
+            if (array_key_exists('min_price', $validated)) {
                 $rushFee->min_price = $validated['min_price'];
             }
-            if (isset($validated['max_price'])) {
-                $rushFee->max_price = $validated['max_price'];
+            if (array_key_exists('max_price', $validated)) {
+                $rushFee->max_price = $this->normalizeNullablePrice($validated, 'max_price');
             }
             if (array_key_exists('image_url', $validated)) {
                 $rushFee->image_url = $validated['image_url'] ?? '';
@@ -253,6 +271,60 @@ class RushFeeController extends Controller
                 'message' => 'Failed to update rush fee',
                 'error' => $e->getMessage(),
             ], 500);
+        }
+    }
+
+    private function normalizeNullablePrice(array $validated, string $key): ?float
+    {
+        if (!array_key_exists($key, $validated) || $validated[$key] === null || $validated[$key] === '') {
+            return null;
+        }
+
+        return (float) $validated[$key];
+    }
+
+    private function validateRangeConstraints(float $minPrice, ?float $maxPrice, ?int $ignoreRushFeeId = null): void
+    {
+        if ($maxPrice !== null && $maxPrice <= $minPrice) {
+            throw ValidationException::withMessages([
+                'max_price' => ['The max price must be greater than min price.'],
+            ]);
+        }
+
+        if ($maxPrice === null) {
+            $openEndedRangeExists = RushFee::query()
+                ->when($ignoreRushFeeId !== null, fn ($query) => $query->where('id', '!=', $ignoreRushFeeId))
+                ->whereNull('max_price')
+                ->exists();
+
+            if ($openEndedRangeExists) {
+                throw ValidationException::withMessages([
+                    'max_price' => ['Only one open-ended rush fee range is allowed.'],
+                ]);
+            }
+        }
+
+        $overlapQuery = RushFee::query()
+            ->when($ignoreRushFeeId !== null, fn ($query) => $query->where('id', '!=', $ignoreRushFeeId));
+
+        if ($maxPrice === null) {
+            $overlapQuery->where(function ($query) use ($minPrice) {
+                $query->whereNull('max_price')
+                    ->orWhere('max_price', '>=', $minPrice);
+            });
+        } else {
+            $overlapQuery
+                ->where('min_price', '<=', $maxPrice)
+                ->where(function ($query) use ($minPrice) {
+                    $query->whereNull('max_price')
+                        ->orWhere('max_price', '>=', $minPrice);
+                });
+        }
+
+        if ($overlapQuery->exists()) {
+            throw ValidationException::withMessages([
+                'max_price' => ['The price range overlaps an existing rush fee range.'],
+            ]);
         }
     }
 

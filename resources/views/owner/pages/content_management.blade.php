@@ -314,6 +314,22 @@
                         </div>
                     </div>
 
+                    {{-- Rush Fee Image --}}
+                    <div class="rush_image_section">
+                        <label class="rush_field_label" for="rushFeeImageInput">Reference Image</label>
+                        <div class="image_slot plus rush_image_upload_slot" id="rushImageUploadSlot" role="button" tabindex="0" aria-label="Upload rush fee image"></div>
+                        <input type="file" id="rushFeeImageInput" class="rush_image_input_hidden" accept="image/png,image/jpeg,image/gif,image/webp" />
+                        <p class="rush_image_upload_status" id="rushImageUploadStatus">No image uploaded.</p>
+
+                        <div class="rush_image_preview_wrap hidden" id="rushImagePreviewWrap">
+                            <div class="rush_image_preview_stage" id="rushImagePreviewStage">
+                                <img class="rush_image_preview" id="rushImagePreview" src="" alt="Rush fee preview" />
+                            </div>
+                            <button type="button" class="rush_image_fullscreen_btn" id="rushImageFullscreenBtn" aria-label="Preview image fullscreen">⤢</button>
+                            <button type="button" class="rush_image_remove_btn" id="rushImageRemoveBtn">Remove</button>
+                        </div>
+                    </div>
+
                     {{-- Timeframe rows --}}
                     <div class="rush_timeframes_section">
                         <div class="rush_tf_col_headers">

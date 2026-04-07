@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Builder;
  * @property int $id
  * @property string $label
  * @property string $min_price
- * @property string $max_price
+ * @property string|null $max_price
  * @property string $image_url
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at

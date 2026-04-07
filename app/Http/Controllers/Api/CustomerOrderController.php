@@ -460,7 +460,7 @@ class CustomerOrderController extends Controller
                         'id' => $rf->id,
                         'label' => $rf->label,
                         'min_price' => (float)$rf->min_price,
-                        'max_price' => (float)$rf->max_price,
+                        'max_price' => $rf->max_price !== null ? (float) $rf->max_price : null,
                         'timeframes' => $rf->timeframes->map(fn ($tf) => [
                             'id' => $tf->id,
                             'label' => $tf->label,

@@ -141,10 +141,24 @@ function buildTable(timeframes) {
 
 // ================= FORMAT HELPERS =================
 function formatPriceRange(minPrice, maxPrice) {
-    if (!minPrice && !maxPrice) return "—";
-    if (!maxPrice) return `₱${parseFloat(minPrice).toFixed(0)}+`;
-    const min = parseFloat(minPrice).toFixed(0);
-    const max = parseFloat(maxPrice).toFixed(0);
+    const hasMinPrice =
+        minPrice !== null && minPrice !== undefined && minPrice !== "";
+    const hasMaxPrice =
+        maxPrice !== null && maxPrice !== undefined && maxPrice !== "";
+
+    if (!hasMinPrice && !hasMaxPrice) return "—";
+    if (!hasMinPrice) return "—";
+
+    const minValue = Number.parseFloat(String(minPrice));
+    if (Number.isNaN(minValue)) return "—";
+
+    if (!hasMaxPrice) return `₱${minValue.toFixed(0)}+`;
+
+    const maxValue = Number.parseFloat(String(maxPrice));
+    if (Number.isNaN(maxValue)) return `₱${minValue.toFixed(0)}+`;
+
+    const min = minValue.toFixed(0);
+    const max = maxValue.toFixed(0);
     return `₱${min} – ₱${max}`;
 }
 

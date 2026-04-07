@@ -128,7 +128,7 @@ class RushFeeAPI {
 
     /**
      * Create a new rush fee with timeframes
-     * @param {Object} rushFeeData - Rush fee data { label, min_price, max_price, timeframes: [] }
+        * @param {Object} rushFeeData - Rush fee data { label, min_price, max_price|null, timeframes: [] }
      * @returns {Promise<Object>} Created rush fee with timeframes
      */
     async createRushFee(rushFeeData) {

@@ -32,13 +32,22 @@ function buildDraftFromIndex(idx) {
     return {
         id: src.id,
         label: src.label,
-        min: src.min ? Math.floor(src.min) : null,
-        max: src.max ? Math.floor(src.max) : null,
+        min:
+            src.min !== null && src.min !== undefined
+                ? Math.floor(Number(src.min))
+                : null,
+        max:
+            src.max !== null && src.max !== undefined
+                ? Math.floor(Number(src.max))
+                : null,
         imageUrl: src.imageUrl || "",
         timeframes: src.timeframes.map((tf) => ({
             id: tf.id,
             label: tf.label,
-            percentage: tf.percentage ? Math.floor(tf.percentage) : "",
+            percentage:
+                tf.percentage !== null && tf.percentage !== undefined
+                    ? Math.floor(Number(tf.percentage))
+                    : "",
         })),
     };
 }
