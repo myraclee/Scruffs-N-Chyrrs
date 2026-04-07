@@ -68,6 +68,15 @@ class OwnerOrderAPI {
       body: JSON.stringify(payload),
     });
   }
+
+  async confirmPayment(orderGroupId, paymentConfirmationNote = "") {
+    return this.request(`${this.baseUrl}/${orderGroupId}/payment-confirmation`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        payment_confirmation_note: paymentConfirmationNote || null,
+      }),
+    });
+  }
 }
 
 export default new OwnerOrderAPI();

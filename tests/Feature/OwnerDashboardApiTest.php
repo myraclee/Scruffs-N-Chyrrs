@@ -254,9 +254,16 @@ class OwnerDashboardApiTest extends TestCase
         int $quantity,
         CarbonImmutable $createdAt,
     ): void {
+        $paymentStatus = match ($status) {
+            'completed' => 'payment_received',
+            'cancelled' => 'payment_cancelled',
+            default => 'awaiting_payment',
+        };
+
         $group = new CustomerOrderGroup([
             'user_id' => $customer->id,
             'status' => $status,
+            'payment_status' => $paymentStatus,
             'subtotal_price' => $totalPrice,
             'discount_total' => 0,
             'rush_fee_total' => 0,

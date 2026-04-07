@@ -16,6 +16,12 @@ class OwnerOrdersUiContractTest extends TestCase
         $this->assertStringContainsString('id="detailCancelBtn"', $blade);
         $this->assertStringContainsString('id="detailDriveLinkInput"', $blade);
         $this->assertStringContainsString('id="detailDriveLinkHint"', $blade);
+        $this->assertStringContainsString('id="detailPaymentStatus"', $blade);
+        $this->assertStringContainsString('id="detailPaymentMethod"', $blade);
+        $this->assertStringContainsString('id="detailPaymentReference"', $blade);
+        $this->assertStringContainsString('id="detailPaymentProofLink"', $blade);
+        $this->assertStringContainsString('id="detailPaymentNoteInput"', $blade);
+        $this->assertStringContainsString('id="detailConfirmPaymentBtn"', $blade);
     }
 
     public function test_owner_orders_script_wires_details_edit_mode_and_payload_fields(): void
@@ -34,6 +40,10 @@ class OwnerOrdersUiContractTest extends TestCase
         $this->assertStringContainsString('selected_options', $script);
         $this->assertStringContainsString('rush_fee_id', $script);
         $this->assertStringContainsString('special_instructions', $script);
+        $this->assertStringContainsString('confirmPaymentForCurrentOrder', $script);
+        $this->assertStringContainsString('detailConfirmPaymentBtn', $script);
+        $this->assertStringContainsString('detailPaymentStatus', $script);
+        $this->assertStringContainsString('payment_status_label', $script);
     }
 
     public function test_owner_order_api_supports_details_update_endpoint(): void
@@ -43,5 +53,7 @@ class OwnerOrdersUiContractTest extends TestCase
         $this->assertIsString($apiClient);
         $this->assertStringContainsString('updateOrderDetails', $apiClient);
         $this->assertStringContainsString('/details', $apiClient);
+        $this->assertStringContainsString('confirmPayment', $apiClient);
+        $this->assertStringContainsString('/payment-confirmation', $apiClient);
     }
 }

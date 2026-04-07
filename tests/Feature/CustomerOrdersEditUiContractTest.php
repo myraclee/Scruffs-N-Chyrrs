@@ -14,38 +14,45 @@ class CustomerOrdersEditUiContractTest extends TestCase
         $this->assertStringContainsString('id="orderEditModal"', $blade);
         $this->assertStringContainsString('id="orderEditDriveLink"', $blade);
         $this->assertStringContainsString('id="orderEditItems"', $blade);
-        $this->assertStringContainsString('id="orderEditSaveBtn"', $blade);
+        $this->assertStringContainsString('id="orderEditSubtitle"', $blade);
     }
 
-    public function test_customer_orders_script_contains_waiting_only_edit_actions_and_save_flow(): void
+    public function test_customer_orders_script_contains_strict_view_pay_cancel_action_flow(): void
     {
         $script = file_get_contents(base_path('resources/js/customer/pages/view_orders.js'));
 
         $this->assertIsString($script);
-        $this->assertStringContainsString('data-edit-order-group', $script);
-        $this->assertStringContainsString('group?.status === EDITABLE_STATUS', $script);
-        $this->assertStringContainsString('CustomerOrderAPI.updateOrderDetails', $script);
-        $this->assertStringContainsString('customer_order_not_editable', $script);
-        $this->assertStringContainsString('Only orders waiting for approval can be edited.', $script);
+        $this->assertStringContainsString('data-view-order-group', $script);
+        $this->assertStringContainsString('data-pay-order-group', $script);
+        $this->assertStringContainsString('data-cancel-order-group', $script);
+        $this->assertStringContainsString('CustomerOrderAPI.submitPaymentProof', $script);
+        $this->assertStringContainsString('CustomerOrderAPI.cancelOrder', $script);
+        $this->assertStringNotContainsString('data-edit-order-group', $script);
     }
 
-    public function test_customer_orders_css_contains_edit_button_and_modal_styles(): void
+    public function test_customer_orders_css_contains_action_button_and_details_view_styles(): void
     {
         $css = file_get_contents(base_path('resources/css/customer/view_orders.css'));
 
         $this->assertIsString($css);
-        $this->assertStringContainsString('.order_group_edit_btn', $css);
+        $this->assertStringContainsString('.order_group_action_btn', $css);
+        $this->assertStringContainsString('.order_group_action_btn_pay', $css);
+        $this->assertStringContainsString('.order_group_action_btn_view', $css);
+        $this->assertStringContainsString('.order_group_action_btn_cancel', $css);
+        $this->assertStringContainsString('.order_group_payment_chip', $css);
+        $this->assertStringContainsString('.order_view_item', $css);
         $this->assertStringContainsString('.order_edit_modal_overlay', $css);
         $this->assertStringContainsString('.order_edit_modal', $css);
-        $this->assertStringContainsString('.order_edit_primary_btn', $css);
     }
 
-    public function test_customer_order_api_client_exposes_update_order_details_method(): void
+    public function test_customer_order_api_client_exposes_payment_and_cancel_methods(): void
     {
         $script = file_get_contents(base_path('resources/js/api/customerOrderApi.js'));
 
         $this->assertIsString($script);
-        $this->assertStringContainsString('async updateOrderDetails(orderGroupId, payload)', $script);
-        $this->assertStringContainsString('`${this.orderBaseUrl}/${orderGroupId}/details`', $script);
+        $this->assertStringContainsString('async submitPaymentProof(orderGroupId, payload)', $script);
+        $this->assertStringContainsString('async cancelOrder(orderGroupId)', $script);
+        $this->assertStringContainsString('payment-proof', $script);
+        $this->assertStringContainsString('/cancel', $script);
     }
 }

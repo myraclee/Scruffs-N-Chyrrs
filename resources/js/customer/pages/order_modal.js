@@ -351,6 +351,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 await CustomerOrderAPI.getOrderTemplate(productId);
             renderTemplateControls();
         } catch (error) {
+            if (error?.payload?.error_code === "template_not_configured") {
+                Toast.error("This product is not yet available for ordering.");
+                return;
+            }
+
             Toast.error("Unable to load product order configuration.");
         }
     }

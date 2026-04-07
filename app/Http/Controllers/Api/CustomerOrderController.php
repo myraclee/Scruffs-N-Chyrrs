@@ -19,6 +19,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class CustomerOrderController extends Controller
 {
@@ -379,6 +380,150 @@ class CustomerOrderController extends Controller
     }
 
     /**
+     * Submit payment proof for an approved order awaiting payment.
+     */
+    public function submitPaymentProof(Request $request, CustomerOrderGroup $orderGroup): JsonResponse
+    {
+        if (! Auth::check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication required',
+            ], 401);
+        }
+
+        if ((int) $orderGroup->user_id !== (int) Auth::id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You are not allowed to update this order.',
+            ], 403);
+        }
+
+        if (! $orderGroup->canSubmitPaymentProof()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment proof can only be submitted for approved orders that are awaiting payment.',
+                'error_code' => 'customer_order_payment_not_allowed',
+            ], 422);
+        }
+
+        $validated = $request->validate([
+            'payment_method' => 'required|in:gcash,bpi,paymaya',
+            'payment_reference_number' => ['required', 'regex:/^\d{10,14}$/'],
+            'payment_proof' => 'required|file|mimes:jpg,jpeg,png|max:5120',
+        ]);
+
+        $proofPath = null;
+
+        try {
+            $proofPath = $request->file('payment_proof')->store('payment_proofs', 'public');
+
+            $orderGroup->update([
+                'payment_status' => 'waiting_payment_confirmation',
+                'payment_method' => $validated['payment_method'],
+                'payment_reference_number' => (string) $validated['payment_reference_number'],
+                'payment_proof_path' => $proofPath,
+                'payment_submitted_at' => now(),
+                'payment_confirmed_at' => null,
+                'payment_confirmed_by' => null,
+                'payment_confirmation_note' => null,
+            ]);
+        } catch (\Throwable $e) {
+            if ($proofPath) {
+                Storage::disk('public')->delete($proofPath);
+            }
+
+            logger()->error('Customer payment proof submission failed', [
+                'order_group_id' => $orderGroup->id,
+                'user_id' => Auth::id(),
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Unable to submit payment proof. Please try again.',
+            ], 500);
+        }
+
+        $orderGroup->refresh()->load([
+            'orders.product:id,name,cover_image_path',
+            'orders.rushFee:id,label',
+            'orders.orderTemplate.minOrder:id,order_template_id,min_quantity',
+            'orders.orderTemplate.options.optionTypes:id,order_template_option_id,type_name,is_available,position',
+            'orders.orderTemplate.options:id,order_template_id,label,position',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Payment proof submitted. Please wait for owner confirmation.',
+            'data' => $this->transformGroup($orderGroup, true),
+        ]);
+    }
+
+    /**
+     * Cancel a waiting order group owned by the authenticated customer.
+     */
+    public function cancel(CustomerOrderGroup $orderGroup): JsonResponse
+    {
+        if (! Auth::check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication required',
+            ], 401);
+        }
+
+        if ((int) $orderGroup->user_id !== (int) Auth::id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You are not allowed to cancel this order.',
+            ], 403);
+        }
+
+        if (! $orderGroup->canCustomerCancel()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only orders waiting for approval can be cancelled by customer.',
+                'error_code' => 'customer_order_cancel_not_allowed',
+            ], 422);
+        }
+
+        $shouldRestock = $orderGroup->shouldRestockOnCancellation('cancelled');
+
+        DB::transaction(function () use ($orderGroup, $shouldRestock): void {
+            $orderGroup->update([
+                'status' => 'cancelled',
+                'payment_status' => 'payment_cancelled',
+                'cancellation_reason' => 'customer_cancelled',
+            ]);
+
+            $orderGroup->orders()->update([
+                'status' => 'cancelled',
+            ]);
+
+            if ($shouldRestock) {
+                $requirements = $orderGroup->inventory_material_requirements ?? [];
+                $this->stockService->restoreFromRequirements($requirements);
+                $orderGroup->update([
+                    'inventory_restored_at' => now(),
+                ]);
+            }
+        });
+
+        $orderGroup->refresh()->load([
+            'orders.product:id,name,cover_image_path',
+            'orders.rushFee:id,label',
+            'orders.orderTemplate.minOrder:id,order_template_id,min_quantity',
+            'orders.orderTemplate.options.optionTypes:id,order_template_option_id,type_name,is_available,position',
+            'orders.orderTemplate.options:id,order_template_id,label,position',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Order cancelled successfully.',
+            'data' => $this->transformGroup($orderGroup, true),
+        ]);
+    }
+
+    /**
      * Fetch order template with all related configurations for a product.
      * GET /api/customer-orders/product/{productId}/template
      *
@@ -586,6 +731,7 @@ class CustomerOrderController extends Controller
                 $group = CustomerOrderGroup::create([
                     'user_id' => Auth::id(),
                     'status' => 'waiting',
+                    'payment_status' => 'awaiting_payment',
                     'general_drive_link' => $validated['general_drive_link'] ?? null,
                     'subtotal_price' => $pricing['base_price'],
                     'discount_total' => $pricing['discount_amount'],
@@ -712,8 +858,21 @@ class CustomerOrderController extends Controller
             'id' => $group->id,
             'status' => $group->status,
             'status_label' => $group->status_label,
+            'payment_status' => (string) $group->payment_status,
+            'payment_status_label' => $group->payment_status_label,
+            'cancellation_reason' => $group->cancellation_reason,
+            'can_view_details' => true,
+            'can_cancel' => $group->canCustomerCancel(),
+            'can_pay_now' => $group->canSubmitPaymentProof(),
             'is_editable' => $group->status === 'waiting',
             'general_drive_link' => $group->general_drive_link,
+            'payment_method' => $group->payment_method,
+            'payment_reference_number' => $group->payment_reference_number,
+            'payment_proof_url' => $group->payment_proof_path
+                ? asset('storage/'.$group->payment_proof_path)
+                : null,
+            'payment_submitted_at' => $group->payment_submitted_at?->toISOString(),
+            'payment_confirmed_at' => $group->payment_confirmed_at?->toISOString(),
             'totals' => [
                 'subtotal_price' => (float) $group->subtotal_price,
                 'discount_total' => (float) $group->discount_total,

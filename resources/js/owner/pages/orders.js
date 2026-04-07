@@ -27,6 +27,12 @@ const detailDriveLink = document.getElementById("detailDriveLink");
 const detailDriveLinkHint = document.getElementById("detailDriveLinkHint");
 const detailItemsBody = document.getElementById("detailItemsBody");
 const detailOrderTotal = document.getElementById("detailOrderTotal");
+const detailPaymentStatus = document.getElementById("detailPaymentStatus");
+const detailPaymentMethod = document.getElementById("detailPaymentMethod");
+const detailPaymentReference = document.getElementById("detailPaymentReference");
+const detailPaymentProofLink = document.getElementById("detailPaymentProofLink");
+const detailPaymentNoteInput = document.getElementById("detailPaymentNoteInput");
+const detailConfirmPaymentBtn = document.getElementById("detailConfirmPaymentBtn");
 
 let activeFilter = "all";
 let activeSearch = "";
@@ -48,6 +54,12 @@ const statusClass = (status) => {
     if (status === "preparing") return "status-blue";
     if (status === "ready") return "status-orange";
     if (status === "cancelled") return "status-red";
+    return "status-yellow";
+};
+
+const paymentStatusClass = (paymentStatus) => {
+    if (paymentStatus === "payment_received") return "status-green";
+    if (paymentStatus === "payment_cancelled") return "status-red";
     return "status-yellow";
 };
 
@@ -151,6 +163,18 @@ function bindEvents() {
 
         const nextStatus = statusSelect.value;
         const previousStatus = statusSelect.dataset.currentStatus;
+        const paymentStatus = statusSelect.dataset.paymentStatus;
+
+        if (
+            previousStatus === "approved" &&
+            nextStatus === "preparing" &&
+            paymentStatus !== "payment_received"
+        ) {
+            Toast.error("Cannot move to preparing until payment is confirmed.");
+            statusSelect.value = previousStatus;
+            applyStatusClass(statusSelect, previousStatus);
+            return;
+        }
 
         // --- ADDED: CANCEL MODAL INTERCEPT ---
         if (nextStatus === "cancelled") {
@@ -203,6 +227,17 @@ function bindEvents() {
 
         const previousStatus = detailStatusSelect.dataset.currentStatus;
         const nextStatus = detailStatusSelect.value;
+
+        if (
+            previousStatus === "approved" &&
+            nextStatus === "preparing" &&
+            currentDetailGroup?.payment_status !== "payment_received"
+        ) {
+            Toast.error("Cannot move to preparing until payment is confirmed.");
+            detailStatusSelect.value = previousStatus;
+            applyStatusClass(detailStatusSelect, previousStatus);
+            return;
+        }
 
         // --- ADDED: CANCEL MODAL INTERCEPT ---
         if (nextStatus === "cancelled") {
@@ -269,6 +304,10 @@ function bindEvents() {
 
     detailSaveBtn?.addEventListener("click", async () => {
         await saveDetailsEdits();
+    });
+
+    detailConfirmPaymentBtn?.addEventListener("click", async () => {
+        await confirmPaymentForCurrentOrder();
     });
 
     detailDriveLinkInput?.addEventListener("input", () => {
@@ -343,7 +382,7 @@ async function loadOrders() {
                     <div class="card_middle">
                         <div class="status_group">
                             <span class="status_label">Order Status:</span>
-                            <select class="status_select ${statusClass(group.status)}" data-status-order="${group.id}" data-current-status="${group.status}">
+                            <select class="status_select ${statusClass(group.status)}" data-status-order="${group.id}" data-current-status="${group.status}" data-payment-status="${group.payment_status || "awaiting_payment"}">
                                 ${Object.entries(statusLabel)
                     .map(
                         ([value, label]) =>
@@ -355,7 +394,7 @@ async function loadOrders() {
 
                         <div class="status_group">
                             <span class="status_label">Payment Status:</span>
-                            <div class="payment_pill status-yellow">Deferred in this phase</div>
+                            <div class="payment_pill ${paymentStatusClass(group.payment_status)}">${escapeHtml(group.payment_status_label || "Awaiting Payment")}</div>
                         </div>
                     </div>
 
@@ -443,47 +482,70 @@ function renderDetails() {
     detailOrderTotal.textContent = formatMoney(
         currentDetailGroup.totals?.total_price,
     );
+
+    if (detailPaymentStatus) {
+        detailPaymentStatus.textContent =
+            currentDetailGroup.payment_status_label || "Awaiting Payment";
+        detailPaymentStatus.className = `payment_pill ${paymentStatusClass(currentDetailGroup.payment_status)}`;
+    }
+
+    if (detailPaymentMethod) {
+        detailPaymentMethod.textContent =
+            currentDetailGroup.payment_method || "-";
+    }
+
+    if (detailPaymentReference) {
+        detailPaymentReference.textContent =
+            currentDetailGroup.payment_reference_number || "-";
+    }
+
+    if (detailPaymentProofLink) {
+        const proofUrl = currentDetailGroup.payment_proof_url || "";
+        if (proofUrl) {
+            detailPaymentProofLink.textContent = "View uploaded proof";
+            detailPaymentProofLink.href = proofUrl;
+            detailPaymentProofLink.target = "_blank";
+            detailPaymentProofLink.rel = "noopener noreferrer";
+        } else {
+            detailPaymentProofLink.textContent = "No proof uploaded";
+            detailPaymentProofLink.href = "#";
+            detailPaymentProofLink.removeAttribute("target");
+            detailPaymentProofLink.removeAttribute("rel");
+        }
+    }
+
     detailStatusSelect.value = currentDetailGroup.status;
     detailStatusSelect.dataset.currentStatus = currentDetailGroup.status;
     detailStatusSelect.disabled = isDetailsEditMode;
     applyStatusClass(detailStatusSelect, currentDetailGroup.status);
+    applyDetailStatusLocks();
 
     syncDetailActionButtons();
 }
 
-// --- ADDED: STATUS LOCK LOGIC ---
-// Look for the payment text (defaults to 'awaiting' if it can't find it)
-const paymentElement = document.getElementById("detailPaymentStatus");
-const paymentStatusText = paymentElement
-    ? paymentElement.innerText.toLowerCase()
-    : "awaiting";
-const isUnpaid =
-    paymentStatusText.includes("awaiting") ||
-    paymentStatusText.includes("deferred") ||
-    paymentStatusText.includes("pending");
+function applyDetailStatusLocks() {
+    if (!detailStatusSelect || !currentDetailGroup) {
+        return;
+    }
 
-Array.from(detailStatusSelect.options).forEach((option) => {
-    // If UNPAID: Only allow waiting, cancelled, or whatever it is currently stuck on
-    if (isUnpaid) {
+    const isPaymentReceived = currentDetailGroup.payment_status === "payment_received";
+    const currentStatus = currentDetailGroup.status;
+
+    Array.from(detailStatusSelect.options).forEach((option) => {
+        const unlockedText = option.text.replace(" 🔒", "");
+        option.text = unlockedText;
+        option.disabled = false;
+
         if (
-            option.value !== "waiting" &&
-            option.value !== "cancelled" &&
-            option.value !== currentDetailGroup.status
+            currentStatus === "approved" &&
+            option.value === "preparing" &&
+            !isPaymentReceived
         ) {
             option.disabled = true;
-            if (!option.text.includes("🔒")) option.text = option.text + " 🔒";
-        } else {
-            option.disabled = false;
-            option.text = option.text.replace(" 🔒", "");
+            option.text = `${unlockedText} 🔒`;
         }
-    } else {
-        // If PAID: Unlock everything
-        option.disabled = false;
-        option.text = option.text.replace(" 🔒", "");
-    }
-});
-// --------------------------------
-
+    });
+}
 function renderDriveLink() {
     if (!isDetailsEditMode) {
         const driveLink = (currentDetailGroup?.general_drive_link || "").trim();
@@ -852,6 +914,50 @@ async function saveDetailsEdits() {
     await loadOrders();
 }
 
+async function confirmPaymentForCurrentOrder() {
+    if (!currentDetailOrderId || !currentDetailGroup) {
+        return;
+    }
+
+    if (isDetailsEditMode) {
+        Toast.error(
+            "Save or cancel your line-item edits before confirming payment.",
+        );
+        return;
+    }
+
+    if (!currentDetailGroup.can_confirm_payment) {
+        Toast.error("This order is not ready for payment confirmation.");
+        return;
+    }
+
+    isSavingDetails = true;
+    syncDetailActionButtons();
+    showLoadingModal(true);
+
+    const result = await OwnerOrderAPI.confirmPayment(
+        currentDetailOrderId,
+        detailPaymentNoteInput?.value?.trim() || "",
+    );
+
+    showLoadingModal(false);
+    isSavingDetails = false;
+
+    if (!result.success) {
+        Toast.error(result.message || "Unable to confirm payment.");
+        syncDetailActionButtons();
+        return;
+    }
+
+    Toast.success("Payment confirmed. Order moved to preparing.");
+
+    currentDetailGroup = result.data;
+    detailDraft = createDetailDraft(currentDetailGroup);
+    renderDetails();
+
+    await loadOrders();
+}
+
 function validateDetailDraft(draft) {
     if (!draft || !Array.isArray(draft.orders) || draft.orders.length === 0) {
         return "At least one order line is required.";
@@ -902,6 +1008,8 @@ function getDraftOrder(orderId) {
 function syncDetailActionButtons() {
     const canEdit =
         currentDetailGroup && isGroupEditable(currentDetailGroup.status);
+    const canConfirmPayment =
+        Boolean(currentDetailGroup?.can_confirm_payment) && !isDetailsEditMode;
 
     detailEditBtn.style.display =
         canEdit && !isDetailsEditMode ? "inline-flex" : "none";
@@ -909,6 +1017,20 @@ function syncDetailActionButtons() {
         canEdit && isDetailsEditMode ? "inline-flex" : "none";
     detailCancelBtn.style.display =
         canEdit && isDetailsEditMode ? "inline-flex" : "none";
+
+    if (detailConfirmPaymentBtn) {
+        detailConfirmPaymentBtn.style.display = canConfirmPayment
+            ? "inline-flex"
+            : "none";
+        detailConfirmPaymentBtn.disabled = isSavingDetails;
+    }
+
+    if (detailPaymentNoteInput) {
+        detailPaymentNoteInput.style.display = canConfirmPayment
+            ? "block"
+            : "none";
+        detailPaymentNoteInput.disabled = isSavingDetails;
+    }
 
     detailSaveBtn.disabled = isSavingDetails;
     detailCancelBtn.disabled = isSavingDetails;
@@ -926,6 +1048,10 @@ function closeDetailsModal() {
     detailDraft = null;
     isDetailsEditMode = false;
     isSavingDetails = false;
+
+    if (detailPaymentNoteInput) {
+        detailPaymentNoteInput.value = "";
+    }
 }
 
 function formatDateTime(value) {

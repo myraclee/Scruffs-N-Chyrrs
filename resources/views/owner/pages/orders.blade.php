@@ -105,6 +105,25 @@
                         <option value="cancelled">Order Cancelled</option>
                     </select>
                 </div>
+                <div class="status_group">
+                    <span class="brand_label" style="font-size: 26px;">Payment Status:</span>
+                    <span class="payment_pill status-yellow" id="detailPaymentStatus">Awaiting Payment</span>
+                </div>
+            </div>
+
+            <div class="details_drive_link" id="detailPaymentMeta">
+                <h3 class="bold_purple" style="font-size: 20px;">Payment Details:</h3>
+                <p class="brand_placeholder">Method: <span id="detailPaymentMethod">-</span></p>
+                <p class="brand_placeholder">Reference Number: <span id="detailPaymentReference">-</span></p>
+                <p class="brand_placeholder">
+                    Proof: <a href="#" class="brand_placeholder" id="detailPaymentProofLink" target="_blank" rel="noopener noreferrer" style="text-decoration: underline;">No proof uploaded</a>
+                </p>
+                <textarea
+                    id="detailPaymentNoteInput"
+                    class="detail_drive_link_input"
+                    placeholder="Optional payment confirmation note"
+                    style="display: none; margin-top: 8px;"
+                ></textarea>
             </div>
 
             <div class="details_footer">
@@ -112,6 +131,7 @@
                     <button class="edit_modal_btn" id="detailEditBtn" type="button">Edit</button>
                     <button class="save_modal_btn" id="detailSaveBtn" type="button" style="display: none;">Save Changes</button>
                     <button class="cancel_modal_btn" id="detailCancelBtn" type="button" style="display: none;">Cancel</button>
+                    <button class="save_modal_btn" id="detailConfirmPaymentBtn" type="button" style="display: none;">Confirm Payment</button>
                 </div>
                 <button class="close_modal_btn" id="closeDetailsModalBtn">Close</button>
             </div>

@@ -15,7 +15,7 @@ class OwnerDashboardMetricsService
     /**
      * @var list<string>
      */
-    private const PENDING_STATUSES = ['waiting', 'approved', 'preparing', 'ready'];
+    private const PENDING_PAYMENT_STATUSES = ['awaiting_payment', 'waiting_payment_confirmation'];
 
     /**
      * Build owner dashboard metrics for the selected year and month.
@@ -68,11 +68,11 @@ class OwnerDashboardMetricsService
 
         $weeklyLiveTotalOrders = (int) (clone $weeklyGroupsQuery)->count();
         $weeklyLiveReceivedPayment = (int) (clone $weeklyGroupsQuery)
-            ->where('status', 'completed')
+            ->where('payment_status', 'payment_received')
             ->count();
 
         $weeklyLivePendingPayment = (int) (clone $weeklyGroupsQuery)
-            ->whereIn('status', self::PENDING_STATUSES)
+            ->whereIn('payment_status', self::PENDING_PAYMENT_STATUSES)
             ->count();
 
         $weeklyLiveCanceledOrders = (int) (clone $weeklyGroupsQuery)

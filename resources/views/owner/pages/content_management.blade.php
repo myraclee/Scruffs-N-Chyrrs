@@ -390,12 +390,12 @@
             <form id="categoryForm">
                 <div class="form_group">
                     <label for="categoryNameInput">Category Label</label>
-                    <input type="text" id="categoryNameInput" placeholder="Enter category label" maxlength="255" />
+                    <input type="text" id="categoryNameInput" placeholder="Enter category label" maxlength="255" disabled />
                     <p class="field_error hidden">Category name is required.</p>
                 </div>
                 <div class="form_group">
                     <label for="sortOrderInput">Sort Order (1-99)</label>
-                    <input type="text" id="sortOrderInput" placeholder="Enter sort order" inputmode="numeric" />
+                    <input type="text" id="sortOrderInput" placeholder="Enter sort order" inputmode="numeric" disabled />
                     <p class="field_error hidden">Sort order is required.</p>
                 </div>
 
@@ -423,6 +423,7 @@
                 </div>
 
                 <div class="form_actions">
+                    <button type="button" class="submit_btn" id="enterCreateModeBtn">Create New</button>
                     <button type="button" class="cancel_btn" id="closeCategoryFormBtn">Cancel</button>
                     <button type="submit" class="submit_btn">Save</button>
                 </div>

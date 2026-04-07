@@ -129,8 +129,8 @@
         <div class="order_edit_modal" role="dialog" aria-modal="true" aria-labelledby="orderEditTitle">
             <div class="order_edit_modal_header">
                 <div>
-                    <h3 id="orderEditTitle" class="order_edit_modal_title">Edit Waiting Order</h3>
-                    <p class="order_edit_modal_subtitle">Update options, quantity, rush fee, notes, and drive link before approval.</p>
+                    <h3 id="orderEditTitle" class="order_edit_modal_title">Order Details</h3>
+                    <p id="orderEditSubtitle" class="order_edit_modal_subtitle">Review your order items and payment status.</p>
                 </div>
                 <button type="button" class="order_edit_icon_btn" id="orderEditCloseBtn" aria-label="Close edit modal">✕</button>
             </div>
@@ -141,16 +141,16 @@
                     type="url"
                     id="orderEditDriveLink"
                     class="order_edit_input"
-                    placeholder="https://drive.google.com/drive/folders/..."
+                    placeholder="No drive link submitted"
                 >
-                <p class="order_edit_hint">Optional. Provide a valid Google Drive link for this order group.</p>
+                <p class="order_edit_hint">Reference link submitted for this order group.</p>
             </div>
 
             <div class="order_edit_items" id="orderEditItems"></div>
 
             <div class="order_edit_modal_footer">
-                <button type="button" class="order_edit_secondary_btn" id="orderEditCancelBtn">Cancel</button>
-                <button type="button" class="order_edit_primary_btn" id="orderEditSaveBtn">Save Changes</button>
+                <button type="button" class="order_edit_secondary_btn" id="orderEditCancelBtn">Close</button>
+                <button type="button" class="order_edit_primary_btn" id="orderEditSaveBtn" style="display: none;">Save Changes</button>
             </div>
         </div>
     </div>

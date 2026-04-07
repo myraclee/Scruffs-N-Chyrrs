@@ -21,12 +21,16 @@ class CustomerOrderAPI {
   }
 
   async request(url, options = {}) {
+    const isFormData = options.body instanceof FormData;
+
     const response = await fetch(url, {
       headers: {
         Accept: 'application/json',
         'X-CSRF-TOKEN': this.getCsrfToken(),
         'X-Requested-With': 'XMLHttpRequest',
-        ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+        ...(options.body && !isFormData
+          ? { 'Content-Type': 'application/json' }
+          : {}),
         ...(options.headers || {}),
       },
       ...options,
@@ -229,6 +233,40 @@ class CustomerOrderAPI {
       return {
         success: false,
         message: 'Checkout failed. Please try again.',
+      };
+    }
+  }
+
+  async submitPaymentProof(orderGroupId, payload) {
+    try {
+      const formData = new FormData();
+      formData.append('payment_method', payload.payment_method);
+      formData.append('payment_reference_number', payload.payment_reference_number);
+      formData.append('payment_proof', payload.payment_proof);
+
+      return await this.request(`${this.orderBaseUrl}/${orderGroupId}/payment-proof`, {
+        method: 'POST',
+        body: formData,
+      });
+    } catch (error) {
+      console.error('Error submitting payment proof:', error);
+      return {
+        success: false,
+        message: 'Unable to submit payment proof.',
+      };
+    }
+  }
+
+  async cancelOrder(orderGroupId) {
+    try {
+      return await this.request(`${this.orderBaseUrl}/${orderGroupId}/cancel`, {
+        method: 'PATCH',
+      });
+    } catch (error) {
+      console.error('Error cancelling order:', error);
+      return {
+        success: false,
+        message: 'Unable to cancel order.',
       };
     }
   }

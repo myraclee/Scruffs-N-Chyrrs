@@ -146,24 +146,25 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     saveBtn.onclick = async () => {
-        
+
         // --- NEW ERROR LOGIC (No Toast Popups) ---
         if (tempImages.length < 1) {
-            
+            Toast.error("At least one home page image is required.");
+
             // 1. Show the red text under the grid
             const errorEl = document.getElementById("homeImageError");
             if (errorEl) {
                 errorEl.classList.remove("hidden");
             }
-            
+
             // 2. Add the red border to the "+" box
             const addBox = grid.querySelector(".plus");
             if (addBox) {
                 addBox.classList.add("image_box_error");
             }
-            
+
             // 3. Stop the function from saving
-            return; 
+            return;
         }
         // -----------------------------------------
 
