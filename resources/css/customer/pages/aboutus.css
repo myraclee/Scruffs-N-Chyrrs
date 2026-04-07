@@ -743,3 +743,9 @@
         font-size: 14px;
     }
 }
+
+@media (max-width: 380px) {
+    .aboutus_brand_img {
+        height: 65px;
+    }
+}

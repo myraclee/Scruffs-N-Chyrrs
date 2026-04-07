@@ -581,7 +581,6 @@
 
 @media (max-width: 400px) {
     .acct_welcome {
-        flex-direction: column;
         gap: 8px;
     }
 
@@ -597,5 +596,37 @@
 
     .quick_link_content {
         text-align: center;
+    }
+
+    .info_item {
+        padding: 10px 20px;
+    }
+
+    .info_header h3 {
+        font-size: 20px;
+    }
+
+    .info_item label {
+        font-size: 14px;
+    }
+
+    .info_item p {
+        font-size: 13px;
+    }
+
+    .info_section_footer {
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .delete_acc_btn,
+    .password_btn {
+        width: 120px;
+        height: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 }
