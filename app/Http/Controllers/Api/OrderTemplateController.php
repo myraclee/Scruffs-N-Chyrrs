@@ -522,34 +522,35 @@ class OrderTemplateController extends Controller
     }
 
     /**
-     * @return array{active_order_count:int, order_count:int, cart_item_count:int}
+     * @return array{active_order_count:int, order_count:int, total_order_count:int, cart_item_count:int}
      */
     private function getTemplateUsageCounts(OrderTemplate $orderTemplate): array
     {
-        $activeOrderStatuses = ['waiting', 'approved', 'preparing', 'ready'];
-        $activeOrderCount = CustomerOrder::where('order_template_id', $orderTemplate->id)
-            ->whereIn('status', $activeOrderStatuses)
+        $totalOrderCount = CustomerOrder::where('order_template_id', $orderTemplate->id)
             ->count();
 
         return [
-            'active_order_count' => $activeOrderCount,
+            // Legacy key retained for frontend compatibility.
+            'active_order_count' => $totalOrderCount,
             // Keep legacy key for backwards compatibility in frontend consumers.
-            'order_count' => $activeOrderCount,
+            'order_count' => $totalOrderCount,
+            'total_order_count' => $totalOrderCount,
             'cart_item_count' => CustomerCartItem::where('order_template_id', $orderTemplate->id)->count(),
         ];
     }
 
     /**
-     * @param array{active_order_count:int, order_count:int, cart_item_count:int} $usage
+     * @param array{active_order_count:int, order_count:int, total_order_count:int, cart_item_count:int} $usage
      */
     private function buildTemplateInUseResponse(array $usage): JsonResponse
     {
         return response()->json([
             'success' => false,
-            'message' => 'Cannot delete order template because it is currently used by active orders or cart items.',
+            'message' => 'Cannot delete order template because it is currently used by customer orders or cart items.',
             'error_code' => 'order_template_in_use',
             'active_order_count' => $usage['active_order_count'],
             'order_count' => $usage['order_count'],
+            'total_order_count' => $usage['total_order_count'],
             'cart_item_count' => $usage['cart_item_count'],
         ], 409);
     }

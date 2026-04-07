@@ -1053,6 +1053,7 @@ function setupDeleteButton() {
                 if (error?.status === 409) {
                     const activeOrderCount = Number(
                         error?.payload?.active_order_count ??
+                        error?.payload?.total_order_count ??
                         error?.payload?.order_count ??
                         0,
                     );

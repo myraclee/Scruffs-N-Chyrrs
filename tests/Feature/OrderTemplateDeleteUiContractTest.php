@@ -25,6 +25,7 @@ class OrderTemplateDeleteUiContractTest extends TestCase
         $this->assertStringContainsString('error?.status === 409', $script);
         $this->assertStringContainsString('active_order_count', $script);
         $this->assertStringContainsString('order_count', $script);
+        $this->assertStringContainsString('total_order_count', $script);
         $this->assertStringContainsString('cart_item_count', $script);
         $this->assertStringContainsString('Cannot delete order template because it is currently in use', $script);
     }

@@ -37,7 +37,7 @@ class OrderTemplateDeleteConflictTest extends TestCase
         ]);
     }
 
-    public function test_owner_can_soft_delete_template_used_only_by_completed_or_cancelled_orders(): void
+    public function test_owner_delete_returns_conflict_when_template_is_used_only_by_completed_or_cancelled_orders(): void
     {
         $owner = User::factory()->create(['user_type' => 'owner']);
         $customer = User::factory()->create();
@@ -82,17 +82,18 @@ class OrderTemplateDeleteConflictTest extends TestCase
             ->deleteJson("/api/order-templates/{$fixture['template']->id}");
 
         $response
-            ->assertOk()
-            ->assertJsonPath('success', true)
-            ->assertJsonPath('message', 'Order template deleted successfully');
+            ->assertStatus(409)
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('error_code', 'order_template_in_use')
+            ->assertJsonPath('active_order_count', 2)
+            ->assertJsonPath('order_count', 2)
+            ->assertJsonPath('total_order_count', 2)
+            ->assertJsonPath('cart_item_count', 0);
 
-        $this->assertSoftDeleted('order_templates', [
+        $this->assertDatabaseHas('order_templates', [
             'id' => $fixture['template']->id,
+            'deleted_at' => null,
         ]);
-
-        $completedOrder->refresh();
-        $this->assertNotNull($completedOrder->orderTemplate);
-        $this->assertTrue($completedOrder->orderTemplate->trashed());
     }
 
     public function test_owner_delete_returns_conflict_when_template_is_used_by_active_orders(): void
@@ -128,6 +129,7 @@ class OrderTemplateDeleteConflictTest extends TestCase
             ->assertJsonPath('error_code', 'order_template_in_use')
             ->assertJsonPath('active_order_count', 1)
             ->assertJsonPath('order_count', 1)
+            ->assertJsonPath('total_order_count', 1)
             ->assertJsonPath('cart_item_count', 0);
 
         $this->assertDatabaseHas('order_templates', [
@@ -173,6 +175,7 @@ class OrderTemplateDeleteConflictTest extends TestCase
             ->assertJsonPath('error_code', 'order_template_in_use')
             ->assertJsonPath('active_order_count', 0)
             ->assertJsonPath('order_count', 0)
+            ->assertJsonPath('total_order_count', 0)
             ->assertJsonPath('cart_item_count', 1);
 
         $this->assertDatabaseHas('order_templates', [
