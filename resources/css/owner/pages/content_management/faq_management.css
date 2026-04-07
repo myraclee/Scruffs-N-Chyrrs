@@ -255,9 +255,7 @@
 
 /* ==================== MODAL OVERLAY (SHARED) ==================== */
 
-#manageCategoriesOverlay,
-#deleteCategoryConfirmOverlay,
-#deleteFaqModalOverlay {
+.modal_overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -272,23 +270,9 @@
     justify-content: center;
 }
 
-#manageCategoriesOverlay.active,
-#deleteCategoryConfirmOverlay.active,
-#deleteFaqModalOverlay.active {
+.modal_overlay.active {
     display: flex;
     opacity: 1;
-}
-
-#manageCategoriesOverlay {
-    z-index: 1000;
-}
-
-#deleteCategoryConfirmOverlay {
-    z-index: 1010;
-}
-
-#deleteFaqModalOverlay {
-    z-index: 1010;
 }
 
 /* ==================== MANAGE CATEGORIES MODAL ==================== */
@@ -363,7 +347,7 @@
     border-radius: 30px;
     border: 2px solid #682c7a;
     font-size: 15px;
-    margin-bottom: 2px; /* Pulls error text closer */
+    margin-bottom: 2px;
 }
 
 .form_group input:focus {
@@ -371,21 +355,22 @@
     border-color: #4c1c5b;
 }
 
-/* FIX: Red border for errors */
+/* Red border for errors */
 .form_group input.input_error {
     border-color: #c83333 !important;
 }
 
-/* FIX: Flush left, red error text */
+/* Flush left, red error text */
 .field_error {
-    font-family: Coolvetica;
+    font-family: Coolvetica !important;
     font-size: 13px !important;
     color: #c83333 !important;
-    margin-top: 5px;
-    margin-bottom: 10px;
+    margin-top: 5px !important;
+    margin-bottom: 10px !important;
     margin-left: 0 !important;
-    text-align: left;
-    display: block;
+    text-align: left !important;
+    display: block !important;
+    width: 100%;
 }
 
 .field_error.hidden {
@@ -662,24 +647,32 @@
     margin-bottom: 15px;
 }
 
+/* Standardized Label Spacing */
 .add_faq_modal_box label {
     font-family: Coolvetica;
     font-size: 20px;
     color: #682c7a;
+    display: block;
+    text-align: left;
+    margin-top: 15px;
+    margin-bottom: 5px;
 }
 
 .add_faq_modal_box label:first-of-type {
     margin-top: 0;
 }
 
+/* THE FIX: Move margin to wrapper so the ::after triangle centers perfectly */
 .add_faq_modal_box .select_wrapper {
     position: relative;
+    margin-bottom: 2px;
 }
 
+/* THE FIX: Original CSS Triangle restored exactly */
 .add_faq_modal_box .select_wrapper::after {
     content: '';
     position: absolute;
-    right: 14px;
+    right: 16px;
     top: 50%;
     transform: translateY(-50%);
     width: 0;
@@ -690,23 +683,26 @@
     pointer-events: none;
 }
 
+/* Standardized Input/Select/Textarea styling and tight gaps */
 .add_faq_modal_box select,
 .add_faq_modal_box input,
 .add_faq_modal_box textarea {
     width: 100%;
-    padding: 12px 14px;
+    padding: 12px 20px; 
     border: 2px solid #682c7a;
     border-radius: 30px;
     font-size: 15px;
     box-sizing: border-box;
     transition: all 0.3s ease;
-
-    margin-top: 10px;
+    margin-top: 0;
+    margin-bottom: 2px; 
 }
 
-.add_faq_modal_box select,
-.add_faq_modal_box input {
-    margin-bottom: 20px;
+.add_faq_modal_box select {
+    appearance: none;
+    cursor: pointer;
+    padding-right: 40px;
+    margin-bottom: 0; /* OVERRIDE: Let wrapper handle margin so arrow centers perfectly */
 }
 
 .add_faq_modal_box textarea {
@@ -715,25 +711,39 @@
     border-radius: 20px;
 }
 
-.add_faq_modal_box select {
-    appearance: none;
-    cursor: pointer;
-    padding-right: 36px;
+.add_faq_modal_box input:focus,
+.add_faq_modal_box select:focus,
+.add_faq_modal_box textarea:focus {
+    outline: none;
+    border-color: #4c1c5b;
 }
 
-/* ==================== FAQ ERROR MESSAGES ==================== */
-
-.faq_error_message {
-    display: block;
-    font-family: Coolvetica;
-    font-size: 13px;
-    color: #c83333;
-    margin-top: 6px;
-    font-weight: 500;
+/* Add red border for errors */
+.add_faq_modal_box select.input_error_state,
+.add_faq_modal_box input.input_error_state,
+.add_faq_modal_box textarea.input_error_state {
+    border-color: #c83333 !important;
 }
 
-.faq_error_message.hidden {
-    display: none;
+/* Error messages strictly red and flush-left */
+#faqCategoryError,
+#faqQuestionError,
+#faqAnswerError {
+    display: block !important;
+    font-family: Coolvetica !important;
+    font-size: 13px !important;
+    color: #c83333 !important;
+    text-align: left !important;
+    margin-top: 5px !important;
+    margin-bottom: 10px !important;
+    margin-left: 0 !important;
+    width: 100%;
+}
+
+#faqCategoryError.hidden,
+#faqQuestionError.hidden,
+#faqAnswerError.hidden {
+    display: none !important;
 }
 
 /* ==================== FAQ MODAL ACTIONS ==================== */

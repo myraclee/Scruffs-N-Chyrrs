@@ -37,12 +37,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     editHomeImageBtn.addEventListener("click", () => {
         tempImages = savedImages.map((img) => ({ ...img }));
+        resetErrors(); // Clear errors when opening modal
         renderGrid();
         modal.style.display = "flex";
     });
 
     function updateCounter() {
         counter.textContent = `${tempImages.length} / ${MAX} images selected`;
+    }
+
+    function resetErrors() {
+        const errorEl = document.getElementById("homeImageError");
+        if (errorEl) {
+            errorEl.classList.add("hidden");
+        }
+        const addBox = grid.querySelector(".plus");
+        if (addBox) {
+            addBox.classList.remove("image_box_error");
+        }
     }
 
     function renderGrid() {
@@ -64,6 +76,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             clearBtn.textContent = "Remove";
             clearBtn.onclick = () => {
                 tempImages.splice(index, 1);
+                resetErrors(); // Reset errors in case they remove the last image
                 renderGrid();
             };
 
@@ -100,6 +113,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     id: null, // Mark as new image (not yet uploaded)
                     preview: reader.result,
                 });
+                resetErrors(); // Clear errors once an image is added
                 renderGrid();
             };
             reader.readAsDataURL(file);
@@ -132,10 +146,26 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     saveBtn.onclick = async () => {
+        
+        // --- NEW ERROR LOGIC (No Toast Popups) ---
         if (tempImages.length < 1) {
-            Toast.error("At least one home page image is required.");
-            return;
+            
+            // 1. Show the red text under the grid
+            const errorEl = document.getElementById("homeImageError");
+            if (errorEl) {
+                errorEl.classList.remove("hidden");
+            }
+            
+            // 2. Add the red border to the "+" box
+            const addBox = grid.querySelector(".plus");
+            if (addBox) {
+                addBox.classList.add("image_box_error");
+            }
+            
+            // 3. Stop the function from saving
+            return; 
         }
+        // -----------------------------------------
 
         try {
             saveBtn.disabled = true;
@@ -175,6 +205,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     cancelBtn.onclick = () => {
         tempImages = [];
+        resetErrors();
         modal.style.display = "none";
     };
 });

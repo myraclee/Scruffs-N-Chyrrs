@@ -1,7 +1,7 @@
 /**
  * FAQ Management - Admin CRUD
  * Handles FAQ management with database persistence via API
- * Fixed: Double submission prevention
+ * Fixed: Double submission prevention, Red Border Validation
  */
 
 // ================= IMPORTS =================
@@ -37,6 +37,22 @@ const deleteFaqConfirmBtn = document.getElementById("deleteFaqConfirmBtn");
 document.addEventListener("DOMContentLoaded", async () => {
     await populateCategoryDropdown();
     loadFaqs();
+    
+    // Clear errors dynamically when user types/selects
+    faqCategorySelect.addEventListener("change", () => {
+        faqCategorySelect.classList.remove("input_error_state");
+        document.getElementById("faqCategoryError").classList.add("hidden");
+    });
+    
+    faqQuestionInput.addEventListener("input", () => {
+        faqQuestionInput.classList.remove("input_error_state");
+        document.getElementById("faqQuestionError").classList.add("hidden");
+    });
+    
+    faqAnswerInput.addEventListener("input", () => {
+        faqAnswerInput.classList.remove("input_error_state");
+        document.getElementById("faqAnswerError").classList.add("hidden");
+    });
 });
 
 // Listen for category changes from ManageCategoriesModal
@@ -372,16 +388,19 @@ function validateFaqForm() {
 
     if (!faqCategorySelect.value) {
         document.getElementById("faqCategoryError").classList.remove("hidden");
+        faqCategorySelect.classList.add("input_error_state");
         isValid = false;
     }
 
     if (!faqQuestionInput.value.trim()) {
         document.getElementById("faqQuestionError").classList.remove("hidden");
+        faqQuestionInput.classList.add("input_error_state");
         isValid = false;
     }
 
     if (!faqAnswerInput.value.trim()) {
         document.getElementById("faqAnswerError").classList.remove("hidden");
+        faqAnswerInput.classList.add("input_error_state");
         isValid = false;
     }
 
@@ -393,4 +412,8 @@ function clearErrors() {
     document.getElementById("faqCategoryError").classList.add("hidden");
     document.getElementById("faqQuestionError").classList.add("hidden");
     document.getElementById("faqAnswerError").classList.add("hidden");
+    
+    faqCategorySelect.classList.remove("input_error_state");
+    faqQuestionInput.classList.remove("input_error_state");
+    faqAnswerInput.classList.remove("input_error_state");
 }

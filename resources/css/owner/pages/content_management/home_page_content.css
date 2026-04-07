@@ -257,13 +257,17 @@
     text-align: center;
 }
 
+/* THE FIX: Changed margin-bottom from 20px to 5px so it hugs the error message */
 .home_image_grid {
     display: flex;
     flex-wrap: wrap;
     gap: 15px;
     justify-content: center;
     width: 390px;
-    margin: 20px auto;
+    margin-top: 20px;
+    margin-bottom: 5px; 
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .image_slot {
@@ -280,7 +284,7 @@
 }
 
 .image_slot.plus::before {
-    content: '+';
+    content: "+";
     font-size: 40px;
     color: #682c7a;
 }
@@ -382,6 +386,26 @@
     transition: 0.2s ease;
 }
 
+.home_image_error_message {
+    color: #c83333 !important;
+    font-family: Coolvetica !important;
+    font-size: 12px !important;
+    text-align: center !important;
+    margin-top: 5px !important;
+    margin-bottom: 5px !important;
+    display: block !important;
+    width: 100%;
+}
+
+/* Force the dynamically generated + box border and text to turn red */
+.image_slot.plus.image_box_error {
+    border-color: #c83333 !important;
+}
+
+.image_slot.plus.image_box_error::before {
+    color: #c83333 !important;
+}
+
 /* ADD SAMPLE PRODUCTS */
 .add_sample_modal {
     position: fixed;
@@ -452,28 +476,28 @@
     outline: none;
 }
 
-/* FIX: Sample Title Error - Bottom Left, Red (!important overrides modal defaults) */
-p#sampleNameError {
+/* FLUSH LEFT, RED TEXT ERROR */
+.sample_name_error {
     color: #c83333 !important;
-    font-family: Coolvetica;
-    font-size: 13px;
+    font-family: Coolvetica !important;
+    font-size: 13px !important;
     text-align: left !important;
-    margin-top: 5px;
-    margin-bottom: 10px;
-    margin-left: 0 !important; /* FLUSH LEFT */
-    display: block;
+    margin-top: 5px !important;
+    margin-bottom: 10px !important;
+    margin-left: 0 !important; 
+    display: block !important;
     width: 100%;
 }
 
-/* FIX: Image Errors - Centered, Red (!important overrides modal defaults) */
-p#sampleImageError {
+/* CENTERED, RED IMAGE ERROR */
+.sample_images_error {
     color: #c83333 !important;
-    font-family: Coolvetica;
-    font-size: 12px;
+    font-family: Coolvetica !important;
+    font-size: 12px !important;
     text-align: center !important;
-    margin-top: 5px;
-    margin-bottom: 5px;
-    display: block;
+    margin-top: 5px !important;
+    margin-bottom: 5px !important;
+    display: block !important;
     width: 100%;
 }
 
@@ -494,7 +518,7 @@ p#sampleImageError {
 }
 
 .sample_add_slot.image_box_error {
-    border-color: #c83333;
+    border-color: #c83333 !important;
 }
 
 .sample_add_slot.image_box_error::before {
@@ -529,7 +553,7 @@ p#sampleImageError {
 }
 
 .sample_image_slot.plus::before {
-    content: '+';
+    content: "+";
     font-size: 42px;
     color: #682c7a;
 }

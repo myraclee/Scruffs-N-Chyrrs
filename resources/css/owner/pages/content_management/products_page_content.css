@@ -190,29 +190,28 @@
     border-color: #c83333 !important;
 }
 
-/* FIX: Product Name Error - Bottom Left, Red (!important overrides modal defaults) */
-p#products_title_error {
+/* FIX: Text Input Error (Flush Left, Red) */
+.products_error_message {
     color: #c83333 !important;
-    font-family: Coolvetica;
-    font-size: 13px;
+    font-family: Coolvetica !important;
+    font-size: 13px !important;
     text-align: left !important;
-    margin-top: 5px;
-    margin-bottom: 10px;
-    margin-left: 0 !important; /* FLUSH LEFT */
-    display: block;
+    margin-top: 5px !important;
+    margin-bottom: 10px !important;
+    margin-left: 0 !important;
+    display: block !important;
     width: 100%;
 }
 
-/* FIX: Image Errors - Centered, Red (!important overrides modal defaults) */
-p#products_cover_error, 
-p#products_prices_error {
+/* FIX: Image Box Errors (Centered, Red) */
+.products_image_error {
     color: #c83333 !important;
-    font-family: Coolvetica;
-    font-size: 12px;
+    font-family: Coolvetica !important;
+    font-size: 12px !important;
     text-align: center !important;
-    margin-top: 5px;
-    margin-bottom: 10px;
-    display: block;
+    margin-top: 5px !important;
+    margin-bottom: 10px !important;
+    display: block !important;
     width: 100%;
 }
 

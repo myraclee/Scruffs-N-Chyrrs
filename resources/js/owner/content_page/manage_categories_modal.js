@@ -13,7 +13,7 @@ let editingCategoryId = null;
 let pendingDeleteId = null;
 let isLoading = false;
 let isSaving = false;
-let formMode = "idle";
+let formMode = "create"; // Default to create mode now that inputs are auto-enabled
 
 // ================= DOM ELEMENTS =================
 let modalOverlay,
@@ -21,8 +21,7 @@ let modalOverlay,
     categoryForm,
     categoryNameInput,
     sortOrderInput,
-    submitBtn,
-    createModeBtn;
+    submitBtn;
 let categoryTableBody, addCategoryBtn, deleteConfirmOverlay;
 let deleteConfirmMessage, deleteConfirmYesBtn, deleteConfirmNoBtn;
 
@@ -46,15 +45,14 @@ function initializeElements() {
     deleteConfirmYesBtn = document.getElementById("deleteCategoryConfirmYes");
     deleteConfirmNoBtn = document.getElementById("deleteCategoryConfirmNo");
     submitBtn = categoryForm.querySelector(".submit_btn");
-    createModeBtn = document.getElementById("enterCreateModeBtn");
 
-    setInputsEnabled(false);
-    setSaveButtonState(true, "Save");
+    // Inputs are now enabled by default so you can type immediately
+    setInputsEnabled(true);
+    setSaveButtonState(false, "Save");
 }
 
 function setupEventListeners() {
     addCategoryBtn?.addEventListener("click", () => openCategoryModal(null));
-    createModeBtn?.addEventListener("click", enterCreateMode);
 
     // Form cancel button
     const closeCategoryFormBtn = document.getElementById("closeCategoryFormBtn");
@@ -151,17 +149,6 @@ function renderCategoryList() {
 }
 
 // ================= MODAL OPERATIONS =================
-function enterCreateMode() {
-    formMode = "create";
-    editingCategoryId = null;
-    isSaving = false;
-    categoryForm.reset();
-    clearFieldErrors();
-    setInputsEnabled(true);
-    setSaveButtonState(false, "Save");
-    categoryNameInput?.focus();
-}
-
 function enterEditMode(categoryId) {
     if (categoryId === null || categoryId === undefined) {
         Toast.error("Select a category to edit first.");
@@ -178,10 +165,10 @@ function openCategoryModal(categoryId = null) {
     clearFieldErrors();
 
     if (categoryId === null) {
-        formMode = "idle";
+        formMode = "create";
         categoryForm.reset();
-        setInputsEnabled(false);
-        setSaveButtonState(true, "Save");
+        setInputsEnabled(true);
+        setSaveButtonState(false, "Save");
     } else {
         // Edit existing category
         const category = categories.find((c) => c.id === categoryId);
@@ -203,13 +190,13 @@ function openCategoryModal(categoryId = null) {
 
 function closeCategoryModal() {
     hideModal();
-    formMode = "idle";
+    formMode = "create";
     editingCategoryId = null;
     isSaving = false;
     categoryForm.reset();
     clearFieldErrors();
-    setInputsEnabled(false);
-    setSaveButtonState(true, "Save");
+    setInputsEnabled(true); // Keep them enabled for the next time it opens
+    setSaveButtonState(false, "Save");
 }
 
 function showModal() {
@@ -246,11 +233,6 @@ async function saveCategory(e) {
 
     const submitter = e.submitter;
     if (submitter && !submitter.classList.contains("submit_btn")) {
-        return;
-    }
-
-    if (formMode === "idle") {
-        Toast.error("Choose Create New or Edit an existing category first.");
         return;
     }
 
@@ -304,6 +286,7 @@ async function saveCategory(e) {
     try {
         isSaving = true;
         setSaveButtonState(true, "Saving...");
+        setInputsEnabled(false); // Disable inputs while saving to prevent interference
 
         const categoryData = { name, sort_order: sortOrder };
 
@@ -326,6 +309,7 @@ async function saveCategory(e) {
         handleSaveError(error);
         isSaving = false;
         setSaveButtonState(false, "Save");
+        setInputsEnabled(true); // Re-enable if save fails
     }
 }
 
