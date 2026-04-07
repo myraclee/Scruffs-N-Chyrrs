@@ -17,6 +17,9 @@ use App\Models\RushFee;
 use App\Models\RushFeeTimeframe;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class OrderFlowApiTest extends TestCase
@@ -133,6 +136,54 @@ class OrderFlowApiTest extends TestCase
         $response
             ->assertStatus(422)
             ->assertJsonValidationErrors(['general_drive_link']);
+    }
+
+    public function test_checkout_returns_schema_mismatch_payload_when_payment_columns_are_missing(): void
+    {
+        $customer = User::factory()->create();
+        $fixture = $this->createTemplateFixture('Schema Drift Checkout Product');
+
+        $material = Material::create([
+            'name' => 'Schema Drift Material '.uniqid(),
+            'units' => 25,
+        ]);
+
+        MaterialConsumption::create([
+            'material_id' => $material->id,
+            'product_id' => $fixture['product']->id,
+            'order_template_option_type_id' => $fixture['option_type']->id,
+            'quantity' => 1,
+        ]);
+
+        $this->actingAs($customer)
+            ->postJson('/api/customer-cart/items', [
+                'product_id' => $fixture['product']->id,
+                'order_template_id' => $fixture['template']->id,
+                'selected_options' => [
+                    (string) $fixture['option']->id => $fixture['option_type']->id,
+                ],
+                'quantity' => 1,
+            ])
+            ->assertCreated();
+
+        if (Schema::hasColumn('customer_order_groups', 'payment_status')) {
+            DB::statement('DROP INDEX IF EXISTS customer_order_groups_payment_status_index');
+
+            Schema::table('customer_order_groups', function ($table) {
+                $table->dropColumn('payment_status');
+            });
+        }
+
+        $response = $this->actingAs($customer)
+            ->postJson('/api/customer-cart/checkout', [
+                'general_drive_link' => 'https://drive.google.com/drive/folders/schema-drift-case',
+            ]);
+
+        $response
+            ->assertStatus(500)
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('error_code', 'schema_mismatch')
+            ->assertJsonPath('message', 'Checkout failed due to database schema mismatch.');
     }
 
     public function test_direct_single_order_accepts_blank_main_drive_link_when_optional(): void
@@ -611,6 +662,225 @@ class OrderFlowApiTest extends TestCase
 
         $material->refresh();
         $this->assertSame(1, (int) $material->units);
+    }
+
+    public function test_customer_can_submit_payment_proof_and_owner_can_confirm_payment(): void
+    {
+        $customer = User::factory()->create();
+        $owner = User::factory()->create(['user_type' => 'owner']);
+        $fixture = $this->createTemplateFixture('Payment Flow Product');
+        $records = $this->createGroupedOrderRecord(
+            customer: $customer,
+            fixture: $fixture,
+            status: 'approved',
+            paymentStatus: 'awaiting_payment',
+        );
+
+        $submitResponse = $this
+            ->actingAs($customer)
+            ->post("/api/customer-orders/{$records['group']->id}/payment-proof", [
+                'payment_method' => 'gcash',
+                'payment_reference_number' => '1234567890',
+                'payment_proof' => $this->fakePngUpload('payment-proof.png'),
+            ], [
+                'Accept' => 'application/json',
+            ]);
+
+        $submitResponse
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.payment_status', 'waiting_payment_confirmation');
+
+        $confirmResponse = $this
+            ->actingAs($owner)
+            ->patchJson("/api/owner/orders/{$records['group']->id}/payment-confirmation", [
+                'payment_confirmation_note' => 'Confirmed against submitted proof.',
+            ]);
+
+        $confirmResponse
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.payment_status', 'payment_received')
+            ->assertJsonPath('data.status', 'preparing');
+
+        $this->assertDatabaseHas('customer_order_groups', [
+            'id' => $records['group']->id,
+            'payment_status' => 'payment_received',
+            'status' => 'preparing',
+        ]);
+
+        $this->assertDatabaseHas('customer_orders', [
+            'id' => $records['order']->id,
+            'status' => 'preparing',
+        ]);
+    }
+
+    public function test_customer_cannot_submit_payment_proof_before_approval(): void
+    {
+        $customer = User::factory()->create();
+        $fixture = $this->createTemplateFixture('Premature Payment Product');
+        $records = $this->createGroupedOrderRecord(
+            customer: $customer,
+            fixture: $fixture,
+            status: 'waiting',
+            paymentStatus: 'awaiting_payment',
+        );
+
+        $response = $this
+            ->actingAs($customer)
+            ->post("/api/customer-orders/{$records['group']->id}/payment-proof", [
+                'payment_method' => 'gcash',
+                'payment_reference_number' => '1234567890',
+                'payment_proof' => $this->fakePngUpload('invalid-stage.png'),
+            ], [
+                'Accept' => 'application/json',
+            ]);
+
+        $response
+            ->assertStatus(422)
+            ->assertJsonPath('error_code', 'customer_order_payment_not_allowed');
+    }
+
+    public function test_customer_can_cancel_waiting_order_but_not_approved_order(): void
+    {
+        $customer = User::factory()->create();
+        $fixture = $this->createTemplateFixture('Customer Cancel Product');
+
+        $waitingRecords = $this->createGroupedOrderRecord(
+            customer: $customer,
+            fixture: $fixture,
+            status: 'waiting',
+            paymentStatus: 'awaiting_payment',
+        );
+
+        $cancelWaitingResponse = $this
+            ->actingAs($customer)
+            ->patchJson("/api/customer-orders/{$waitingRecords['group']->id}/cancel");
+
+        $cancelWaitingResponse
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.status', 'cancelled')
+            ->assertJsonPath('data.payment_status', 'payment_cancelled')
+            ->assertJsonPath('data.cancellation_reason', 'customer_cancelled');
+
+        $approvedRecords = $this->createGroupedOrderRecord(
+            customer: $customer,
+            fixture: $fixture,
+            status: 'approved',
+            paymentStatus: 'awaiting_payment',
+        );
+
+        $cancelApprovedResponse = $this
+            ->actingAs($customer)
+            ->patchJson("/api/customer-orders/{$approvedRecords['group']->id}/cancel");
+
+        $cancelApprovedResponse
+            ->assertStatus(422)
+            ->assertJsonPath('error_code', 'customer_order_cancel_not_allowed');
+    }
+
+    public function test_owner_cannot_move_approved_order_to_preparing_until_payment_is_confirmed(): void
+    {
+        $customer = User::factory()->create();
+        $owner = User::factory()->create(['user_type' => 'owner']);
+        $fixture = $this->createTemplateFixture('Preparing Guard Product');
+        $records = $this->createGroupedOrderRecord(
+            customer: $customer,
+            fixture: $fixture,
+            status: 'approved',
+            paymentStatus: 'awaiting_payment',
+        );
+
+        $response = $this
+            ->actingAs($owner)
+            ->patchJson("/api/owner/orders/{$records['group']->id}/status", [
+                'status' => 'preparing',
+            ]);
+
+        $response
+            ->assertStatus(422)
+            ->assertJsonPath('error_code', 'owner_payment_confirmation_required');
+    }
+
+    public function test_owner_cancelling_waiting_order_sets_decline_reason_and_payment_cancelled(): void
+    {
+        $customer = User::factory()->create();
+        $owner = User::factory()->create(['user_type' => 'owner']);
+        $fixture = $this->createTemplateFixture('Owner Decline Product');
+        $records = $this->createGroupedOrderRecord(
+            customer: $customer,
+            fixture: $fixture,
+            status: 'waiting',
+            paymentStatus: 'awaiting_payment',
+        );
+
+        $response = $this
+            ->actingAs($owner)
+            ->patchJson("/api/owner/orders/{$records['group']->id}/status", [
+                'status' => 'cancelled',
+            ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.status', 'cancelled')
+            ->assertJsonPath('data.payment_status', 'payment_cancelled')
+            ->assertJsonPath('data.cancellation_reason', 'owner_declined');
+    }
+
+    /**
+     * @param array{product: Product, template: OrderTemplate, option: OrderTemplateOption, option_type: OrderTemplateOptionType} $fixture
+     * @return array{group: CustomerOrderGroup, order: CustomerOrder}
+     */
+    private function createGroupedOrderRecord(User $customer, array $fixture, string $status, string $paymentStatus): array
+    {
+        $group = CustomerOrderGroup::create([
+            'user_id' => $customer->id,
+            'status' => $status,
+            'payment_status' => $paymentStatus,
+            'general_drive_link' => 'https://drive.google.com/drive/folders/payment-flow-fixture',
+            'subtotal_price' => 100,
+            'discount_total' => 0,
+            'rush_fee_total' => 0,
+            'layout_fee_total' => 0,
+            'total_price' => 100,
+        ]);
+
+        $order = CustomerOrder::create([
+            'customer_order_group_id' => $group->id,
+            'user_id' => $customer->id,
+            'product_id' => $fixture['product']->id,
+            'order_template_id' => $fixture['template']->id,
+            'selected_options' => [
+                (string) $fixture['option']->id => $fixture['option_type']->id,
+            ],
+            'quantity' => 1,
+            'base_price' => 100,
+            'discount_amount' => 0,
+            'rush_fee_amount' => 0,
+            'layout_fee_amount' => 0,
+            'total_price' => 100,
+            'status' => $status,
+        ]);
+
+        return [
+            'group' => $group,
+            'order' => $order,
+        ];
+    }
+
+    private function fakePngUpload(string $filename): UploadedFile
+    {
+        $tinyPng = base64_decode(
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO6Nf9sAAAAASUVORK5CYII=',
+            true,
+        );
+
+        if (! is_string($tinyPng)) {
+            throw new \RuntimeException('Failed to build PNG test fixture payload.');
+        }
+
+        return UploadedFile::fake()->createWithContent($filename, $tinyPng);
     }
 
     /**

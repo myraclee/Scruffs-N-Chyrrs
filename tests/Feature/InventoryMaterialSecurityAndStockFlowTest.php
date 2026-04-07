@@ -352,6 +352,10 @@ class InventoryMaterialSecurityAndStockFlowTest extends TestCase
             ])
             ->assertOk();
 
+        CustomerOrderGroup::query()->whereKey($groupId)->update([
+            'payment_status' => 'payment_received',
+        ]);
+
         $this->actingAs($owner)
             ->patchJson("/api/owner/orders/{$groupId}/status", [
                 'status' => 'preparing',

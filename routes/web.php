@@ -125,6 +125,8 @@ Route::prefix('api/customer-orders')->group(function () {
         Route::get('{orderGroup}', [CustomerOrderController::class, 'show'])->whereNumber('orderGroup');
         Route::post('/', [CustomerOrderController::class, 'store']);
         Route::patch('{orderGroup}/details', [CustomerOrderController::class, 'updateDetails'])->whereNumber('orderGroup');
+        Route::post('{orderGroup}/payment-proof', [CustomerOrderController::class, 'submitPaymentProof'])->whereNumber('orderGroup');
+        Route::patch('{orderGroup}/cancel', [CustomerOrderController::class, 'cancel'])->whereNumber('orderGroup');
     });
 });
 
@@ -140,6 +142,7 @@ Route::prefix('api/owner/orders')->middleware(['auth', 'owner'])->group(function
     Route::get('/', [OwnerOrderController::class, 'index']);
     Route::get('{orderGroup}', [OwnerOrderController::class, 'show'])->whereNumber('orderGroup');
     Route::patch('{orderGroup}/details', [OwnerOrderController::class, 'updateDetails'])->whereNumber('orderGroup');
+    Route::patch('{orderGroup}/payment-confirmation', [OwnerOrderController::class, 'confirmPayment'])->whereNumber('orderGroup');
     Route::patch('{orderGroup}/status', [OwnerOrderController::class, 'updateStatus'])->whereNumber('orderGroup');
 });
 

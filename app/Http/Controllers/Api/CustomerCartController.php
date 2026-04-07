@@ -14,10 +14,13 @@ use App\Models\Product;
 use App\Rules\GoogleDriveUrl;
 use App\Services\InventoryStockService;
 use App\Services\OrderPricingService;
+use App\Support\SchemaMismatchDetector;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class CustomerCartController extends Controller
 {
@@ -222,6 +225,13 @@ class CustomerCartController extends Controller
             ], 422);
         }
 
+        if (! Schema::hasColumn('customer_order_groups', 'payment_status')) {
+            return response()->json(
+                SchemaMismatchDetector::buildPayload('Checkout failed due to database schema mismatch.'),
+                500
+            );
+        }
+
         try {
             $group = DB::transaction(function () use ($cart, $validated) {
                 $orderLines = $cart->items
@@ -238,6 +248,7 @@ class CustomerCartController extends Controller
                 $group = CustomerOrderGroup::create([
                     'user_id' => Auth::id(),
                     'status' => 'waiting',
+                    'payment_status' => 'awaiting_payment',
                     'general_drive_link' => $validated['general_drive_link'],
                     'subtotal_price' => $cart->items->sum(fn ($item) => (float) $item->base_price),
                     'discount_total' => $cart->items->sum(fn ($item) => (float) $item->discount_amount),
@@ -283,7 +294,31 @@ class CustomerCartController extends Controller
                 'message' => $e->getMessage(),
                 'configuration_issues' => $e->issues,
             ], 422);
+        } catch (QueryException $e) {
+            if (SchemaMismatchDetector::isMissingCustomerOrderGroupPaymentColumns($e)) {
+                return response()->json(
+                    SchemaMismatchDetector::buildPayload('Checkout failed due to database schema mismatch.'),
+                    500
+                );
+            }
+
+            logger()->error('Cart checkout failed with query exception', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Checkout failed. Please try again.',
+            ], 500);
         } catch (\Throwable $e) {
+            if (SchemaMismatchDetector::isMissingCustomerOrderGroupPaymentColumnsFromThrowable($e)) {
+                return response()->json(
+                    SchemaMismatchDetector::buildPayload('Checkout failed due to database schema mismatch.'),
+                    500
+                );
+            }
+
             logger()->error('Cart checkout failed during inventory deduction', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),

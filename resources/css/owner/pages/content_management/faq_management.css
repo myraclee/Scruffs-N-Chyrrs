@@ -52,10 +52,7 @@
     position: relative;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     cursor: pointer;
-    transition:
-        transform 0.2s ease,
-        box-shadow 0.2s ease,
-        opacity 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
 }
 
 .manage_categories_button:hover {
@@ -83,9 +80,7 @@
     line-height: 1;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     cursor: pointer;
-    transition:
-        transform 0.2s ease,
-        box-shadow 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .add_faq_button:hover {
@@ -258,9 +253,9 @@
     background-color: #4c1c5b;
 }
 
-/* ==================== MODAL OVERLAY (SHARED) ==================== */
+/* ==================== FAQ OVERLAYS ==================== */
 
-.modal_overlay {
+#manageCategoriesOverlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -268,14 +263,46 @@
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
     display: none;
-    z-index: 999;
+    z-index: 1000;
     transition: opacity 0.3s ease;
     opacity: 0;
     align-items: center;
     justify-content: center;
 }
 
-.modal_overlay.active {
+#deleteCategoryConfirmOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    z-index: 1010;
+    transition: opacity 0.3s ease;
+    opacity: 0;
+    align-items: center;
+    justify-content: center;
+}
+
+#deleteFaqModalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    z-index: 1010;
+    transition: opacity 0.3s ease;
+    opacity: 0;
+    align-items: center;
+    justify-content: center;
+}
+
+#manageCategoriesOverlay.active,
+#deleteCategoryConfirmOverlay.active,
+#deleteFaqModalOverlay.active {
     display: flex;
     opacity: 1;
 }
@@ -675,7 +702,7 @@
 
 /* THE FIX: Original CSS Triangle restored exactly */
 .add_faq_modal_box .select_wrapper::after {
-    content: "";
+    content: '';
     position: absolute;
     right: 16px;
     top: 50%;
@@ -779,9 +806,7 @@
     color: #fff7ec;
     cursor: pointer;
     margin-right: auto;
-    transition:
-        transform 0.2s ease,
-        background-color 0.2s ease;
+    transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
 .delete_faq_modal_btn:not(.btn_hidden):hover {
@@ -879,9 +904,7 @@
     cursor: pointer;
     font-family: Coolvetica;
     font-size: 14px;
-    transition:
-        background-color 0.2s ease,
-        transform 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
 .faq_delete_btn_large:hover {

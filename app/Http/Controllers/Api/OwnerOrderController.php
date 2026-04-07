@@ -12,6 +12,7 @@ use App\Services\InventoryStockService;
 use App\Services\OrderPricingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class OwnerOrderController extends Controller
@@ -96,6 +97,18 @@ class OwnerOrderController extends Controller
 
         $nextStatus = $validated['status'];
 
+        if (
+            $orderGroup->status === 'approved'
+            && $nextStatus === 'preparing'
+            && $orderGroup->payment_status !== 'payment_received'
+        ) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cannot move to preparing until payment is confirmed.',
+                'error_code' => 'owner_payment_confirmation_required',
+            ], 422);
+        }
+
         if (!$orderGroup->canTransitionTo($nextStatus)) {
             return response()->json([
                 'success' => false,
@@ -104,9 +117,22 @@ class OwnerOrderController extends Controller
         }
 
         $shouldRestock = $orderGroup->shouldRestockOnCancellation($nextStatus);
+        $shouldSetOwnerDeclineReason = $nextStatus === 'cancelled' && $orderGroup->canOwnerDecline();
 
-        DB::transaction(function () use ($orderGroup, $nextStatus, $shouldRestock) {
-            $orderGroup->update(['status' => $nextStatus]);
+        DB::transaction(function () use ($orderGroup, $nextStatus, $shouldRestock, $shouldSetOwnerDeclineReason) {
+            $groupUpdates = [
+                'status' => $nextStatus,
+            ];
+
+            if ($nextStatus === 'cancelled') {
+                $groupUpdates['payment_status'] = 'payment_cancelled';
+
+                if ($shouldSetOwnerDeclineReason) {
+                    $groupUpdates['cancellation_reason'] = 'owner_declined';
+                }
+            }
+
+            $orderGroup->update($groupUpdates);
             $orderGroup->orders()->update(['status' => $nextStatus]);
 
             if ($shouldRestock) {
@@ -125,6 +151,50 @@ class OwnerOrderController extends Controller
             'success' => true,
             'message' => 'Order status updated successfully.',
             'data' => $this->transformGroup($orderGroup),
+        ]);
+    }
+
+    public function confirmPayment(Request $request, CustomerOrderGroup $orderGroup): JsonResponse
+    {
+        $validated = $request->validate([
+            'payment_confirmation_note' => 'nullable|string|max:1000',
+        ]);
+
+        if (! $orderGroup->canConfirmPayment()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment can only be confirmed for approved orders waiting for payment confirmation.',
+                'error_code' => 'owner_payment_confirm_not_allowed',
+            ], 422);
+        }
+
+        DB::transaction(function () use ($orderGroup, $validated): void {
+            $orderGroup->update([
+                'payment_status' => 'payment_received',
+                'payment_confirmed_at' => now(),
+                'payment_confirmed_by' => Auth::id(),
+                'payment_confirmation_note' => $validated['payment_confirmation_note'] ?? null,
+                'status' => 'preparing',
+            ]);
+
+            $orderGroup->orders()->update([
+                'status' => 'preparing',
+            ]);
+        });
+
+        $orderGroup->refresh()->load([
+            'user:id,first_name,last_name,email,contact_number',
+            'orders.product:id,name',
+            'orders.rushFee:id,label',
+            'orders.orderTemplate.minOrder:id,order_template_id,min_quantity',
+            'orders.orderTemplate.options.optionTypes:id,order_template_option_id,type_name,is_available,position',
+            'orders.orderTemplate.options:id,order_template_id,label,position',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Payment confirmed. Order moved to preparing.',
+            'data' => $this->transformGroup($orderGroup, true),
         ]);
     }
 
@@ -393,7 +463,19 @@ class OwnerOrderController extends Controller
             'id' => $group->id,
             'status' => $group->status,
             'status_label' => $group->status_label,
+            'payment_status' => (string) $group->payment_status,
+            'payment_status_label' => $group->payment_status_label,
+            'cancellation_reason' => $group->cancellation_reason,
             'general_drive_link' => $group->general_drive_link,
+            'payment_method' => $group->payment_method,
+            'payment_reference_number' => $group->payment_reference_number,
+            'payment_proof_url' => $group->payment_proof_path
+                ? asset('storage/'.$group->payment_proof_path)
+                : null,
+            'payment_submitted_at' => $group->payment_submitted_at?->toISOString(),
+            'payment_confirmed_at' => $group->payment_confirmed_at?->toISOString(),
+            'can_confirm_payment' => $group->canConfirmPayment(),
+            'can_owner_decline' => $group->canOwnerDecline(),
             'user' => [
                 'id' => $group->user?->id,
                 'name' => trim(($group->user?->first_name ?? '').' '.($group->user?->last_name ?? '')),

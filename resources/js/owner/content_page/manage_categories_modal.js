@@ -13,7 +13,7 @@ let editingCategoryId = null;
 let pendingDeleteId = null;
 let isLoading = false;
 let isSaving = false;
-let formMode = "create"; // Default to create mode now that inputs are auto-enabled
+let formMode = "idle";
 
 // ================= DOM ELEMENTS =================
 let modalOverlay,
@@ -21,6 +21,7 @@ let modalOverlay,
     categoryForm,
     categoryNameInput,
     sortOrderInput,
+    createModeBtn,
     submitBtn;
 let categoryTableBody, addCategoryBtn, deleteConfirmOverlay;
 let deleteConfirmMessage, deleteConfirmYesBtn, deleteConfirmNoBtn;
@@ -44,15 +45,16 @@ function initializeElements() {
     deleteConfirmMessage = document.getElementById("deleteCategoryConfirmMessage");
     deleteConfirmYesBtn = document.getElementById("deleteCategoryConfirmYes");
     deleteConfirmNoBtn = document.getElementById("deleteCategoryConfirmNo");
+    createModeBtn = document.getElementById("enterCreateModeBtn");
     submitBtn = categoryForm.querySelector(".submit_btn");
 
-    // Inputs are now enabled by default so you can type immediately
-    setInputsEnabled(true);
+    setInputsEnabled(false);
     setSaveButtonState(false, "Save");
 }
 
 function setupEventListeners() {
     addCategoryBtn?.addEventListener("click", () => openCategoryModal(null));
+    createModeBtn?.addEventListener("click", enterCreateMode);
 
     // Form cancel button
     const closeCategoryFormBtn = document.getElementById("closeCategoryFormBtn");
@@ -84,6 +86,16 @@ function setupEventListeners() {
             cancelDelete();
         }
     });
+}
+
+function enterCreateMode() {
+    formMode = "create";
+    editingCategoryId = null;
+    categoryForm.reset();
+    clearFieldErrors();
+    setInputsEnabled(true);
+    setSaveButtonState(false, "Save");
+    categoryNameInput?.focus();
 }
 
 // ================= LOAD CATEGORIES =================
@@ -165,9 +177,9 @@ function openCategoryModal(categoryId = null) {
     clearFieldErrors();
 
     if (categoryId === null) {
-        formMode = "create";
+        formMode = "idle";
         categoryForm.reset();
-        setInputsEnabled(true);
+        setInputsEnabled(false);
         setSaveButtonState(false, "Save");
     } else {
         // Edit existing category
@@ -190,12 +202,12 @@ function openCategoryModal(categoryId = null) {
 
 function closeCategoryModal() {
     hideModal();
-    formMode = "create";
+    formMode = "idle";
     editingCategoryId = null;
     isSaving = false;
     categoryForm.reset();
     clearFieldErrors();
-    setInputsEnabled(true); // Keep them enabled for the next time it opens
+    setInputsEnabled(false);
     setSaveButtonState(false, "Save");
 }
 
@@ -237,6 +249,11 @@ async function saveCategory(e) {
     }
 
     if (isSaving) {
+        return;
+    }
+
+    if (formMode === "idle") {
+        Toast.warning("Choose Create New or Edit an existing category first.");
         return;
     }
 

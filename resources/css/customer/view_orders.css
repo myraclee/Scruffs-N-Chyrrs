@@ -774,6 +774,62 @@
     outline-offset: 2px;
 }
 
+.order_group_action_btn {
+    border: 1px solid #682c7a;
+    border-radius: 999px;
+    padding: 5px 10px;
+    font-family: 'Coolvetica', sans-serif;
+    font-size: 11px;
+    line-height: 1.1;
+    cursor: pointer;
+    transition: transform 0.2s ease, background-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.order_group_action_btn:hover {
+    transform: translateY(-1px);
+}
+
+.order_group_action_btn:focus-visible {
+    outline: 2px solid #dcbae6;
+    outline-offset: 2px;
+}
+
+.order_group_action_btn_view {
+    background: #682c7a;
+    color: #fff7ec;
+}
+
+.order_group_action_btn_view:hover {
+    background: #4c1c5b;
+}
+
+.order_group_action_btn_pay {
+    background: #2f7d4f;
+    border-color: #2f7d4f;
+    color: #fff7ec;
+}
+
+.order_group_action_btn_pay:hover {
+    background: #1f5f3a;
+}
+
+.order_group_action_btn_cancel {
+    background: #fff0f0;
+    border-color: rgba(198, 40, 40, 0.45);
+    color: #b3261e;
+}
+
+.order_group_action_btn_cancel:hover {
+    background: #ffdede;
+}
+
+.order_group_payment_chip {
+    border-color: rgba(47, 125, 79, 0.45);
+    background: #edf7ef;
+    color: #2f7d4f;
+}
+
 .order_group_items {
     margin: 0;
     padding-left: 18px;
@@ -968,6 +1024,48 @@
     font-family: 'Coolvetica', sans-serif;
     font-size: 18px;
     line-height: 1.2;
+}
+
+.order_view_item {
+    background: linear-gradient(180deg, #fffdfa 0%, #fffcf8 100%);
+    border: 1.5px solid rgba(104, 44, 122, 0.22);
+    border-left: 4px solid rgba(104, 44, 122, 0.68);
+    border-radius: 14px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 4px 12px rgba(104, 44, 122, 0.08);
+}
+
+.order_view_item_header h4 {
+    margin: 0;
+    color: #682c7a;
+    font-family: 'Coolvetica', sans-serif;
+    font-size: 18px;
+    line-height: 1.2;
+}
+
+.order_view_item_body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-family: 'Coolvetica', sans-serif;
+    font-size: 13px;
+    color: #4a4a4a;
+}
+
+.order_view_item_body p {
+    margin: 0;
+}
+
+.order_view_item_options ul {
+    margin: 6px 0 0;
+    padding-left: 18px;
+}
+
+.order_view_item_options li {
+    margin: 2px 0;
 }
 
 .order_edit_option_grid {

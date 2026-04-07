@@ -11,7 +11,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $id
  * @property int $user_id
  * @property string $status
+ * @property string $payment_status
+ * @property string|null $cancellation_reason
  * @property string|null $general_drive_link
+ * @property string|null $payment_method
+ * @property string|null $payment_reference_number
+ * @property string|null $payment_proof_path
+ * @property string|null $payment_confirmation_note
+ * @property \\Illuminate\\Support\\Carbon|null $payment_submitted_at
+ * @property \\Illuminate\\Support\\Carbon|null $payment_confirmed_at
+ * @property int|null $payment_confirmed_by
  * @property string|null $subtotal_price
  * @property string|null $discount_total
  * @property string|null $rush_fee_total
@@ -39,10 +48,37 @@ class CustomerOrderGroup extends Model
         'cancelled',
     ];
 
+    public const PAYMENT_STATUSES = [
+        'awaiting_payment',
+        'waiting_payment_confirmation',
+        'payment_received',
+        'payment_cancelled',
+    ];
+
+    public const CANCELLATION_REASONS = [
+        'owner_declined',
+        'customer_cancelled',
+    ];
+
+    public const PAYMENT_METHODS = [
+        'gcash',
+        'bpi',
+        'paymaya',
+    ];
+
     protected $fillable = [
         'user_id',
         'status',
+        'payment_status',
+        'cancellation_reason',
         'general_drive_link',
+        'payment_method',
+        'payment_reference_number',
+        'payment_proof_path',
+        'payment_submitted_at',
+        'payment_confirmed_at',
+        'payment_confirmed_by',
+        'payment_confirmation_note',
         'subtotal_price',
         'discount_total',
         'rush_fee_total',
@@ -64,6 +100,8 @@ class CustomerOrderGroup extends Model
             'inventory_material_requirements' => 'array',
             'inventory_deducted_at' => 'datetime',
             'inventory_restored_at' => 'datetime',
+            'payment_submitted_at' => 'datetime',
+            'payment_confirmed_at' => 'datetime',
         ];
     }
 
@@ -95,7 +133,33 @@ class CustomerOrderGroup extends Model
             return true;
         }
 
+        if ($this->status === 'approved' && $nextStatus === 'preparing') {
+            return $this->payment_status === 'payment_received';
+        }
+
         return in_array($nextStatus, static::allowedTransitions()[$this->status] ?? [], true);
+    }
+
+    public function canCustomerCancel(): bool
+    {
+        return $this->status === 'waiting';
+    }
+
+    public function canOwnerDecline(): bool
+    {
+        return in_array($this->status, ['waiting', 'approved'], true);
+    }
+
+    public function canSubmitPaymentProof(): bool
+    {
+        return $this->status === 'approved'
+            && $this->payment_status === 'awaiting_payment';
+    }
+
+    public function canConfirmPayment(): bool
+    {
+        return $this->status === 'approved'
+            && $this->payment_status === 'waiting_payment_confirmation';
     }
 
     public function shouldRestockOnCancellation(string $nextStatus): bool
@@ -109,13 +173,24 @@ class CustomerOrderGroup extends Model
     public function getStatusLabelAttribute(): string
     {
         return match ($this->status) {
-            'waiting' => 'Waiting for Approval',
+            'waiting' => 'Waiting for Order Approval',
             'approved' => 'Order Approved',
             'preparing' => 'Preparing Order',
             'ready' => 'Ready for Shipping',
             'completed' => 'Completed',
             'cancelled' => 'Cancelled',
             default => ucfirst($this->status),
+        };
+    }
+
+    public function getPaymentStatusLabelAttribute(): string
+    {
+        return match ($this->payment_status) {
+            'awaiting_payment' => 'Awaiting Payment',
+            'waiting_payment_confirmation' => 'Waiting for Payment Confirmation',
+            'payment_received' => 'Payment Received',
+            'payment_cancelled' => 'Payment Cancelled',
+            default => ucfirst(str_replace('_', ' ', (string) $this->payment_status)),
         };
     }
 }
