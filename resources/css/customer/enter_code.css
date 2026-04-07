@@ -118,14 +118,30 @@ form {
 
 /* MOBILE RESPONSIVENESS */
 @media screen and (max-width: 768px) {
+    /* Stop any potential horizontal wobbling on this page */
+    body {
+        overflow-x: hidden;
+    }
+
     .header_enter_code {
         font-size: 2.5rem;
         margin-bottom: 15px;
+        padding: 0 15px;
     }
 
+    /* 👇 Fix 1: Pinch the description text inward */
+    .enter_code_description {
+        font-size: 0.9rem;
+        padding: 0 30px;
+        box-sizing: border-box;
+    }
+
+    /* 👇 Fix 2: Keep the form contained and add bottom padding */
     form {
-        max-width: 100%;
-        padding: 0 15px;
+        width: 100%;
+        max-width: 100vw;
+        padding: 0 15px 40px 15px;
+        box-sizing: border-box;
     }
 
     .code_input {
@@ -133,14 +149,17 @@ form {
         max-width: 200px;
         font-size: 1.5rem;
         letter-spacing: 6px;
+        box-sizing: border-box;
     }
 
     .code_button {
         width: 100%;
         padding: 12px 20px;
+        box-sizing: border-box;
     }
 
-    .enter_code_description {
-        font-size: 0.9rem;
+    /* 👇 Fix 3: Push this text UP away from the wavy footer */
+    .resend_text {
+        margin-bottom: 40px;
     }
 }

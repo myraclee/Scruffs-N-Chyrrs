@@ -294,5 +294,12 @@
             </div>
             
         </div>
+
+        <div class="tnc_footer">
+                <button type="button" id="declineTncBtn" class="decline_tnc_btn">Decline</button>
+                <button type="button" id="acceptTncBtn" class="accept_tnc_btn" disabled>
+                    Scroll down
+                </button>
+            </div>
     </div>
 </div>
