@@ -62,10 +62,27 @@ class CustomerOrderAPI {
    */
   async getOrderTemplate(productId) {
     try {
-      const response = await fetch(`${this.orderBaseUrl}/product/${productId}/template`);
+      const response = await fetch(`${this.orderBaseUrl}/product/${productId}/template`, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+      });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        let errorData = null;
+
+        try {
+          errorData = await response.json();
+        } catch {
+          errorData = null;
+        }
+
+        const apiError = new Error(errorData?.message || `HTTP error! status: ${response.status}`);
+        apiError.status = response.status;
+        apiError.payload = errorData;
+        throw apiError;
       }
 
       const result = await response.json();

@@ -11,8 +11,10 @@ use App\Models\OrderTemplate;
 use App\Models\Product;
 use App\Rules\GoogleDriveUrl;
 use App\Models\RushFee;
+use App\Support\SchemaMismatchDetector;
 use App\Services\InventoryStockService;
 use App\Services\OrderPricingService;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -385,7 +387,15 @@ class CustomerOrderController extends Controller
     public function getProductOrderTemplate(int $productId): JsonResponse
     {
         try {
-            $product = Product::findOrFail($productId);
+            $product = Product::find($productId);
+
+            if (! $product) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Product not found.',
+                    'error_code' => 'product_not_found',
+                ], 404);
+            }
 
             $orderTemplate = $product->orderTemplate()
                 ->with([
@@ -395,7 +405,15 @@ class CustomerOrderController extends Controller
                     'minOrder',
                     'layoutFee',
                 ])
-                ->firstOrFail();
+                ->first();
+
+            if (! $orderTemplate) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This product is not yet configured for ordering.',
+                    'error_code' => 'template_not_configured',
+                ], 404);
+            }
 
             // Get all available rush fees for the client to choose from
             $rushFees = RushFee::with([
@@ -451,11 +469,32 @@ class CustomerOrderController extends Controller
                     ]),
                 ],
             ]);
-        } catch (\Exception $e) {
+        } catch (QueryException $e) {
+            if (SchemaMismatchDetector::isMissingOrderTemplateDeletedAt($e)) {
+                return response()->json(
+                    SchemaMismatchDetector::buildPayload('Failed to fetch order template due to database schema mismatch.'),
+                    500
+                );
+            }
+
+            logger()->error('Order template fetch query failed', [
+                'product_id' => $productId,
+                'error' => $e->getMessage(),
+            ]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to fetch order template',
+            ], 500);
+        } catch (\Exception $e) {
+            logger()->error('Order template fetch failed', [
+                'product_id' => $productId,
                 'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch order template',
             ], 500);
         }
     }
