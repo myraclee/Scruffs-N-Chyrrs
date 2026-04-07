@@ -27,13 +27,13 @@
 
                 <div id="dynamicOptionsContainer" class="order_modal_options_container" style="margin-bottom: 15px;"></div>
 
-                <div class="file_spec_fields" style="margin-bottom: 15px; grid-template-columns: repeat(2, 1fr);">
+                <div class="file_spec_fields quantity_field" style="margin-bottom: 15px; grid-template-columns: 120px 1fr;">
                     <div class="file_spec_field">
                         <label class="file_spec_label">Quantity <span class="label_required">*</span></label>
-                        <input type="number" id="itemQuantity" class="file_spec_input" min="1" value="1">
+                        <input type="number" id="itemQuantity" class="file_spec_input quantity_input" min="1" value="1">
                     </div>
 
-                    <div class="file_spec_field">
+                    <div class="file_spec_field rush_field">
                         <label class="file_spec_label">Rush Processing</label>
                         <select id="rushFeeSelect" class="order_modal_select">
                             <option value="">Standard Processing (No Extra Fee)</option>
@@ -43,7 +43,7 @@
 
                 <div class="file_spec_field" style="margin-bottom: 15px;">
                     <label class="file_spec_label">Google Drive Design Filename <span class="label_required">*</span></label>
-                    <input type="text" id="itemFileName" class="file_spec_input" placeholder="e.g., front_logo.png, matte finish">
+                    <input type="text" id="itemFileName" class="file_spec_input filename_input" placeholder="e.g., front_logo.png, matte finish">
                     <p style="margin: 8px 2px 0; color: #6b5f75; font-family: 'Coolvetica', sans-serif; font-size: 12px; line-height: 1.35;">
                         Layout fee count is comma-based: 1 entry = 1 layout, 2 entries = 2 layouts.
                     </p>
