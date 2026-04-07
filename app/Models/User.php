@@ -44,6 +44,7 @@ class User extends Authenticatable
         'lockout_until',
         'is_locked',
         'must_reset_password',
+        'password_reset_completed_at',
     ];
 
     /**
@@ -66,9 +67,10 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'lockout_until' => 'datetime', 
+            'lockout_until' => 'datetime',
             'is_locked' => 'boolean',
             'must_reset_password' => 'boolean',
+            'password_reset_completed_at' => 'datetime',
         ];
     }
 

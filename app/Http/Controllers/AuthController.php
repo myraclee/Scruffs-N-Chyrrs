@@ -38,6 +38,8 @@ class AuthController extends Controller
 
     private const EMAIL_REMEDIATION_TTL_SECONDS = 600;
 
+    private const PASSWORD_RESET_CAP_TIMEZONE = 'Asia/Manila';
+
     /**
      * Centralized email validation rules.
      */
@@ -133,6 +135,27 @@ class AuthController extends Controller
         }
 
         return User::find($userId);
+    }
+
+    private function passwordResetDailyCapMessage(): string
+    {
+        return 'Password reset can only be completed once per day. Please try again tomorrow.';
+    }
+
+    private function hasReachedCustomerResetDailyCap(?User $user): bool
+    {
+        if (!$user || $user->isOwner() || !$user->password_reset_completed_at) {
+            return false;
+        }
+
+        $completedDate = $user->password_reset_completed_at
+            ->copy()
+            ->timezone(self::PASSWORD_RESET_CAP_TIMEZONE)
+            ->toDateString();
+
+        $currentDate = now(self::PASSWORD_RESET_CAP_TIMEZONE)->toDateString();
+
+        return $completedDate === $currentDate;
     }
 
     /**
@@ -763,6 +786,12 @@ class AuthController extends Controller
                 ->onlyInput('email');
         }
 
+        if ($this->hasReachedCustomerResetDailyCap($user)) {
+            return back()
+                ->withErrors(['email' => $this->passwordResetDailyCapMessage()])
+                ->onlyInput('email');
+        }
+
         if ($user->is_locked || $user->must_reset_password) {
             DB::table('password_reset_tokens')
                 ->where('email', $user->email)
@@ -793,6 +822,12 @@ class AuthController extends Controller
         ]);
 
         $user = User::where('email', $request->email)->first();
+
+        if ($this->hasReachedCustomerResetDailyCap($user)) {
+            return back()
+                ->withErrors(['email' => $this->passwordResetDailyCapMessage()])
+                ->onlyInput('email');
+        }
 
         if ($user && ($user->is_locked || $user->must_reset_password)) {
             $this->issueVerificationCode($user);
@@ -920,6 +955,7 @@ class AuthController extends Controller
             'login_attempts' => 0,
             'lockout_until' => null,
             'must_reset_password' => false,
+            'password_reset_completed_at' => $user->isOwner() ? $user->password_reset_completed_at : now(self::PASSWORD_RESET_CAP_TIMEZONE),
         ]);
 
         DB::table('password_reset_tokens')->where('email', $email)->delete();
