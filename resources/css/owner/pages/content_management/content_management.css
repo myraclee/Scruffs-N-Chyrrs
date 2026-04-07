@@ -135,15 +135,30 @@
     }
 }
 
+
+/* =========================================
+   RESPONSIVE DESIGN (MOBILE FIXES)
+   ========================================= */
+
 @media (max-width: 768px) {
+    .header_animation {
+        justify-content: center; /* Centers the title and stars */
+        flex-wrap: nowrap; /* Prevents the stars from dropping to a new line */
+    }
+
     .page_header {
-        font-size: 28px;
-        margin-top: 50px;
+        /* THE FIX: clamp() fluidly scales the font down so it ALWAYS fits the screen perfectly */
+        font-size: clamp(18px, 6vw, 28px);
+        margin-top: 30px; 
         line-height: 1.2;
+        /* THE FIX: nowrap completely prevents "Content Management" from splitting mid-word */
+        white-space: nowrap; 
+        text-align: center;
     }
 
     .content_pages {
         flex-wrap: wrap;
+        justify-content: center; /* Centers the tab buttons nicely */
         gap: 10px;
     }
 

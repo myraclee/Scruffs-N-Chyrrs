@@ -577,21 +577,14 @@
 }
 
 .delete_subtext {
-    font-family: Arial, sans-serif;
+    font-family: Coolvetica;
     font-size: 13px;
-    color: #777;
-}
-
-.delete_confirmation_actions {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-    margin-top: 8px;
-    width: 100%;
+    color: #d94848;
 }
 
 .confirm_delete_btn {
     padding: 10px 14px;
+    width: 140px;
     border: none;
     border-radius: 30px;
     font-family: Coolvetica;
@@ -702,23 +695,9 @@
         width: 100%;
     }
 
-    /* Stack Modal Buttons for easy thumb tapping */
-    .modal_actions {
-        flex-direction: column;
-        gap: 10px;
-    }
-    .cancel_btn,
-    .save_btn {
-        width: 100%;
-    }
-
     .delete_confirmation_actions {
         flex-direction: column;
         gap: 10px;
-    }
-
-    .confirm_delete_btn {
-        width: 100%;
     }
 
     .action_btn {
@@ -745,4 +724,8 @@
     .card.status_alert.pulse_glow.out_of_stock {
         animation: none;
     }
+}
+
+#deleteMaterialCancelBtn {
+    display: none;
 }

@@ -425,28 +425,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     async function ensureTemplateLoaded() {
-        if (templatePayload) {
-            return true;
-        }
+        if (templatePayload) return;
 
         try {
             templatePayload =
                 await CustomerOrderAPI.getOrderTemplate(productId);
             renderTemplateControls();
-            return true;
         } catch (error) {
-            if (
-                error?.status === 404 &&
-                error?.payload?.error_code === "template_not_configured"
-            ) {
-                Toast.warning(
-                    "This product is not yet available for ordering. Please check back later or contact support.",
-                );
-                return false;
-            }
-
             Toast.error("Unable to load product order configuration.");
-            return false;
         }
     }
 
@@ -465,12 +451,7 @@ document.addEventListener("DOMContentLoaded", () => {
         orderModal.style.display = "flex";
         document.body.style.overflow = "hidden";
 
-        const templateReady = await ensureTemplateLoaded();
-        if (!templateReady) {
-            window.closeOrderModal();
-            return;
-        }
-
+        await ensureTemplateLoaded();
         await refreshCart();
     };
 
