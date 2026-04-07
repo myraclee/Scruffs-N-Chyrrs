@@ -654,6 +654,63 @@
     border-color: #682c7a;
 }
 
+.order_modal_box {
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.order_modal_box::-webkit-scrollbar {
+    display: none;
+}
+
+/* Custom select wrapper */
+.custom-select-container {
+    position: relative;
+    display: block;
+    width: 100%;
+}
+
+/* Base select styling */
+.order_modal_select,
+#rushFeeSelect {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    padding: 12px 45px 12px 16px; /* extra right padding for arrow */
+    border: 2px solid #682c7a;
+    border-radius: 30px;
+    font-family: Arial;
+    font-size: 14px;
+    background-color: white;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Remove default arrow in IE */
+.order_modal_select::-ms-expand,
+#rushFeeSelect::-ms-expand {
+    display: none;
+}
+
+/* Custom arrow (inside wrapper) */
+.select-arrow {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    font-size: 14px;
+    color: #682c7a;
+    transition: transform 0.2s ease;
+}
+
+/* Rotated arrow when select is focused */
+.custom-select-container .select-arrow.rotated {
+    transform: translateY(-50%) rotate(180deg);
+}
+
 /* Price Section */
 .order_modal_price_section {
     background: linear-gradient(135deg, #f9f0ff 0%, #dcbae6 100%);
