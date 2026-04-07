@@ -232,7 +232,8 @@
 
 .edit_home_image_modal_box {
     background: #fff7ec;
-    width: 500px;
+    max-width: 500px;
+    width: 90%;
     padding: 20px;
     border-radius: 30px;
 
@@ -263,11 +264,11 @@
     flex-wrap: wrap;
     gap: 15px;
     justify-content: center;
-    width: 390px;
     margin-top: 20px;
-    margin-bottom: 5px; 
+    margin-bottom: 5px;
     margin-left: auto;
     margin-right: auto;
+    max-width: 100%;
 }
 
 .image_slot {
@@ -457,7 +458,7 @@
     color: #682c7a;
     text-align: left;
     margin-top: 15px;
-    margin-bottom: 5px; 
+    margin-bottom: 5px;
 }
 
 #sampleNameInput {
@@ -469,7 +470,7 @@
     border-radius: 30px;
     border: 2px solid #682c7a;
     font-size: 16px;
-    margin-bottom: 2px; 
+    margin-bottom: 2px;
 }
 
 #sampleNameInput:focus {
@@ -484,7 +485,7 @@
     text-align: left !important;
     margin-top: 5px !important;
     margin-bottom: 10px !important;
-    margin-left: 0 !important; 
+    margin-left: 0 !important;
     display: block !important;
     width: 100%;
 }
@@ -500,7 +501,6 @@
     display: block !important;
     width: 100%;
 }
-
 
 .sample_image_grid {
     display: flex;
@@ -658,7 +658,6 @@
     transition: 0.2s ease;
 }
 
-
 /* Delete Confirmation */
 
 .delete_confirm_modal {
@@ -703,7 +702,9 @@
     cursor: pointer;
     font-family: Coolvetica;
     font-size: 14px;
-    transition: background-color 0.2s ease, transform 0.2s ease;
+    transition:
+        background-color 0.2s ease,
+        transform 0.2s ease;
 }
 
 .delete_confirm_box button:hover {
@@ -847,7 +848,9 @@
     font-family: Coolvetica;
     font-size: 13px;
     cursor: pointer;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
 }
 
 .edit_sample_btn {

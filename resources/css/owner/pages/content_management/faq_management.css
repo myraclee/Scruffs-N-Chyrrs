@@ -52,7 +52,10 @@
     position: relative;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        opacity 0.2s ease;
 }
 
 .manage_categories_button:hover {
@@ -80,7 +83,9 @@
     line-height: 1;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
 .add_faq_button:hover {
@@ -670,7 +675,7 @@
 
 /* THE FIX: Original CSS Triangle restored exactly */
 .add_faq_modal_box .select_wrapper::after {
-    content: '';
+    content: "";
     position: absolute;
     right: 16px;
     top: 50%;
@@ -688,14 +693,14 @@
 .add_faq_modal_box input,
 .add_faq_modal_box textarea {
     width: 100%;
-    padding: 12px 20px; 
+    padding: 12px 20px;
     border: 2px solid #682c7a;
     border-radius: 30px;
     font-size: 15px;
     box-sizing: border-box;
     transition: all 0.3s ease;
     margin-top: 0;
-    margin-bottom: 2px; 
+    margin-bottom: 2px;
 }
 
 .add_faq_modal_box select {
@@ -774,7 +779,9 @@
     color: #fff7ec;
     cursor: pointer;
     margin-right: auto;
-    transition: transform 0.2s ease, background-color 0.2s ease;
+    transition:
+        transform 0.2s ease,
+        background-color 0.2s ease;
 }
 
 .delete_faq_modal_btn:not(.btn_hidden):hover {
@@ -872,7 +879,9 @@
     cursor: pointer;
     font-family: Coolvetica;
     font-size: 14px;
-    transition: background-color 0.2s ease, transform 0.2s ease;
+    transition:
+        background-color 0.2s ease,
+        transform 0.2s ease;
 }
 
 .faq_delete_btn_large:hover {
@@ -942,7 +951,6 @@
         margin-left: 4px;
     }
 
-    .form_actions,
     .delete_confirmation_actions {
         flex-direction: column;
     }
@@ -953,7 +961,8 @@
     .cancel_delete_btn,
     .save_faq,
     .cancel_faq {
-        width: 100%;
+        width: 90px;
+        height: 35px;
     }
 }
 
@@ -1011,6 +1020,6 @@
 
     .manage_categories_button,
     .add_faq_button {
-        width: 100%;
+        width: 170px;
     }
 }

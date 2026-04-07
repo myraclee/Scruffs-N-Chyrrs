@@ -605,7 +605,7 @@ class AuthController extends Controller
 
         if (!$user) {
             return back()
-                ->withErrors(['email' => 'No account found with this email address.'])
+                ->withErrors(['email' => 'Invalid email address.'])
                 ->onlyInput('email');
         }
 
