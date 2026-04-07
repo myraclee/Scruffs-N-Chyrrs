@@ -8,7 +8,6 @@
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(4px);
     z-index: 9999;
     display: flex;
     align-items: center;
@@ -25,8 +24,6 @@
     padding: 30px;
     background-color: #fff7ec;
     border-radius: 30px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    border: 2px solid #6b3282;
     position: relative;
     animation: acct_fade_up 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) both;
     max-height: 90vh;
@@ -46,63 +43,16 @@
     width: 0;
     height: 0;
     display: none;
+    max-height: 70vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
-/* Stars (reuse from your CSS) */
-.star {
-    position: absolute;
-    font-size: 20px;
-    color: #682c7a;
-    line-height: 1;
-    pointer-events: none;
-}
-.star_tl {
-    top: -13px;
-    left: -13px;
-    animation: twinkle 2.4s ease-in-out infinite;
-    animation-delay: 0s;
-}
-.star_tr {
-    top: -13px;
-    right: -13px;
-    animation: twinkle 2.4s ease-in-out infinite;
-    animation-delay: 0.6s;
-}
-.star_bl {
-    bottom: -13px;
-    left: -13px;
-    animation: twinkle 2.4s ease-in-out infinite;
-    animation-delay: 1.2s;
-}
-.star_br {
-    bottom: -13px;
-    right: -13px;
-    animation: twinkle 2.4s ease-in-out infinite;
-    animation-delay: 1.8s;
-}
-
-@keyframes twinkle {
-    0%,
-    100% {
-        opacity: 1;
-        transform: scale(1) rotate(0deg);
-    }
-    20% {
-        opacity: 0.15;
-        transform: scale(0.55) rotate(30deg);
-    }
-    40% {
-        opacity: 0.9;
-        transform: scale(1.1) rotate(-10deg);
-    }
-    60% {
-        opacity: 0.2;
-        transform: scale(0.6) rotate(25deg);
-    }
-    80% {
-        opacity: 1;
-        transform: scale(1.05) rotate(-5deg);
-    }
+.modal-container::-webkit-scrollbar {
+    display: none;
 }
 
 @keyframes acct_fade_up {
@@ -118,9 +68,19 @@
 
 /* Modal Header */
 .modal-header {
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     margin-bottom: 20px;
 }
+
+.modal-header h1 {
+    font-family: SuperDream;
+    color: #682c7a;
+    font-size: 30px;
+}
+
 .modal-brand-logo {
     max-height: 55px;
     width: auto;
@@ -133,23 +93,18 @@
 }
 
 /* Warning specific */
-.warning-icon {
-    font-size: 3rem;
-    text-align: center;
-    margin-bottom: 10px;
-}
 .warning-title {
-    font-family: 'SuperDream', sans-serif;
-    font-size: 28px;
+    font-family: "SuperDream", sans-serif;
+    font-size: 35px;
     text-align: center;
-    color: #6b3282;
+    color: #d32f2f;
     margin-bottom: 15px;
 }
 .warning-text {
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 15px;
     text-align: center;
-    color: #333;
+    color: #682c7a;
     line-height: 1.5;
 }
 
@@ -161,14 +116,14 @@
     margin-bottom: 10px;
 }
 .confirmation-title {
-    font-family: 'SuperDream', sans-serif;
+    font-family: "SuperDream", sans-serif;
     font-size: 26px;
     text-align: center;
     color: #6b3282;
     margin-bottom: 15px;
 }
 .confirmation-text {
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 15px;
     text-align: center;
     color: #333;
@@ -179,32 +134,59 @@
     margin-bottom: 20px;
 }
 .form_group label {
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 17px;
     color: #6b3282;
     display: block;
     margin-bottom: 8px;
 }
-.form_input,
+
 .payment-select {
     width: 100%;
-    padding: 12px 16px;
-    border: 2px solid #dcbae6;
+    padding: 12px 40px 12px 16px;
+    border: 2px solid #682c7a;
     border-radius: 30px;
-    font-family: sans-serif;
+    font-family: Arial;
     font-size: 14px;
     color: #333;
     background-color: #fffbf5;
-    transition: all 0.3s ease;
-    box-sizing: border-box;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg fill='%236b3282' height='20' viewBox='0 0 20 20' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M5 7l5 5 5-5H5z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px 16px;
+    cursor: pointer;
 }
+
+.form_input {
+    border: 2px solid #682c7a;
+    padding: 12px 20px;
+    width: 100%;
+    border-radius: 30px;
+    font-family: Arial;
+    font-size: 14px;
+    color: #333;
+}
+
+.reference_number {
+    border: 2px solid #682c7a;
+    padding: 12px 20px;
+    width: 250px;
+    border-radius: 30px;
+    font-family: Arial;
+    font-size: 14px;
+    color: #333;
+}
+
 .form_input:focus,
 .payment-select:focus {
     outline: none;
     border-color: #6b3282;
 }
 .error_message {
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 12px;
     color: #d32f2f;
     margin-top: 5px;
@@ -234,9 +216,9 @@
     border: 1px solid #dcbae6;
 }
 .qr-amount-text {
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 16px;
-    color: #333;
+    color: #682c7a;
 }
 .qr-amount-text strong {
     color: #6b3282;
@@ -261,7 +243,7 @@
     flex-direction: column;
     align-items: center;
     gap: 5px;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     color: #888;
 }
 .upload-icon {
@@ -291,7 +273,7 @@
     border: none;
     padding: 6px 16px;
     border-radius: 40px;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 13px;
     cursor: pointer;
     transition: 0.2s;
@@ -315,7 +297,7 @@
     margin-top: 20px;
 }
 .action_btn {
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     letter-spacing: 0.5px;
     text-align: center;
     border-radius: 50px;
@@ -390,4 +372,10 @@
 .modal-container::-webkit-scrollbar-thumb {
     background: #6b3282;
     border-radius: 10px;
+}
+
+@media (max-width: 375px) {
+    .reference_number {
+        width: 150px;
+    }
 }
