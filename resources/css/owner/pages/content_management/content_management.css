@@ -134,3 +134,22 @@
         transform: rotate(0deg);
     }
 }
+
+@media (max-width: 768px) {
+    .page_header {
+        font-size: 28px;
+        margin-top: 50px;
+        line-height: 1.2;
+    }
+
+    .content_pages {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .content_option {
+        width: auto;
+        padding: 0 16px;
+        flex-shrink: 0;
+    }
+}

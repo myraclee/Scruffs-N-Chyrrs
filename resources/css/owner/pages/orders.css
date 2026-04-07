@@ -83,7 +83,7 @@
     padding: 12px 20px;
     border: 2px solid #682c7a;
     border-radius: 25px;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 16px;
     color: #682c7a;
     outline: none;
@@ -106,7 +106,7 @@
     margin-bottom: 40px;
 }
 .filter_label {
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 20px;
     color: #312e2e;
     margin-bottom: 15px;
@@ -124,7 +124,7 @@
     padding: 8px 20px;
     border-radius: 20px;
     border: none;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 14px;
     cursor: pointer;
     transition: 0.3s;
@@ -159,13 +159,13 @@
     margin-bottom: 20px;
 }
 .customer_info h3 {
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     color: #682c7a;
     font-size: 24px;
     margin: 0 0 5px 0;
 }
 .customer_info p {
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     color: #682c7a;
     font-size: 14px;
     margin: 0;
@@ -177,7 +177,7 @@
     padding: 8px 25px;
     border-radius: 20px;
     border: none;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 14px;
     cursor: pointer;
     transition: 0.2s;
@@ -200,7 +200,7 @@
     gap: 8px;
 }
 .status_label {
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     color: #682c7a;
     font-size: 18px;
     font-weight: bold;
@@ -213,7 +213,7 @@
     /* Slightly adjusted padding to balance the text with the arrow icon */
     padding: 8px 30px 8px 30px;
     border-radius: 25px;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 14px;
     cursor: pointer;
     outline: none;
@@ -230,7 +230,7 @@
 .payment_pill {
     padding: 8px 25px;
     border-radius: 25px;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 14px;
     display: flex;
     align-items: center;
@@ -292,13 +292,13 @@
     gap: 5px;
 }
 .detail_label {
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     color: #682c7a;
     font-size: 16px;
     font-weight: bold;
 }
 .detail_value {
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     color: #682c7a;
     font-size: 14px;
 }
@@ -313,7 +313,7 @@
 }
 
 .empty_message {
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     color: #a15fb5;
     font-size: 20px;
     font-style: italic;
@@ -345,7 +345,7 @@
     border-radius: 30px;
     padding: 40px 50px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
 }
 .details_modal_box::-webkit-scrollbar {
     width: 8px;
@@ -368,13 +368,13 @@
 
 /* Branding font class for labels and placeholders */
 .brand_label {
-    font-family: 'SuperDream', sans-serif;
+    font-family: "SuperDream", sans-serif;
     color: #682c7a;
     font-weight: normal;
     font-size: 1.1em;
 }
 .brand_placeholder {
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     color: #682c7a !important;
     font-weight: normal;
 }
@@ -423,7 +423,7 @@
     border: 2px solid #682c7a;
     border-radius: 16px;
     padding: 10px 14px;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 15px;
     color: #312e2e;
     background: #fff;
@@ -436,16 +436,17 @@
     color: #7b6090;
     font-size: 12px;
     line-height: 1.4;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
 }
 
 .detail_drive_link_hint code {
     color: #5b3a68;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
 }
 
 .details_modal_box.edit_mode {
-    box-shadow: 0 0 0 4px rgba(104, 44, 122, 0.18),
+    box-shadow:
+        0 0 0 4px rgba(104, 44, 122, 0.18),
         0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
@@ -469,7 +470,7 @@
     background: #682c7a;
     color: white;
     padding: 12px;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-weight: normal;
     font-size: 16px;
     text-align: center;
@@ -502,7 +503,7 @@
 }
 
 .detail_item_title {
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     color: #682c7a;
     font-size: 15px;
 }
@@ -522,7 +523,7 @@
 .detail_option_field_label {
     font-size: 12px;
     color: #682c7a;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
 }
 
 .detail_option_select,
@@ -533,7 +534,7 @@
     border: 1.5px solid #c48fd5;
     border-radius: 10px;
     padding: 7px 10px;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 14px;
     color: #312e2e;
     background: #fff;
@@ -548,7 +549,7 @@
     margin-top: 6px;
     color: #8b6199;
     font-size: 12px;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
 }
 
 /* Total & Statuses */
@@ -588,7 +589,7 @@
     border: none;
     padding: 10px 40px;
     border-radius: 25px;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 18px;
     cursor: pointer;
     transition: 0.2s;
@@ -604,7 +605,7 @@
     border: none;
     border-radius: 25px;
     padding: 10px 24px;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 16px;
     cursor: pointer;
     transition: 0.2s;
@@ -664,7 +665,7 @@
     margin-bottom: 20px;
 }
 .payment_header {
-    font-family: 'SuperDream', sans-serif;
+    font-family: "SuperDream", sans-serif;
     color: #682c7a;
     font-size: 26px;
     margin: 0 0 20px 0;
@@ -684,7 +685,7 @@
     text-align: left;
 }
 .payment_label {
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     color: #682c7a;
     font-size: 1.1em;
     display: block;
@@ -692,7 +693,7 @@
     font-weight: normal;
 }
 .payment_value {
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     color: #312e2e;
     font-size: 16px;
     margin-left: 15px;
@@ -705,7 +706,7 @@
     border: none;
     padding: 10px 50px;
     border-radius: 25px;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 18px;
     cursor: pointer;
     transition: 0.2s;
@@ -726,10 +727,10 @@
     padding: 30px;
     text-align: center;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
 }
 .cancel_header {
-    font-family: 'SuperDream', sans-serif;
+    font-family: "SuperDream", sans-serif;
     color: #d94848;
     font-size: 30px;
     margin-top: 0;
@@ -737,7 +738,7 @@
     font-weight: normal;
 }
 .cancel_text {
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     color: #312e2e;
     font-size: 16px;
     margin-bottom: 25px;
@@ -754,7 +755,7 @@
     border: none;
     padding: 10px 20px;
     border-radius: 20px;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 16px;
     cursor: pointer;
     transition: 0.2s;
@@ -770,7 +771,7 @@
     border: none;
     padding: 10px 20px;
     border-radius: 20px;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 16px;
     cursor: pointer;
     transition: 0.2s;
@@ -841,5 +842,23 @@
 
     .card_bottom .detail_group:last-child {
         grid-column: 1 / -1;
+    }
+    .orders_container {
+        padding: 20px 15px;
+    }
+
+    .page_header {
+        font-size: 28px;
+        margin-top: 50px;
+        line-height: 1.2;
+    }
+
+    .filters_container {
+        gap: 8px;
+    }
+
+    .filter_btn {
+        font-size: 13px;
+        padding: 6px 14px;
     }
 }

@@ -22,7 +22,7 @@
 
             <div class="order_modal_price_divider"></div>
 
-            <div class="order_modal_section" style="background: #fffcf8; padding: 20px; border-radius: 16px; border: 2px solid #682c7a;">
+            <div class="order_modal_section" style="background: #f3e3f8; padding: 20px; border-radius: 16px; border: 2px solid #682c7a;">
                 <h3 class="order_modal_section_title">Add to Order</h3>
 
                 <div id="dynamicOptionsContainer" class="order_modal_options_container" style="margin-bottom: 15px;"></div>

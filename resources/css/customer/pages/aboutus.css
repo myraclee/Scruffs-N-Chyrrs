@@ -396,6 +396,16 @@
     animation-delay: 0.62s;
 }
 
+.location_link {
+    text-decoration: none;
+    color: #682c7a;
+    transition: transform 0.4s ease;
+}
+
+.location_link:hover {
+    transform: scale(1.5);
+}
+
 /* ---- Outer floating/twinkling stars ---- */
 .deco_star {
     position: absolute;
