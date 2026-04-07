@@ -30,6 +30,14 @@ const money = (value) =>
     currency: "PHP",
   }).format(Number(value || 0));
 
+const formatPhpAmount = (value) => {
+  const normalized = Number(value || 0);
+  return `Php ${new Intl.NumberFormat("en-PH", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(normalized)}`;
+};
+
 const normalizeDriveLink = (value) =>
   typeof value === "string" ? value.trim() : "";
 
@@ -185,27 +193,34 @@ function renderCart(cart) {
         .join(" | ");
 
       return `
-				<div class="file_spec_row" data-cart-item-id="${item.id}" style="width:100%;">
-					<div class="file_spec_row_header">
-						<span class="file_spec_number">${item.product_name} x${item.quantity}</span>
-						<button type="button" class="remove_file_spec_btn" data-remove-cart-id="${item.id}">✕</button>
-					</div>
-					<div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;flex-wrap:wrap;font-family:'Coolvetica',sans-serif;font-size:13px;">
-						<span>${options || "No option summary"}</span>
-						<strong style="color:#682c7a;">${money(item.total_price)}</strong>
-					</div>
-					${item.special_instructions ? `<div style="margin-top:8px;font-family:'Coolvetica',sans-serif;font-size:12px;color:#666;">Notes: ${item.special_instructions}</div>` : ""}
-				</div>
+        <div class="cart_item_card" data-cart-item-id="${item.id}">
+          <div class="cart_item_header">
+            <span class="cart_item_title">${item.product_name} x${item.quantity}</span>
+            <button
+              type="button"
+              class="remove_file_spec_btn"
+              data-remove-cart-id="${item.id}"
+              aria-label="Remove ${item.product_name} from cart"
+            >
+              Remove
+            </button>
+          </div>
+          <div class="cart_item_details_row">
+            <span class="cart_item_options">${options || "No option summary"}</span>
+            <strong class="cart_item_price">${money(item.total_price)}</strong>
+          </div>
+          ${item.special_instructions ? `<div class="cart_item_notes">Notes: ${item.special_instructions}</div>` : ""}
+        </div>
 			`;
     })
     .join("");
 
   cartContent.innerHTML = `
-		<div style="width:100%;display:flex;flex-direction:column;gap:14px;">
+    <div class="cart_content_shell">
 			${rows}
-			<div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:2px dashed rgba(104,44,122,0.2);font-family:'Coolvetica',sans-serif;color:#682c7a;">
-				<span style="font-size:18px;">Cart Total</span>
-				<strong style="font-size:20px;">${money(cart.totals?.total_price)}</strong>
+      <div class="cart_total_row">
+        <span class="cart_total_label">Cart Total</span>
+        <strong class="cart_total_value">${money(cart.totals?.total_price)}</strong>
 			</div>
 			<div class="cart_checkout_block">
 				<label for="${DRIVE_LINK_FIELD_ID}" class="cart_checkout_label">Main Drive Link <span class="label_required">*</span></label>
@@ -765,8 +780,17 @@ function bindCartEvents() {
         return;
       }
 
+      const payableTotal = Number(cartState.data?.totals?.total_price ?? NaN);
+      if (!Number.isFinite(payableTotal) || payableTotal <= 0) {
+        Toast.error("Unable to resolve the payable amount. Please refresh your cart and try again.");
+        return;
+      }
+
+      const formattedPayableAmount = formatPhpAmount(payableTotal);
+
       if (typeof window.openPaymentModal === "function") {
         window.openPaymentModal(event, {
+          payableAmount: formattedPayableAmount,
           onConfirm: async () => {
             return await placeCartOrder();
           },

@@ -4,6 +4,7 @@ let currentFile = null;
 let currentModal = null;
 let pendingConfirmAction = null;
 let isConfirming = false;
+let currentPayableAmount = "Php 0.00";
 
 const qrImages = {
     gcash: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"%3E%3Crect width="200" height="200" fill="%230066CC"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="white" font-size="20" font-family="monospace"%3EGCash QR%3C/text%3E%3C/svg%3E',
@@ -61,6 +62,11 @@ function updateQRCode() {
     const method = select.value;
     const qrImg = document.getElementById("qrCodeImage");
     if (qrImg && qrImages[method]) qrImg.src = qrImages[method];
+
+    const amountText = document.querySelector(".qr-amount-text strong");
+    if (amountText) {
+        amountText.textContent = currentPayableAmount;
+    }
 }
 
 function validatePaymentDetails() {
@@ -237,6 +243,10 @@ window.openPaymentModal = function (event, options = {}) {
     if (event) event.preventDefault();
     pendingConfirmAction =
         typeof options.onConfirm === "function" ? options.onConfirm : null;
+    currentPayableAmount =
+        typeof options.payableAmount === "string" && options.payableAmount.trim()
+            ? options.payableAmount.trim()
+            : "Php 0.00";
     resetPaymentForm();
     showModal("modalWarning");
 };
