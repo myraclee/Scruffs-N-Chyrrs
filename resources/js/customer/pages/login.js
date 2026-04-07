@@ -1,99 +1,84 @@
 import Toast from "/resources/js/utils/toast.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-    // --- 1. SELECTORS & ASSETS ---
+    // --- DOM Elements ---
     const emailInput = document.getElementById("email");
     const loginInput = document.getElementById("password");
     const form = document.querySelector("form");
     const submitButton = form?.querySelector('button[type="submit"]');
     const toggleLogin = document.getElementById("toggle_login_password");
-    const remediationOverlay = document.getElementById("email_remediation_overlay");
+    const remediationOverlay = document.getElementById(
+        "email_remediation_overlay",
+    );
     const remediationForm = document.getElementById("email_remediation_form");
     const remediationInput = document.getElementById("remediation_email");
-    const forceRemediation = document.getElementById("force_email_remediation_flag")?.value === "1";
+    const forceRemediation =
+        document.getElementById("force_email_remediation_flag")?.value === "1";
+
+    // Unlock modal elements
+    const unlockModal = document.getElementById("unlockAccountModal");
+    const unlockCloseBtn = document.getElementById("closeUnlockModal");
+    const unlockForm = document.getElementById("unlockForm");
+    const unlockEmailInput = document.getElementById("unlock_email");
+    const forceUnlockModal =
+        document.getElementById("force_unlock_modal")?.value === "1";
+
     let isSubmitted = false;
     let countdownInterval = null;
     let cleanupRemediationGuards = null;
 
+    // Eye icons (unchanged)
     const eyeOpen = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#682c7a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
     const eyeClosed = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#682c7a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
 
-    // --- 2. UTILS ---
+    // --- Utilities (validateLoginEmail, validateRemediationEmail, lockPageInteraction, applyErrorStyles, etc.) ---
+    // (Keep your existing utility functions exactly as they were)
     const validateLoginEmail = (email) => {
-        if (!email) {
-            return false;
-        }
-
-        if (email.includes(" ")) {
-            return false;
-        }
-
-        if (!email.includes("@")) {
-            return false;
-        }
-
+        if (!email) return false;
+        if (email.includes(" ")) return false;
+        if (!email.includes("@")) return false;
         const parts = email.split("@");
-        if (parts.length !== 2) {
-            return false;
-        }
-
+        if (parts.length !== 2) return false;
         const [prefix, domain] = parts;
-
-        if (!prefix || !domain) {
-            return false;
-        }
-
+        if (!prefix || !domain) return false;
         return true;
     };
 
     const validateRemediationEmail = (email) => {
-        if (!validateLoginEmail(email)) {
-            return false;
-        }
-
+        if (!validateLoginEmail(email)) return false;
         const [prefix, domain] = email.split("@");
-
-        if (domain !== "gmail.com" && domain !== "ust.edu.ph") {
+        if (domain !== "gmail.com" && domain !== "ust.edu.ph") return false;
+        if (!/^[a-z0-9.]+$/.test(prefix)) return false;
+        if (
+            prefix.startsWith(".") ||
+            prefix.endsWith(".") ||
+            prefix.includes("..")
+        )
             return false;
-        }
-
-        if (!/^[a-z0-9.]+$/.test(prefix)) {
-            return false;
-        }
-
-        if (prefix.startsWith(".") || prefix.endsWith(".") || prefix.includes("..")) {
-            return false;
-        }
-
         return true;
     };
 
     const lockPageInteraction = () => {
         const preventEscape = (event) => {
-            if (event.key === "Escape") {
-                event.preventDefault();
-            }
+            if (event.key === "Escape") event.preventDefault();
         };
-
         const pushGuardState = () => {
-            window.history.pushState({ remediation: true }, "", window.location.href);
+            window.history.pushState(
+                { remediation: true },
+                "",
+                window.location.href,
+            );
         };
-
-        const onPopState = () => {
-            pushGuardState();
-        };
-
+        const onPopState = () => pushGuardState();
         const beforeUnloadHandler = (event) => {
             event.preventDefault();
             event.returnValue = "A required email update is still pending.";
             return event.returnValue;
         };
-
         pushGuardState();
         document.addEventListener("keydown", preventEscape);
         window.addEventListener("popstate", onPopState);
         window.addEventListener("beforeunload", beforeUnloadHandler);
-
         return () => {
             document.removeEventListener("keydown", preventEscape);
             window.removeEventListener("popstate", onPopState);
@@ -111,7 +96,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!field) return;
         field.style.setProperty("border", "2px solid #682c7a", "important");
         field.style.boxShadow = "none";
-
         const container = field.closest(".password_wrapper") || field;
         const err = container.parentElement.querySelector(
             ".validation_error, .server_error",
@@ -125,11 +109,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const showFieldError = (field, message) => {
         applyErrorStyles(field);
         if (!message) return;
-
         const targetElement = field.closest(".password_wrapper") || field;
         let err =
             targetElement.parentElement.querySelector(".validation_error");
-
         if (!err) {
             err = document.createElement("span");
             err.className = "validation_error";
@@ -161,19 +143,13 @@ document.addEventListener("DOMContentLoaded", () => {
         submitButton.style.cursor = "pointer";
     };
 
-    // --- 3. COUNTDOWN TIMER ---
+    // --- Countdown for temporary lock ---
     const startCountdown = (lockoutTimestamp) => {
-        // Clear any existing countdown
-        if (countdownInterval) {
-            clearInterval(countdownInterval);
-        }
-
+        if (countdownInterval) clearInterval(countdownInterval);
         const updateCountdown = () => {
             const now = Math.floor(Date.now() / 1000);
             const secondsLeft = lockoutTimestamp - now;
-
             if (secondsLeft <= 0) {
-                // Lockout expired
                 clearInterval(countdownInterval);
                 countdownInterval = null;
                 clearFieldError(emailInput);
@@ -181,28 +157,103 @@ document.addEventListener("DOMContentLoaded", () => {
                 enableButton();
                 return;
             }
-
-            // Update error message with countdown
             const message = `Too many failed attempts. Try again in ${formatTime(secondsLeft)}.`;
-
-            // Apply red borders
             applyErrorStyles(emailInput);
             applyErrorStyles(loginInput);
-
-            // Show error under password
             showFieldError(loginInput, message);
-
-            // Disable button
             disableButton();
         };
-
-        // Run immediately and then every second
         updateCountdown();
         countdownInterval = setInterval(updateCountdown, 1000);
     };
 
-    // --- 4. EVENT LISTENERS ---
+    // --- Show Unlock Modal (for permanent lock or reset required) ---
+    const showUnlockModal = () => {
+        if (unlockModal) {
+            unlockModal.classList.add("active");
+            document.body.style.overflow = "hidden";
+            if (unlockEmailInput) unlockEmailInput.focus();
+        }
+    };
 
+    const hideUnlockModal = () => {
+        if (unlockModal) {
+            unlockModal.classList.remove("active");
+            document.body.style.overflow = "";
+        }
+    };
+
+    // --- Handle Unlock Form Submission (AJAX to avoid page reload) ---
+    if (unlockForm) {
+        unlockForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const email = unlockEmailInput?.value.trim();
+            if (!email || !validateLoginEmail(email)) {
+                Toast.warning("Please enter a valid email address.");
+                return;
+            }
+            const submitBtn = unlockForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn?.innerHTML;
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = "Sending...";
+            }
+            try {
+                const response = await fetch(unlockForm.action, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN":
+                            document
+                                .querySelector('meta[name="csrf-token"]')
+                                ?.getAttribute("content") || "",
+                    },
+                    body: JSON.stringify({ email }),
+                });
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    Toast.success(
+                        "Verification link sent to your email. Please check your inbox.",
+                    );
+                    hideUnlockModal();
+                    // Optionally clear error styles
+                    clearFieldError(emailInput);
+                    clearFieldError(loginInput);
+                    enableButton();
+                } else {
+                    Toast.error(
+                        data.message ||
+                            "Failed to send unlock link. Please try again.",
+                    );
+                }
+            } catch (error) {
+                Toast.error("Network error. Please try again.");
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }
+            }
+        });
+    }
+
+    if (unlockCloseBtn) {
+        unlockCloseBtn.addEventListener("click", hideUnlockModal);
+    }
+
+    // Close modal when clicking outside the container
+    if (unlockModal) {
+        unlockModal.addEventListener("click", (e) => {
+            if (e.target === unlockModal) hideUnlockModal();
+        });
+    }
+
+    // --- Auto-show unlock modal if server indicated permanent lock or reset required ---
+    if (forceUnlockModal) {
+        showUnlockModal();
+    }
+
+    // --- Password Toggle ---
     if (toggleLogin && loginInput) {
         toggleLogin.innerHTML = eyeOpen;
         toggleLogin.addEventListener("click", () => {
@@ -212,12 +263,12 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // --- Input sanitization and validation (keep existing) ---
     if (emailInput) {
         emailInput.addEventListener("input", () => {
-            emailInput.value = emailInput.value.replace(
-                /[^a-zA-Z0-9@.]/g,
-                "",
-            ).toLowerCase();
+            emailInput.value = emailInput.value
+                .replace(/[^a-zA-Z0-9@.]/g, "")
+                .toLowerCase();
             if (isSubmitted && validateLoginEmail(emailInput.value.trim())) {
                 clearFieldError(emailInput);
             }
@@ -233,6 +284,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // --- Form submit validation ---
     if (form) {
         form.addEventListener("submit", (e) => {
             isSubmitted = true;
@@ -263,11 +315,11 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // --- Remediation overlay (unchanged) ---
     if (forceRemediation && remediationOverlay) {
         remediationOverlay.classList.add("active");
         document.body.style.overflow = "hidden";
         cleanupRemediationGuards = lockPageInteraction();
-
         if (remediationInput) {
             remediationInput.focus();
             remediationInput.addEventListener("input", () => {
@@ -276,50 +328,36 @@ document.addEventListener("DOMContentLoaded", () => {
                     .toLowerCase();
             });
         }
-
         remediationOverlay.addEventListener("click", (event) => {
-            if (event.target === remediationOverlay) {
-                event.preventDefault();
-            }
+            if (event.target === remediationOverlay) event.preventDefault();
         });
     }
 
     if (remediationForm) {
         remediationForm.addEventListener("submit", (event) => {
             const email = remediationInput?.value.trim() ?? "";
-
             if (!validateRemediationEmail(email)) {
                 event.preventDefault();
-                if (remediationInput) {
-                    remediationInput.focus();
-                }
+                if (remediationInput) remediationInput.focus();
                 return;
             }
-
-            if (cleanupRemediationGuards) {
-                cleanupRemediationGuards();
-            }
+            if (cleanupRemediationGuards) cleanupRemediationGuards();
         });
     }
 
-    // --- 5. SERVER ERROR HANDLING & COUNTDOWN INITIALIZATION ---
-
-    // Check if there's a lockout timestamp from the server
+    // --- Handle lockout timestamp for temporary lock ---
     const lockoutTimestamp =
         document.getElementById("lockout_timestamp")?.value;
-
     if (lockoutTimestamp) {
         const timestamp = parseInt(lockoutTimestamp, 10);
         startCountdown(timestamp);
     } else {
-        // Handle other server errors (permanent lock, invalid credentials)
+        // For permanent lock or reset required errors (already handled by modal)
         const allErrors = document.querySelectorAll(
             ".server_error, .validation_error",
         );
-
         allErrors.forEach((err) => {
             const text = err.textContent.trim();
-
             const isPermanentLock = text.includes("Account locked");
             const isResetRequired = text.includes("Password reset required");
             const isInvalidCreds =
@@ -327,31 +365,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 text.includes("Invalid credentials");
 
             if (isPermanentLock || isResetRequired) {
-                // Apply red outlines to BOTH email and password
-                applyErrorStyles(emailInput);
-                applyErrorStyles(loginInput);
-
-                // Hide the original error element
-                err.textContent = "";
+                // Do NOT show inline error; instead ensure modal is shown
                 err.style.display = "none";
-
-                // Re-display the message under password
-                showFieldError(loginInput, text);
-
-                // Disable the button permanently
-                disableButton();
-
-                // Hide any leftover text under the email
-                const emailTarget =
-                    emailInput.closest(".password_wrapper") || emailInput;
-                const emailErrText = emailTarget.parentElement.querySelector(
-                    ".validation_error, .server_error",
-                );
-                if (emailErrText && emailErrText !== err) {
-                    emailErrText.style.display = "none";
-                }
+                if (!forceUnlockModal) showUnlockModal();
             } else if (isInvalidCreds) {
-                // Just show error under password
                 applyErrorStyles(emailInput);
                 applyErrorStyles(loginInput);
                 err.style.display = "none";
@@ -360,7 +377,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Toast message handling
+    // --- Toast for any pending message ---
     const pendingMessage = sessionStorage.getItem("auth_toast_message");
     if (pendingMessage) {
         setTimeout(() => {

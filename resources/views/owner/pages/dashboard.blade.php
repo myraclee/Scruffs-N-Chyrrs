@@ -35,7 +35,11 @@
         $initialSalesHasData = (bool) data_get($dashboardData ?? [], "charts.monthly_sales.has_data_by_month.$selectedMonthKey", false);
     @endphp
 
-    <h1 class="welcome_header">{{ $randomGreeting }} <span class="welcome_name">{{ $ownerFullName !== '' ? $ownerFullName : 'Owner' }}!</span></h1>
+    {{-- THE FIX: We use a specific ID so the global script doesn't ruin the colors --}}
+    <h1 class="welcome_header" id="dashboardAnimatedHeader" style="visibility: hidden;">
+        <span class="greeting_part">{{ $randomGreeting }}</span>
+        <span class="welcome_name">{{ $ownerFullName !== '' ? $ownerFullName : 'Owner' }}!</span>
+    </h1>
     
  <h2 class="section_title">Weekly Report</h2>
     <div class="report_grid">
@@ -128,4 +132,61 @@
 <script id="ownerDashboardBootstrap" type="application/json">@json($dashboardData ?? [])</script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 @vite('resources/js/owner/pages/dashboard.js')
+
+{{-- THE FIX: Custom smart animator that explicitly forces the SuperDream font so it never breaks! --}}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const header = document.getElementById("dashboardAnimatedHeader");
+    if (!header) return;
+
+    const greetingPart = header.querySelector('.greeting_part');
+    const namePart = header.querySelector('.welcome_name');
+
+    // Function to animate text while keeping words grouped together for perfect mobile wrapping
+    function animateText(element, startDelay) {
+        const text = element.textContent.trim();
+        element.innerHTML = "";
+        let delay = startDelay;
+
+        const words = text.split(" ");
+        words.forEach((word, wordIndex) => {
+            const wordSpan = document.createElement("span");
+            wordSpan.style.display = "inline-block"; // Keeps letters of a word together
+
+            word.split("").forEach((char) => {
+                const charSpan = document.createElement("span");
+                charSpan.className = "letter";
+                
+                // THE FIX: Explicitly lock the font right here so the browser can't mess it up!
+                charSpan.style.fontFamily = "'SuperDream', sans-serif"; 
+                
+                charSpan.style.setProperty("--delay", delay++);
+                charSpan.textContent = char;
+                wordSpan.appendChild(charSpan);
+            });
+
+            element.appendChild(wordSpan);
+
+            // Add a REAL space after the word so the browser knows where it is allowed to wrap on mobile!
+            if (wordIndex < words.length - 1) {
+                const space = document.createTextNode(" ");
+                element.appendChild(space);
+                delay++;
+            }
+        });
+        return delay;
+    }
+
+    let nextDelay = animateText(greetingPart, 0);
+    
+    // Add space between greeting and name
+    greetingPart.insertAdjacentText('afterend', ' ');
+    nextDelay++;
+    
+    animateText(namePart, nextDelay);
+
+    header.style.visibility = "visible";
+    header.classList.add("animated_header");
+});
+</script>
 @endsection
