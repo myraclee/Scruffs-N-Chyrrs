@@ -567,8 +567,7 @@
 
 .file_spec_fields {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* Force two equal columns */
-    gap: 20px; /* Increase gap for better breathing room */
+    gap: 20px;
     align-items: flex-start;
     margin-bottom: 20px;
 }
@@ -611,11 +610,26 @@
     background-color: white;
 }
 
+.quantity_field {
+    display: flex;
+    gap: 20px;
+}
+
+.quantity_field .file_spec_field:first-child {
+    flex: 0.5;
+}
+
+.quantity_field .rush_field {
+    flex: 1;
+}
+
 .file_spec_input,
 .order_modal_select {
-    height: 48px; /* Fixed height for alignment */
-    box-sizing: border-box;
     width: 100%;
+}
+.file_spec_input,
+.order_modal_select {
+    box-sizing: border-box;
 }
 
 .required_star {
@@ -638,7 +652,7 @@
 /* Select Elements */
 .order_modal_select {
     width: 100%;
-    padding: 12px 30px 12px 16px;
+    padding: 14px 48px 14px 16px; /* space for the icon on the right */
     border: 2px solid #682c7a;
     border-radius: 30px;
     font-family: Arial;
@@ -646,7 +660,16 @@
     transition: all 0.2s ease;
     background-color: white;
     color: #333;
-    cursor: pointer;
+    box-sizing: border-box;
+
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='24px' viewBox='0 -960 960 960' width='24px' fill='%23682c7a'%3E%3Cpath d='M480-360 280-560h400L480-360Z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    background-size: 24px 24px;
+
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
 }
 
 .order_modal_select:focus {
@@ -662,53 +685,6 @@
 
 .order_modal_box::-webkit-scrollbar {
     display: none;
-}
-
-/* Custom select wrapper */
-.custom-select-container {
-    position: relative;
-    display: block;
-    width: 100%;
-}
-
-/* Base select styling */
-.order_modal_select,
-#rushFeeSelect {
-    appearance: none;
-    -webkit-appearance: none;
-    width: 100%;
-    padding: 12px 45px 12px 16px; /* extra right padding for arrow */
-    border: 2px solid #682c7a;
-    border-radius: 30px;
-    font-family: Arial;
-    font-size: 14px;
-    background-color: white;
-    color: #333;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-/* Remove default arrow in IE */
-.order_modal_select::-ms-expand,
-#rushFeeSelect::-ms-expand {
-    display: none;
-}
-
-/* Custom arrow (inside wrapper) */
-.select-arrow {
-    position: absolute;
-    right: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    pointer-events: none;
-    font-size: 14px;
-    color: #682c7a;
-    transition: transform 0.2s ease;
-}
-
-/* Rotated arrow when select is focused */
-.custom-select-container .select-arrow.rotated {
-    transform: translateY(-50%) rotate(180deg);
 }
 
 /* Price Section */
@@ -868,13 +844,12 @@
 .order_modal_submit_btn {
     flex: 2;
     padding: 14px;
-    background: linear-gradient(135deg, #682c7a 0%, #8a4a9e 100%);
-    color: white;
+    background: #682c7a;
+    color: #fff7ec;
     border: none;
     border-radius: 50px;
     font-family: "Coolvetica", sans-serif;
     font-size: 16px;
-    font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
@@ -884,6 +859,7 @@
     box-shadow: 0 4px 16px rgba(104, 44, 122, 0.3);
     position: relative;
     overflow: hidden;
+    margin: 0 auto;
 }
 
 .order_modal_submit_btn::before {
@@ -1070,8 +1046,15 @@
     }
 }
 
-@media (max-width: 480px) {
-    .file_spec_fields {
-        grid-template-columns: 1fr;
+@media (max-width: 590px) {
+    .quantity_field {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .quantity_field .file_spec_field,
+    .quantity_field .rush_field {
+        flex: unset;
+        width: 100%;
     }
 }

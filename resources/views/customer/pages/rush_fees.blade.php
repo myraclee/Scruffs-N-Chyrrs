@@ -45,7 +45,7 @@
         <div class="rush_fees_content_col">
             {{-- THE FIX: Info Section added outside the table wrapper so JS doesn't delete it --}}
             <div class="rush_info_section">
-                <h2 class="rush_info_title">Rush Fees Information:</h2>
+                <h2 class="rush_info_title">Note:</h2>
                 <p class="rush_formula_text">
                     Deadline after payment = percentage added to total
                 </p>
