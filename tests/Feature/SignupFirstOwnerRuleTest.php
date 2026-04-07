@@ -12,17 +12,17 @@ class SignupFirstOwnerRuleTest extends TestCase
 
     public function test_first_signup_is_created_as_owner_and_redirected_to_owner_dashboard(): void
     {
-        $payload = $this->signupPayload('first-owner@example.com');
+        $payload = $this->signupPayload('first.owner@gmail.com');
 
         $response = $this->post(route('signup.store'), $payload);
 
         $response->assertRedirect(route('owner.dashboard'));
         $this->assertDatabaseHas('users', [
-            'email' => 'first-owner@example.com',
+            'email' => 'first.owner@gmail.com',
             'user_type' => 'owner',
         ]);
 
-        $createdUser = User::where('email', 'first-owner@example.com')->first();
+        $createdUser = User::where('email', 'first.owner@gmail.com')->first();
         $this->assertNotNull($createdUser);
         $this->assertAuthenticatedAs($createdUser);
     }
@@ -30,15 +30,15 @@ class SignupFirstOwnerRuleTest extends TestCase
     public function test_signup_creates_customer_when_users_already_exist(): void
     {
         User::factory()->create([
-            'email' => 'existing-user@example.com',
+            'email' => 'existing.user@gmail.com',
             'user_type' => 'owner',
         ]);
 
-        $response = $this->post(route('signup.store'), $this->signupPayload('next-user@example.com'));
+        $response = $this->post(route('signup.store'), $this->signupPayload('next.user@gmail.com'));
 
         $response->assertRedirect(route('home'));
         $this->assertDatabaseHas('users', [
-            'email' => 'next-user@example.com',
+            'email' => 'next.user@gmail.com',
             'user_type' => 'customer',
         ]);
     }
@@ -46,18 +46,18 @@ class SignupFirstOwnerRuleTest extends TestCase
     public function test_signup_cannot_force_owner_role_from_request_payload(): void
     {
         User::factory()->create([
-            'email' => 'already-present@example.com',
+            'email' => 'already.present@gmail.com',
             'user_type' => 'owner',
         ]);
 
-        $payload = $this->signupPayload('spoof-attempt@example.com');
+        $payload = $this->signupPayload('spoof.attempt@gmail.com');
         $payload['user_type'] = 'owner';
 
         $response = $this->post(route('signup.store'), $payload);
 
         $response->assertRedirect(route('home'));
         $this->assertDatabaseHas('users', [
-            'email' => 'spoof-attempt@example.com',
+            'email' => 'spoof.attempt@gmail.com',
             'user_type' => 'customer',
         ]);
     }
@@ -65,11 +65,11 @@ class SignupFirstOwnerRuleTest extends TestCase
     public function test_existing_users_are_not_modified_when_new_signup_occurs(): void
     {
         $existingOwner = User::factory()->create([
-            'email' => 'stable-owner@example.com',
+            'email' => 'stable.owner@gmail.com',
             'user_type' => 'owner',
         ]);
 
-        $this->post(route('signup.store'), $this->signupPayload('new-customer@example.com'));
+        $this->post(route('signup.store'), $this->signupPayload('new.customer@gmail.com'));
 
         $existingOwner->refresh();
         $this->assertSame('owner', $existingOwner->user_type);

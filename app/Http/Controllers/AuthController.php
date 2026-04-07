@@ -24,12 +24,19 @@ class AuthController extends Controller
     /**
      * @var list<string>
      */
+    private const ALLOWED_EMAIL_DOMAINS = ['gmail.com', 'ust.edu.ph'];
+
+    /**
+     * @var list<string>
+     */
     private const FINISHED_ORDER_STATUSES = ['completed', 'cancelled'];
 
     /**
      * @var list<string>
      */
     private const DASHBOARD_PENDING_ORDER_STATUSES = ['waiting', 'approved', 'preparing', 'ready'];
+
+    private const EMAIL_REMEDIATION_TTL_SECONDS = 600;
 
     /**
      * Centralized email validation rules.
@@ -39,8 +46,46 @@ class AuthController extends Controller
         $rules = [
             'required',
             'string',
-            // ✅ FIXED: supports subdomains (e.g. yahoo.com.ph)
-            'regex:/^[a-zA-Z0-9]+([._+\-]?[a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.\-]?[a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/'
+            function (string $attribute, mixed $value, \Closure $fail): void {
+                if (!is_string($value)) {
+                    $fail('The email field format is invalid.');
+                    return;
+                }
+
+                $email = strtolower(trim($value));
+
+                if ($email === '' || !str_contains($email, '@')) {
+                    $fail('The email field format is invalid.');
+                    return;
+                }
+
+                $parts = explode('@', $email);
+                if (count($parts) !== 2) {
+                    $fail('The email field format is invalid.');
+                    return;
+                }
+
+                [$prefix, $domain] = $parts;
+
+                if ($prefix === '' || $domain === '') {
+                    $fail('The email field format is invalid.');
+                    return;
+                }
+
+                if (!in_array($domain, self::ALLOWED_EMAIL_DOMAINS, true)) {
+                    $fail('Only @gmail.com and @ust.edu.ph email domains are allowed.');
+                    return;
+                }
+
+                if (!preg_match('/^[a-z0-9.]+$/', $prefix)) {
+                    $fail('The email prefix may only contain lowercase letters (a-z), numbers (0-9), and periods (.).');
+                    return;
+                }
+
+                if (str_contains($prefix, '..') || str_starts_with($prefix, '.') || str_ends_with($prefix, '.')) {
+                    $fail('The email prefix cannot start or end with a period and cannot contain consecutive periods.');
+                }
+            },
         ];
 
         if ($uniqueRule) {
@@ -48,6 +93,46 @@ class AuthController extends Controller
         }
 
         return $rules;
+    }
+
+    private function isEmailCompliant(string $email): bool
+    {
+        $validator = Validator::make(
+            ['email' => strtolower(trim($email))],
+            ['email' => $this->emailRules()],
+        );
+
+        return !$validator->fails();
+    }
+
+    private function setEmailRemediationSession(Request $request, User $user): void
+    {
+        $request->session()->put('email_remediation_user_id', $user->id);
+        $request->session()->put('email_remediation_started_at', now()->timestamp);
+    }
+
+    private function clearEmailRemediationSession(Request $request): void
+    {
+        $request->session()->forget([
+            'email_remediation_user_id',
+            'email_remediation_started_at',
+        ]);
+    }
+
+    private function getValidEmailRemediationUser(Request $request): ?User
+    {
+        $userId = $request->session()->get('email_remediation_user_id');
+        $startedAt = $request->session()->get('email_remediation_started_at');
+
+        if (!is_int($userId) || !is_int($startedAt)) {
+            return null;
+        }
+
+        if ((now()->timestamp - $startedAt) > self::EMAIL_REMEDIATION_TTL_SECONDS) {
+            return null;
+        }
+
+        return User::find($userId);
     }
 
     /**
@@ -77,6 +162,10 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
+        $request->merge([
+            'email' => strtolower(trim((string) $request->input('email'))),
+        ]);
+
         $request->validate([
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
@@ -121,13 +210,16 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
+        $request->merge([
+            'email' => strtolower(trim((string) $request->input('email'))),
+        ]);
+
         $rules = [
-            'email' => $this->emailRules(),
+            'email' => ['required', 'string', 'max:254'],
             'password' => ['required', 'string'],
         ];
 
         $messages = [
-            'email.regex' => 'The email field format is invalid.',
             'password.required' => 'The password field is required.',
         ];
 
@@ -147,6 +239,7 @@ class AuthController extends Controller
         }
 
         $user = User::where('email', $request->email)->first();
+        $hasValidCredentials = $user && Hash::check($request->password, $user->password);
 
         if ($user) {
             // Permanent lock
@@ -170,6 +263,15 @@ class AuthController extends Controller
                 return back()
                     ->withInput($request->only('email'))
                     ->with('lockout_until', $user->lockout_until->timestamp);
+            }
+
+            if ($hasValidCredentials && !$this->isEmailCompliant($user->email)) {
+                $this->setEmailRemediationSession($request, $user);
+
+                return back()
+                    ->withInput($request->only('email'))
+                    ->with('force_email_remediation', true)
+                    ->with('email_remediation_value', strtolower($user->email));
             }
         }
 
@@ -234,6 +336,46 @@ class AuthController extends Controller
             ->withInput($request->only('email'));
     }
 
+    public function saveRemediatedEmail(Request $request)
+    {
+        $user = $this->getValidEmailRemediationUser($request);
+
+        if (!$user) {
+            $this->clearEmailRemediationSession($request);
+
+            return redirect()->route('login')
+                ->withErrors(['email' => 'Email update session expired. Please log in again.']);
+        }
+
+        if ($user->is_locked || $user->must_reset_password || ($user->lockout_until && now()->lessThan($user->lockout_until))) {
+            $this->clearEmailRemediationSession($request);
+
+            return redirect()->route('login')
+                ->withErrors(['password' => 'Your account requires unlock verification first. Please use Unlock via Email Verification from the login page.'])
+                ->with('show_unlock_option', true);
+        }
+
+        $request->merge([
+            'email' => strtolower(trim((string) $request->input('email'))),
+        ]);
+
+        $request->validate([
+            'email' => $this->emailRules('unique:users,email,' . $user->id),
+        ]);
+
+        $user->update([
+            'email' => $request->email,
+        ]);
+
+        Auth::login($user);
+        $request->session()->regenerate();
+        $this->clearEmailRemediationSession($request);
+
+        return $user->isOwner()
+            ? redirect()->route('owner.dashboard')
+            : redirect()->route('home');
+    }
+
     public function account()
     {
         return view('customer.account');
@@ -255,6 +397,10 @@ class AuthController extends Controller
 
     public function updateProfile(Request $request)
     {
+        $request->merge([
+            'email' => strtolower(trim((string) $request->input('email'))),
+        ]);
+
         $request->validate([
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
@@ -601,6 +747,10 @@ class AuthController extends Controller
 
     public function sendResetCode(Request $request)
     {
+        $request->merge([
+            'email' => strtolower(trim((string) $request->input('email'))),
+        ]);
+
         $request->validate([
             'email' => $this->emailRules()
         ]);
@@ -634,6 +784,10 @@ class AuthController extends Controller
 
     public function sendUnlockCode(Request $request)
     {
+        $request->merge([
+            'email' => strtolower(trim((string) $request->input('email'))),
+        ]);
+
         $request->validate([
             'email' => $this->emailRules(),
         ]);

@@ -66,7 +66,7 @@ class AccountUnlockFlowTest extends TestCase
         $response = $this
             ->from('/login')
             ->post(route('account-unlock.send'), [
-                'email' => 'missing-user@example.com',
+                'email' => 'missing.user@gmail.com',
             ]);
 
         $response

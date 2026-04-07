@@ -7,17 +7,98 @@ document.addEventListener("DOMContentLoaded", () => {
     const form = document.querySelector("form");
     const submitButton = form?.querySelector('button[type="submit"]');
     const toggleLogin = document.getElementById("toggle_login_password");
+    const remediationOverlay = document.getElementById("email_remediation_overlay");
+    const remediationForm = document.getElementById("email_remediation_form");
+    const remediationInput = document.getElementById("remediation_email");
+    const forceRemediation = document.getElementById("force_email_remediation_flag")?.value === "1";
     let isSubmitted = false;
     let countdownInterval = null;
+    let cleanupRemediationGuards = null;
 
     const eyeOpen = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#682c7a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
     const eyeClosed = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#682c7a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
 
     // --- 2. UTILS ---
-    const validateEmail = (email) => {
-        const regex =
-            /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.-]+\.[a-zA-Z0-9]{2,}[a-zA-Z0-9]$/;
-        return regex.test(email);
+    const validateLoginEmail = (email) => {
+        if (!email) {
+            return false;
+        }
+
+        if (email.includes(" ")) {
+            return false;
+        }
+
+        if (!email.includes("@")) {
+            return false;
+        }
+
+        const parts = email.split("@");
+        if (parts.length !== 2) {
+            return false;
+        }
+
+        const [prefix, domain] = parts;
+
+        if (!prefix || !domain) {
+            return false;
+        }
+
+        return true;
+    };
+
+    const validateRemediationEmail = (email) => {
+        if (!validateLoginEmail(email)) {
+            return false;
+        }
+
+        const [prefix, domain] = email.split("@");
+
+        if (domain !== "gmail.com" && domain !== "ust.edu.ph") {
+            return false;
+        }
+
+        if (!/^[a-z0-9.]+$/.test(prefix)) {
+            return false;
+        }
+
+        if (prefix.startsWith(".") || prefix.endsWith(".") || prefix.includes("..")) {
+            return false;
+        }
+
+        return true;
+    };
+
+    const lockPageInteraction = () => {
+        const preventEscape = (event) => {
+            if (event.key === "Escape") {
+                event.preventDefault();
+            }
+        };
+
+        const pushGuardState = () => {
+            window.history.pushState({ remediation: true }, "", window.location.href);
+        };
+
+        const onPopState = () => {
+            pushGuardState();
+        };
+
+        const beforeUnloadHandler = (event) => {
+            event.preventDefault();
+            event.returnValue = "A required email update is still pending.";
+            return event.returnValue;
+        };
+
+        pushGuardState();
+        document.addEventListener("keydown", preventEscape);
+        window.addEventListener("popstate", onPopState);
+        window.addEventListener("beforeunload", beforeUnloadHandler);
+
+        return () => {
+            document.removeEventListener("keydown", preventEscape);
+            window.removeEventListener("popstate", onPopState);
+            window.removeEventListener("beforeunload", beforeUnloadHandler);
+        };
     };
 
     const applyErrorStyles = (field) => {
@@ -134,10 +215,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (emailInput) {
         emailInput.addEventListener("input", () => {
             emailInput.value = emailInput.value.replace(
-                /[^a-zA-Z0-9@.\-_+]/g,
+                /[^a-zA-Z0-9@.]/g,
                 "",
-            );
-            if (isSubmitted && validateEmail(emailInput.value.trim())) {
+            ).toLowerCase();
+            if (isSubmitted && validateLoginEmail(emailInput.value.trim())) {
                 clearFieldError(emailInput);
             }
         });
@@ -162,7 +243,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!emailVal) {
                 showFieldError(emailInput, "The email field is required.");
                 valid = false;
-            } else if (!validateEmail(emailVal)) {
+            } else if (!validateLoginEmail(emailVal)) {
                 showFieldError(
                     emailInput,
                     "The email field format is invalid.",
@@ -178,6 +259,45 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!valid) {
                 e.preventDefault();
                 e.stopImmediatePropagation();
+            }
+        });
+    }
+
+    if (forceRemediation && remediationOverlay) {
+        remediationOverlay.classList.add("active");
+        document.body.style.overflow = "hidden";
+        cleanupRemediationGuards = lockPageInteraction();
+
+        if (remediationInput) {
+            remediationInput.focus();
+            remediationInput.addEventListener("input", () => {
+                remediationInput.value = remediationInput.value
+                    .replace(/[^a-zA-Z0-9@.]/g, "")
+                    .toLowerCase();
+            });
+        }
+
+        remediationOverlay.addEventListener("click", (event) => {
+            if (event.target === remediationOverlay) {
+                event.preventDefault();
+            }
+        });
+    }
+
+    if (remediationForm) {
+        remediationForm.addEventListener("submit", (event) => {
+            const email = remediationInput?.value.trim() ?? "";
+
+            if (!validateRemediationEmail(email)) {
+                event.preventDefault();
+                if (remediationInput) {
+                    remediationInput.focus();
+                }
+                return;
+            }
+
+            if (cleanupRemediationGuards) {
+                cleanupRemediationGuards();
             }
         });
     }

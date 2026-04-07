@@ -27,7 +27,7 @@ class UserFactory extends Factory
             // 🚀 CHANGED: Replaced 'name' with first and last name
             'first_name' => fake()->firstName(),
             'last_name' => fake()->lastName(),
-            'email' => fake()->unique()->safeEmail(),
+            'email' => fake()->unique()->regexify('[a-z0-9]{10}').'@gmail.com',
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),

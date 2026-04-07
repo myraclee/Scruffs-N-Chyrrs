@@ -17,5 +17,7 @@
     <main class="content">
         @yield('content')
     </main>
+
+    @yield('page_js')
 </body>
 </html>

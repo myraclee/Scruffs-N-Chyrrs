@@ -72,9 +72,7 @@ form {
     font-family: Coolvetica;
     font-size: 17px;
     cursor: pointer;
-    transition:
-        background-color 0.3s ease,
-        transform 0.2s ease;
+    transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .login_button:hover {
@@ -83,7 +81,7 @@ form {
 }
 
 .signup_redirect {
-    font-family: "Coolvetica", sans-serif;
+    font-family: 'Coolvetica', sans-serif;
     color: #6b3282;
     text-align: center;
     margin-top: 15px;
@@ -152,8 +150,8 @@ form {
     }
 }
 /* 🚀 Custom Eye Toggle & Hide Default Browser Eye */
-input[type="password"]::-ms-reveal,
-input[type="password"]::-ms-clear {
+input[type='password']::-ms-reveal,
+input[type='password']::-ms-clear {
     display: none;
 }
 .password_wrapper {
@@ -174,4 +172,53 @@ input[type="password"]::-ms-clear {
 }
 .toggle_password:hover {
     opacity: 1;
+}
+
+.email_remediation_overlay {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(20, 12, 32, 0.62);
+    z-index: 1200;
+}
+
+.email_remediation_overlay.active {
+    display: flex;
+}
+
+.email_remediation_box {
+    width: 100%;
+    max-width: 520px;
+    background: #fff7ea;
+    border-radius: 18px;
+    border: 2px solid rgba(104, 44, 122, 0.25);
+    box-shadow: 0 22px 42px rgba(0, 0, 0, 0.24);
+    padding: 24px;
+}
+
+.email_remediation_title {
+    margin: 0;
+    font-family: SuperDream;
+    font-size: 32px;
+    color: #682c7a;
+}
+
+.email_remediation_message {
+    margin: 10px 0 18px;
+    color: #4e235e;
+    font-family: Coolvetica, sans-serif;
+    letter-spacing: 0.2px;
+}
+
+.email_remediation_actions {
+    margin-top: 18px;
+    display: flex;
+    justify-content: center;
+}
+
+.email_remediation_actions .login_button {
+    min-width: 160px;
 }

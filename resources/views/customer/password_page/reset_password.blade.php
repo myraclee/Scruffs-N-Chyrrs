@@ -64,7 +64,33 @@
 
             // Strict Regex: Min 2 chars for username, domain, and extension
             function validateEmail(email) {
-                return /^[a-zA-Z0-9._%+\-]{2,}@[a-zA-Z0-9.\-]{2,}\.[a-zA-Z]{2,}$/.test(email);
+                if (!email.includes("@")) {
+                    return false;
+                }
+
+                const parts = email.split("@");
+                if (parts.length !== 2) {
+                    return false;
+                }
+
+                const [prefix, domain] = parts;
+                if (!prefix || !domain) {
+                    return false;
+                }
+
+                if (domain !== "gmail.com" && domain !== "ust.edu.ph") {
+                    return false;
+                }
+
+                if (!/^[a-z0-9.]+$/.test(prefix)) {
+                    return false;
+                }
+
+                if (prefix.startsWith(".") || prefix.endsWith(".") || prefix.includes("..")) {
+                    return false;
+                }
+
+                return true;
             }
 
             function showFieldError(message) {
@@ -96,7 +122,7 @@
                     showFieldError("Email must contain an @ symbol.");
                     return false;
                 } else if (!validateEmail(email)) {
-                    showFieldError("Enter a valid email. Each part must be at least 2 characters.");
+                    showFieldError("Use a valid email with @gmail.com or @ust.edu.ph and a prefix using only lowercase letters, numbers, and periods.");
                     return false;
                 } else {
                     clearFieldError();
@@ -105,6 +131,9 @@
             }
 
             if (emailInput) {
+                emailInput.addEventListener("input", () => {
+                    emailInput.value = emailInput.value.replace(/[^a-zA-Z0-9@.]/g, "").toLowerCase();
+                });
                 emailInput.addEventListener("input", handleEmailValidation);
                 
                 // Read the error directly from the HTML form tag (NO MORE PHP IN JS!)

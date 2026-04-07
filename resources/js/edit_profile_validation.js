@@ -13,19 +13,33 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function validateEmail(email) {
-        // Updated Logic:
-        // [a-zA-Z0-9.-]+       -> Domain part allowing dots (ust.edu)
-        // \.[a-zA-Z0-9]{2,}    -> The final dot followed by 2 or MORE alphanumeric chars (ph, com, online)
-        // [a-zA-Z0-9]$         -> Ensuring the very last char is not a special character
-        const regex =
-            /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.-]+\.[a-zA-Z0-9]{1,}[a-zA-Z0-9]$/;
+        if (!email.includes("@")) {
+            return false;
+        }
 
-        // Alternative standard version that explicitly hits your "at least 2" requirement:
-        // /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.-]+\.[a-zA-Z0-9]{2,}$/
+        const parts = email.split("@");
+        if (parts.length !== 2) {
+            return false;
+        }
 
-        return /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.-]+\.[a-zA-Z0-9]{2,}$/.test(
-            email,
-        );
+        const [prefix, domain] = parts;
+        if (!prefix || !domain) {
+            return false;
+        }
+
+        if (domain !== "gmail.com" && domain !== "ust.edu.ph") {
+            return false;
+        }
+
+        if (!/^[a-z0-9.]+$/.test(prefix)) {
+            return false;
+        }
+
+        if (prefix.startsWith(".") || prefix.endsWith(".") || prefix.includes("..")) {
+            return false;
+        }
+
+        return true;
     }
 
     function validatePhone(phone) {
@@ -148,6 +162,11 @@ document.addEventListener("DOMContentLoaded", () => {
         firstNameInput.addEventListener("input", checkFirstName);
     if (lastNameInput) lastNameInput.addEventListener("input", checkLastName);
     if (emailInput) emailInput.addEventListener("input", checkEmail);
+    if (emailInput) {
+        emailInput.addEventListener("input", () => {
+            emailInput.value = emailInput.value.replace(/[^a-zA-Z0-9@.]/g, "").toLowerCase();
+        });
+    }
     if (contactInput) contactInput.addEventListener("input", checkPhone);
 
     // --- 5. SUBMISSION INTERCEPT ---

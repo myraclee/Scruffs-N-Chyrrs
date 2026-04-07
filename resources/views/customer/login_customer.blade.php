@@ -146,6 +146,37 @@
             </form>
         </div>
     @endif
+
+    @if(session('force_email_remediation'))
+        <div id="email_remediation_overlay" class="email_remediation_overlay active" aria-hidden="false">
+            <div class="email_remediation_box" role="dialog" aria-modal="true" aria-labelledby="email_remediation_title">
+                <h2 id="email_remediation_title" class="email_remediation_title">Update Required Email</h2>
+                <p class="email_remediation_message">To continue, enter a compliant email using @gmail.com or @ust.edu.ph.</p>
+
+                <form method="POST" action="{{ route('login.remediate-email') }}" id="email_remediation_form" novalidate>
+                    @csrf
+                    <input
+                        class="login_textbox"
+                        type="email"
+                        id="remediation_email"
+                        name="email"
+                        placeholder="email@address.com"
+                        value="{{ old('email', session('email_remediation_value', '')) }}"
+                        required
+                        maxlength="254"
+                    >
+                    @error('email')
+                        <span class="server_error">{{ $message }}</span>
+                    @enderror
+
+                    <div class="email_remediation_actions">
+                        <button type="submit" class="login_button">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <input type="hidden" id="force_email_remediation_flag" value="1">
+    @endif
     
     <script
         src="https://challenges.cloudflare.com/turnstile/v0/api.js"

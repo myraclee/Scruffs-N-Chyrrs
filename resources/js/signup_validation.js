@@ -66,8 +66,43 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- 2. EMAIL VALIDATION & SANITIZATION ---
     function sanitizeEmail(value) {
-        // Only allow: letters, numbers, and +_-.@
-        return value.replace(/[^a-zA-Z0-9@.\-_+]/g, "").toLowerCase();
+        // Only allow lowercase letters, numbers, periods, and @.
+        return value.replace(/[^a-z0-9.@]/gi, "").toLowerCase();
+    }
+
+    function validateEmailPolicy(email) {
+        if (email === "") {
+            return "The email field is required.";
+        }
+
+        if (!email.includes("@")) {
+            return "The email field format is invalid.";
+        }
+
+        const parts = email.split("@");
+        if (parts.length !== 2) {
+            return "The email field format is invalid.";
+        }
+
+        const [prefix, domain] = parts;
+
+        if (!prefix || !domain) {
+            return "The email field format is invalid.";
+        }
+
+        if (domain !== "gmail.com" && domain !== "ust.edu.ph") {
+            return "Only @gmail.com and @ust.edu.ph email domains are allowed.";
+        }
+
+        if (!/^[a-z0-9.]+$/.test(prefix)) {
+            return "The email prefix may only contain lowercase letters (a-z), numbers (0-9), and periods (.).";
+        }
+
+        if (prefix.startsWith(".") || prefix.endsWith(".") || prefix.includes("..")) {
+            return "The email prefix cannot start or end with a period and cannot contain consecutive periods.";
+        }
+
+        return null;
     }
 
     if (emailInput) {
@@ -86,8 +121,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         emailInput.addEventListener("keypress", (e) => {
             const char = String.fromCharCode(e.which);
-            // Only allow letters, numbers, and +_-.@
-            if (!/[a-zA-Z0-9@.\-_+]/.test(char)) {
+            // Only allow letters, numbers, periods, and @.
+            if (!/[a-zA-Z0-9@.]/.test(char)) {
                 e.preventDefault();
             }
         });
@@ -95,18 +130,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function validateEmailField() {
         const email = emailInput.value.trim();
-        const emailRegex = /^[a-zA-Z0-9._+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
 
-        if (email === "") {
-            showFieldError(emailInput, "The email field is required.");
+        const validationError = validateEmailPolicy(email);
+        if (validationError) {
+            showFieldError(emailInput, validationError);
             return false;
-        } else if (!emailRegex.test(email)) {
-            showFieldError(emailInput, "The email field format is invalid.");
-            return false;
-        } else {
-            clearFieldError(emailInput);
-            return true;
         }
+
+        clearFieldError(emailInput);
+        return true;
     }
 
     // --- 3. CONTACT NUMBER VALIDATION ---
