@@ -200,6 +200,10 @@ class AuthController extends Controller
                     'lockout_until' => null,
                 ]);
 
+                DB::table('password_reset_tokens')
+                    ->where('email', $user->email)
+                    ->delete();
+
                 return back()
                     ->withErrors(['password' => 'Account locked due to multiple failed attempts.'])
                     ->withInput($request->only('email'))
@@ -609,6 +613,16 @@ class AuthController extends Controller
                 ->onlyInput('email');
         }
 
+        if ($user->is_locked || $user->must_reset_password) {
+            DB::table('password_reset_tokens')
+                ->where('email', $user->email)
+                ->delete();
+
+            return back()
+                ->withErrors(['email' => 'Your account requires unlock verification first. Please use Unlock via Email Verification from the login page.'])
+                ->onlyInput('email');
+        }
+
         $this->issueVerificationCode($user);
 
         $request->session()->forget(['unlock_email', 'verified_reset_email']);
@@ -676,6 +690,21 @@ class AuthController extends Controller
 
         if (now()->greaterThanOrEqualTo($resetToken->expires_at)) {
             return back()->withErrors(['code' => 'The verification code has expired. Please request a new one.']);
+        }
+
+        if (!$isUnlockFlow) {
+            $user = User::where('email', $email)->first();
+
+            if ($user && ($user->is_locked || $user->must_reset_password)) {
+                DB::table('password_reset_tokens')
+                    ->where('email', $email)
+                    ->delete();
+
+                $request->session()->forget(['reset_email', 'verified_reset_email']);
+
+                return redirect()->route('reset-password')
+                    ->withErrors(['email' => 'Your account requires unlock verification first. Please use Unlock via Email Verification from the login page.']);
+            }
         }
 
         if ($isUnlockFlow) {
