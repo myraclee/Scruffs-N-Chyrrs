@@ -631,11 +631,20 @@
 
 /* Mobile Phones */
 @media (max-width: 768px) {
-    /* Title Adjustments */
+
+    /* THE FIX: Prevents stars from dropping down on mobile */
+    .header_animation {
+        justify-content: center;
+        flex-wrap: nowrap;
+    }
+
+    /* THE FIX: Clamp font size and prevent line breaking */
     .page_title {
-        font-size: 28px;
+        font-size: clamp(20px, 6vw, 28px);
         margin-top: 50px;
         line-height: 1.2;
+        white-space: nowrap;
+        text-align: center;
     }
 
     /* Stack the Status Cards */

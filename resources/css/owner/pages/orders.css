@@ -802,6 +802,21 @@
    MOBILE RESPONSIVENESS (Order Card Fixes)
    ========================================= */
 @media (max-width: 768px) {
+    /* THE FIX: Prevents stars from dropping down on mobile */
+    .header_animation {
+        justify-content: center;
+        flex-wrap: nowrap;
+    }
+
+    /* THE FIX: Clamp font size and prevent line breaking */
+    .page_header {
+        font-size: clamp(20px, 6vw, 28px);
+        margin-top: 50px;
+        line-height: 1.2;
+        white-space: nowrap;
+        text-align: center;
+    }
+
     /* 1. Stack the Top Section (Name and Button) */
     .card_top {
         flex-direction: column;
@@ -844,12 +859,6 @@
     }
     .orders_container {
         padding: 20px 15px;
-    }
-
-    .page_header {
-        font-size: 28px;
-        margin-top: 50px;
-        line-height: 1.2;
     }
 
     .filters_container {

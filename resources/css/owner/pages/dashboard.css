@@ -10,7 +10,7 @@
     font-size: 55px;
     color: #682c7a;
     margin-bottom: 40px;
-    text-align: left; /* Changed to left! */
+    text-align: left; 
     font-weight: normal;
 }
 .welcome_name {
@@ -83,33 +83,17 @@
 }
 
 /* Color Specific Rules for Sales Cards */
-.border-purple {
-    border: 2px solid #682c7a;
-}
-.text-purple {
-    color: #682c7a;
-}
+.border-purple { border: 2px solid #682c7a; }
+.text-purple { color: #682c7a; }
 
-.border-green {
-    border: 2px solid #4caf50;
-}
-.text-green {
-    color: #4caf50;
-}
+.border-green { border: 2px solid #4caf50; }
+.text-green { color: #4caf50; }
 
-.border-yellow {
-    border: 2px solid #f4c430;
-}
-.text-yellow {
-    color: #f4c430;
-}
+.border-yellow { border: 2px solid #f4c430; }
+.text-yellow { color: #f4c430; }
 
-.border-red {
-    border: 2px solid #d94848;
-}
-.text-red {
-    color: #d94848;
-}
+.border-red { border: 2px solid #d94848; }
+.text-red { color: #d94848; }
 
 /* Re-styling labels/values for the smaller cards */
 .sales_card .card_label {
@@ -143,7 +127,7 @@
 .chart_title {
     font-family: 'Coolvetica', sans-serif;
     font-size: 26px;
-    color: #682c7a; /* Changed to Purple! */
+    color: #682c7a;
     text-align: center;
     margin-top: 0;
     margin-bottom: 30px;
@@ -165,41 +149,25 @@
 
 /* Responsive Adjustments */
 @media (max-width: 900px) {
-    .report_grid {
-        grid-template-columns: 1fr;
-    }
-    .sales_grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
+    .report_grid { grid-template-columns: 1fr; }
+    .sales_grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 600px) {
-    .sales_grid {
-        grid-template-columns: 1fr;
-    }
+    .sales_grid { grid-template-columns: 1fr; }
 }
 /* --- Chart Scroll Area --- */
 .chart_scroll_area {
     width: 100%;
-    overflow-x: auto; /* Allows horizontal scrolling */
-    overflow-y: hidden; /* Prevents accidental vertical scrolling */
-    padding-bottom: 15px; /* Gives the scrollbar some breathing room */
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 15px;
 }
 
 /* Custom Scrollbar for the Chart */
-.chart_scroll_area::-webkit-scrollbar {
-    height: 8px;
-}
-.chart_scroll_area::-webkit-scrollbar-track {
-    background: #fff7ec;
-    border-radius: 10px;
-}
-.chart_scroll_area::-webkit-scrollbar-thumb {
-    background: #dcbae6;
-    border-radius: 10px;
-}
-.chart_scroll_area::-webkit-scrollbar-thumb:hover {
-    background: #9659a7;
-}
+.chart_scroll_area::-webkit-scrollbar { height: 8px; }
+.chart_scroll_area::-webkit-scrollbar-track { background: #fff7ec; border-radius: 10px; }
+.chart_scroll_area::-webkit-scrollbar-thumb { background: #dcbae6; border-radius: 10px; }
+.chart_scroll_area::-webkit-scrollbar-thumb:hover { background: #9659a7; }
 
 /* --- Global Charts Header & Year Dropdown --- */
 .charts_header_container {
@@ -213,7 +181,7 @@
 
 .year_dropdown {
     font-family: 'Coolvetica', sans-serif;
-    font-size: 20px; /* Slightly larger than the month dropdown to show hierarchy */
+    font-size: 20px; 
     color: #682c7a;
     border: 2px solid #682c7a;
     border-radius: 10px;
@@ -238,7 +206,7 @@
     margin-bottom: 30px;
 }
 .chart_header_row .chart_title {
-    margin-bottom: 0; /* Overrides the default margin so it aligns with the dropdown */
+    margin-bottom: 0;
 }
 .month_dropdown {
     font-family: 'Coolvetica', sans-serif;
@@ -260,36 +228,30 @@
 
 /* --- DASHBOARD MEDIA QUERIES --- */
 
-/* Tablets (iPad size) */
 @media (max-width: 1024px) {
-    .sales_grid {
-        grid-template-columns: repeat(2, 1fr);
-    } /* 4 boxes become 2x2 */
-    .dashboard_container {
-        padding: 20px;
-    }
+    .sales_grid { grid-template-columns: repeat(2, 1fr); }
+    .dashboard_container { padding: 20px; }
 }
 
 /* Mobile Phones */
 @media (max-width: 768px) {
+    
+    /* THE FIX: Allow long dynamic names to wrap naturally without cutting off */
     .welcome_header {
-        font-size: 40px; /* Shrinks the giant text */
-        text-align: center; /* Centers it on mobile */
+        font-size: clamp(24px, 7vw, 36px); 
+        text-align: center; 
+        white-space: normal; /* Removes the nowrap restriction */
+        line-height: 1.3; /* Gives breathing room if the text wraps to a second line */
+        word-wrap: break-word; /* Safety net so super long unbroken strings don't force overflow */
     }
 
-    .report_grid {
-        grid-template-columns: 1fr;
-    } /* 3 boxes stack into 1 column */
-    .sales_grid {
-        grid-template-columns: 1fr;
-    } /* 2x2 boxes stack into 1 column */
+    .report_grid { grid-template-columns: 1fr; }
+    .sales_grid { grid-template-columns: 1fr; }
 
     .chart_header_row {
-        flex-direction: column; /* Puts the dropdown under the title */
+        flex-direction: column;
         gap: 15px;
     }
 
-    .chart_card {
-        padding: 15px;
-    } /* Less padding on small phone screens */
+    .chart_card { padding: 15px; }
 }
