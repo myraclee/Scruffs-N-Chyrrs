@@ -434,6 +434,7 @@
 
 .order_modal_drive_input:focus {
     outline: none;
+    box-shadow: none;
 }
 
 .order_modal_drive_input.input_error {
@@ -566,8 +567,10 @@
 
 .file_spec_fields {
     display: grid;
-    grid-template-columns: 1fr 1fr 120px;
-    gap: 14px;
+    grid-template-columns: 1fr 1fr; /* Force two equal columns */
+    gap: 20px; /* Increase gap for better breathing room */
+    align-items: flex-start;
+    margin-bottom: 20px;
 }
 
 .file_spec_field {
@@ -580,9 +583,12 @@
     font-size: 13px;
     color: #682c7a;
     margin-bottom: 6px;
-    display: flex;
     align-items: center;
     gap: 4px;
+
+    display: block;
+    margin-bottom: 8px;
+    white-space: nowrap;
 }
 
 .label_required {
@@ -605,6 +611,13 @@
     background-color: white;
 }
 
+.file_spec_input,
+.order_modal_select {
+    height: 48px; /* Fixed height for alignment */
+    box-sizing: border-box;
+    width: 100%;
+}
+
 .required_star {
     color: #d32f2f;
     font-size: 14px;
@@ -613,7 +626,6 @@
 .file_spec_input:focus {
     outline: none;
     border-color: #682c7a;
-    box-shadow: 0 0 0 3px rgba(104, 44, 122, 0.08);
 }
 
 .field_help {
@@ -626,7 +638,7 @@
 /* Select Elements */
 .order_modal_select {
     width: 100%;
-    padding: 12px 16px;
+    padding: 12px 30px 12px 16px;
     border: 2px solid #682c7a;
     border-radius: 30px;
     font-family: Arial;
@@ -640,7 +652,6 @@
 .order_modal_select:focus {
     outline: none;
     border-color: #682c7a;
-    box-shadow: 0 0 0 4px rgba(104, 44, 122, 0.1);
 }
 
 /* Price Section */
@@ -999,5 +1010,11 @@
     .add_file_spec_btn {
         width: 100%;
         justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .file_spec_fields {
+        grid-template-columns: 1fr;
     }
 }
