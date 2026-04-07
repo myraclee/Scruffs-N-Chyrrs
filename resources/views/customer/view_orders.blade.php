@@ -155,12 +155,6 @@
         </div>
     </div>
 
-    <div class="orders_container">
-    <span class="placeholder_payment">
-        <a href="javascript:void(0)" onclick="openPaymentModal(event)">TestButton</a>
-    </span>
-</div>
-
 @include('customer.pages.payment_customer')
 
 </div>

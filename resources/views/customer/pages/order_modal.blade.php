@@ -11,17 +11,6 @@
         </div>
 
         <div class="order_modal_form">
-            <div class="order_modal_section">
-                <h3 class="order_modal_section_title">Main Drive Link</h3>
-                <div class="order_modal_drive_input_wrapper">
-                    <input type="text" id="generalDriveLink" class="order_modal_drive_input" placeholder="Paste your main Google Drive folder link here..." required>
-                </div>
-                <p class="order_modal_drive_hint">Accepted: <code>https://drive.google.com/drive/folders/{id}</code>, <code>https://drive.google.com/file/d/{id}/view</code>, <code>https://drive.google.com/open?id={id}</code>, <code>https://drive.google.com/uc?id={id}</code>.</p>
-                <p id="generalDriveLinkError" class="order_modal_drive_error" hidden></p>
-            </div>
-
-            <div class="order_modal_price_divider"></div>
-
             <div class="order_modal_section" style="background: #f3e3f8; padding: 20px; border-radius: 16px; border: 2px solid #682c7a;">
                 <h3 class="order_modal_section_title">Add to Order</h3>
 
@@ -67,12 +56,6 @@
                     <span class="order_modal_price_value" id="grandTotalDisplay">₱0.00</span>
                 </div>
             </div>
-
-            <div id="orderPlacementFeedback" class="order_modal_message error order_modal_message_shortage" hidden aria-live="polite" tabindex="-1"></div>
-
-            <button type="button" class="order_modal_submit_btn" id="submitMasterOrderBtn">
-                <span id="submitBtnText">Place Order</span>
-            </button>
         </div>
     </div>
 </div>

@@ -26,21 +26,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const closeBtn = document.getElementById("closeOrderModal");
     const addItemBtn = document.getElementById("addItemBtn");
-    const submitBtn = document.getElementById("submitMasterOrderBtn");
     const quantityInput = document.getElementById("itemQuantity");
     const notesInput = document.getElementById("itemFileName");
     const rushFeeSelect = document.getElementById("rushFeeSelect");
-    const driveLinkInput = document.getElementById("generalDriveLink");
-    const driveLinkError = document.getElementById("generalDriveLinkError");
     const optionsContainer = document.getElementById("dynamicOptionsContainer");
     const cartContainer = document.getElementById("cartItemsContainer");
     const emptyMessage = document.getElementById("emptyCartMsg");
     const grandTotalDisplay = document.getElementById("grandTotalDisplay");
     const grandTotalLabelText = document.getElementById("grandTotalLabelText");
     const modalTitle = document.getElementById("dynamicModalTitle");
-    const orderPlacementFeedback = document.getElementById(
-        "orderPlacementFeedback",
-    );
 
     const formatMoney = (amount) =>
         new Intl.NumberFormat("en-PH", {
@@ -56,116 +50,6 @@ document.addEventListener("DOMContentLoaded", () => {
             .replace(/\"/g, "&quot;")
             .replace(/'/g, "&#39;");
 
-    const normalizeDriveLink = (value) =>
-        typeof value === "string" ? value.trim() : "";
-
-    const driveLinkIdPattern = /^[A-Za-z0-9_-]+$/;
-
-    function isValidGoogleDriveUrl(url) {
-        try {
-            const parsedUrl = new URL(url);
-
-            if (parsedUrl.protocol !== "https:") {
-                return false;
-            }
-
-            if (parsedUrl.hostname !== "drive.google.com") {
-                return false;
-            }
-
-            const normalizedPath =
-                parsedUrl.pathname.replace(/\/+$/, "") || "/";
-
-            if (
-                normalizedPath === "/" ||
-                normalizedPath === "/drive" ||
-                normalizedPath.startsWith("/drive/")
-            ) {
-                return true;
-            }
-
-            if (/^\/drive\/folders\/[A-Za-z0-9_-]+$/.test(normalizedPath)) {
-                return true;
-            }
-
-            if (/^\/file\/d\/[A-Za-z0-9_-]+(?:\/.*)?$/.test(normalizedPath)) {
-                return true;
-            }
-
-            if (normalizedPath === "/open" || normalizedPath === "/uc") {
-                const id = parsedUrl.searchParams.get("id");
-                return Boolean(id && driveLinkIdPattern.test(id));
-            }
-
-            return false;
-        } catch {
-            return false;
-        }
-    }
-
-    function clearDriveLinkError() {
-        if (!driveLinkInput || !driveLinkError) {
-            return;
-        }
-
-        driveLinkInput.classList.remove("input_error");
-        driveLinkInput.removeAttribute("aria-invalid");
-        driveLinkError.hidden = true;
-        driveLinkError.textContent = "";
-    }
-
-    function setDriveLinkError(message) {
-        if (!driveLinkInput || !driveLinkError) {
-            return;
-        }
-
-        driveLinkInput.classList.add("input_error");
-        driveLinkInput.setAttribute("aria-invalid", "true");
-        driveLinkError.hidden = false;
-        driveLinkError.textContent = message;
-    }
-
-    function validateDriveLinkInput({ required = true } = {}) {
-        const normalizedLink = normalizeDriveLink(driveLinkInput?.value || "");
-
-        if (driveLinkInput && driveLinkInput.value !== normalizedLink) {
-            driveLinkInput.value = normalizedLink;
-        }
-
-        if (!normalizedLink) {
-            if (!required) {
-                clearDriveLinkError();
-                return {
-                    valid: true,
-                    value: "",
-                };
-            }
-
-            setDriveLinkError(
-                "Please provide your main Google Drive link before checkout.",
-            );
-            return {
-                valid: false,
-                value: "",
-            };
-        }
-
-        if (!isValidGoogleDriveUrl(normalizedLink)) {
-            setDriveLinkError(
-                "Enter a valid Google Drive URL (drive.google.com) using an accepted Drive format.",
-            );
-            return {
-                valid: false,
-                value: normalizedLink,
-            };
-        }
-
-        clearDriveLinkError();
-        return {
-            valid: true,
-            value: normalizedLink,
-        };
-    }
 
     const resolveGrandTotalLabel = (items = []) => {
         const currentProductLabel = `${product?.name ?? "Product"} Total`;
@@ -189,84 +73,6 @@ document.addEventListener("DOMContentLoaded", () => {
         grandTotalLabelText.textContent = resolveGrandTotalLabel(items);
     };
 
-    function clearOrderPlacementFeedback() {
-        if (!orderPlacementFeedback) {
-            return;
-        }
-
-        orderPlacementFeedback.hidden = true;
-        orderPlacementFeedback.classList.remove("active");
-        orderPlacementFeedback.innerHTML = "";
-    }
-
-    function renderShortageFeedback(shortages, fallbackMessage) {
-        if (!orderPlacementFeedback) {
-            return false;
-        }
-
-        const validShortages = Array.isArray(shortages)
-            ? shortages.filter((item) => item && item.material_name)
-            : [];
-
-        const shortageListItems = validShortages.map((item) => {
-            const materialName = escapeHtml(item.material_name);
-            const required = Number(item.required || 0);
-            const available = Number(item.available || 0);
-            const deficit = Math.max(
-                0,
-                Number(item.deficit ?? required - available),
-            );
-
-            return `<li><strong>${materialName}</strong>: Required ${required}, Available ${available}, Short by ${deficit}</li>`;
-        });
-
-        const message =
-            fallbackMessage || "Insufficient material stock for this order.";
-
-        orderPlacementFeedback.innerHTML = `
-            <p class="order_modal_message_title">Unable to place order due to material shortage.</p>
-            <p class="order_modal_message_copy">${escapeHtml(message)}</p>
-            ${shortageListItems.length > 0 ? `<ul class="order_modal_shortage_list">${shortageListItems.join("")}</ul>` : ""}
-        `;
-        orderPlacementFeedback.hidden = false;
-        orderPlacementFeedback.classList.add("active");
-        orderPlacementFeedback.focus();
-
-        return true;
-    }
-
-    function renderConfigurationIssueFeedback(issues, fallbackMessage) {
-        if (!orderPlacementFeedback) {
-            return false;
-        }
-
-        const validIssues = Array.isArray(issues)
-            ? issues.filter((item) => item && item.product_name)
-            : [];
-
-        const issueItems = validIssues.map((item) => {
-            const productName = escapeHtml(item.product_name);
-            const issueLabel = escapeHtml(
-                item.issue || "missing_template_or_options",
-            );
-            return `<li><strong>${productName}</strong>: ${issueLabel}</li>`;
-        });
-
-        const message =
-            fallbackMessage ||
-            "Checkout is blocked because inventory mappings are incomplete for one or more products.";
-
-        orderPlacementFeedback.innerHTML = `
-            <p class="order_modal_message_title">Unable to place order due to inventory configuration.</p>
-            <p class="order_modal_message_copy">${escapeHtml(message)}</p>
-            ${issueItems.length > 0 ? `<ul class="order_modal_shortage_list">${issueItems.join("")}</ul>` : ""}
-        `;
-        orderPlacementFeedback.hidden = false;
-        orderPlacementFeedback.classList.add("active");
-        orderPlacementFeedback.focus();
-
-        return true;
-    }
 
     function setButtonLoading(button, isLoading, loadingText) {
         if (!button) return;
@@ -440,13 +246,9 @@ document.addEventListener("DOMContentLoaded", () => {
         orderModal.classList.remove("active");
         orderModal.style.display = "none";
         document.body.style.overflow = "auto";
-        clearOrderPlacementFeedback();
-        clearDriveLinkError();
     };
 
     window.openOrderModal = async function () {
-        clearOrderPlacementFeedback();
-        clearDriveLinkError();
         orderModal.classList.add("active");
         orderModal.style.display = "flex";
         document.body.style.overflow = "hidden";
@@ -457,25 +259,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     closeBtn.addEventListener("click", window.closeOrderModal);
 
-    driveLinkInput?.addEventListener("input", () => {
-        const currentValue = normalizeDriveLink(driveLinkInput.value || "");
-        if (!currentValue) {
-            clearDriveLinkError();
-            return;
-        }
-
-        validateDriveLinkInput({ required: true });
-    });
-
-    driveLinkInput?.addEventListener("blur", () => {
-        validateDriveLinkInput({ required: true });
-    });
-
     cartContainer.addEventListener("click", async (event) => {
         const removeBtn = event.target.closest("button[data-remove-id]");
         if (!removeBtn) return;
-
-        clearOrderPlacementFeedback();
 
         const removeId = Number(removeBtn.dataset.removeId);
         if (!removeId) return;
@@ -492,8 +278,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     addItemBtn.addEventListener("click", async () => {
-        clearOrderPlacementFeedback();
-
         if (!templatePayload) {
             Toast.error("Order options are still loading. Please wait.");
             return;
@@ -541,68 +325,5 @@ document.addEventListener("DOMContentLoaded", () => {
         cartPayload = result.data;
         renderCart();
         Toast.success("Item added to persistent cart.");
-    });
-
-    submitBtn.addEventListener("click", async () => {
-        clearOrderPlacementFeedback();
-
-        const driveLinkValidation = validateDriveLinkInput({ required: true });
-        if (!driveLinkValidation.valid) {
-            Toast.warning(
-                "Please use a valid Google Drive URL before checkout.",
-            );
-            return;
-        }
-
-        const driveLink = driveLinkValidation.value;
-
-        if (!cartPayload?.items || cartPayload.items.length === 0) {
-            Toast.warning("Your cart is empty. Add at least one item.");
-            return;
-        }
-
-        setButtonLoading(submitBtn, true, "Processing...");
-
-        const result = await CustomerOrderAPI.checkoutCart(driveLink);
-
-        setButtonLoading(submitBtn, false);
-
-        if (!result.success) {
-            if (
-                Array.isArray(result.shortages) &&
-                result.shortages.length > 0
-            ) {
-                renderShortageFeedback(result.shortages, result.message);
-                Toast.error(
-                    "Inventory shortage detected. Review the material details below.",
-                );
-                return;
-            }
-
-            if (
-                Array.isArray(result.configuration_issues) &&
-                result.configuration_issues.length > 0
-            ) {
-                renderConfigurationIssueFeedback(
-                    result.configuration_issues,
-                    result.message,
-                );
-                Toast.error(
-                    "Inventory configuration issue detected. Please contact support or try again later.",
-                );
-                return;
-            }
-
-            const firstError = result.errors
-                ? Object.values(result.errors).flat()[0]
-                : null;
-            Toast.error(firstError || result.message || "Checkout failed.");
-            return;
-        }
-
-        clearOrderPlacementFeedback();
-        Toast.success("Checkout complete! Redirecting to your orders...");
-        window.closeOrderModal();
-        window.location.href = "/account/orders";
     });
 });

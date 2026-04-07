@@ -30,7 +30,22 @@
     position: relative;
     animation: acct_fade_up 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) both;
     max-height: 90vh;
-    overflow-y: auto;
+    overflow: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Keep warning modal scrollable but hide both scrollbars */
+.modal-warning {
+    overflow: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.modal-warning::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
 }
 
 /* Stars (reuse from your CSS) */
@@ -124,14 +139,14 @@
     margin-bottom: 10px;
 }
 .warning-title {
-    font-family: "SuperDream", sans-serif;
+    font-family: 'SuperDream', sans-serif;
     font-size: 28px;
     text-align: center;
     color: #6b3282;
     margin-bottom: 15px;
 }
 .warning-text {
-    font-family: "Coolvetica", sans-serif;
+    font-family: 'Coolvetica', sans-serif;
     font-size: 15px;
     text-align: center;
     color: #333;
@@ -146,14 +161,14 @@
     margin-bottom: 10px;
 }
 .confirmation-title {
-    font-family: "SuperDream", sans-serif;
+    font-family: 'SuperDream', sans-serif;
     font-size: 26px;
     text-align: center;
     color: #6b3282;
     margin-bottom: 15px;
 }
 .confirmation-text {
-    font-family: "Coolvetica", sans-serif;
+    font-family: 'Coolvetica', sans-serif;
     font-size: 15px;
     text-align: center;
     color: #333;
@@ -164,7 +179,7 @@
     margin-bottom: 20px;
 }
 .form_group label {
-    font-family: "Coolvetica", sans-serif;
+    font-family: 'Coolvetica', sans-serif;
     font-size: 17px;
     color: #6b3282;
     display: block;
@@ -189,7 +204,7 @@
     border-color: #6b3282;
 }
 .error_message {
-    font-family: "Coolvetica", sans-serif;
+    font-family: 'Coolvetica', sans-serif;
     font-size: 12px;
     color: #d32f2f;
     margin-top: 5px;
@@ -219,7 +234,7 @@
     border: 1px solid #dcbae6;
 }
 .qr-amount-text {
-    font-family: "Coolvetica", sans-serif;
+    font-family: 'Coolvetica', sans-serif;
     font-size: 16px;
     color: #333;
 }
@@ -246,7 +261,7 @@
     flex-direction: column;
     align-items: center;
     gap: 5px;
-    font-family: "Coolvetica", sans-serif;
+    font-family: 'Coolvetica', sans-serif;
     color: #888;
 }
 .upload-icon {
@@ -276,7 +291,7 @@
     border: none;
     padding: 6px 16px;
     border-radius: 40px;
-    font-family: "Coolvetica", sans-serif;
+    font-family: 'Coolvetica', sans-serif;
     font-size: 13px;
     cursor: pointer;
     transition: 0.2s;
@@ -300,7 +315,7 @@
     margin-top: 20px;
 }
 .action_btn {
-    font-family: "Coolvetica", sans-serif;
+    font-family: 'Coolvetica', sans-serif;
     letter-spacing: 0.5px;
     text-align: center;
     border-radius: 50px;
@@ -364,7 +379,9 @@
 
 /* Scrollbar inside modal */
 .modal-container::-webkit-scrollbar {
-    width: 6px;
+    width: 0px;
+    height: 0px;
+    display: none;
 }
 .modal-container::-webkit-scrollbar-track {
     background: #f0e6d8;

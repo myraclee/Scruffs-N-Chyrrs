@@ -2,6 +2,8 @@
 
 let currentFile = null;
 let currentModal = null;
+let pendingConfirmAction = null;
+let isConfirming = false;
 
 const qrImages = {
     gcash: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"%3E%3Crect width="200" height="200" fill="%230066CC"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="white" font-size="20" font-family="monospace"%3EGCash QR%3C/text%3E%3C/svg%3E',
@@ -150,25 +152,11 @@ function setupReferenceValidation() {
 function submitPayment() {
     const paymentMethod = document.getElementById("paymentMethodSelect").value;
     const referenceNo = document.getElementById("referenceNumber").value.trim();
-    console.log("Payment submitted:", {
+    return {
         paymentMethod,
         referenceNo,
         file: currentFile,
-    });
-    // Simulate success message
-    const container = document.querySelector(".orders_container");
-    if (container) {
-        const successDiv = document.createElement("div");
-        successDiv.className = "alert alert_success";
-        successDiv.innerHTML =
-            '<span class="alert_icon">✓</span> Payment proof submitted successfully!';
-        container.insertBefore(successDiv, container.firstChild);
-        setTimeout(() => successDiv.remove(), 5000);
-    } else {
-        alert("Payment confirmation submitted! (Demo)");
-    }
-    closeAllModals();
-    resetPaymentForm();
+    };
 }
 
 function initModalEvents() {
@@ -195,13 +183,60 @@ function initModalEvents() {
         .addEventListener("click", () => showModal("modalPayment"));
     document
         .getElementById("confirmationConfirmBtn")
-        .addEventListener("click", () => submitPayment());
+        .addEventListener("click", async () => {
+            if (isConfirming) return;
+
+            const paymentData = submitPayment();
+            const confirmBtn = document.getElementById("confirmationConfirmBtn");
+
+            try {
+                isConfirming = true;
+                if (confirmBtn) {
+                    confirmBtn.disabled = true;
+                    confirmBtn.textContent = "Processing...";
+                }
+
+                if (typeof pendingConfirmAction === "function") {
+                    const actionResult = await pendingConfirmAction(paymentData);
+                    if (actionResult === false) {
+                        return;
+                    }
+
+                    pendingConfirmAction = null;
+                } else {
+                    const container = document.querySelector(".orders_container");
+                    if (container) {
+                        const successDiv = document.createElement("div");
+                        successDiv.className = "alert alert_success";
+                        successDiv.innerHTML =
+                            '<span class="alert_icon">✓</span> Payment proof submitted successfully!';
+                        container.insertBefore(successDiv, container.firstChild);
+                        setTimeout(() => successDiv.remove(), 5000);
+                    } else {
+                        alert("Payment confirmation submitted! (Demo)");
+                    }
+                }
+
+                closeAllModals();
+                resetPaymentForm();
+            } catch (error) {
+                console.error("Payment confirmation action failed:", error);
+            } finally {
+                isConfirming = false;
+                if (confirmBtn) {
+                    confirmBtn.disabled = false;
+                    confirmBtn.textContent = "Confirm";
+                }
+            }
+        });
     const paymentSelect = document.getElementById("paymentMethodSelect");
     if (paymentSelect) paymentSelect.addEventListener("change", updateQRCode);
 }
 
-window.openPaymentModal = function (event) {
+window.openPaymentModal = function (event, options = {}) {
     if (event) event.preventDefault();
+    pendingConfirmAction =
+        typeof options.onConfirm === "function" ? options.onConfirm : null;
     resetPaymentForm();
     showModal("modalWarning");
 };

@@ -12,6 +12,8 @@ const orderEditCancelBtn = document.getElementById("orderEditCancelBtn");
 const orderEditSaveBtn = document.getElementById("orderEditSaveBtn");
 const orderEditDriveLink = document.getElementById("orderEditDriveLink");
 const orderEditItems = document.getElementById("orderEditItems");
+const DRIVE_LINK_FIELD_ID = "cartGeneralDriveLink";
+const PLACE_ORDER_BUTTON_ID = "cartPlaceOrderBtn";
 
 const CURRENT_STATUSES = new Set(["waiting", "approved", "preparing", "ready"]);
 const COMPLETED_STATUSES = new Set(["completed", "cancelled"]);
@@ -20,12 +22,59 @@ const EDITABLE_STATUS = "waiting";
 let activeEditGroupId = null;
 let activeEditDraft = null;
 let isSavingOrderEdit = false;
+let isPlacingOrder = false;
 
 const money = (value) =>
   new Intl.NumberFormat("en-PH", {
     style: "currency",
     currency: "PHP",
   }).format(Number(value || 0));
+
+const normalizeDriveLink = (value) =>
+  typeof value === "string" ? value.trim() : "";
+
+const driveLinkIdPattern = /^[A-Za-z0-9_-]+$/;
+
+function isValidGoogleDriveUrl(url) {
+  try {
+    const parsedUrl = new URL(url);
+
+    if (parsedUrl.protocol !== "https:") {
+      return false;
+    }
+
+    if (parsedUrl.hostname !== "drive.google.com") {
+      return false;
+    }
+
+    const normalizedPath = parsedUrl.pathname.replace(/\/+$/, "") || "/";
+
+    if (
+      normalizedPath === "/" ||
+      normalizedPath === "/drive" ||
+      normalizedPath.startsWith("/drive/")
+    ) {
+      return true;
+    }
+
+    if (/^\/drive\/folders\/[A-Za-z0-9_-]+$/.test(normalizedPath)) {
+      return true;
+    }
+
+    if (/^\/file\/d\/[A-Za-z0-9_-]+(?:\/.*)?$/.test(normalizedPath)) {
+      return true;
+    }
+
+    if (normalizedPath === "/open" || normalizedPath === "/uc") {
+      const id = parsedUrl.searchParams.get("id");
+      return Boolean(id && driveLinkIdPattern.test(id));
+    }
+
+    return false;
+  } catch {
+    return false;
+  }
+}
 
 window.toggleOrdersCategory = function toggleOrdersCategory(category) {
   const content = document.getElementById(`${category}OrdersContent`);
@@ -158,12 +207,131 @@ function renderCart(cart) {
 				<span style="font-size:18px;">Cart Total</span>
 				<strong style="font-size:20px;">${money(cart.totals?.total_price)}</strong>
 			</div>
-			<a href="/products" class="browse_products_btn" style="align-self:flex-start;">
-				<span class="btn_sparkle">✦</span>
-				<span>Add More Items</span>
-			</a>
+			<div class="cart_checkout_block">
+				<label for="${DRIVE_LINK_FIELD_ID}" class="cart_checkout_label">Main Drive Link <span class="label_required">*</span></label>
+				<input
+					type="url"
+					id="${DRIVE_LINK_FIELD_ID}"
+					class="cart_checkout_input"
+					placeholder="https://drive.google.com/drive/folders/..."
+					required
+				>
+				<p class="cart_checkout_hint">Accepted Drive Formats: /drive/folders/{id}, /file/d/{id}, /open?id={id}, /uc?id={id}</p>
+			</div>
+			<div class="cart_actions_row">
+				<a href="/products" class="browse_products_btn">
+					<span class="btn_sparkle">✦</span>
+					<span>Add More Items</span>
+				</a>
+				<button type="button" class="browse_products_btn place_order_btn" id="${PLACE_ORDER_BUTTON_ID}">
+					<span class="btn_sparkle">✦</span>
+					<span>Place Order</span>
+				</button>
+			</div>
 		</div>
 	`;
+}
+
+function setPlaceOrderLoading(isLoading) {
+  const placeOrderBtn = document.getElementById(PLACE_ORDER_BUTTON_ID);
+  if (!placeOrderBtn) return;
+
+  placeOrderBtn.disabled = isLoading;
+
+  if (isLoading) {
+    placeOrderBtn.dataset.originalHtml = placeOrderBtn.innerHTML;
+    placeOrderBtn.innerHTML = '<span class="spinner" aria-hidden="true"></span><span>Processing...</span>';
+    return;
+  }
+
+  if (placeOrderBtn.dataset.originalHtml) {
+    placeOrderBtn.innerHTML = placeOrderBtn.dataset.originalHtml;
+    delete placeOrderBtn.dataset.originalHtml;
+  }
+}
+
+function validateCartDriveLinkInput() {
+  const driveLinkInput = document.getElementById(DRIVE_LINK_FIELD_ID);
+  if (!driveLinkInput) {
+    return {
+      valid: false,
+      value: "",
+      message: "Drive link field is not available.",
+    };
+  }
+
+  const normalizedLink = normalizeDriveLink(driveLinkInput.value);
+  if (driveLinkInput.value !== normalizedLink) {
+    driveLinkInput.value = normalizedLink;
+  }
+
+  if (!normalizedLink) {
+    return {
+      valid: false,
+      value: "",
+      message: "Please provide your main Google Drive link before placing the order.",
+    };
+  }
+
+  if (!isValidGoogleDriveUrl(normalizedLink)) {
+    return {
+      valid: false,
+      value: normalizedLink,
+      message: "Enter a valid Google Drive URL (drive.google.com) using an accepted Drive format.",
+    };
+  }
+
+  return {
+    valid: true,
+    value: normalizedLink,
+    message: "",
+  };
+}
+
+async function placeCartOrder() {
+  if (isPlacingOrder) return;
+
+  const validation = validateCartDriveLinkInput();
+  if (!validation.valid) {
+    Toast.warning(validation.message);
+    return false;
+  }
+
+  isPlacingOrder = true;
+  setPlaceOrderLoading(true);
+
+  const result = await CustomerOrderAPI.checkoutCart(validation.value);
+
+  isPlacingOrder = false;
+  setPlaceOrderLoading(false);
+
+  if (!result.success) {
+    if (Array.isArray(result.shortages) && result.shortages.length > 0) {
+      Toast.error("Inventory shortage detected. Please adjust your cart and try again.");
+      return false;
+    }
+
+    if (
+      Array.isArray(result.configuration_issues) &&
+      result.configuration_issues.length > 0
+    ) {
+      Toast.error(
+        "Inventory configuration issue detected. Please contact support or try again later.",
+      );
+      return false;
+    }
+
+    const firstError = result.errors
+      ? Object.values(result.errors).flat()[0]
+      : null;
+
+    Toast.error(firstError || result.message || "Checkout failed.");
+    return false;
+  }
+
+  Toast.success("Checkout complete! Your order is now waiting for approval.");
+  await loadPageData();
+  return true;
 }
 
 function renderOrderGroups(container, groups, emptyMessage) {
@@ -589,6 +757,27 @@ async function saveOrderEdit() {
 
 function bindCartEvents() {
   cartContent.addEventListener("click", async (event) => {
+    const placeOrderBtn = event.target.closest(`#${PLACE_ORDER_BUTTON_ID}`);
+    if (placeOrderBtn) {
+      const cartState = await CustomerOrderAPI.getCart();
+      if (!cartState.success || !Array.isArray(cartState.data?.items) || cartState.data.items.length === 0) {
+        Toast.warning("Your cart is empty. Add at least one item.");
+        return;
+      }
+
+      if (typeof window.openPaymentModal === "function") {
+        window.openPaymentModal(event, {
+          onConfirm: async () => {
+            return await placeCartOrder();
+          },
+        });
+      } else {
+        await placeCartOrder();
+      }
+
+      return;
+    }
+
     const removeBtn = event.target.closest("button[data-remove-cart-id]");
     if (!removeBtn) return;
 
