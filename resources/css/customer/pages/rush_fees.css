@@ -246,61 +246,14 @@
     line-height: 1;
 }
 
-.deco_star_1 {
-    top: 10%;
-    left: 5%;
-    font-size: 26px;
-    animation: floatTwinkleA 4.8s ease-in-out infinite;
-}
-.deco_star_2 {
-    top: 60%;
-    left: 3%;
-    font-size: 16px;
-    animation: floatTwinkleB 5.6s ease-in-out infinite;
-    animation-delay: 0.7s;
-}
-.deco_star_3 {
-    top: 80%;
-    left: 10%;
-    font-size: 20px;
-    animation: floatTwinkleC 6.1s ease-in-out infinite;
-    animation-delay: 1.4s;
-}
-.deco_star_4 {
-    top: 12%;
-    right: 5%;
-    font-size: 22px;
-    animation: floatTwinkleD 5.2s ease-in-out infinite;
-    animation-delay: 0.4s;
-}
-.deco_star_5 {
-    top: 55%;
-    right: 3%;
-    font-size: 18px;
-    animation: floatTwinkleA 6.8s ease-in-out infinite;
-    animation-delay: 1.1s;
-}
-.deco_star_6 {
-    top: 78%;
-    right: 8%;
-    font-size: 14px;
-    animation: floatTwinkleC 4.4s ease-in-out infinite;
-    animation-delay: 2s;
-}
-.deco_star_7 {
-    top: 35%;
-    left: 8%;
-    font-size: 12px;
-    animation: floatTwinkleB 7s ease-in-out infinite;
-    animation-delay: 0.9s;
-}
-.deco_star_8 {
-    top: 30%;
-    right: 7%;
-    font-size: 13px;
-    animation: floatTwinkleD 5.9s ease-in-out infinite;
-    animation-delay: 1.6s;
-}
+.deco_star_1 { top: 10%; left: 5%; font-size: 26px; animation: floatTwinkleA 4.8s ease-in-out infinite; }
+.deco_star_2 { top: 60%; left: 3%; font-size: 16px; animation: floatTwinkleB 5.6s ease-in-out infinite; animation-delay: 0.7s; }
+.deco_star_3 { top: 80%; left: 10%; font-size: 20px; animation: floatTwinkleC 6.1s ease-in-out infinite; animation-delay: 1.4s; }
+.deco_star_4 { top: 12%; right: 5%; font-size: 22px; animation: floatTwinkleD 5.2s ease-in-out infinite; animation-delay: 0.4s; }
+.deco_star_5 { top: 55%; right: 3%; font-size: 18px; animation: floatTwinkleA 6.8s ease-in-out infinite; animation-delay: 1.1s; }
+.deco_star_6 { top: 78%; right: 8%; font-size: 14px; animation: floatTwinkleC 4.4s ease-in-out infinite; animation-delay: 2s; }
+.deco_star_7 { top: 35%; left: 8%; font-size: 12px; animation: floatTwinkleB 7s ease-in-out infinite; animation-delay: 0.9s; }
+.deco_star_8 { top: 30%; right: 7%; font-size: 13px; animation: floatTwinkleD 5.9s ease-in-out infinite; animation-delay: 1.6s; }
 
 /* =============================================
    CONTAINER
@@ -315,8 +268,15 @@
     min-height: 50vh;
 }
 
-#rushFeesTableWrapper {
+.rush_fees_content_col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
     max-width: 760px;
+}
+
+#rushFeesTableWrapper {
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -351,30 +311,10 @@
     pointer-events: none;
 }
 
-.card_star_tl {
-    top: -13px;
-    left: -13px;
-    animation: twinkle 2.4s ease-in-out infinite;
-    animation-delay: 0s;
-}
-.card_star_tr {
-    top: -13px;
-    right: -13px;
-    animation: twinkle 2.4s ease-in-out infinite;
-    animation-delay: 0.6s;
-}
-.card_star_bl {
-    bottom: -13px;
-    left: -13px;
-    animation: twinkle 2.4s ease-in-out infinite;
-    animation-delay: 1.2s;
-}
-.card_star_br {
-    bottom: -13px;
-    right: -13px;
-    animation: twinkle 2.4s ease-in-out infinite;
-    animation-delay: 1.8s;
-}
+.card_star_tl { top: -13px; left: -13px; animation: twinkle 2.4s ease-in-out infinite; animation-delay: 0s; }
+.card_star_tr { top: -13px; right: -13px; animation: twinkle 2.4s ease-in-out infinite; animation-delay: 0.6s; }
+.card_star_bl { bottom: -13px; left: -13px; animation: twinkle 2.4s ease-in-out infinite; animation-delay: 1.2s; }
+.card_star_br { bottom: -13px; right: -13px; animation: twinkle 2.4s ease-in-out infinite; animation-delay: 1.8s; }
 
 /* ---- Card header ---- */
 .rush_fee_card_header {
@@ -433,7 +373,7 @@
     table-layout: fixed;
 
     border: 2px solid #682c7a;
-    border-collapse: separate; /* Required for rounded corners + borders */
+    border-collapse: separate; 
     border-spacing: 0;
 }
 
@@ -490,7 +430,7 @@
 }
 
 .td_percentage {
-    text-align: right;
+    text-align: center;
     color: #682c7a;
     font-size: 16px;
 }
@@ -532,26 +472,10 @@
     margin-bottom: 28px;
 }
 
-.skeleton_eyebrow {
-    height: 14px;
-    width: 100px;
-}
-.skeleton_title {
-    height: 30px;
-    width: 180px;
-}
-.skeleton_divider {
-    height: 3px;
-    width: 60px;
-    opacity: 0.4;
-    margin-top: 4px;
-}
-
-.skeleton_row_wrap {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
+.skeleton_eyebrow { height: 14px; width: 100px; }
+.skeleton_title { height: 30px; width: 180px; }
+.skeleton_divider { height: 3px; width: 60px; opacity: 0.4; margin-top: 4px; }
+.skeleton_row_wrap { display: flex; flex-direction: column; gap: 2px; }
 
 .skeleton_thead {
     height: 46px;
@@ -599,26 +523,86 @@
 }
 
 /* =============================================
+   RUSH FEES INFO SECTION & PERCENTAGE COLORS
+   ============================================= */
+
+.rush_info_section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 30px;
+    animation: heroFadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.3s;
+}
+
+.rush_info_title {
+    font-family: SuperDream, sans-serif;
+    font-size: 28px;
+    color: #682c7a;
+    margin-bottom: 10px;
+    text-align: center;
+    letter-spacing: 1px;
+}
+
+.rush_formula_text {
+    color: #682c7a;
+    font-family: Coolvetica;
+    font-size: 18px;
+    margin: 0;
+    text-align: center;
+}
+
+/* Base style for the percentage badge inside table */
+.tier_pct {
+    font-weight: bold;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 15px;
+    font-family: Coolvetica;
+    display: inline-block;
+}
+
+/* Dynamic color classes applied by JS */
+.badge_high { 
+    background: #ffd6d6; 
+    color: #c83333; 
+}
+
+.badge_med { 
+    background: #ffe8cc; 
+    color: #d97706; 
+}
+
+.badge_low { 
+    background: #fff3cd; 
+    color: #f59f00; 
+}
+
+.badge_lowest { 
+    background: #e3fae8; 
+    color: #2b8a3e; 
+}
+
+/* THE FIX: Purple badge for NO ADDED TOTAL */
+.badge_free { 
+    background: #682c7a; 
+    color: #fff7ec; 
+    font-size: 13px;
+}
+
+
+/* =============================================
    RESPONSIVE
    ============================================= */
 
 @media (max-width: 768px) {
-    .rush_fees_back_wrap {
-        padding: 20px 20px 0;
-    }
-
-    .rush_fees_title {
-        font-size: 38px;
-    }
-
-    .rush_fees_tagline {
-        font-size: 16px;
-    }
-
-    .rush_fees_container {
-        padding: 0 5% 80px;
-    }
-
+    .rush_fees_back_wrap { padding: 20px 20px 0; }
+    .rush_fees_title { font-size: 38px; }
+    .rush_fees_tagline { font-size: 16px; }
+    .rush_fees_container { padding: 0 5% 80px; }
+    .rush_info_title { font-size: 24px; }
+    
     .rush_fee_card {
         padding: 36px 30px 30px;
         border-radius: 26px;
@@ -627,36 +611,19 @@
             0 0 0 7px #682c7a,
             0 14px 36px rgba(104, 44, 122, 0.11);
     }
+    .range_value { font-size: 20px; }
 
-    .range_value {
-        font-size: 20px;
-    }
-
-    .deco_star_3,
-    .deco_star_6,
-    .deco_star_7,
-    .deco_star_8 {
-        display: none;
-    }
+    .deco_star_3, .deco_star_6, .deco_star_7, .deco_star_8 { display: none; }
 }
 
 @media (max-width: 480px) {
-    .rush_fees_back_wrap {
-        padding: 16px 16px 0;
-    }
-
-    .rush_fees_title {
-        font-size: 30px;
-    }
-
-    .rush_fees_tagline {
-        font-size: 14px;
-    }
-
-    .rush_fees_container {
-        padding: 0 4% 70px;
-    }
-
+    .rush_fees_back_wrap { padding: 16px 16px 0; }
+    .rush_fees_title { font-size: 30px; }
+    .rush_fees_tagline { font-size: 14px; }
+    .rush_fees_container { padding: 0 4% 70px; }
+    .rush_formula_text { font-size: 15px; }
+    .rush_info_title { font-size: 20px; }
+    
     .rush_fee_card {
         padding: 28px 22px 24px;
         border-radius: 20px;
@@ -665,26 +632,16 @@
             0 0 0 6px #682c7a,
             0 10px 28px rgba(104, 44, 122, 0.1);
     }
-
-    .range_value {
-        font-size: 20px;
-    }
+    .range_value { font-size: 20px; }
 
     .rush_fee_table th,
     .rush_fee_table td {
         padding: 12px 14px;
         font-size: 13px;
     }
+    .tier_pct { font-size: 13px; }
+    .badge_free { font-size: 11px; }
 
-    .td_percentage {
-        font-size: 14px;
-    }
-
-    .deco_star {
-        display: none;
-    }
-
-    .card_star {
-        font-size: 16px;
-    }
+    .deco_star { display: none; }
+    .card_star { font-size: 16px; }
 }

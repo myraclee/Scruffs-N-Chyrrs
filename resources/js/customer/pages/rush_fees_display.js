@@ -127,9 +127,32 @@ function buildTable(timeframes) {
 
         const tdPct = document.createElement("td");
         tdPct.className = "td_percentage";
-        tdPct.textContent = timeframe.percentage
-            ? `${formatPercentage(timeframe.percentage)}%`
-            : "—";
+        
+        // THE FIX: Format the percentage and apply the colorful badge class
+        if (timeframe.percentage !== null && timeframe.percentage !== undefined) {
+            const pctValue = parseFloat(timeframe.percentage);
+            let badgeClass = "badge_free"; 
+            
+            if (pctValue >= 40) {
+                badgeClass = "badge_high";
+            } else if (pctValue >= 35) {
+                badgeClass = "badge_med";
+            } else if (pctValue >= 30) {
+                badgeClass = "badge_low";
+            } else if (pctValue > 0) {
+                badgeClass = "badge_lowest";
+            }
+
+            if (pctValue === 0) {
+                 tdPct.innerHTML = `<span class="tier_pct badge_free">NO ADDED TOTAL</span>`;
+            } else {
+                 tdPct.innerHTML = `<span class="tier_pct ${badgeClass}">+${formatPercentage(timeframe.percentage)}%</span>`;
+            }
+           
+        } else {
+            tdPct.textContent = "—";
+        }
+        
         row.appendChild(tdPct);
 
         tbody.appendChild(row);
