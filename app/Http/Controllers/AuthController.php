@@ -666,11 +666,15 @@ class AuthController extends Controller
 
         $resetToken = DB::table('password_reset_tokens')->where('email', $email)->first();
 
-        if (!$resetToken || $resetToken->code !== $request->code) {
+        if (!$resetToken || !is_string($resetToken->code) || !is_string($resetToken->expires_at)) {
             return back()->withErrors(['code' => 'The verification code is invalid.']);
         }
 
-        if (now()->isAfter($resetToken->expires_at)) {
+        if (!hash_equals($resetToken->code, (string) $request->code)) {
+            return back()->withErrors(['code' => 'The verification code is invalid.']);
+        }
+
+        if (now()->greaterThanOrEqualTo($resetToken->expires_at)) {
             return back()->withErrors(['code' => 'The verification code has expired. Please request a new one.']);
         }
 
