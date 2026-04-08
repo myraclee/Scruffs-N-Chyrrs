@@ -1,6 +1,11 @@
 import Toast from "/resources/js/utils/toast.js";
 
 document.addEventListener("DOMContentLoaded", () => {
+    // --- 🚀 FORCE RED ERRORS ON LOAD VIA JS (Bypasses CSS entirely) 🚀 ---
+    document.querySelectorAll('.server_error, .validation_error').forEach(el => {
+        el.style.setProperty('color', '#d93025', 'important');
+    });
+
     // --- DOM Elements ---
     const emailInput = document.getElementById("email");
     const loginInput = document.getElementById("password");
@@ -31,12 +36,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const eyeOpen = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#682c7a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
     const eyeClosed = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#682c7a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
 
-    // --- Utilities (validateLoginEmail, validateRemediationEmail, lockPageInteraction, applyErrorStyles, etc.) ---
-    // (Keep your existing utility functions exactly as they were)
+    // --- Utilities ---
     const validateLoginEmail = (email) => {
         if (!email) return false;
         if (email.includes(" ")) return false;
         if (!email.includes("@")) return false;
+        
+        // 🚀 Reject emails ending or starting with @
+        if (email.endsWith("@") || email.startsWith("@")) return false;
+        
         const parts = email.split("@");
         if (parts.length !== 2) return false;
         const [prefix, domain] = parts;
@@ -115,11 +123,13 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!err) {
             err = document.createElement("span");
             err.className = "validation_error";
+            // 🚀 Force JS inserted styles to be red 🚀
             err.style.cssText =
-                "color: #d93025; font-family: Coolvetica, sans-serif; font-size: 14px; margin-top: 4px; display: block; text-align: left;";
+                "color: #d93025 !important; font-family: Coolvetica, sans-serif; font-size: 14px; margin-top: 4px; display: block; text-align: left;";
             targetElement.after(err);
         }
         err.textContent = message;
+        err.style.setProperty('color', '#d93025', 'important');
         err.style.display = "block";
     };
 
@@ -263,7 +273,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // --- Input sanitization and validation (keep existing) ---
+    // --- Input sanitization and validation ---
     if (emailInput) {
         emailInput.addEventListener("input", () => {
             emailInput.value = emailInput.value
@@ -315,7 +325,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // --- Remediation overlay (unchanged) ---
+    // --- Remediation overlay ---
     if (forceRemediation && remediationOverlay) {
         remediationOverlay.classList.add("active");
         document.body.style.overflow = "hidden";
@@ -352,7 +362,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const timestamp = parseInt(lockoutTimestamp, 10);
         startCountdown(timestamp);
     } else {
-        // For permanent lock or reset required errors (already handled by modal)
+        // For permanent lock or reset required errors
         const allErrors = document.querySelectorAll(
             ".server_error, .validation_error",
         );
@@ -365,7 +375,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 text.includes("Invalid credentials");
 
             if (isPermanentLock || isResetRequired) {
-                // Do NOT show inline error; instead ensure modal is shown
                 err.style.display = "none";
                 if (!forceUnlockModal) showUnlockModal();
             } else if (isInvalidCreds) {

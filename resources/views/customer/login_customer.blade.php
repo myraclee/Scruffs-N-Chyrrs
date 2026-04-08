@@ -31,7 +31,7 @@
             <input class="login_textbox" type="email" id="email" name="email" placeholder="email@address.com" value="{{ old('email') }}" required maxlength="254" 
                    @error('email') style="border: 2px solid #d93025 !important;" @enderror>
             @error('email')
-                <span class="server_error">{{ $message }}</span>
+                <span class="server_error" style="color: #d93025 !important; font-family: 'Coolvetica', sans-serif; font-size: 14px; margin-top: 6px; display: block;">{{ $message }}</span>
             @enderror
         </div>
 
@@ -45,7 +45,7 @@
                 </span>
             </div>
             @error('password')
-                <span class="server_error">{{ $message }}</span>
+                <span class="server_error" style="color: #d93025 !important; font-family: 'Coolvetica', sans-serif; font-size: 14px; margin-top: 6px; display: block;">{{ $message }}</span>
             @enderror
             <p class="forgot_password" style="margin-top: 10px;"><a href="{{ route('reset-password') }}">Forgot your password?</a></p>
         </div>
@@ -83,7 +83,7 @@
                     @csrf
                     <input class="login_textbox" type="email" id="remediation_email" name="email" placeholder="email@address.com" value="{{ old('email', session('email_remediation_value', '')) }}" required maxlength="254">
                     @error('email')
-                        <span class="server_error">{{ $message }}</span>
+                        <span class="server_error" style="color: #d93025 !important; font-family: 'Coolvetica', sans-serif; font-size: 14px; margin-top: 6px; display: block;">{{ $message }}</span>
                     @enderror
                     <div class="email_remediation_actions">
                         <button type="submit" class="login_button">Save</button>

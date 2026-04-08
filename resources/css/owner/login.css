@@ -195,3 +195,13 @@ body {
 .email_remediation_actions .login_button {
     min-width: 160px;
 }
+
+.server_error,
+.validation_error {
+    color: #d93025 !important;
+    font-family: 'Coolvetica', sans-serif !important;
+    font-size: 14px !important;
+    margin-top: 6px !important;
+    display: block !important;
+    text-align: left !important;
+}
