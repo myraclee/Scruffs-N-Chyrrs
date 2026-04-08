@@ -1,5 +1,3 @@
-// resources/js/customer/pages/payment_customer.js
-
 let currentFile = null;
 let currentModal = null;
 let pendingConfirmAction = null;
@@ -9,14 +7,14 @@ let currentPayableAmount = "Php 0.00";
 const qrImages = {
     gcash: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"%3E%3Crect width="200" height="200" fill="%230066CC"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="white" font-size="20" font-family="monospace"%3EGCash QR%3C/text%3E%3C/svg%3E',
     bpi: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"%3E%3Crect width="200" height="200" fill="%23C1272D"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="white" font-size="20" font-family="monospace"%3EBPI QR%3C/text%3E%3C/svg%3E',
-    paymaya:
-        'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"%3E%3Crect width="200" height="200" fill="%23005C9E"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="white" font-size="20" font-family="monospace"%3EPayMaya QR%3C/text%3E%3C/svg%3E',
+    paymaya: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"%3E%3Crect width="200" height="200" fill="%23005C9E"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="white" font-size="20" font-family="monospace"%3EPayMaya QR%3C/text%3E%3C/svg%3E',
 };
 
 function lockBodyScroll() {
     document.body.style.overflow = "hidden";
     document.body.style.paddingRight = "15px";
 }
+
 function unlockBodyScroll() {
     document.body.style.overflow = "";
     document.body.style.paddingRight = "";
@@ -33,10 +31,19 @@ function showModal(modalId) {
         lockBodyScroll();
     }
 }
+
 function closeAllModals() {
     document.getElementById("modalWarning").style.display = "none";
     document.getElementById("modalPayment").style.display = "none";
     document.getElementById("modalConfirmation").style.display = "none";
+    
+    // Close the image view modal too
+    const imageView = document.getElementById("modalImageView");
+    if (imageView) {
+        imageView.style.display = "none";
+        document.getElementById("fullSizePreviewImage").src = "#";
+    }
+    
     currentModal = null;
     unlockBodyScroll();
 }
@@ -92,20 +99,30 @@ function validatePaymentDetails() {
 
 function setupFileUpload() {
     const fileInput = document.getElementById("paymentScreenshot");
-    const uploadBox = document.getElementById("uploadBox");
     const placeholder = document.getElementById("uploadPlaceholder");
     const previewContainer = document.getElementById("uploadPreview");
     const previewImg = document.getElementById("previewImage");
     const viewBtn = document.getElementById("viewImageBtn");
     const removeBtn = document.getElementById("removeImageBtn");
+    
+    const imageViewModal = document.getElementById("modalImageView");
+    const fullSizeImg = document.getElementById("fullSizePreviewImage");
+    const closeViewBtn = document.getElementById("closeImageViewBtn");
 
-    uploadBox.addEventListener("click", (e) => {
-        if (e.target === removeBtn || e.target.closest(".remove-btn")) return;
+    // THE FIX: Only clicking the placeholder triggers the file input!
+    placeholder.addEventListener("click", () => {
         fileInput.click();
     });
+
+    // Clicking the preview image ALSO triggers the file input so they can swap it
+    previewImg.addEventListener("click", () => {
+        fileInput.click();
+    });
+
     fileInput.addEventListener("change", (e) => {
         const file = e.target.files[0];
         if (!file) return;
+        
         const allowedTypes = ["image/png", "image/jpeg", "image/jpg"];
         if (!allowedTypes.includes(file.type)) {
             alert("Only PNG, JPG, JPEG images are allowed.");
@@ -117,6 +134,7 @@ function setupFileUpload() {
             fileInput.value = "";
             return;
         }
+        
         currentFile = file;
         const reader = new FileReader();
         reader.onload = (ev) => {
@@ -127,14 +145,43 @@ function setupFileUpload() {
         };
         reader.readAsDataURL(file);
     });
-    if (viewBtn) {
-        viewBtn.addEventListener("click", () => {
-            if (previewImg.src && previewImg.src !== "#")
-                window.open(previewImg.src, "_blank");
+
+    // VIEW BUTTON LOGIC
+    if (viewBtn && imageViewModal && fullSizeImg) {
+        viewBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (previewImg.src && previewImg.src !== "#") {
+                fullSizeImg.src = previewImg.src;
+                imageViewModal.style.display = "flex";
+            }
         });
     }
+
+    // CLOSE IN-PAGE VIEW LOGIC
+    if (closeViewBtn) {
+        closeViewBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            imageViewModal.style.display = "none";
+            fullSizeImg.src = "#";
+        });
+    }
+
+    if (imageViewModal) {
+        imageViewModal.addEventListener("click", (e) => {
+            if (e.target === imageViewModal) {
+                imageViewModal.style.display = "none";
+                fullSizeImg.src = "#";
+            }
+        });
+    }
+
+    // REMOVE BUTTON LOGIC
     if (removeBtn) {
-        removeBtn.addEventListener("click", () => {
+        removeBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             fileInput.value = "";
             currentFile = null;
             placeholder.style.display = "flex";
@@ -166,87 +213,75 @@ function submitPayment() {
 }
 
 function initModalEvents() {
-    document
-        .getElementById("warningProceedBtn")
-        .addEventListener("click", () => showModal("modalPayment"));
-    document
-        .getElementById("warningGoBackBtn")
-        .addEventListener("click", () => {
-            closeAllModals();
-            resetPaymentForm();
-        });
-    document
-        .getElementById("paymentCancelBtn")
-        .addEventListener("click", () => {
-            closeAllModals();
-            resetPaymentForm();
-        });
+    document.getElementById("warningProceedBtn").addEventListener("click", () => showModal("modalPayment"));
+    document.getElementById("warningGoBackBtn").addEventListener("click", () => {
+        closeAllModals();
+        resetPaymentForm();
+    });
+    document.getElementById("paymentCancelBtn").addEventListener("click", () => {
+        closeAllModals();
+        resetPaymentForm();
+    });
+    
     document.getElementById("paymentPayBtn").addEventListener("click", () => {
         if (validatePaymentDetails()) showModal("modalConfirmation");
     });
-    document
-        .getElementById("confirmationGoBackBtn")
-        .addEventListener("click", () => showModal("modalPayment"));
-    document
-        .getElementById("confirmationConfirmBtn")
-        .addEventListener("click", async () => {
-            if (isConfirming) return;
+    
+    document.getElementById("confirmationGoBackBtn").addEventListener("click", () => showModal("modalPayment"));
+    
+    document.getElementById("confirmationConfirmBtn").addEventListener("click", async () => {
+        if (isConfirming) return;
 
-            const paymentData = submitPayment();
-            const confirmBtn = document.getElementById("confirmationConfirmBtn");
+        const paymentData = submitPayment();
+        const confirmBtn = document.getElementById("confirmationConfirmBtn");
 
-            try {
-                isConfirming = true;
-                if (confirmBtn) {
-                    confirmBtn.disabled = true;
-                    confirmBtn.textContent = "Processing...";
+        try {
+            isConfirming = true;
+            if (confirmBtn) {
+                confirmBtn.disabled = true;
+                confirmBtn.textContent = "Processing...";
+            }
+
+            if (typeof pendingConfirmAction === "function") {
+                const actionResult = await pendingConfirmAction(paymentData);
+                if (actionResult === false) {
+                    return;
                 }
-
-                if (typeof pendingConfirmAction === "function") {
-                    const actionResult = await pendingConfirmAction(paymentData);
-                    if (actionResult === false) {
-                        return;
-                    }
-
-                    pendingConfirmAction = null;
+                pendingConfirmAction = null;
+            } else {
+                const container = document.querySelector(".orders_container");
+                if (container) {
+                    const successDiv = document.createElement("div");
+                    successDiv.className = "alert alert_success";
+                    successDiv.innerHTML = '<span class="alert_icon">✓</span> Payment proof submitted successfully!';
+                    container.insertBefore(successDiv, container.firstChild);
+                    setTimeout(() => successDiv.remove(), 5000);
                 } else {
-                    const container = document.querySelector(".orders_container");
-                    if (container) {
-                        const successDiv = document.createElement("div");
-                        successDiv.className = "alert alert_success";
-                        successDiv.innerHTML =
-                            '<span class="alert_icon">✓</span> Payment proof submitted successfully!';
-                        container.insertBefore(successDiv, container.firstChild);
-                        setTimeout(() => successDiv.remove(), 5000);
-                    } else {
-                        alert("Payment confirmation submitted! (Demo)");
-                    }
-                }
-
-                closeAllModals();
-                resetPaymentForm();
-            } catch (error) {
-                console.error("Payment confirmation action failed:", error);
-            } finally {
-                isConfirming = false;
-                if (confirmBtn) {
-                    confirmBtn.disabled = false;
-                    confirmBtn.textContent = "Confirm";
+                    alert("Payment confirmation submitted! (Demo)");
                 }
             }
-        });
+
+            closeAllModals();
+            resetPaymentForm();
+        } catch (error) {
+            console.error("Payment confirmation action failed:", error);
+        } finally {
+            isConfirming = false;
+            if (confirmBtn) {
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = "Confirm";
+            }
+        }
+    });
+
     const paymentSelect = document.getElementById("paymentMethodSelect");
     if (paymentSelect) paymentSelect.addEventListener("change", updateQRCode);
 }
 
 window.openPaymentModal = function (event, options = {}) {
     if (event) event.preventDefault();
-    pendingConfirmAction =
-        typeof options.onConfirm === "function" ? options.onConfirm : null;
-    currentPayableAmount =
-        typeof options.payableAmount === "string" && options.payableAmount.trim()
-            ? options.payableAmount.trim()
-            : "Php 0.00";
+    pendingConfirmAction = typeof options.onConfirm === "function" ? options.onConfirm : null;
+    currentPayableAmount = typeof options.payableAmount === "string" && options.payableAmount.trim() ? options.payableAmount.trim() : "Php 0.00";
     resetPaymentForm();
     showModal("modalWarning");
 };
@@ -257,10 +292,8 @@ document.addEventListener("DOMContentLoaded", () => {
     initModalEvents();
     updateQRCode();
     closeAllModals();
-    // Prevent closing when clicking overlay (do nothing)
-    document.querySelectorAll(".modal-overlay").forEach((overlay) => {
-        overlay.addEventListener("click", (e) => e.stopPropagation());
-    });
+    
+    // Prevent closing when clicking modal container (do nothing)
     document.querySelectorAll(".modal-container").forEach((modal) => {
         modal.addEventListener("click", (e) => e.stopPropagation());
     });
