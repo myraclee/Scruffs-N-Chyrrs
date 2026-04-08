@@ -44,9 +44,6 @@
                 <div class="file_spec_field" style="margin-bottom: 15px;">
                     <label class="file_spec_label">Google Drive Design Filename <span class="label_required">*</span></label>
                     <input type="text" id="itemFileName" class="file_spec_input filename_input" placeholder="e.g., front_logo.png, matte finish">
-                    <p style="margin: 8px 2px 0; color: #6b5f75; font-family: 'Coolvetica', sans-serif; font-size: 12px; line-height: 1.35;">
-                        Layout fee count is comma-based: 1 entry = 1 layout, 2 entries = 2 layouts.
-                    </p>
                 </div>
 
                 <button type="button" id="addItemBtn" class="add_file_spec_btn" style="width: 100%; justify-content: center; margin-top: 10px;">
