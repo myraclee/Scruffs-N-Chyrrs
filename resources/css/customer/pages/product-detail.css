@@ -198,7 +198,7 @@
     background: #fff7ec;
     border: 2px solid #682c7a;
     border-radius: 50px;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 15px;
     color: #682c7a;
     text-decoration: none;
@@ -226,7 +226,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 14px;
 }
 
@@ -239,7 +239,7 @@
 }
 
 .breadcrumb_link::after {
-    content: '';
+    content: "";
     position: absolute;
     bottom: -2px;
     left: 0;
@@ -284,7 +284,7 @@
 }
 
 .current_product_showcase::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: -100%;
@@ -326,7 +326,7 @@
 }
 
 .showcase_title {
-    font-family: 'SuperDream', sans-serif;
+    font-family: "SuperDream", sans-serif;
     font-size: 50px;
     color: #682c7a;
     margin: 8px 0 0 0;
@@ -335,7 +335,7 @@
 
 .showcase_title::before,
 .showcase_title::after {
-    content: '✦';
+    content: "✦";
     font-size: 30px;
     animation: 2.5s ease-in-out 0s infinite normal none running sparkle_twinkle;
 }
@@ -349,7 +349,7 @@
 }
 
 .showcase_description {
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 20px;
     color: rgba(104, 44, 122, 0.7);
     margin: 0;
@@ -363,7 +363,8 @@
     border: 2px solid #682c7a;
     border-radius: 28px;
     padding: 30px;
-    box-shadow: 0 6px 28px rgba(104, 44, 122, 0.09),
+    box-shadow:
+        0 6px 28px rgba(104, 44, 122, 0.09),
         0 0 0 5px rgba(104, 44, 122, 0.04);
     animation: fade_up 0.5s 0.1s cubic-bezier(0.34, 1.4, 0.64, 1) both;
 }
@@ -384,7 +385,7 @@
 }
 
 .section_title {
-    font-family: 'SuperDream', sans-serif;
+    font-family: "SuperDream", sans-serif;
     font-size: 28px;
     color: #682c7a;
     margin: 0;
@@ -406,6 +407,8 @@
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
     scrollbar-color: #682c7a #fff7ec;
+
+    padding-bottom: 10px;
 }
 
 .product_nav_wrapper::-webkit-scrollbar {
@@ -436,7 +439,7 @@
     padding: 10px 20px;
     border: #682c7a solid 2px;
     border-radius: 50px;
-    font-family: 'Coolvetica';
+    font-family: "Coolvetica";
     font-size: 16px;
     color: #682c7a;
     text-decoration: none;
@@ -444,6 +447,8 @@
     transition: all 0.3s ease;
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(104, 44, 122, 0.08);
+
+    flex-shrink: 0;
 }
 
 .product_nav_btn:hover {
@@ -507,7 +512,7 @@
 }
 
 .price_image_error_text {
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 14px;
     color: rgba(104, 44, 122, 0.5);
     text-align: center;
@@ -532,7 +537,7 @@
     padding: 15px 30px;
     border-radius: 50px;
     border: none;
-    font-family: 'Coolvetica';
+    font-family: "Coolvetica";
     font-size: 20px;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -563,7 +568,8 @@
     border: 2px solid #682c7a;
     border-radius: 28px;
     padding: 30px;
-    box-shadow: 0 6px 28px rgba(104, 44, 122, 0.09),
+    box-shadow:
+        0 6px 28px rgba(104, 44, 122, 0.09),
         0 0 0 5px rgba(104, 44, 122, 0.04);
     animation: fade_up 0.5s 0.1s cubic-bezier(0.34, 1.4, 0.64, 1) both;
 }
@@ -614,7 +620,7 @@
     margin: 0;
     padding: 18px 8px;
     text-align: center;
-    font-family: 'Coolvetica', sans-serif;
+    font-family: "Coolvetica", sans-serif;
     font-size: 16px;
     color: rgba(104, 44, 122, 0.65);
 }
