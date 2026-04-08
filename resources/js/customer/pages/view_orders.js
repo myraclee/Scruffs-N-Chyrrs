@@ -376,10 +376,10 @@ function renderOrderGroups(container, groups, emptyMessage) {
 }
 
 function buildOrderActionButtons(group) {
-    const buttons = [];
+  const buttons = [];
 
-    if (group?.can_pay_now) {
-        buttons.push(`
+  if (group?.can_pay_now) {
+    buttons.push(`
       <button
         type="button"
         class="order_group_action_btn order_group_action_btn_pay"
@@ -389,9 +389,9 @@ function buildOrderActionButtons(group) {
         Pay Now
       </button>
     `);
-    }
+  }
 
-    buttons.push(`
+  buttons.push(`
     <button
       type="button"
       class="order_group_action_btn order_group_action_btn_view"
@@ -401,8 +401,8 @@ function buildOrderActionButtons(group) {
     </button>
   `);
 
-    if (group?.can_cancel) {
-        buttons.push(`
+  if (group?.can_cancel) {
+    buttons.push(`
       <button
         type="button"
         class="order_group_action_btn order_group_action_btn_cancel"
@@ -411,9 +411,9 @@ function buildOrderActionButtons(group) {
         Cancel Order
       </button>
     `);
-    }
+  }
 
-    return buttons.join("");
+  return buttons.join("");
 }
 
 function renderOrderPlaceholders(container, message) {
@@ -421,109 +421,109 @@ function renderOrderPlaceholders(container, message) {
 }
 
 function bindOrderActionEvents() {
-    const handleActionClick = async (event) => {
-        const payBtn = event.target.closest("button[data-pay-order-group]");
-        if (payBtn) {
-            const orderGroupId = Number(payBtn.dataset.payOrderGroup);
-            const payableAmount = Number(payBtn.dataset.payableAmount || 0);
-            await openPaymentModalForOrder(event, orderGroupId, payableAmount);
-            return;
-        }
+  const handleActionClick = async (event) => {
+    const payBtn = event.target.closest("button[data-pay-order-group]");
+    if (payBtn) {
+      const orderGroupId = Number(payBtn.dataset.payOrderGroup);
+      const payableAmount = Number(payBtn.dataset.payableAmount || 0);
+      await openPaymentModalForOrder(event, orderGroupId, payableAmount);
+      return;
+    }
 
-        const viewBtn = event.target.closest("button[data-view-order-group]");
-        if (viewBtn) {
-            const orderGroupId = Number(viewBtn.dataset.viewOrderGroup);
-            await openOrderDetailsModal(orderGroupId);
-            return;
-        }
+    const viewBtn = event.target.closest("button[data-view-order-group]");
+    if (viewBtn) {
+      const orderGroupId = Number(viewBtn.dataset.viewOrderGroup);
+      await openOrderDetailsModal(orderGroupId);
+      return;
+    }
 
-        const cancelBtn = event.target.closest(
-            "button[data-cancel-order-group]",
-        );
-        if (cancelBtn) {
-            const orderGroupId = Number(cancelBtn.dataset.cancelOrderGroup);
-            await cancelOrderGroup(orderGroupId);
-        }
-    };
+    const cancelBtn = event.target.closest(
+      "button[data-cancel-order-group]",
+    );
+    if (cancelBtn) {
+      const orderGroupId = Number(cancelBtn.dataset.cancelOrderGroup);
+      await cancelOrderGroup(orderGroupId);
+    }
+  };
 
-    currentOrdersContent?.addEventListener("click", handleActionClick);
-    completedOrdersContent?.addEventListener("click", handleActionClick);
+  currentOrdersContent?.addEventListener("click", handleActionClick);
+  completedOrdersContent?.addEventListener("click", handleActionClick);
 }
 
 async function openPaymentModalForOrder(event, orderGroupId, payableAmount) {
-    if (!orderGroupId) {
-        return;
-    }
+  if (!orderGroupId) {
+    return;
+  }
 
-    if (typeof window.openPaymentModal !== "function") {
-        Toast.error("Payment modal is unavailable right now.");
-        return;
-    }
+  if (typeof window.openPaymentModal !== "function") {
+    Toast.error("Payment modal is unavailable right now.");
+    return;
+  }
 
-    if (!Number.isFinite(payableAmount) || payableAmount <= 0) {
-        Toast.error("Unable to resolve payable amount for this order.");
-        return;
-    }
+  if (!Number.isFinite(payableAmount) || payableAmount <= 0) {
+    Toast.error("Unable to resolve payable amount for this order.");
+    return;
+  }
 
-    window.openPaymentModal(event, {
-        payableAmount: formatPhpAmount(payableAmount),
-        onConfirm: async (paymentData) =>
-            await submitOrderPaymentProof(orderGroupId, paymentData),
-    });
+  window.openPaymentModal(event, {
+    payableAmount: formatPhpAmount(payableAmount),
+    onConfirm: async (paymentData) =>
+      await submitOrderPaymentProof(orderGroupId, paymentData),
+  });
 }
 
 async function submitOrderPaymentProof(orderGroupId, paymentData) {
-    if (!paymentData?.file) {
-        Toast.error("Please upload your payment proof image.");
-        return false;
-    }
+  if (!paymentData?.file) {
+    Toast.error("Please upload your payment proof image.");
+    return false;
+  }
 
-    const result = await CustomerOrderAPI.submitPaymentProof(orderGroupId, {
-        payment_method: paymentData.paymentMethod,
-        payment_reference_number: paymentData.referenceNo,
-        payment_proof: paymentData.file,
-    });
+  const result = await CustomerOrderAPI.submitPaymentProof(orderGroupId, {
+    payment_method: paymentData.paymentMethod,
+    payment_reference_number: paymentData.referenceNo,
+    payment_proof: paymentData.file,
+  });
 
-    if (!result.success) {
-        const firstError = result.errors
-            ? Object.values(result.errors).flat()[0]
-            : null;
+  if (!result.success) {
+    const firstError = result.errors
+      ? Object.values(result.errors).flat()[0]
+      : null;
 
-        Toast.error(
-            firstError ||
-                result.message ||
-                "Unable to submit payment proof. Please try again.",
-        );
-        return false;
-    }
+    Toast.error(
+      firstError ||
+      result.message ||
+      "Unable to submit payment proof. Please try again.",
+    );
+    return false;
+  }
 
-    Toast.success("Payment proof submitted. Waiting for owner confirmation.");
-    await loadPageData();
-    return true;
+  Toast.success("Payment proof submitted. Waiting for owner confirmation.");
+  await loadPageData();
+  return true;
 }
 
 async function cancelOrderGroup(orderGroupId) {
-    if (!orderGroupId) {
-        return;
-    }
+  if (!orderGroupId) {
+    return;
+  }
 
-    const shouldCancel = window.confirm(
-        "Cancel this order? This action cannot be undone.",
-    );
+  const shouldCancel = window.confirm(
+    "Cancel this order? This action cannot be undone.",
+  );
 
-    if (!shouldCancel) {
-        return;
-    }
+  if (!shouldCancel) {
+    return;
+  }
 
-    const result = await CustomerOrderAPI.cancelOrder(orderGroupId);
+  const result = await CustomerOrderAPI.cancelOrder(orderGroupId);
 
-    if (!result.success) {
-        Toast.error(result.message || "Unable to cancel order.");
-        return;
-    }
+  if (!result.success) {
+    Toast.error(result.message || "Unable to cancel order.");
+    return;
+  }
 
-    Toast.success("Order cancelled.");
-    await loadPageData();
+  Toast.success("Order cancelled.");
+  await loadPageData();
 }
 
 function bindOrderDetailsModalEvents() {
@@ -549,34 +549,34 @@ function setOrderDetailsModalVisible(isVisible) {
   orderEditModal.setAttribute("aria-hidden", isVisible ? "false" : "true");
 }
 async function openOrderDetailsModal(orderGroupId) {
-    if (!orderGroupId) {
-        return;
-    }
+  if (!orderGroupId) {
+    return;
+  }
 
-    const response = await CustomerOrderAPI.getOrderGroup(orderGroupId);
+  const response = await CustomerOrderAPI.getOrderGroup(orderGroupId);
 
-    if (!response.success) {
-        Toast.error(response.message || "Unable to load order details.");
-        return;
-    }
+  if (!response.success) {
+    Toast.error(response.message || "Unable to load order details.");
+    return;
+  }
 
-    activeDetailsGroup = response.data;
-    renderOrderDetailsModal(activeDetailsGroup);
-    setOrderDetailsModalVisible(true);
+  activeDetailsGroup = response.data;
+  renderOrderDetailsModal(activeDetailsGroup);
+  setOrderDetailsModalVisible(true);
 }
 
 function closeOrderDetailsModal() {
-    setOrderDetailsModalVisible(false);
-    activeDetailsGroup = null;
+  setOrderDetailsModalVisible(false);
+  activeDetailsGroup = null;
 
-    if (orderEditTitle) {
-        orderEditTitle.textContent = "Order Details";
-    }
+  if (orderEditTitle) {
+    orderEditTitle.textContent = "Order Details";
+  }
 
-    if (orderEditSubtitle) {
-        orderEditSubtitle.textContent =
-            "Review your order items and payment status.";
-    }
+  if (orderEditSubtitle) {
+    orderEditSubtitle.textContent =
+      "Review your order items and payment status.";
+  }
 
   if (orderEditDriveLink) {
     orderEditDriveLink.value = "";
@@ -592,42 +592,42 @@ function closeOrderDetailsModal() {
     orderEditSaveBtn.style.display = "none";
   }
 
-    if (orderEditCancelBtn) {
-        orderEditCancelBtn.textContent = "Close";
-    }
+  if (orderEditCancelBtn) {
+    orderEditCancelBtn.textContent = "Close";
+  }
 }
 
 function renderOrderDetailsModal(group) {
-    if (!group || !orderEditItems) {
-        return;
-    }
+  if (!group || !orderEditItems) {
+    return;
+  }
 
-    if (orderEditTitle) {
-        orderEditTitle.textContent = `Order #${group.id} Details`;
-    }
+  if (orderEditTitle) {
+    orderEditTitle.textContent = `Order #${group.id} Details`;
+  }
 
-    if (orderEditSubtitle) {
-        orderEditSubtitle.textContent = `${group.status_label} | ${group.payment_status_label}`;
-    }
+  if (orderEditSubtitle) {
+    orderEditSubtitle.textContent = `${group.status_label} | ${group.payment_status_label}`;
+  }
 
-    if (orderEditDriveLink) {
-        const driveLink = normalizeDriveLink(group.general_drive_link || "");
-        orderEditDriveLink.readOnly = true;
-        orderEditDriveLink.disabled = true;
-        orderEditDriveLink.value = driveLink || "No drive link submitted";
-        orderEditDriveLink.title = driveLink || "No drive link submitted";
-    }
+  if (orderEditDriveLink) {
+    const driveLink = normalizeDriveLink(group.general_drive_link || "");
+    orderEditDriveLink.readOnly = true;
+    orderEditDriveLink.disabled = true;
+    orderEditDriveLink.value = driveLink || "No drive link submitted";
+    orderEditDriveLink.title = driveLink || "No drive link submitted";
+  }
 
-    orderEditItems.innerHTML = (group.orders || [])
-        .map((order, index) => {
-            const options = (order.formatted_options || [])
-                .map(
-                    (option) =>
-                        `<li>${escapeHtml(option.option_label)}: ${escapeHtml(option.selected_value)}</li>`,
-                )
-                .join("");
+  orderEditItems.innerHTML = (group.orders || [])
+    .map((order, index) => {
+      const options = (order.formatted_options || [])
+        .map(
+          (option) =>
+            `<li>${escapeHtml(option.option_label)}: ${escapeHtml(option.selected_value)}</li>`,
+        )
+        .join("");
 
-            return `
+      return `
         <section class="order_view_item">
           <div class="order_view_item_header">
             <h4>Item ${index + 1}: ${escapeHtml(order.product_name || "Product")}</h4>
@@ -681,10 +681,10 @@ function bindCartEvents() {
   });
 }
 function escapeHtml(value) {
-    return String(value || "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#39;");
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
 }

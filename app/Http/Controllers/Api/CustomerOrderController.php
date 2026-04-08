@@ -873,7 +873,7 @@ class CustomerOrderController extends Controller
             'payment_reference_number' => $group->payment_reference_number,
             'payment_submitted_at' => $group->payment_submitted_at?->toISOString(),
             'payment_confirmed_at' => $group->payment_confirmed_at?->toISOString(),
-            
+
             'totals' => [
                 'subtotal_price' => (float) $group->subtotal_price,
                 'discount_total' => (float) $group->discount_total,
@@ -896,13 +896,13 @@ class CustomerOrderController extends Controller
             'error_code' => 'customer_order_not_editable',
         ], 422);
     }
-    
+
     /**
      * @param array<int, array<string, mixed>> $previousRequirements
      * @param array<int, array<string, mixed>> $newRequirements
      * @return array{0: array<int, array<string, int|string>>, 1: array<int, array<string, int|string>>}
      */
-    
+
     private function buildRequirementDelta(array $previousRequirements, array $newRequirements): array
     {
         $mapByMaterial = static function (array $requirements): array {
