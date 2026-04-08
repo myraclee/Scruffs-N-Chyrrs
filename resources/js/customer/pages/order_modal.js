@@ -61,16 +61,28 @@ document.addEventListener("DOMContentLoaded", () => {
     function isValidGoogleDriveUrl(url) {
         try {
             const parsedUrl = new URL(url);
+
             if (parsedUrl.protocol !== "https:") return false;
             if (parsedUrl.hostname !== "drive.google.com") return false;
+
             const normalizedPath = parsedUrl.pathname.replace(/\/+$/, "") || "/";
-            if (normalizedPath === "/" || normalizedPath === "/drive" || normalizedPath.startsWith("/drive/")) return true;
+
+            if (
+                normalizedPath === "/" ||
+                normalizedPath === "/drive" ||
+                normalizedPath.startsWith("/drive/")
+            ) {
+                return true;
+            }
+
             if (/^\/drive\/folders\/[A-Za-z0-9_-]+$/.test(normalizedPath)) return true;
             if (/^\/file\/d\/[A-Za-z0-9_-]+(?:\/.*)?$/.test(normalizedPath)) return true;
+
             if (normalizedPath === "/open" || normalizedPath === "/uc") {
                 const id = parsedUrl.searchParams.get("id");
                 return Boolean(id && driveLinkIdPattern.test(id));
             }
+
             return false;
         } catch { return false; }
     }
@@ -93,16 +105,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function validateDriveLinkInput({ required = true } = {}) {
         const normalizedLink = normalizeDriveLink(driveLinkInput?.value || "");
-        if (driveLinkInput && driveLinkInput.value !== normalizedLink) driveLinkInput.value = normalizedLink;
+
+        if (driveLinkInput && driveLinkInput.value !== normalizedLink) {
+            driveLinkInput.value = normalizedLink;
+        }
+
         if (!normalizedLink) {
             if (!required) { clearDriveLinkError(); return { valid: true, value: "" }; }
             setDriveLinkError("Please provide your main Google Drive link before adding to cart.");
             return { valid: false, value: "" };
         }
+
         if (!isValidGoogleDriveUrl(normalizedLink)) {
-            setDriveLinkError("Enter a valid Google Drive URL (drive.google.com).");
+            setDriveLinkError("Enter a valid Google Drive URL (drive.google.com) using an accepted Drive format.");
             return { valid: false, value: normalizedLink };
         }
+
         clearDriveLinkError();
         return { valid: true, value: normalizedLink };
     }
@@ -121,6 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function setButtonLoading(button, isLoading, loadingText) {
         if (!button) return;
         if (!button.dataset.originalHtml) button.dataset.originalHtml = button.innerHTML;
+
         if (isLoading) {
             button.innerHTML = `<span class="spinner"></span> ${loadingText}`;
             button.disabled = true;
@@ -138,6 +157,55 @@ document.addEventListener("DOMContentLoaded", () => {
             selected[select.dataset.optionId] = Number(select.value);
         }
         return selected;
+    }
+
+    // 🚀 DYNAMIC RUSH FEE UPDATER 🚀
+    function updateRushFeeDropdown(currentTotal) {
+        if (!rushFeeSelect || !templatePayload?.rush_fees) return;
+
+        const prevValue = rushFeeSelect.value;
+        rushFeeSelect.innerHTML = '<option value="">Standard Processing (No Extra Fee)</option>';
+
+        let activeTier = null;
+
+        // Find the matching tier based on the total price
+        for (const rf of templatePayload.rush_fees) {
+            const lbl = (rf.label || "").toLowerCase();
+            if (currentTotal < 3000 && lbl.includes("below")) activeTier = rf;
+            else if (currentTotal >= 3000 && currentTotal <= 4000 && lbl.includes("3000")) activeTier = rf;
+            else if (currentTotal >= 4001 && currentTotal <= 5000 && lbl.includes("4001")) activeTier = rf;
+            else if (currentTotal >= 5001 && lbl.includes("5001")) activeTier = rf;
+        }
+
+        // Fallback to the first tier if matching fails
+        if (!activeTier && templatePayload.rush_fees.length > 0) {
+            activeTier = templatePayload.rush_fees[0];
+        }
+
+        // Apply ALL timeframes inside the chosen tier
+        if (activeTier && activeTier.timeframes) {
+            activeTier.timeframes.forEach(tf => {
+                const optionNode = document.createElement("option");
+                optionNode.value = tf.id || activeTier.id;
+
+                // Remove the long "(may depend on order queue)" text to make it cleaner
+                let cleanLabel = tf.label.replace(/\(may depend on order queue\)/gi, "").trim();
+
+                // Format back to exactly what you requested
+                if (Number(tf.percentage) === 0) {
+                    optionNode.textContent = `${cleanLabel} (NO ADDED TOTAL)`;
+                } else {
+                    optionNode.textContent = `${cleanLabel} (+${tf.percentage}%)`;
+                }
+
+                rushFeeSelect.appendChild(optionNode);
+            });
+        }
+
+        // Keep previously selected value if it still exists in the new list
+        if (prevValue && [...rushFeeSelect.options].some(o => o.value === prevValue)) {
+            rushFeeSelect.value = prevValue;
+        }
     }
 
     function renderTemplateControls() {
@@ -182,7 +250,7 @@ document.addEventListener("DOMContentLoaded", () => {
             wrapper.appendChild(select);
             optionsContainer.appendChild(wrapper);
 
-            // 🚀 Clear error styles automatically when user selects an option
+            // Clear error styling when option is picked
             select.addEventListener("change", () => {
                 select.classList.remove("input_error");
                 if (select.nextElementSibling && select.nextElementSibling.classList.contains("field_validation_error")) {
@@ -194,26 +262,8 @@ document.addEventListener("DOMContentLoaded", () => {
         quantityInput.min = templatePayload.template.min_order || 1;
         quantityInput.value = templatePayload.template.min_order || 1;
 
-        rushFeeSelect.innerHTML = '<option value="">Standard Processing (No Extra Fee)</option>';
-
-        templatePayload.rush_fees.forEach((rushFee) => {
-            const firstTimeframe = rushFee.timeframes?.[0];
-            
-            // 🚀 THE FIX: FORMAT RUSH FEES TO "2 days (+45%)" or "(NO ADDED TOTAL)"
-            let label = rushFee.label;
-            if (firstTimeframe) {
-                if (Number(firstTimeframe.percentage) === 0) {
-                    label = `${firstTimeframe.label} (NO ADDED TOTAL)`;
-                } else {
-                    label = `${firstTimeframe.label} (+${firstTimeframe.percentage}%)`;
-                }
-            }
-
-            const optionNode = document.createElement("option");
-            optionNode.value = rushFee.id;
-            optionNode.textContent = label;
-            rushFeeSelect.appendChild(optionNode);
-        });
+        // Initialize dropdown based on current cart value
+        updateRushFeeDropdown(cartPayload?.totals?.total_price || 0);
     }
 
     function renderCart() {
@@ -224,11 +274,15 @@ document.addEventListener("DOMContentLoaded", () => {
             cartContainer.appendChild(emptyMessage);
             updateGrandTotalLabel([]);
             grandTotalDisplay.textContent = formatMoney(0);
+            updateRushFeeDropdown(0);
             return;
         }
 
         cartPayload.items.forEach((item) => {
-            const optionSummary = item.formatted_options?.map((option) => `${option.option_label}: ${option.selected_value}`).join(" | ") || "No option summary";
+            const optionSummary = item.formatted_options
+                ?.map((option) => `${option.option_label}: ${option.selected_value}`)
+                .join(" | ") || "No option summary";
+
             const row = document.createElement("div");
             row.className = "file_spec_row";
             row.innerHTML = `
@@ -245,13 +299,20 @@ document.addEventListener("DOMContentLoaded", () => {
             cartContainer.appendChild(row);
         });
 
+        const currentTotal = cartPayload.totals.total_price;
         updateGrandTotalLabel(cartPayload.items);
-        grandTotalDisplay.textContent = formatMoney(cartPayload.totals.total_price);
+        grandTotalDisplay.textContent = formatMoney(currentTotal);
+        
+        // Update the rush dropdown whenever cart total changes
+        updateRushFeeDropdown(currentTotal);
     }
 
     async function refreshCart() {
         const response = await CustomerOrderAPI.getCart();
-        if (!response.success) { Toast.error(response.message || "Failed to load cart."); return; }
+        if (!response.success) {
+            Toast.error(response.message || "Failed to load cart.");
+            return;
+        }
         cartPayload = response.data;
         renderCart();
     }
@@ -299,9 +360,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    driveLinkInput?.addEventListener("blur", () => validateDriveLinkInput({ required: true }));
+    driveLinkInput?.addEventListener("blur", () => { validateDriveLinkInput({ required: true }); });
 
-    // 🚀 Clear errors instantly when typing
     notesInput.addEventListener("input", () => {
         notesInput.classList.remove("input_error");
         const fnErrorElement = document.getElementById("itemFileNameError");
@@ -310,6 +370,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     quantityInput.addEventListener("input", () => {
         quantityInput.classList.remove("input_error");
+        const qtyErrorElement = document.getElementById("itemQuantityError");
+        if (qtyErrorElement) qtyErrorElement.hidden = true;
     });
 
     cartContainer.addEventListener("click", async (event) => {
@@ -320,7 +382,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!removeId) return;
 
         const result = await CustomerOrderAPI.removeCartItem(removeId);
-        if (!result.success) { Toast.error(result.message || "Unable to remove cart item."); return; }
+        if (!result.success) {
+            Toast.error(result.message || "Unable to remove cart item.");
+            return;
+        }
 
         Toast.success("Item removed from cart.");
         cartPayload = result.data;
@@ -330,7 +395,6 @@ document.addEventListener("DOMContentLoaded", () => {
     addItemBtn.addEventListener("click", async () => {
         let hasError = false;
 
-        // 1. Validate Drive Link
         const driveLinkValidation = validateDriveLinkInput({ required: true });
         if (!driveLinkValidation.valid) {
             hasError = true;
@@ -338,55 +402,69 @@ document.addEventListener("DOMContentLoaded", () => {
             localStorage.setItem(MAIN_DRIVE_LINK_STORAGE_KEY, driveLinkValidation.value);
         }
 
-        // 2. Validate Dynamic Options (Lamination, Print Side)
         const selectedOptions = {};
         const selects = optionsContainer.querySelectorAll("select[data-option-id]");
         selects.forEach((select) => {
-            const errNode = select.nextElementSibling?.classList.contains('field_validation_error') ? select.nextElementSibling : null;
+            let errNode = select.nextElementSibling;
+            if (!errNode || !errNode.classList.contains('field_validation_error')) {
+                errNode = document.createElement("p");
+                errNode.className = "field_validation_error";
+                select.after(errNode);
+            }
+
             if (!select.value) {
                 select.classList.add("input_error");
-                if (!errNode) {
-                    const err = document.createElement("p");
-                    err.className = "field_validation_error";
-                    err.textContent = "Please choose an option.";
-                    select.after(err);
-                } else {
-                    errNode.hidden = false;
-                }
+                errNode.textContent = "Please choose an option.";
+                errNode.hidden = false;
                 hasError = true;
             } else {
                 select.classList.remove("input_error");
-                if (errNode) errNode.hidden = true;
+                errNode.hidden = true;
                 selectedOptions[select.dataset.optionId] = Number(select.value);
             }
         });
 
-        // 3. Validate Filename
         const filenameVal = notesInput.value.trim();
-        const fnErrorElement = document.getElementById("itemFileNameError");
+        let fnErrorElement = document.getElementById("itemFileNameError");
+        
+        if (!fnErrorElement) {
+            fnErrorElement = document.createElement("p");
+            fnErrorElement.id = "itemFileNameError";
+            fnErrorElement.className = "field_validation_error";
+            notesInput.after(fnErrorElement);
+        }
+
         if (!filenameVal) {
             notesInput.classList.add("input_error");
-            if (fnErrorElement) {
-                fnErrorElement.textContent = "Design Filename is required.";
-                fnErrorElement.hidden = false;
-            }
+            fnErrorElement.textContent = "Design Filename is required.";
+            fnErrorElement.hidden = false;
             hasError = true;
         } else {
             notesInput.classList.remove("input_error");
-            if (fnErrorElement) fnErrorElement.hidden = true;
+            fnErrorElement.hidden = true;
         }
 
-        // 4. Validate Quantity
         const quantity = Number(quantityInput.value || 0);
         const minQty = Number(quantityInput.min || 1);
+        let qtyErrorElement = document.getElementById("itemQuantityError");
+
+        if (!qtyErrorElement) {
+            qtyErrorElement = document.createElement("p");
+            qtyErrorElement.id = "itemQuantityError";
+            qtyErrorElement.className = "field_validation_error";
+            quantityInput.after(qtyErrorElement);
+        }
+
         if (quantity < minQty) {
             quantityInput.classList.add("input_error");
+            qtyErrorElement.textContent = `Minimum quantity is ${minQty}.`;
+            qtyErrorElement.hidden = false;
             hasError = true;
         } else {
             quantityInput.classList.remove("input_error");
+            qtyErrorElement.hidden = true;
         }
 
-        // 🚀 THE FIX: Stop execution silently if errors exist, NO TOAST.
         if (hasError) return;
 
         if (!templatePayload) {
@@ -417,6 +495,6 @@ document.addEventListener("DOMContentLoaded", () => {
         quantityInput.value = quantityInput.min || 1;
         cartPayload = result.data;
         renderCart();
-        Toast.success("Item added to persistent cart.");
+        Toast.success("Item added to cart.");
     });
 });

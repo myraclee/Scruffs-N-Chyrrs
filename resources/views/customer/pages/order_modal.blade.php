@@ -31,6 +31,7 @@
                     <div class="file_spec_field">
                         <label class="file_spec_label">Quantity <span class="label_required">*</span></label>
                         <input type="number" id="itemQuantity" class="file_spec_input quantity_input" min="1" value="1">
+                        <p id="itemQuantityError" class="field_validation_error" hidden></p>
                     </div>
 
                     <div class="file_spec_field rush_field">
@@ -44,7 +45,7 @@
                 <div class="file_spec_field" style="margin-bottom: 15px;">
                     <label class="file_spec_label">Google Drive Design Filename <span class="label_required">*</span></label>
                     <input type="text" id="itemFileName" class="file_spec_input filename_input" placeholder="e.g., front_logo.png, matte finish">
-              
+                    <p id="itemFileNameError" class="field_validation_error" hidden></p>
                 </div>
 
                 <button type="button" id="addItemBtn" class="add_file_spec_btn" style="width: 100%; justify-content: center; margin-top: 10px;">
