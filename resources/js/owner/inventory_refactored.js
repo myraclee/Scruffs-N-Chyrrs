@@ -548,11 +548,11 @@ async function saveMaterial(mode) {
         const key = checkbox.getAttribute("data-consumption-key");
         const quantityInput = isAdd
             ? modal.querySelector(
-                `.add_consumption_quantity[data-consumption-key="${key}"]`,
-            )
+                  `.add_consumption_quantity[data-consumption-key="${key}"]`,
+              )
             : modal.querySelector(
-                `.edit_consumption_quantity[data-consumption-key="${key}"]`,
-            );
+                  `.edit_consumption_quantity[data-consumption-key="${key}"]`,
+              );
 
         if (!quantityInput) {
             return;
@@ -894,8 +894,10 @@ function renderMaterials() {
 
         // Get associated consumption rules display text
         let productText = "None assigned";
-        let usageText = "-";
-        if (Array.isArray(material.consumptions) && material.consumptions.length > 0) {
+        if (
+            Array.isArray(material.consumptions) &&
+            material.consumptions.length > 0
+        ) {
             productText = material.consumptions
                 .map((rule) => {
                     const productName = escapeHtml(
@@ -904,33 +906,28 @@ function renderMaterials() {
                     const optionLabel = rule.order_template_option_type_id
                         ? escapeHtml(rule.option_type_name || "Unknown Option")
                         : "Any Option";
-
                     return `${productName} - ${optionLabel} (x${Number(rule.quantity || 0)})`;
                 })
                 .join(", ");
-            usageText = material.consumptions
-                .map((rule) => `${Number(rule.quantity || 0)}`)
-                .join("<br>");
-        } else if (material.products && material.products.length > 0) {
+        } else if (
+            Array.isArray(material.products) &&
+            material.products.length > 0
+        ) {
+            // Legacy fallback
             productText = material.products
                 .map(
                     (p) =>
                         `${escapeHtml(p.name)} - Any Option (x${Number(p.pivot?.quantity || 0)})`,
                 )
                 .join(", ");
-
-            // Create usage text showing quantities
-            usageText = material.products
-                .map((p) => `${Number(p.pivot?.quantity || 0)}`)
-                .join("<br>");
         }
 
         row.innerHTML = `
-            <td>${safeMaterialName}</td>
-            <td class="text-center">${material.units}</td>
-            <td>${productText}</td>
-            <td class="text-center">${usageText}</td>
-            <td class="text-center">
+    <td>${safeMaterialName}</td>
+    <td class="text-center">${material.units}</td>
+    <td>${productText}</td>
+    <td class="text-center">
+
                 <div class="product_actions" style="justify-content: center;">
                     <button type="button" class="action_btn edit_btn" onclick="openEditModal(this, ${material.id})" title="Edit material" aria-label="Edit ${safeMaterialName}">Edit</button>
                     <button type="button" class="action_btn delete_btn" onclick="deleteMaterial(this, ${material.id})" title="Delete material" aria-label="Delete ${safeMaterialName}">Delete</button>
