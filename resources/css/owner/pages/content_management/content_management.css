@@ -27,12 +27,10 @@
     transform: scale(0.3) translateY(20px);
     animation: letterIn 0.3s ease forwards;
     animation-delay: calc(var(--delay) * 0.03s);
-    /* allow glow to extend outside letter box */
     position: relative;
     filter: drop-shadow(0 0 12px rgba(104, 44, 122, 0.22));
 }
 
-/* Entrance animation */
 @keyframes letterIn {
     to {
         opacity: 1;
@@ -40,33 +38,15 @@
     }
 }
 
-/* twinkle */
 @keyframes twinkle {
-    0%,
-    100% {
-        opacity: 1;
-        transform: scale(1) rotate(0deg);
-    }
-    20% {
-        opacity: 0.06;
-        transform: scale(0.46) rotate(28deg);
-    }
-    42% {
-        opacity: 0.92;
-        transform: scale(1.1) rotate(-10deg);
-    }
-    62% {
-        opacity: 0.08;
-        transform: scale(0.5) rotate(22deg);
-    }
-    82% {
-        opacity: 1;
-        transform: scale(1.04) rotate(-4deg);
-    }
+    0%, 100% { opacity: 1; transform: scale(1) rotate(0deg); }
+    20% { opacity: 0.06; transform: scale(0.46) rotate(28deg); }
+    42% { opacity: 0.92; transform: scale(1.1) rotate(-10deg); }
+    62% { opacity: 0.08; transform: scale(0.5) rotate(22deg); }
+    82% { opacity: 1; transform: scale(1.04) rotate(-4deg); }
 }
 
 /* Button Pages */
-
 .content_pages {
     display: flex;
     flex-direction: row;
@@ -76,19 +56,14 @@
 .content_option {
     border: none;
     outline: none;
-
     width: 150px;
     height: 35px;
-
     background-color: #dcbae6;
     border-radius: 20px;
-
     color: #682c7a;
     font-family: Coolvetica;
     font-size: 15px;
-
     cursor: pointer;
-
     transition: transform 0.2s ease;
 }
 
@@ -112,84 +87,83 @@
     display: block;
 }
 
-@keyframes acct_spark_twinkle {
-    0% {
-        opacity: 0.3;
-        transform: rotate(0deg);
-    }
-    25% {
-        opacity: 1;
-        transform: rotate(10deg);
-    }
-    50% {
-        opacity: 0.5;
-        transform: rotate(-5deg);
-    }
-    75% {
-        opacity: 1;
-        transform: rotate(5deg);
-    }
-    100% {
-        opacity: 0.3;
-        transform: rotate(0deg);
-    }
-}
-
 /* =========================================
-   PAGE LOAD & TAB SWITCH ANIMATIONS
+   FIXED SLIDE-UP ANIMATIONS (MODAL ESCAPE)
    ========================================= */
+
+/* THE FIX: Using 'none' destroys the stacking context trap when the animation ends! */
 @keyframes slideUpFade {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
+    0% { opacity: 0; transform: translateY(30px); }
+    100% { opacity: 1; transform: none; } 
 }
 
-/* 1. Animate the Tab Buttons on page load */
+/* Force modals to NEVER inherit the slide-up animation so they stay hidden until clicked */
+.modal_overlay,
+[class*="modal"],
+[class*="overlay"] {
+    animation: none !important;
+    transform: none !important;
+}
+
+/* 1. Animate the Tab Buttons */
 .content_pages {
     animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
     animation-delay: 0.1s;
 }
 
-/* 2. Stagger the content whenever a tab becomes active */
-/* Home Page Tab */
-.content_section.active .content_homepage_images { animation: slideUpFade 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.05s; }
-.content_section.active .content_homepage_product { animation: slideUpFade 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.15s; }
+/* 2. Stagger inner content */
+.content_section.active .header_separator { animation: slideUpFade 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.05s; }
 
-/* Products Tab */
-.content_section.active .products_page { animation: slideUpFade 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.05s; }
+/* Home Page Tab Content */
+.content_section.active .empty_home_images,
+.content_section.active .home_images_uploads,
+.content_section.active .home_edit { animation: slideUpFade 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.1s; }
 
-/* General Sections & FAQs Tab */
-.content_section.active > .header_separator { animation: slideUpFade 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.05s; }
-.content_section.active .empty_order_template,
-.content_section.active .product_cards_container,
-.content_section.active .empty_faqs,
-.content_section.active .faqs_container { animation: slideUpFade 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.10s; }
-.content_section.active .add_template_button,
-.content_section.active .rush_fees_section,
-.content_section.active .faq_actions_row { animation: slideUpFade 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.15s; }
+.content_section.active .empty_sample_images,
+.content_section.active .product_samples_wrapper,
+.content_section.active .add_sample { animation: slideUpFade 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.15s; }
+
+/* Products Tab Content */
+.content_section.active #products_container,
+.content_section.active #products_add_btn { animation: slideUpFade 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.1s; }
+
+/* Order Template Tab Content */
+.content_section.active #emptyOrderTemplate,
+.content_section.active #missingTemplateIndicator,
+.content_section.active #productCardsContainer,
+.content_section.active #open_add_template_btn { animation: slideUpFade 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.1s; }
+
+/* Rush Fees Tab Content */
+.content_section.active .rush_fees_empty,
+.content_section.active #rushFeesCardsContainer,
+.content_section.active #addRushFeeBtn { animation: slideUpFade 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.15s; }
+
+/* FAQs Tab Content */
+.content_section.active #emptyFaqsText,
+.content_section.active #faqsContainer,
+.content_section.active .faq_actions_row { animation: slideUpFade 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.1s; }
+
 
 /* =========================================
    RESPONSIVE DESIGN (MOBILE FIXES)
    ========================================= */
-
 @media (max-width: 768px) {
     .header_animation {
-        justify-content: center; /* Centers the title and stars */
-        flex-wrap: nowrap; /* Prevents the stars from dropping to a new line */
+        justify-content: center; 
+        flex-wrap: nowrap; 
     }
 
     .page_header {
-        /* THE FIX: clamp() fluidly scales the font down so it ALWAYS fits the screen perfectly */
         font-size: clamp(18px, 6vw, 28px);
         margin-top: 30px; 
         line-height: 1.2;
-        /* THE FIX: nowrap completely prevents "Content Management" from splitting mid-word */
         white-space: nowrap; 
         text-align: center;
     }
 
     .content_pages {
         flex-wrap: wrap;
-        justify-content: center; /* Centers the tab buttons nicely */
+        justify-content: center;
         gap: 10px;
     }
 
