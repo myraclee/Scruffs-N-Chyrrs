@@ -280,3 +280,31 @@
 
     .chart_card { padding: 15px; }
 }
+
+/* =========================================
+   PAGE LOAD SLIDE-UP ANIMATIONS
+   ========================================= */
+@keyframes slideUpFade {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.section_title { animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.section_title:nth-of-type(1) { animation-delay: 0.1s; }
+.section_title:nth-of-type(2) { animation-delay: 0.3s; }
+
+/* Weekly Report Cards Stagger */
+.report_card:nth-child(1) { animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.15s; }
+.report_card:nth-child(2) { animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.20s; }
+.report_card:nth-child(3) { animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.25s; }
+
+/* Weekly Sales Cards Stagger */
+.sales_card:nth-child(1) { animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.35s; }
+.sales_card:nth-child(2) { animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.40s; }
+.sales_card:nth-child(3) { animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.45s; }
+.sales_card:nth-child(4) { animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.50s; }
+
+/* Charts Stagger */
+.charts_header_container { animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.60s; }
+.chart_card:nth-child(1) { animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.65s; }
+.chart_card:nth-child(2) { animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.70s; }

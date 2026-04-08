@@ -135,6 +135,37 @@
     }
 }
 
+/* =========================================
+   PAGE LOAD & TAB SWITCH ANIMATIONS
+   ========================================= */
+@keyframes slideUpFade {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 1. Animate the Tab Buttons on page load */
+.content_pages {
+    animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.1s;
+}
+
+/* 2. Stagger the content whenever a tab becomes active */
+/* Home Page Tab */
+.content_section.active .content_homepage_images { animation: slideUpFade 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.05s; }
+.content_section.active .content_homepage_product { animation: slideUpFade 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.15s; }
+
+/* Products Tab */
+.content_section.active .products_page { animation: slideUpFade 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.05s; }
+
+/* General Sections & FAQs Tab */
+.content_section.active > .header_separator { animation: slideUpFade 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.05s; }
+.content_section.active .empty_order_template,
+.content_section.active .product_cards_container,
+.content_section.active .empty_faqs,
+.content_section.active .faqs_container { animation: slideUpFade 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.10s; }
+.content_section.active .add_template_button,
+.content_section.active .rush_fees_section,
+.content_section.active .faq_actions_row { animation: slideUpFade 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.15s; }
 
 /* =========================================
    RESPONSIVE DESIGN (MOBILE FIXES)
