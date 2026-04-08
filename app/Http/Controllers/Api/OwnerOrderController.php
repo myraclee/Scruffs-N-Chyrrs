@@ -456,11 +456,13 @@ class OwnerOrderController extends Controller
                 'layout_fee_amount' => (float) $order->layout_fee_amount,
                 'min_order_quantity' => (int) ($order->orderTemplate?->minOrder?->min_quantity ?? 1),
                 'option_schema' => $this->buildOptionSchema($order),
+                
             ]);
         })->values();
 
         return [
             'id' => $group->id,
+<<<<<<< Updated upstream
             'status' => $group->status,
             'status_label' => $group->status_label,
             'payment_status' => (string) $group->payment_status,
@@ -476,12 +478,20 @@ class OwnerOrderController extends Controller
             'payment_confirmed_at' => $group->payment_confirmed_at?->toISOString(),
             'can_confirm_payment' => $group->canConfirmPayment(),
             'can_owner_decline' => $group->canOwnerDecline(),
+=======
+>>>>>>> Stashed changes
             'user' => [
                 'id' => $group->user?->id,
-                'name' => trim(($group->user?->first_name ?? '').' '.($group->user?->last_name ?? '')),
+                'name' => $group->user?->name,
                 'email' => $group->user?->email,
                 'contact_number' => $group->user?->contact_number,
             ],
+            'status' => $group->status,
+            
+            // 👉 ADD THIS EXACT LINE:
+            'payment_status' => $group->payment_status,
+            
+            'general_drive_link' => $group->general_drive_link,
             'totals' => [
                 'subtotal_price' => (float) $group->subtotal_price,
                 'discount_total' => (float) $group->discount_total,

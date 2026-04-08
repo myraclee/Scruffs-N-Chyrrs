@@ -858,12 +858,18 @@ class CustomerOrderController extends Controller
             'id' => $group->id,
             'status' => $group->status,
             'status_label' => $group->status_label,
+<<<<<<< Updated upstream
             'payment_status' => (string) $group->payment_status,
             'payment_status_label' => $group->payment_status_label,
             'cancellation_reason' => $group->cancellation_reason,
             'can_view_details' => true,
             'can_cancel' => $group->canCustomerCancel(),
             'can_pay_now' => $group->canSubmitPaymentProof(),
+=======
+            
+            'payment_status' => $group->payment_status, 
+            
+>>>>>>> Stashed changes
             'is_editable' => $group->status === 'waiting',
             'general_drive_link' => $group->general_drive_link,
             'payment_method' => $group->payment_method,
