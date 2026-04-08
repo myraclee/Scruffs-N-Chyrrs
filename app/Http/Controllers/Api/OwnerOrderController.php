@@ -462,24 +462,6 @@ class OwnerOrderController extends Controller
 
         return [
             'id' => $group->id,
-<<<<<<< Updated upstream
-            'status' => $group->status,
-            'status_label' => $group->status_label,
-            'payment_status' => (string) $group->payment_status,
-            'payment_status_label' => $group->payment_status_label,
-            'cancellation_reason' => $group->cancellation_reason,
-            'general_drive_link' => $group->general_drive_link,
-            'payment_method' => $group->payment_method,
-            'payment_reference_number' => $group->payment_reference_number,
-            'payment_proof_url' => $group->payment_proof_path
-                ? asset('storage/'.$group->payment_proof_path)
-                : null,
-            'payment_submitted_at' => $group->payment_submitted_at?->toISOString(),
-            'payment_confirmed_at' => $group->payment_confirmed_at?->toISOString(),
-            'can_confirm_payment' => $group->canConfirmPayment(),
-            'can_owner_decline' => $group->canOwnerDecline(),
-=======
->>>>>>> Stashed changes
             'user' => [
                 'id' => $group->user?->id,
                 'name' => $group->user?->name,
@@ -487,11 +469,26 @@ class OwnerOrderController extends Controller
                 'contact_number' => $group->user?->contact_number,
             ],
             'status' => $group->status,
+            'status_label' => $group->status_label,
             
-            // 👉 ADD THIS EXACT LINE:
-            'payment_status' => $group->payment_status,
-            
+            // Core Payment Fields
+            'payment_status' => (string) $group->payment_status,
+            'payment_status_label' => $group->payment_status_label ?? $group->payment_status,
+            'payment_proof_url' => $group->payment_proof 
+                ? asset('storage/'.$group->payment_proof) 
+                : null,
+                
             'general_drive_link' => $group->general_drive_link,
+            'cancellation_reason' => $group->cancellation_reason,
+            'payment_method' => $group->payment_method,
+            'payment_reference_number' => $group->payment_reference_number,
+            'payment_submitted_at' => $group->payment_submitted_at?->toISOString(),
+            'payment_confirmed_at' => $group->payment_confirmed_at?->toISOString(),
+            
+            // Admin Actions
+            'can_confirm_payment' => method_exists($group, 'canConfirmPayment') ? $group->canConfirmPayment() : true,
+            'can_owner_decline' => method_exists($group, 'canOwnerDecline') ? $group->canOwnerDecline() : true,
+            
             'totals' => [
                 'subtotal_price' => (float) $group->subtotal_price,
                 'discount_total' => (float) $group->discount_total,
@@ -505,13 +502,13 @@ class OwnerOrderController extends Controller
             'created_at' => $group->created_at?->toISOString(),
             'updated_at' => $group->updated_at?->toISOString(),
         ];
-    }
 
     /**
      * @param array<int, array<string, mixed>> $previousRequirements
      * @param array<int, array<string, mixed>> $newRequirements
      * @return array{0: array<int, array<string, int|string>>, 1: array<int, array<string, int|string>>}
      */
+    }
     private function buildRequirementDelta(array $previousRequirements, array $newRequirements): array
     {
         $mapByMaterial = static function (array $requirements): array {

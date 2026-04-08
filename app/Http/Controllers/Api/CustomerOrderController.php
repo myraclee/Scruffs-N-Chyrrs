@@ -858,27 +858,27 @@ class CustomerOrderController extends Controller
             'id' => $group->id,
             'status' => $group->status,
             'status_label' => $group->status_label,
-<<<<<<< Updated upstream
+            
+            // Core Payment Fields
             'payment_status' => (string) $group->payment_status,
-            'payment_status_label' => $group->payment_status_label,
+            'payment_status_label' => $group->payment_status_label ?? $group->payment_status,
+            'payment_proof_url' => $group->payment_proof 
+                ? asset('storage/'.$group->payment_proof) 
+                : null,
+            
+            // Advanced Logic from Aaron
             'cancellation_reason' => $group->cancellation_reason,
             'can_view_details' => true,
-            'can_cancel' => $group->canCustomerCancel(),
-            'can_pay_now' => $group->canSubmitPaymentProof(),
-=======
-            
-            'payment_status' => $group->payment_status, 
-            
->>>>>>> Stashed changes
+            'can_cancel' => method_exists($group, 'canCustomerCancel') ? $group->canCustomerCancel() : false,
+            'can_pay_now' => method_exists($group, 'canSubmitPaymentProof') ? $group->canSubmitPaymentProof() : ($group->status === 'approved'),
+
             'is_editable' => $group->status === 'waiting',
             'general_drive_link' => $group->general_drive_link,
             'payment_method' => $group->payment_method,
             'payment_reference_number' => $group->payment_reference_number,
-            'payment_proof_url' => $group->payment_proof_path
-                ? asset('storage/'.$group->payment_proof_path)
-                : null,
             'payment_submitted_at' => $group->payment_submitted_at?->toISOString(),
             'payment_confirmed_at' => $group->payment_confirmed_at?->toISOString(),
+            
             'totals' => [
                 'subtotal_price' => (float) $group->subtotal_price,
                 'discount_total' => (float) $group->discount_total,
@@ -893,7 +893,6 @@ class CustomerOrderController extends Controller
             'updated_at' => $group->updated_at?->toISOString(),
         ];
     }
-
     private function buildNotEditableResponse(): JsonResponse
     {
         return response()->json([
@@ -902,12 +901,13 @@ class CustomerOrderController extends Controller
             'error_code' => 'customer_order_not_editable',
         ], 422);
     }
-
+    
     /**
      * @param array<int, array<string, mixed>> $previousRequirements
      * @param array<int, array<string, mixed>> $newRequirements
      * @return array{0: array<int, array<string, int|string>>, 1: array<int, array<string, int|string>>}
      */
+    
     private function buildRequirementDelta(array $previousRequirements, array $newRequirements): array
     {
         $mapByMaterial = static function (array $requirements): array {
