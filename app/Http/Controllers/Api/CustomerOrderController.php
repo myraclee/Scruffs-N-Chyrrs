@@ -858,20 +858,15 @@ class CustomerOrderController extends Controller
             'id' => $group->id,
             'status' => $group->status,
             'status_label' => $group->status_label,
-            
-            // Core Payment Fields
             'payment_status' => (string) $group->payment_status,
             'payment_status_label' => $group->payment_status_label ?? $group->payment_status,
-            'payment_proof_url' => $group->payment_proof 
-                ? asset('storage/'.$group->payment_proof) 
+            'payment_proof_url' => $group->payment_proof_path
+                ? asset('storage/'.$group->payment_proof_path)
                 : null,
-            
-            // Advanced Logic from Aaron
             'cancellation_reason' => $group->cancellation_reason,
             'can_view_details' => true,
-            'can_cancel' => method_exists($group, 'canCustomerCancel') ? $group->canCustomerCancel() : false,
-            'can_pay_now' => method_exists($group, 'canSubmitPaymentProof') ? $group->canSubmitPaymentProof() : ($group->status === 'approved'),
-
+            'can_cancel' => $group->canCustomerCancel(),
+            'can_pay_now' => $group->canSubmitPaymentProof(),
             'is_editable' => $group->status === 'waiting',
             'general_drive_link' => $group->general_drive_link,
             'payment_method' => $group->payment_method,

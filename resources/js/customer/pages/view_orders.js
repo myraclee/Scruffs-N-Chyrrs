@@ -3,9 +3,7 @@ import Toast from "/resources/js/utils/toast.js";
 
 const cartContent = document.getElementById("cartContent");
 const currentOrdersContent = document.getElementById("currentOrdersContent");
-const completedOrdersContent = document.getElementById(
-    "completedOrdersContent",
-);
+const completedOrdersContent = document.getElementById("completedOrdersContent");
 const currentOrdersCount = document.getElementById("currentOrdersCount");
 const completedOrdersCount = document.getElementById("completedOrdersCount");
 
@@ -28,146 +26,142 @@ let isPlacingOrder = false;
 let activeDetailsGroup = null;
 
 const money = (value) =>
-    new Intl.NumberFormat("en-PH", {
-        style: "currency",
-        currency: "PHP",
-    }).format(Number(value || 0));
+  new Intl.NumberFormat("en-PH", {
+    style: "currency",
+    currency: "PHP",
+  }).format(Number(value || 0));
 
 const formatPhpAmount = (value) => {
-    const normalized = Number(value || 0);
-    return `Php ${new Intl.NumberFormat("en-PH", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    }).format(normalized)}`;
+  const normalized = Number(value || 0);
+  return `Php ${new Intl.NumberFormat("en-PH", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(normalized)}`;
 };
 
 const normalizeDriveLink = (value) =>
-    typeof value === "string" ? value.trim() : "";
+  typeof value === "string" ? value.trim() : "";
 
 const driveLinkIdPattern = /^[A-Za-z0-9_-]+$/;
 
 function isValidGoogleDriveUrl(url) {
-    try {
-        const parsedUrl = new URL(url);
+  try {
+    const parsedUrl = new URL(url);
 
-        if (parsedUrl.protocol !== "https:") {
-            return false;
-        }
-
-        if (parsedUrl.hostname !== "drive.google.com") {
-            return false;
-        }
-
-        const normalizedPath = parsedUrl.pathname.replace(/\/+$/, "") || "/";
-
-        if (
-            normalizedPath === "/" ||
-            normalizedPath === "/drive" ||
-            normalizedPath.startsWith("/drive/")
-        ) {
-            return true;
-        }
-
-        if (/^\/drive\/folders\/[A-Za-z0-9_-]+$/.test(normalizedPath)) {
-            return true;
-        }
-
-        if (/^\/file\/d\/[A-Za-z0-9_-]+(?:\/.*)?$/.test(normalizedPath)) {
-            return true;
-        }
-
-        if (normalizedPath === "/open" || normalizedPath === "/uc") {
-            const id = parsedUrl.searchParams.get("id");
-            return Boolean(id && driveLinkIdPattern.test(id));
-        }
-
-        return false;
-    } catch {
-        return false;
+    if (parsedUrl.protocol !== "https:") {
+      return false;
     }
+
+    if (parsedUrl.hostname !== "drive.google.com") {
+      return false;
+    }
+
+    const normalizedPath = parsedUrl.pathname.replace(/\/+$/, "") || "/";
+
+    if (
+      normalizedPath === "/" ||
+      normalizedPath === "/drive" ||
+      normalizedPath.startsWith("/drive/")
+    ) {
+      return true;
+    }
+
+    if (/^\/drive\/folders\/[A-Za-z0-9_-]+$/.test(normalizedPath)) {
+      return true;
+    }
+
+    if (/^\/file\/d\/[A-Za-z0-9_-]+(?:\/.*)?$/.test(normalizedPath)) {
+      return true;
+    }
+
+    if (normalizedPath === "/open" || normalizedPath === "/uc") {
+      const id = parsedUrl.searchParams.get("id");
+      return Boolean(id && driveLinkIdPattern.test(id));
+    }
+
+    return false;
+  } catch {
+    return false;
+  }
 }
 
 window.toggleOrdersCategory = function toggleOrdersCategory(category) {
-    const content = document.getElementById(`${category}OrdersContent`);
-    if (!content) return;
+  const content = document.getElementById(`${category}OrdersContent`);
+  if (!content) return;
 
-    const header = content.previousElementSibling;
-    const isOpen = content.classList.contains("open");
+  const header = content.previousElementSibling;
+  const isOpen = content.classList.contains("open");
 
-    if (isOpen) {
-        content.classList.remove("open");
-        header.classList.remove("active");
-    } else {
-        content.classList.add("open");
-        header.classList.add("active");
-    }
+  if (isOpen) {
+    content.classList.remove("open");
+    header.classList.remove("active");
+  } else {
+    content.classList.add("open");
+    header.classList.add("active");
+  }
 };
 
 document.addEventListener("DOMContentLoaded", async () => {
-    openCurrentOrdersByDefault();
-    bindOrderActionEvents();
-    bindOrderDetailsModalEvents();
-    bindCartEvents();
-    await loadPageData();
+  openCurrentOrdersByDefault();
+  bindOrderActionEvents();
+  bindOrderDetailsModalEvents();
+  bindCartEvents();
+  await loadPageData();
 });
 
 function openCurrentOrdersByDefault() {
-    currentOrdersContent?.classList.add("open");
-    const currentHeaderButton = document.querySelector(
-        "[onclick=\"toggleOrdersCategory('current')\"]",
-    );
-    currentHeaderButton?.classList.add("active");
+  currentOrdersContent?.classList.add("open");
+  const currentHeaderButton = document.querySelector(
+    '[onclick="toggleOrdersCategory(\'current\')"]',
+  );
+  currentHeaderButton?.classList.add("active");
 }
 
 async function loadPageData() {
-    const [cartResponse, ordersResponse] = await Promise.all([
-        CustomerOrderAPI.getCart(),
-        CustomerOrderAPI.getMyOrders({ per_page: 50 }),
-    ]);
+  const [cartResponse, ordersResponse] = await Promise.all([
+    CustomerOrderAPI.getCart(),
+    CustomerOrderAPI.getMyOrders({ per_page: 50 }),
+  ]);
 
-    if (!cartResponse.success) {
-        Toast.error(cartResponse.message || "Could not load your cart.");
-        renderEmptyCart();
-    } else {
-        renderCart(cartResponse.data);
-    }
+  if (!cartResponse.success) {
+    Toast.error(cartResponse.message || "Could not load your cart.");
+    renderEmptyCart();
+  } else {
+    renderCart(cartResponse.data);
+  }
 
-    if (!ordersResponse.success) {
-        Toast.error(ordersResponse.message || "Could not load your orders.");
-        renderOrderPlaceholders(
-            currentOrdersContent,
-            "Unable to load current orders right now.",
-        );
-        renderOrderPlaceholders(
-            completedOrdersContent,
-            "Unable to load completed orders right now.",
-        );
-        currentOrdersCount.textContent = "0";
-        completedOrdersCount.textContent = "0";
-        return;
-    }
-
-    const groups = ordersResponse.data || [];
-    const current = groups.filter((group) =>
-        CURRENT_STATUSES.has(group.status),
+  if (!ordersResponse.success) {
+    Toast.error(ordersResponse.message || "Could not load your orders.");
+    renderOrderPlaceholders(
+      currentOrdersContent,
+      "Unable to load current orders right now.",
     );
-    const completed = groups.filter((group) =>
-        COMPLETED_STATUSES.has(group.status),
+    renderOrderPlaceholders(
+      completedOrdersContent,
+      "Unable to load completed orders right now.",
     );
+    currentOrdersCount.textContent = "0";
+    completedOrdersCount.textContent = "0";
+    return;
+  }
 
-    currentOrdersCount.textContent = String(current.length);
-    completedOrdersCount.textContent = String(completed.length);
+  const groups = ordersResponse.data || [];
+  const current = groups.filter((group) => CURRENT_STATUSES.has(group.status));
+  const completed = groups.filter((group) => COMPLETED_STATUSES.has(group.status));
 
-    renderOrderGroups(currentOrdersContent, current, "No current orders yet.");
-    renderOrderGroups(
-        completedOrdersContent,
-        completed,
-        "No completed orders yet.",
-    );
+  currentOrdersCount.textContent = String(current.length);
+  completedOrdersCount.textContent = String(completed.length);
+
+  renderOrderGroups(currentOrdersContent, current, "No current orders yet.");
+  renderOrderGroups(
+    completedOrdersContent,
+    completed,
+    "No completed orders yet.",
+  );
 }
 
 function renderEmptyCart() {
-    cartContent.innerHTML = `
+  cartContent.innerHTML = `
     <div class="empty_state">
       <div class="empty_sparkles" aria-hidden="true">
         <span>✦</span><span>✧</span><span>✦</span>
@@ -189,18 +183,18 @@ function renderEmptyCart() {
 }
 
 function renderCart(cart) {
-    if (!cart?.items || cart.items.length === 0) {
-        renderEmptyCart();
-        return;
-    }
+  if (!cart?.items || cart.items.length === 0) {
+    renderEmptyCart();
+    return;
+  }
 
-    const rows = cart.items
-        .map((item) => {
-            const options = (item.formatted_options || [])
-                .map((opt) => `${opt.option_label}: ${opt.selected_value}`)
-                .join(" | ");
+  const rows = cart.items
+    .map((item) => {
+      const options = (item.formatted_options || [])
+        .map((opt) => `${opt.option_label}: ${opt.selected_value}`)
+        .join(" | ");
 
-            return `
+      return `
         <div class="cart_item_card" data-cart-item-id="${item.id}">
           <div class="cart_item_header">
             <span class="cart_item_title">${item.product_name} x${item.quantity}</span>
@@ -220,10 +214,10 @@ function renderCart(cart) {
           ${item.special_instructions ? `<div class="cart_item_notes">Notes: ${item.special_instructions}</div>` : ""}
         </div>
       `;
-        })
-        .join("");
+    })
+    .join("");
 
-    cartContent.innerHTML = `
+  cartContent.innerHTML = `
     <div class="cart_content_shell">
       ${rows}
       <div class="cart_total_row">
@@ -245,124 +239,120 @@ function renderCart(cart) {
 }
 
 function setPlaceOrderLoading(isLoading) {
-    const placeOrderBtn = document.getElementById(PLACE_ORDER_BUTTON_ID);
-    if (!placeOrderBtn) return;
+  const placeOrderBtn = document.getElementById(PLACE_ORDER_BUTTON_ID);
+  if (!placeOrderBtn) return;
 
-    placeOrderBtn.disabled = isLoading;
+  placeOrderBtn.disabled = isLoading;
 
-    if (isLoading) {
-        placeOrderBtn.dataset.originalHtml = placeOrderBtn.innerHTML;
-        placeOrderBtn.innerHTML =
-            '<span class="spinner" aria-hidden="true"></span><span>Processing...</span>';
-        return;
-    }
+  if (isLoading) {
+    placeOrderBtn.dataset.originalHtml = placeOrderBtn.innerHTML;
+    placeOrderBtn.innerHTML = '<span class="spinner" aria-hidden="true"></span><span>Processing...</span>';
+    return;
+  }
 
-    if (placeOrderBtn.dataset.originalHtml) {
-        placeOrderBtn.innerHTML = placeOrderBtn.dataset.originalHtml;
-        delete placeOrderBtn.dataset.originalHtml;
-    }
+  if (placeOrderBtn.dataset.originalHtml) {
+    placeOrderBtn.innerHTML = placeOrderBtn.dataset.originalHtml;
+    delete placeOrderBtn.dataset.originalHtml;
+  }
 }
 
 function getStoredDriveLinkValidation() {
-    const savedDriveLink = normalizeDriveLink(
-        localStorage.getItem(MAIN_DRIVE_LINK_STORAGE_KEY) || "",
-    );
+  const savedDriveLink = normalizeDriveLink(
+    localStorage.getItem(MAIN_DRIVE_LINK_STORAGE_KEY) || "",
+  );
 
-    if (!savedDriveLink) {
-        return {
-            valid: false,
-            value: "",
-            message:
-                "Main Drive Link is required. Set it in Product Order before checkout.",
-        };
-    }
-
-    if (!isValidGoogleDriveUrl(savedDriveLink)) {
-        return {
-            valid: false,
-            value: savedDriveLink,
-            message:
-                "Saved Main Drive Link is invalid. Update it from Product Order before checkout.",
-        };
-    }
-
+  if (!savedDriveLink) {
     return {
-        valid: true,
-        value: savedDriveLink,
-        message: "",
+      valid: false,
+      value: "",
+      message: "Main Drive Link is required. Set it in Product Order before checkout.",
     };
+  }
+
+  if (!isValidGoogleDriveUrl(savedDriveLink)) {
+    return {
+      valid: false,
+      value: savedDriveLink,
+      message:
+        "Saved Main Drive Link is invalid. Update it from Product Order before checkout.",
+    };
+  }
+
+  return {
+    valid: true,
+    value: savedDriveLink,
+    message: "",
+  };
 }
 
 async function placeCartOrder() {
-    if (isPlacingOrder) return false;
+  if (isPlacingOrder) return false;
 
-    const validation = getStoredDriveLinkValidation();
-    if (!validation.valid) {
-        Toast.warning(validation.message);
-        return false;
+  const validation = getStoredDriveLinkValidation();
+  if (!validation.valid) {
+    Toast.warning(validation.message);
+    return false;
+  }
+
+  isPlacingOrder = true;
+  setPlaceOrderLoading(true);
+
+  const result = await CustomerOrderAPI.checkoutCart(validation.value);
+
+  isPlacingOrder = false;
+  setPlaceOrderLoading(false);
+
+  if (!result.success) {
+    if (Array.isArray(result.shortages) && result.shortages.length > 0) {
+      Toast.error("Inventory shortage detected. Please adjust your cart and try again.");
+      return false;
     }
 
-    isPlacingOrder = true;
-    setPlaceOrderLoading(true);
-
-    const result = await CustomerOrderAPI.checkoutCart(validation.value);
-
-    isPlacingOrder = false;
-    setPlaceOrderLoading(false);
-
-    if (!result.success) {
-        if (Array.isArray(result.shortages) && result.shortages.length > 0) {
-            Toast.error(
-                "Inventory shortage detected. Please adjust your cart and try again.",
-            );
-            return false;
-        }
-
-        if (
-            Array.isArray(result.configuration_issues) &&
-            result.configuration_issues.length > 0
-        ) {
-            Toast.error(
-                "Inventory configuration issue detected. Please contact support or try again later.",
-            );
-            return false;
-        }
-
-        const firstError = result.errors
-            ? Object.values(result.errors).flat()[0]
-            : null;
-
-        Toast.error(firstError || result.message || "Checkout failed.");
-        return false;
+    if (
+      Array.isArray(result.configuration_issues) &&
+      result.configuration_issues.length > 0
+    ) {
+      Toast.error(
+        "Inventory configuration issue detected. Please contact support or try again later.",
+      );
+      return false;
     }
 
-    Toast.success("Order placed. Waiting for owner approval.");
-    await loadPageData();
-    return true;
+    const firstError = result.errors
+      ? Object.values(result.errors).flat()[0]
+      : null;
+
+    Toast.error(firstError || result.message || "Checkout failed.");
+    return false;
+  }
+
+  Toast.success("Order placed. Waiting for owner approval.");
+  await loadPageData();
+  return true;
 }
 
 function renderOrderGroups(container, groups, emptyMessage) {
-    if (!container) return;
+  if (!container) return;
 
-    if (!groups || groups.length === 0) {
-        renderOrderPlaceholders(container, emptyMessage);
-        return;
-    }
+  if (!groups || groups.length === 0) {
+    renderOrderPlaceholders(container, emptyMessage);
+    return;
+  }
 
-    container.innerHTML = groups
-        .map((group) => {
-            const lines = (group.orders || [])
-                .map(
-                    (item) => `
+  container.innerHTML = groups
+    .map((group) => {
+      const lines = (group.orders || [])
+        .map(
+          (item) => `
           <li class="order_group_item">
             <span class="order_group_item_label">${escapeHtml(item.product_name)} x${item.quantity}</span>
             <strong class="order_group_item_price">${money(item.total_price)}</strong>
           </li>
         `,
-                )
-                .join("");
+        )
+        .join("");
 
-            return `
+      return `
         <article class="order_group_card" id="order-group-${group.id}">
           <div class="order_group_header">
             <span class="order_group_number">Order #${group.id}</span>
@@ -381,8 +371,8 @@ function renderOrderGroups(container, groups, emptyMessage) {
           </div>
         </article>
       `;
-        })
-        .join("");
+    })
+    .join("");
 }
 
 function buildOrderActionButtons(group) {
@@ -427,7 +417,7 @@ function buildOrderActionButtons(group) {
 }
 
 function renderOrderPlaceholders(container, message) {
-    container.innerHTML = `<div class="orders_placeholder"><p>${message}</p></div>`;
+  container.innerHTML = `<div class="orders_placeholder"><p>${message}</p></div>`;
 }
 
 function bindOrderActionEvents() {
@@ -537,28 +527,27 @@ async function cancelOrderGroup(orderGroupId) {
 }
 
 function bindOrderDetailsModalEvents() {
-    orderEditCloseBtn?.addEventListener("click", () => {
-        closeOrderDetailsModal();
-    });
+  orderEditCloseBtn?.addEventListener("click", () => {
+    closeOrderDetailsModal();
+  });
 
-    orderEditCancelBtn?.addEventListener("click", () => {
-        closeOrderDetailsModal();
-    });
+  orderEditCancelBtn?.addEventListener("click", () => {
+    closeOrderDetailsModal();
+  });
 
-    orderEditModal?.addEventListener("click", (event) => {
-        if (event.target === orderEditModal) {
-            closeOrderDetailsModal();
-        }
-    });
+  orderEditModal?.addEventListener("click", (event) => {
+    if (event.target === orderEditModal) {
+      closeOrderDetailsModal();
+    }
+  });
 }
 
 function setOrderDetailsModalVisible(isVisible) {
-    if (!orderEditModal) return;
+  if (!orderEditModal) return;
 
-    orderEditModal.classList.toggle("open", isVisible);
-    orderEditModal.setAttribute("aria-hidden", isVisible ? "false" : "true");
+  orderEditModal.classList.toggle("open", isVisible);
+  orderEditModal.setAttribute("aria-hidden", isVisible ? "false" : "true");
 }
-
 async function openOrderDetailsModal(orderGroupId) {
     if (!orderGroupId) {
         return;
@@ -589,19 +578,19 @@ function closeOrderDetailsModal() {
             "Review your order items and payment status.";
     }
 
-    if (orderEditDriveLink) {
-        orderEditDriveLink.value = "";
-        orderEditDriveLink.readOnly = false;
-        orderEditDriveLink.disabled = false;
-    }
+  if (orderEditDriveLink) {
+    orderEditDriveLink.value = "";
+    orderEditDriveLink.readOnly = false;
+    orderEditDriveLink.disabled = false;
+  }
 
-    if (orderEditItems) {
-        orderEditItems.innerHTML = "";
-    }
+  if (orderEditItems) {
+    orderEditItems.innerHTML = "";
+  }
 
-    if (orderEditSaveBtn) {
-        orderEditSaveBtn.style.display = "none";
-    }
+  if (orderEditSaveBtn) {
+    orderEditSaveBtn.style.display = "none";
+  }
 
     if (orderEditCancelBtn) {
         orderEditCancelBtn.textContent = "Close";
@@ -655,43 +644,42 @@ function renderOrderDetailsModal(group) {
           </div>
         </section>
       `;
-        })
-        .join("");
+    })
+    .join("");
 
-    if (orderEditSaveBtn) {
-        orderEditSaveBtn.style.display = "none";
-    }
+  if (orderEditSaveBtn) {
+    orderEditSaveBtn.style.display = "none";
+  }
 
-    if (orderEditCancelBtn) {
-        orderEditCancelBtn.textContent = "Close";
-    }
+  if (orderEditCancelBtn) {
+    orderEditCancelBtn.textContent = "Close";
+  }
 }
 
 function bindCartEvents() {
-    cartContent.addEventListener("click", async (event) => {
-        const placeOrderBtn = event.target.closest(`#${PLACE_ORDER_BUTTON_ID}`);
-        if (placeOrderBtn) {
-            await placeCartOrder();
-            return;
-        }
+  cartContent.addEventListener("click", async (event) => {
+    const placeOrderBtn = event.target.closest(`#${PLACE_ORDER_BUTTON_ID}`);
+    if (placeOrderBtn) {
+      await placeCartOrder();
+      return;
+    }
 
-        const removeBtn = event.target.closest("button[data-remove-cart-id]");
-        if (!removeBtn) return;
+    const removeBtn = event.target.closest("button[data-remove-cart-id]");
+    if (!removeBtn) return;
 
-        const cartItemId = Number(removeBtn.dataset.removeCartId);
-        if (!cartItemId) return;
+    const cartItemId = Number(removeBtn.dataset.removeCartId);
+    if (!cartItemId) return;
 
-        const result = await CustomerOrderAPI.removeCartItem(cartItemId);
-        if (!result.success) {
-            Toast.error(result.message || "Unable to remove cart item.");
-            return;
-        }
+    const result = await CustomerOrderAPI.removeCartItem(cartItemId);
+    if (!result.success) {
+      Toast.error(result.message || "Unable to remove cart item.");
+      return;
+    }
 
-        Toast.success("Cart item removed.");
-        renderCart(result.data);
-    });
+    Toast.success("Cart item removed.");
+    renderCart(result.data);
+  });
 }
-
 function escapeHtml(value) {
     return String(value || "")
         .replaceAll("&", "&amp;")

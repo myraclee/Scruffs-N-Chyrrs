@@ -94,7 +94,6 @@
             </div>
 
             <div class="details_statuses" id="modalStatusContainer">
-                
                 <div class="status_group">
                     <span class="brand_label" style="font-size: 26px;">Order Status:</span>
                     <select class="status_select status-yellow" id="detailStatusSelect">
@@ -106,7 +105,6 @@
                         <option value="cancelled">Order Cancelled</option>
                     </select>
                 </div>
-<<<<<<< Updated upstream
                 <div class="status_group">
                     <span class="brand_label" style="font-size: 26px;">Payment Status:</span>
                     <span class="payment_pill status-yellow" id="detailPaymentStatus">Awaiting Payment</span>
@@ -126,19 +124,6 @@
                     placeholder="Optional payment confirmation note"
                     style="display: none; margin-top: 8px;"
                 ></textarea>
-=======
-
-                <div class="status_group">
-                    <span class="brand_label" style="font-size: 26px;">Payment Status:</span>
-                    <select class="status_select status-green" id="detailPaymentStatusSelect">
-                        <option value="Awaiting Payment">Awaiting Payment</option>
-                        <option value="Waiting for Payment Confirmation">Waiting for Payment Confirmation</option>
-                        <option value="Payment Received">Payment Received</option>
-                        <option value="Payment Declined">Payment Declined</option>
-                    </select>
-                </div>
-
->>>>>>> Stashed changes
             </div>
 
             <div class="details_footer">

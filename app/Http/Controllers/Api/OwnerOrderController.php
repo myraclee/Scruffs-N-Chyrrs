@@ -456,7 +456,6 @@ class OwnerOrderController extends Controller
                 'layout_fee_amount' => (float) $order->layout_fee_amount,
                 'min_order_quantity' => (int) ($order->orderTemplate?->minOrder?->min_quantity ?? 1),
                 'option_schema' => $this->buildOptionSchema($order),
-                
             ]);
         })->values();
 
@@ -464,31 +463,25 @@ class OwnerOrderController extends Controller
             'id' => $group->id,
             'user' => [
                 'id' => $group->user?->id,
-                'name' => $group->user?->name,
+                'name' => trim(($group->user?->first_name ?? '').' '.($group->user?->last_name ?? '')),
                 'email' => $group->user?->email,
                 'contact_number' => $group->user?->contact_number,
             ],
             'status' => $group->status,
             'status_label' => $group->status_label,
-            
-            // Core Payment Fields
             'payment_status' => (string) $group->payment_status,
             'payment_status_label' => $group->payment_status_label ?? $group->payment_status,
-            'payment_proof_url' => $group->payment_proof 
-                ? asset('storage/'.$group->payment_proof) 
+            'payment_proof_url' => $group->payment_proof_path
+                ? asset('storage/'.$group->payment_proof_path)
                 : null,
-                
             'general_drive_link' => $group->general_drive_link,
             'cancellation_reason' => $group->cancellation_reason,
             'payment_method' => $group->payment_method,
             'payment_reference_number' => $group->payment_reference_number,
             'payment_submitted_at' => $group->payment_submitted_at?->toISOString(),
             'payment_confirmed_at' => $group->payment_confirmed_at?->toISOString(),
-            
-            // Admin Actions
-            'can_confirm_payment' => method_exists($group, 'canConfirmPayment') ? $group->canConfirmPayment() : true,
-            'can_owner_decline' => method_exists($group, 'canOwnerDecline') ? $group->canOwnerDecline() : true,
-            
+            'can_confirm_payment' => $group->canConfirmPayment(),
+            'can_owner_decline' => $group->canOwnerDecline(),
             'totals' => [
                 'subtotal_price' => (float) $group->subtotal_price,
                 'discount_total' => (float) $group->discount_total,
@@ -503,12 +496,13 @@ class OwnerOrderController extends Controller
             'updated_at' => $group->updated_at?->toISOString(),
         ];
 
+    }
+
     /**
      * @param array<int, array<string, mixed>> $previousRequirements
      * @param array<int, array<string, mixed>> $newRequirements
      * @return array{0: array<int, array<string, int|string>>, 1: array<int, array<string, int|string>>}
      */
-    }
     private function buildRequirementDelta(array $previousRequirements, array $newRequirements): array
     {
         $mapByMaterial = static function (array $requirements): array {
