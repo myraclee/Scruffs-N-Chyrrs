@@ -15,6 +15,14 @@ const orderEditCancelBtn = document.getElementById("orderEditCancelBtn");
 const orderEditSaveBtn = document.getElementById("orderEditSaveBtn");
 const orderEditDriveLink = document.getElementById("orderEditDriveLink");
 const orderEditItems = document.getElementById("orderEditItems");
+const orderCancelConfirmModal = document.getElementById("orderCancelConfirmModal");
+const orderCancelConfirmTarget = document.getElementById("orderCancelConfirmTarget");
+const orderCancelConfirmCloseBtn = document.getElementById("orderCancelConfirmCloseBtn");
+const orderCancelConfirmKeepBtn = document.getElementById("orderCancelConfirmKeepBtn");
+const orderCancelConfirmProceedBtn = document.getElementById("orderCancelConfirmProceedBtn");
+const orderCancelSuccessModal = document.getElementById("orderCancelSuccessModal");
+const orderCancelSuccessCloseBtn = document.getElementById("orderCancelSuccessCloseBtn");
+const orderCancelSuccessContinueBtn = document.getElementById("orderCancelSuccessContinueBtn");
 
 const PLACE_ORDER_BUTTON_ID = "cartPlaceOrderBtn";
 const MAIN_DRIVE_LINK_STORAGE_KEY = "customer_main_drive_link";
@@ -24,6 +32,8 @@ const COMPLETED_STATUSES = new Set(["completed", "cancelled"]);
 
 let isPlacingOrder = false;
 let activeDetailsGroup = null;
+let isCancellingOrder = false;
+let cancelConfirmResolver = null;
 
 const money = (value) =>
   new Intl.NumberFormat("en-PH", {
@@ -105,6 +115,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   openCurrentOrdersByDefault();
   bindOrderActionEvents();
   bindOrderDetailsModalEvents();
+  bindCancelOrderModalEvents();
   bindCartEvents();
   await loadPageData();
 });
@@ -507,19 +518,148 @@ async function cancelOrderGroup(orderGroupId) {
     return;
   }
 
-  const shouldCancel = window.confirm(
-    "Cancel this order? This action cannot be undone.",
-  );
+  if (isCancellingOrder) {
+    return;
+  }
+
+  const shouldCancel = await openCancelConfirmModal(orderGroupId);
 
   if (!shouldCancel) {
     return;
   }
 
+  isCancellingOrder = true;
+  setCancelConfirmLoading(true);
+
   const result = await CustomerOrderAPI.cancelOrder(orderGroupId);
+
+  isCancellingOrder = false;
+  setCancelConfirmLoading(false);
 
   if (!result.success) {
     Toast.error(result.message || "Unable to cancel order.");
     return;
+  }
+
+  closeCancelConfirmModal(false);
+  openCancelSuccessModal();
+}
+
+function bindCancelOrderModalEvents() {
+  orderCancelConfirmCloseBtn?.addEventListener("click", () => {
+    closeCancelConfirmModal(true);
+  });
+
+  orderCancelConfirmKeepBtn?.addEventListener("click", () => {
+    closeCancelConfirmModal(true);
+  });
+
+  orderCancelConfirmProceedBtn?.addEventListener("click", () => {
+    resolveCancelConfirm(true);
+  });
+
+  orderCancelConfirmModal?.addEventListener("click", (event) => {
+    if (event.target === orderCancelConfirmModal) {
+      closeCancelConfirmModal(true);
+    }
+  });
+
+  orderCancelSuccessCloseBtn?.addEventListener("click", async () => {
+    await closeCancelSuccessModalAndRefresh();
+  });
+
+  orderCancelSuccessContinueBtn?.addEventListener("click", async () => {
+    await closeCancelSuccessModalAndRefresh();
+  });
+
+  orderCancelSuccessModal?.addEventListener("click", async (event) => {
+    if (event.target === orderCancelSuccessModal) {
+      await closeCancelSuccessModalAndRefresh();
+    }
+  });
+
+  document.addEventListener("keydown", async (event) => {
+    if (event.key !== "Escape") return;
+
+    if (orderCancelConfirmModal?.classList.contains("open")) {
+      closeCancelConfirmModal(true);
+      return;
+    }
+
+    if (orderCancelSuccessModal?.classList.contains("open")) {
+      await closeCancelSuccessModalAndRefresh();
+    }
+  });
+}
+
+function openCancelConfirmModal(orderGroupId) {
+  if (!orderCancelConfirmModal) {
+    return Promise.resolve(false);
+  }
+
+  const targetLabel = Number.isFinite(Number(orderGroupId))
+    ? `Order #${Number(orderGroupId)}`
+    : "this order";
+
+  if (orderCancelConfirmTarget) {
+    orderCancelConfirmTarget.textContent = targetLabel;
+  }
+
+  orderCancelConfirmModal.classList.add("open");
+  orderCancelConfirmModal.setAttribute("aria-hidden", "false");
+  orderCancelConfirmKeepBtn?.focus();
+
+  return new Promise((resolve) => {
+    cancelConfirmResolver = resolve;
+  });
+}
+
+function resolveCancelConfirm(confirmed) {
+  if (typeof cancelConfirmResolver === "function") {
+    cancelConfirmResolver(Boolean(confirmed));
+  }
+  cancelConfirmResolver = null;
+}
+
+function closeCancelConfirmModal(resolveAsFalse) {
+  if (!orderCancelConfirmModal) return;
+
+  orderCancelConfirmModal.classList.remove("open");
+  orderCancelConfirmModal.setAttribute("aria-hidden", "true");
+  setCancelConfirmLoading(false);
+
+  if (resolveAsFalse) {
+    resolveCancelConfirm(false);
+  }
+}
+
+function setCancelConfirmLoading(isLoading) {
+  if (!orderCancelConfirmProceedBtn) return;
+
+  orderCancelConfirmProceedBtn.disabled = isLoading;
+  orderCancelConfirmKeepBtn.disabled = isLoading;
+  orderCancelConfirmCloseBtn.disabled = isLoading;
+  orderCancelConfirmProceedBtn.textContent = isLoading
+    ? "Cancelling..."
+    : "Confirm Cancel";
+}
+
+function openCancelSuccessModal() {
+  if (!orderCancelSuccessModal) {
+    Toast.success("Order cancelled.");
+    loadPageData();
+    return;
+  }
+
+  orderCancelSuccessModal.classList.add("open");
+  orderCancelSuccessModal.setAttribute("aria-hidden", "false");
+  orderCancelSuccessContinueBtn?.focus();
+}
+
+async function closeCancelSuccessModalAndRefresh() {
+  if (orderCancelSuccessModal) {
+    orderCancelSuccessModal.classList.remove("open");
+    orderCancelSuccessModal.setAttribute("aria-hidden", "true");
   }
 
   Toast.success("Order cancelled.");

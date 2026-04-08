@@ -155,6 +155,49 @@
         </div>
     </div>
 
+    <div class="order_edit_modal_overlay" id="orderCancelConfirmModal" aria-hidden="true">
+        <div class="order_edit_modal order_cancel_modal" role="dialog" aria-modal="true" aria-labelledby="orderCancelConfirmTitle" aria-describedby="orderCancelConfirmSubtitle">
+            <div class="order_edit_modal_header">
+                <div>
+                    <h3 id="orderCancelConfirmTitle" class="order_edit_modal_title">Cancel Order</h3>
+                    <p id="orderCancelConfirmSubtitle" class="order_edit_modal_subtitle">This will permanently cancel your order request and cannot be undone.</p>
+                </div>
+                <button type="button" class="order_edit_icon_btn" id="orderCancelConfirmCloseBtn" aria-label="Close cancel confirmation">✕</button>
+            </div>
+
+            <div class="order_cancel_modal_body">
+                <p class="order_cancel_modal_warning">You are about to cancel <strong id="orderCancelConfirmTarget">Order</strong>.</p>
+                <p class="order_cancel_modal_hint">Any pending processing for this order will stop after cancellation is confirmed.</p>
+            </div>
+
+            <div class="order_edit_modal_footer">
+                <button type="button" class="order_edit_secondary_btn" id="orderCancelConfirmKeepBtn">Keep Order</button>
+                <button type="button" class="order_edit_primary_btn" id="orderCancelConfirmProceedBtn">Confirm Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="order_edit_modal_overlay" id="orderCancelSuccessModal" aria-hidden="true">
+        <div class="order_edit_modal order_cancel_modal" role="dialog" aria-modal="true" aria-labelledby="orderCancelSuccessTitle" aria-describedby="orderCancelSuccessSubtitle">
+            <div class="order_edit_modal_header">
+                <div>
+                    <h3 id="orderCancelSuccessTitle" class="order_edit_modal_title">Order Cancelled</h3>
+                    <p id="orderCancelSuccessSubtitle" class="order_edit_modal_subtitle">Your order has been cancelled successfully.</p>
+                </div>
+                <button type="button" class="order_edit_icon_btn" id="orderCancelSuccessCloseBtn" aria-label="Close cancellation success">✕</button>
+            </div>
+
+            <div class="order_cancel_modal_body">
+                <p class="order_cancel_modal_warning">The order status is now cancelled.</p>
+                <p class="order_cancel_modal_hint">Select Continue to refresh your order list.</p>
+            </div>
+
+            <div class="order_edit_modal_footer">
+                <button type="button" class="order_edit_primary_btn" id="orderCancelSuccessContinueBtn">Continue</button>
+            </div>
+        </div>
+    </div>
+
 @include('customer.pages.payment_customer')
 
 </div>
