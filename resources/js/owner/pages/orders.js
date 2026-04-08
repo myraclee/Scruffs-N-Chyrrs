@@ -276,6 +276,60 @@ function bindEvents() {
         await openDetails(currentDetailOrderId);
     });
 
+    const detailPaymentStatusSelect = document.getElementById(
+        "detailPaymentStatusSelect",
+    );
+    detailPaymentStatusSelect?.addEventListener("change", async () => {
+        if (!currentDetailOrderId) return;
+
+        if (isDetailsEditMode) {
+            detailPaymentStatusSelect.value =
+                detailPaymentStatusSelect.dataset.currentStatus;
+            Toast.error(
+                "Save or cancel your edits before changing payment status.",
+            );
+            return;
+        }
+
+        const previousStatus = detailPaymentStatusSelect.dataset.currentStatus;
+        const nextStatus = detailPaymentStatusSelect.value;
+
+        showLoadingModal(true);
+
+        try {
+            const response = await fetch(
+                `/admin/orders/${currentDetailOrderId}/payment-status`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": document.querySelector(
+                            'meta[name="csrf-token"]',
+                        ).content,
+                    },
+                    body: JSON.stringify({ payment_status: nextStatus }),
+                },
+            );
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                Toast.success("Payment status updated successfully.");
+                detailPaymentStatusSelect.dataset.currentStatus = nextStatus;
+                await loadOrders(); // Refresh the background list
+            } else {
+                detailPaymentStatusSelect.value = previousStatus;
+                Toast.error(data.message || "Failed to update payment status.");
+            }
+        } catch (error) {
+            detailPaymentStatusSelect.value = previousStatus;
+            console.error("Error:", error);
+            Toast.error("An error occurred while updating the payment status.");
+        } finally {
+            showLoadingModal(false);
+        }
+    });
+
     closeDetailsModalBtn?.addEventListener("click", () => {
         closeDetailsModal();
     });
@@ -371,6 +425,7 @@ async function loadOrders() {
 
             return `
                 <div class="order_card" data-status="${group.status}">
+                    
                     <div class="card_top">
                         <div class="customer_info">
                             <h3>${group.user?.name || "Unknown Customer"}</h3>
@@ -384,21 +439,25 @@ async function loadOrders() {
                             <span class="status_label">Order Status:</span>
                             <select class="status_select ${statusClass(group.status)}" data-status-order="${group.id}" data-current-status="${group.status}" data-payment-status="${group.payment_status || "awaiting_payment"}">
                                 ${Object.entries(statusLabel)
-                    .map(
-                        ([value, label]) =>
-                            `<option value="${value}" ${group.status === value ? "selected" : ""}>${label}</option>`,
-                    )
-                    .join("")}
+                                    .map(
+                                        ([value, label]) =>
+                                            `<option value="${value}" ${group.status === value ? "selected" : ""}>${label}</option>`,
+                                    )
+                                    .join("")}
                             </select>
                         </div>
 
                         <div class="status_group">
                             <span class="status_label">Payment Status:</span>
+<<<<<<< Updated upstream
                             <div class="payment_pill ${paymentStatusClass(group.payment_status)}">${escapeHtml(group.payment_status_label || "Awaiting Payment")}</div>
+=======
+                            <div class="payment_pill ${group.payment_status === "Payment Received" ? "status-green" : "status-yellow"}">
+                                ${group.payment_status || "Awaiting Payment"}
+                            </div>
+>>>>>>> Stashed changes
                         </div>
-                    </div>
-
-                    <hr class="card_divider">
+                    </div> <hr class="card_divider">
 
                     <div class="card_bottom">
                         <div class="detail_group">
@@ -422,6 +481,7 @@ async function loadOrders() {
                             <span class="detail_value">${itemSummary || "No line items"}</span>
                         </div>
                     </div>
+                    
                 </div>
             `;
         })
@@ -519,6 +579,17 @@ function renderDetails() {
     detailStatusSelect.disabled = isDetailsEditMode;
     applyStatusClass(detailStatusSelect, currentDetailGroup.status);
     applyDetailStatusLocks();
+
+    const paymentStatusSelect = document.getElementById(
+        "detailPaymentStatusSelect",
+    );
+    if (paymentStatusSelect) {
+        paymentStatusSelect.value =
+            currentDetailGroup.payment_status || "Awaiting Payment";
+        paymentStatusSelect.dataset.currentStatus =
+            currentDetailGroup.payment_status || "Awaiting Payment";
+        paymentStatusSelect.disabled = isDetailsEditMode;
+    }
 
     syncDetailActionButtons();
 }
@@ -664,25 +735,25 @@ function renderOptionEditors(orderDraft) {
     return `
     <div class="detail_option_fields">
       ${optionSchema
-            .map((option) => {
-                const optionId = Number(option.id);
-                const selectedOptionTypeId = Number(
-                    orderDraft.selected_options?.[String(optionId)] ??
-                    orderDraft.selected_options?.[optionId] ??
-                    option.selected_type_id ??
-                    "",
-                );
+          .map((option) => {
+              const optionId = Number(option.id);
+              const selectedOptionTypeId = Number(
+                  orderDraft.selected_options?.[String(optionId)] ??
+                      orderDraft.selected_options?.[optionId] ??
+                      option.selected_type_id ??
+                      "",
+              );
 
-                const typeOptions = (option.types || [])
-                    .map((type) => {
-                        const typeId = Number(type.id);
-                        const isSelected = selectedOptionTypeId === typeId;
+              const typeOptions = (option.types || [])
+                  .map((type) => {
+                      const typeId = Number(type.id);
+                      const isSelected = selectedOptionTypeId === typeId;
 
-                        return `<option value="${typeId}" ${isSelected ? "selected" : ""}>${escapeHtml(type.type_name || "Option")}</option>`;
-                    })
-                    .join("");
+                      return `<option value="${typeId}" ${isSelected ? "selected" : ""}>${escapeHtml(type.type_name || "Option")}</option>`;
+                  })
+                  .join("");
 
-                return `
+              return `
         <label class="detail_option_field">
           <span class="detail_option_field_label">${escapeHtml(option.label || "Option")}</span>
           <select class="detail_option_select" data-edit-order-id="${orderDraft.id}" data-edit-option-id="${optionId}">
@@ -690,8 +761,8 @@ function renderOptionEditors(orderDraft) {
           </select>
         </label>
       `;
-            })
-            .join("")}
+          })
+          .join("")}
     </div>
   `;
 }
@@ -752,7 +823,7 @@ function createDetailDraft(group) {
                 min_order_quantity: Number(order.min_order_quantity || 1),
                 rush_fee_id:
                     order.rush_fee_id === null ||
-                        order.rush_fee_id === undefined
+                    order.rush_fee_id === undefined
                         ? null
                         : Number(order.rush_fee_id),
                 special_instructions: order.special_instructions || "",

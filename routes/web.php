@@ -73,6 +73,8 @@ Route::middleware('auth')->group(function () {
         return view('customer.view_orders'); // your Blade for customers
     })->name('customer.orders');
     Route::post('/place-custom-order', [App\Http\Controllers\OrderController::class, 'store'])->name('order.store');
+
+    Route::post('/customer/orders/{id}/pay', [App\Http\Controllers\OrderController::class, 'submitPayment']);
 });
 
 // API ROUTES - Products and Materials
@@ -218,4 +220,7 @@ Route::middleware(['auth', 'owner'])->group(function () {
     Route::get('/owner/pages/content_management', function () {
         return view('owner.pages.content_management');
     })->name('owner.content');
-});
+
+// 👉 Update this specific route at the bottom of web.php
+    Route::patch('/admin/orders/{id}/payment-status', [App\Http\Controllers\Api\OwnerOrderController::class, 'updatePaymentStatus']);
+    });
