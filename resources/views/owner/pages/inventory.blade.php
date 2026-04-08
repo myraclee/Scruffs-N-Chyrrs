@@ -41,14 +41,13 @@
                 <tr>
                     <th>Materials</th>
                     <th class="text-center">Units</th>
-                    <th>Products</th>
-                    <th class="text-center">Usage</th>
+                    <th>Products / Usage</th>
                     <th class="text-center">Actions</th>
                 </tr>
             </thead>
             <tbody id="inventoryTableBody">
                 <tr id="emptyInventoryRow">
-                    <td colspan="5" class="text-center" style="padding: 60px; color: #682C7A; font-style: italic;">
+                    <td colspan="4" class="text-center" style="padding: 60px; color: #682C7A; font-style: italic;">
                         No materials found. Start by adding new stock below!
                     </td>
                 </tr>
