@@ -3,17 +3,11 @@
 {{-- WARNING MODAL --}}
 <div id="modalWarning" class="modal-overlay" style="display: none;">
     <div class="modal-container modal-warning">
-        {{-- Decorative stars --}}
-        <span class="star star_tl">✦</span>
-        <span class="star star_tr">✧</span>
-        <span class="star star_bl">✦</span>
-        <span class="star star_br">✧</span>
 
         <div class="modal-header">
             <img src="{{ asset('images/brand_elements/label_name.png') }}" alt="Brand Label" class="modal-brand-logo">
         </div>
         <div class="modal-body">
-            <div class="warning-icon">⚠️</div>
             <div class="warning-title">WARNING!</div>
             <div class="warning-text">
                 Please make sure that all the documents and information you will input are correct.
@@ -31,13 +25,10 @@
 {{-- PAYMENT MODAL --}}
 <div id="modalPayment" class="modal-overlay" style="display: none;">
     <div class="modal-container modal-payment">
-        <span class="star star_tl">✦</span>
-        <span class="star star_tr">✧</span>
-        <span class="star star_bl">✦</span>
-        <span class="star star_br">✧</span>
 
         <div class="modal-header">
             <img src="{{ asset('images/brand_elements/label_name.png') }}" alt="Brand Label" class="modal-brand-logo">
+            <h1>Payment</h1>
         </div>
         <div class="modal-body">
             {{-- Payment Method Dropdown --}}
@@ -82,7 +73,7 @@
             {{-- Reference Number --}}
             <div class="form_group">
                 <label>Reference Number</label>
-                <input type="text" id="referenceNumber" class="form_input" placeholder="Enter 10-14 digit reference number" maxlength="14" inputmode="numeric">
+                <input type="text" id="referenceNumber" class="form_input reference_number" placeholder="Enter 10-14 digit reference number" maxlength="14" inputmode="numeric">
                 <div id="referenceError" class="error_message" style="display: none;">Reference number must be 10-14 digits.</div>
             </div>
         </div>
@@ -96,10 +87,6 @@
 {{-- CONFIRMATION MODAL --}}
 <div id="modalConfirmation" class="modal-overlay" style="display: none;">
     <div class="modal-container modal-confirmation">
-        <span class="star star_tl">✦</span>
-        <span class="star star_tr">✧</span>
-        <span class="star star_bl">✦</span>
-        <span class="star star_br">✧</span>
 
         <div class="modal-header">
             <img src="{{ asset('images/brand_elements/label_name.png') }}" alt="Brand Label" class="modal-brand-logo">
