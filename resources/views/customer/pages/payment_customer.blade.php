@@ -1,9 +1,6 @@
-{{-- resources/views/customer/pages/payment_customer.blade.php --}}
-
 {{-- WARNING MODAL --}}
 <div id="modalWarning" class="modal-overlay" style="display: none;">
     <div class="modal-container modal-warning">
-
         <div class="modal-header">
             <img src="{{ asset('images/brand_elements/label_name.png') }}" alt="Brand Label" class="modal-brand-logo">
         </div>
@@ -25,7 +22,6 @@
 {{-- PAYMENT MODAL --}}
 <div id="modalPayment" class="modal-overlay" style="display: none;">
     <div class="modal-container modal-payment">
-
         <div class="modal-header">
             <img src="{{ asset('images/brand_elements/label_name.png') }}" alt="Brand Label" class="modal-brand-logo">
             <h1>Payment</h1>
@@ -54,16 +50,20 @@
                 <label>Please upload the screenshot of your payment here.</label>
                 <div class="upload-box" id="uploadBox">
                     <input type="file" id="paymentScreenshot" accept="image/png, image/jpeg, image/jpg" style="display: none;">
-                    <div class="upload-placeholder" id="uploadPlaceholder">
+                    
+                    {{-- Placeholder Trigger --}}
+                    <div class="upload-placeholder" id="uploadPlaceholder" style="cursor: pointer;">
                         <span class="upload-icon">📸</span>
                         <span>Click to upload or drag & drop</span>
                         <span class="upload-hint">PNG, JPG, JPEG (max 5MB)</span>
                     </div>
+
+                    {{-- Preview Container --}}
                     <div class="upload-preview" id="uploadPreview" style="display: none;">
-                        <img id="previewImage" src="#" alt="Preview">
+                        <img id="previewImage" src="#" alt="Preview" style="cursor: pointer;" title="Click to change image">
                         <div class="preview-actions">
-                            <button type="button" class="preview-btn view-btn">View</button>
-                            <button type="button" class="preview-btn remove-btn">Remove</button>
+                            <button type="button" class="preview-btn view-btn" id="viewImageBtn">View</button>
+                            <button type="button" class="preview-btn remove-btn" id="removeImageBtn">Remove</button>
                         </div>
                     </div>
                 </div>
@@ -87,7 +87,6 @@
 {{-- CONFIRMATION MODAL --}}
 <div id="modalConfirmation" class="modal-overlay" style="display: none;">
     <div class="modal-container modal-confirmation">
-
         <div class="modal-header">
             <img src="{{ asset('images/brand_elements/label_name.png') }}" alt="Brand Label" class="modal-brand-logo">
         </div>
@@ -103,5 +102,13 @@
             <button class="action_btn cancel_btn" id="confirmationGoBackBtn">Go Back</button>
             <button class="action_btn submit_btn" id="confirmationConfirmBtn">Confirm</button>
         </div>
+    </div>
+</div>
+
+{{-- FULLSCREEN IMAGE PREVIEW MODAL --}}
+<div id="modalImageView" class="modal-overlay" style="display: none; z-index: 10000;">
+    <div class="image-view-container">
+        <button type="button" class="image-view-close" id="closeImageViewBtn">&times;</button>
+        <img id="fullSizePreviewImage" src="#" alt="Full Size Payment Preview">
     </div>
 </div>
