@@ -61,49 +61,22 @@ document.addEventListener("DOMContentLoaded", () => {
     function isValidGoogleDriveUrl(url) {
         try {
             const parsedUrl = new URL(url);
-
-            if (parsedUrl.protocol !== "https:") {
-                return false;
-            }
-
-            if (parsedUrl.hostname !== "drive.google.com") {
-                return false;
-            }
-
+            if (parsedUrl.protocol !== "https:") return false;
+            if (parsedUrl.hostname !== "drive.google.com") return false;
             const normalizedPath = parsedUrl.pathname.replace(/\/+$/, "") || "/";
-
-            if (
-                normalizedPath === "/" ||
-                normalizedPath === "/drive" ||
-                normalizedPath.startsWith("/drive/")
-            ) {
-                return true;
-            }
-
-            if (/^\/drive\/folders\/[A-Za-z0-9_-]+$/.test(normalizedPath)) {
-                return true;
-            }
-
-            if (/^\/file\/d\/[A-Za-z0-9_-]+(?:\/.*)?$/.test(normalizedPath)) {
-                return true;
-            }
-
+            if (normalizedPath === "/" || normalizedPath === "/drive" || normalizedPath.startsWith("/drive/")) return true;
+            if (/^\/drive\/folders\/[A-Za-z0-9_-]+$/.test(normalizedPath)) return true;
+            if (/^\/file\/d\/[A-Za-z0-9_-]+(?:\/.*)?$/.test(normalizedPath)) return true;
             if (normalizedPath === "/open" || normalizedPath === "/uc") {
                 const id = parsedUrl.searchParams.get("id");
                 return Boolean(id && driveLinkIdPattern.test(id));
             }
-
             return false;
-        } catch {
-            return false;
-        }
+        } catch { return false; }
     }
 
     function clearDriveLinkError() {
-        if (!driveLinkInput || !driveLinkError) {
-            return;
-        }
-
+        if (!driveLinkInput || !driveLinkError) return;
         driveLinkInput.classList.remove("input_error");
         driveLinkInput.removeAttribute("aria-invalid");
         driveLinkError.hidden = true;
@@ -111,10 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function setDriveLinkError(message) {
-        if (!driveLinkInput || !driveLinkError) {
-            return;
-        }
-
+        if (!driveLinkInput || !driveLinkError) return;
         driveLinkInput.classList.add("input_error");
         driveLinkInput.setAttribute("aria-invalid", "true");
         driveLinkError.hidden = false;
@@ -123,77 +93,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function validateDriveLinkInput({ required = true } = {}) {
         const normalizedLink = normalizeDriveLink(driveLinkInput?.value || "");
-
-        if (driveLinkInput && driveLinkInput.value !== normalizedLink) {
-            driveLinkInput.value = normalizedLink;
-        }
-
+        if (driveLinkInput && driveLinkInput.value !== normalizedLink) driveLinkInput.value = normalizedLink;
         if (!normalizedLink) {
-            if (!required) {
-                clearDriveLinkError();
-                return {
-                    valid: true,
-                    value: "",
-                };
-            }
-
-            setDriveLinkError(
-                "Please provide your main Google Drive link before adding to cart.",
-            );
-            return {
-                valid: false,
-                value: "",
-            };
+            if (!required) { clearDriveLinkError(); return { valid: true, value: "" }; }
+            setDriveLinkError("Please provide your main Google Drive link before adding to cart.");
+            return { valid: false, value: "" };
         }
-
         if (!isValidGoogleDriveUrl(normalizedLink)) {
-            setDriveLinkError(
-                "Enter a valid Google Drive URL (drive.google.com) using an accepted Drive format.",
-            );
-            return {
-                valid: false,
-                value: normalizedLink,
-            };
+            setDriveLinkError("Enter a valid Google Drive URL (drive.google.com).");
+            return { valid: false, value: normalizedLink };
         }
-
         clearDriveLinkError();
-        return {
-            valid: true,
-            value: normalizedLink,
-        };
+        return { valid: true, value: normalizedLink };
     }
-
 
     const resolveGrandTotalLabel = (items = []) => {
         const currentProductLabel = `${product?.name ?? "Product"} Total`;
-
-        if (!Array.isArray(items) || items.length === 0) {
-            return currentProductLabel;
-        }
-
-        const hasMixedProducts = items.some(
-            (item) => Number(item.product_id) !== Number(productId),
-        );
-
+        if (!Array.isArray(items) || items.length === 0) return currentProductLabel;
+        const hasMixedProducts = items.some((item) => Number(item.product_id) !== Number(productId));
         return hasMixedProducts ? "Cart Total" : currentProductLabel;
     };
 
     const updateGrandTotalLabel = (items = []) => {
-        if (!grandTotalLabelText) {
-            return;
-        }
-
-        grandTotalLabelText.textContent = resolveGrandTotalLabel(items);
+        if (grandTotalLabelText) grandTotalLabelText.textContent = resolveGrandTotalLabel(items);
     };
-
 
     function setButtonLoading(button, isLoading, loadingText) {
         if (!button) return;
-
-        if (!button.dataset.originalHtml) {
-            button.dataset.originalHtml = button.innerHTML;
-        }
-
+        if (!button.dataset.originalHtml) button.dataset.originalHtml = button.innerHTML;
         if (isLoading) {
             button.innerHTML = `<span class="spinner"></span> ${loadingText}`;
             button.disabled = true;
@@ -205,17 +132,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function readSelectedOptions() {
         const selected = {};
-        const selects = optionsContainer.querySelectorAll(
-            "select[data-option-id]",
-        );
-
+        const selects = optionsContainer.querySelectorAll("select[data-option-id]");
         for (const select of selects) {
-            if (!select.value) {
-                return null;
-            }
+            if (!select.value) return null;
             selected[select.dataset.optionId] = Number(select.value);
         }
-
         return selected;
     }
 
@@ -223,7 +144,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!templatePayload?.template || !optionsContainer) return;
 
         modalTitle.textContent = `${product?.name ?? "Product"} Order`;
-
         optionsContainer.innerHTML = "";
 
         templatePayload.template.options.forEach((option) => {
@@ -232,16 +152,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const label = document.createElement("label");
             label.className = "file_spec_label";
-
-            // main text
             const text = document.createTextNode(option.label + " ");
-
-            // asterisk
             const star = document.createElement("span");
             star.className = "required_star";
             star.textContent = "*";
-
-            // append both
             label.appendChild(text);
             label.appendChild(star);
 
@@ -267,19 +181,33 @@ document.addEventListener("DOMContentLoaded", () => {
             wrapper.appendChild(label);
             wrapper.appendChild(select);
             optionsContainer.appendChild(wrapper);
+
+            // 🚀 Clear error styles automatically when user selects an option
+            select.addEventListener("change", () => {
+                select.classList.remove("input_error");
+                if (select.nextElementSibling && select.nextElementSibling.classList.contains("field_validation_error")) {
+                    select.nextElementSibling.hidden = true;
+                }
+            });
         });
 
         quantityInput.min = templatePayload.template.min_order || 1;
         quantityInput.value = templatePayload.template.min_order || 1;
 
-        rushFeeSelect.innerHTML =
-            '<option value="">Standard Processing (No Extra Fee)</option>';
+        rushFeeSelect.innerHTML = '<option value="">Standard Processing (No Extra Fee)</option>';
 
         templatePayload.rush_fees.forEach((rushFee) => {
             const firstTimeframe = rushFee.timeframes?.[0];
-            const label = firstTimeframe
-                ? `${rushFee.label} (${firstTimeframe.label} +${firstTimeframe.percentage}%)`
-                : rushFee.label;
+            
+            // 🚀 THE FIX: FORMAT RUSH FEES TO "2 days (+45%)" or "(NO ADDED TOTAL)"
+            let label = rushFee.label;
+            if (firstTimeframe) {
+                if (Number(firstTimeframe.percentage) === 0) {
+                    label = `${firstTimeframe.label} (NO ADDED TOTAL)`;
+                } else {
+                    label = `${firstTimeframe.label} (+${firstTimeframe.percentage}%)`;
+                }
+            }
 
             const optionNode = document.createElement("option");
             optionNode.value = rushFee.id;
@@ -290,7 +218,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function renderCart() {
         if (!cartPayload || !cartContainer) return;
-
         cartContainer.innerHTML = "";
 
         if (!cartPayload.items || cartPayload.items.length === 0) {
@@ -301,14 +228,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         cartPayload.items.forEach((item) => {
-            const optionSummary =
-                item.formatted_options
-                    ?.map(
-                        (option) =>
-                            `${option.option_label}: ${option.selected_value}`,
-                    )
-                    .join(" | ") || "No option summary";
-
+            const optionSummary = item.formatted_options?.map((option) => `${option.option_label}: ${option.selected_value}`).join(" | ") || "No option summary";
             const row = document.createElement("div");
             row.className = "file_spec_row";
             row.innerHTML = `
@@ -322,40 +242,30 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
                 ${item.special_instructions ? `<div style="margin-top:8px;font-family:'Coolvetica',sans-serif;font-size:12px;color:#666;">Filename: ${item.special_instructions}</div>` : ""}
             `;
-
             cartContainer.appendChild(row);
         });
 
         updateGrandTotalLabel(cartPayload.items);
-        grandTotalDisplay.textContent = formatMoney(
-            cartPayload.totals.total_price,
-        );
+        grandTotalDisplay.textContent = formatMoney(cartPayload.totals.total_price);
     }
 
     async function refreshCart() {
         const response = await CustomerOrderAPI.getCart();
-        if (!response.success) {
-            Toast.error(response.message || "Failed to load cart.");
-            return;
-        }
-
+        if (!response.success) { Toast.error(response.message || "Failed to load cart."); return; }
         cartPayload = response.data;
         renderCart();
     }
 
     async function ensureTemplateLoaded() {
         if (templatePayload) return;
-
         try {
-            templatePayload =
-                await CustomerOrderAPI.getOrderTemplate(productId);
+            templatePayload = await CustomerOrderAPI.getOrderTemplate(productId);
             renderTemplateControls();
         } catch (error) {
             if (error?.payload?.error_code === "template_not_configured") {
                 Toast.error("This product is not yet available for ordering.");
                 return;
             }
-
             Toast.error("Unable to load product order configuration.");
         }
     }
@@ -389,8 +299,17 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    driveLinkInput?.addEventListener("blur", () => {
-        validateDriveLinkInput({ required: true });
+    driveLinkInput?.addEventListener("blur", () => validateDriveLinkInput({ required: true }));
+
+    // 🚀 Clear errors instantly when typing
+    notesInput.addEventListener("input", () => {
+        notesInput.classList.remove("input_error");
+        const fnErrorElement = document.getElementById("itemFileNameError");
+        if (fnErrorElement) fnErrorElement.hidden = true;
+    });
+
+    quantityInput.addEventListener("input", () => {
+        quantityInput.classList.remove("input_error");
     });
 
     cartContainer.addEventListener("click", async (event) => {
@@ -401,10 +320,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!removeId) return;
 
         const result = await CustomerOrderAPI.removeCartItem(removeId);
-        if (!result.success) {
-            Toast.error(result.message || "Unable to remove cart item.");
-            return;
-        }
+        if (!result.success) { Toast.error(result.message || "Unable to remove cart item."); return; }
 
         Toast.success("Item removed from cart.");
         cartPayload = result.data;
@@ -412,30 +328,69 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     addItemBtn.addEventListener("click", async () => {
+        let hasError = false;
+
+        // 1. Validate Drive Link
         const driveLinkValidation = validateDriveLinkInput({ required: true });
         if (!driveLinkValidation.valid) {
-            Toast.warning("Main Drive Link is required and must be a valid Google Drive URL.");
-            return;
+            hasError = true;
+        } else {
+            localStorage.setItem(MAIN_DRIVE_LINK_STORAGE_KEY, driveLinkValidation.value);
         }
 
-        localStorage.setItem(MAIN_DRIVE_LINK_STORAGE_KEY, driveLinkValidation.value);
+        // 2. Validate Dynamic Options (Lamination, Print Side)
+        const selectedOptions = {};
+        const selects = optionsContainer.querySelectorAll("select[data-option-id]");
+        selects.forEach((select) => {
+            const errNode = select.nextElementSibling?.classList.contains('field_validation_error') ? select.nextElementSibling : null;
+            if (!select.value) {
+                select.classList.add("input_error");
+                if (!errNode) {
+                    const err = document.createElement("p");
+                    err.className = "field_validation_error";
+                    err.textContent = "Please choose an option.";
+                    select.after(err);
+                } else {
+                    errNode.hidden = false;
+                }
+                hasError = true;
+            } else {
+                select.classList.remove("input_error");
+                if (errNode) errNode.hidden = true;
+                selectedOptions[select.dataset.optionId] = Number(select.value);
+            }
+        });
+
+        // 3. Validate Filename
+        const filenameVal = notesInput.value.trim();
+        const fnErrorElement = document.getElementById("itemFileNameError");
+        if (!filenameVal) {
+            notesInput.classList.add("input_error");
+            if (fnErrorElement) {
+                fnErrorElement.textContent = "Design Filename is required.";
+                fnErrorElement.hidden = false;
+            }
+            hasError = true;
+        } else {
+            notesInput.classList.remove("input_error");
+            if (fnErrorElement) fnErrorElement.hidden = true;
+        }
+
+        // 4. Validate Quantity
+        const quantity = Number(quantityInput.value || 0);
+        const minQty = Number(quantityInput.min || 1);
+        if (quantity < minQty) {
+            quantityInput.classList.add("input_error");
+            hasError = true;
+        } else {
+            quantityInput.classList.remove("input_error");
+        }
+
+        // 🚀 THE FIX: Stop execution silently if errors exist, NO TOAST.
+        if (hasError) return;
 
         if (!templatePayload) {
             Toast.error("Order options are still loading. Please wait.");
-            return;
-        }
-
-        const selectedOptions = readSelectedOptions();
-        if (!selectedOptions) {
-            Toast.warning("Please choose a value for each option.");
-            return;
-        }
-
-        const quantity = Number(quantityInput.value || 0);
-        if (quantity < Number(quantityInput.min || 1)) {
-            Toast.warning(
-                `Minimum quantity is ${quantityInput.min || 1} for this product.`,
-            );
             return;
         }
 
@@ -446,18 +401,14 @@ document.addEventListener("DOMContentLoaded", () => {
             order_template_id: templatePayload.template.id,
             selected_options: selectedOptions,
             quantity,
-            rush_fee_id: rushFeeSelect.value
-                ? Number(rushFeeSelect.value)
-                : null,
+            rush_fee_id: rushFeeSelect.value ? Number(rushFeeSelect.value) : null,
             special_instructions: notesInput.value.trim() || null,
         });
 
         setButtonLoading(addItemBtn, false);
 
         if (!result.success) {
-            const firstError = result.errors
-                ? Object.values(result.errors).flat()[0]
-                : null;
+            const firstError = result.errors ? Object.values(result.errors).flat()[0] : null;
             Toast.error(firstError || result.message || "Failed to add item.");
             return;
         }

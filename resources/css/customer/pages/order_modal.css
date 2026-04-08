@@ -1058,3 +1058,17 @@
         width: 100%;
     }
 }
+/* 🚀 ADDED: Required Field Error Styling 🚀 */
+.input_error {
+    border-color: #d32f2f !important;
+    background-color: #fff8f8;
+}
+
+.field_validation_error {
+    margin: 6px 2px 0;
+    color: #d32f2f;
+    font-family: 'Coolvetica', sans-serif;
+    font-size: 13px;
+    line-height: 1.35;
+    display: block;
+}
