@@ -3,10 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\CustomerOrderGroup;
 use App\Models\Order;
-use App\Models\OrderItem;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class OrderController extends Controller
 {
@@ -98,8 +99,10 @@ class OrderController extends Controller
 
    public function submitPayment(Request $request, $id)
     {
+        $path = null;
+
         try {
-            $order = \App\Models\CustomerOrderGroup::where('id', $id)
+            $order = CustomerOrderGroup::where('id', $id)
                 ->where('user_id', Auth::id())
                 ->first();
 
@@ -107,27 +110,45 @@ class OrderController extends Controller
                 return response()->json(['success' => false, 'message' => "Order Group #{$id} could not be found..."], 404);
             }
 
+            if (! $order->canSubmitPaymentProof()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Payment proof can only be submitted for approved orders awaiting payment.',
+                ], 422);
+            }
+
             $request->validate([
                 'payment_proof' => 'required|image|max:5120', 
             ]);
 
-            $path = $request->file('payment_proof')->store('payments', 'public');
+            $path = $request->file('payment_proof')->store('payment_proofs', 'public');
 
-            // 👉 THE FIX: Assign directly to bypass mass assignment protection!
-            $order->payment_status = 'Waiting for Payment Confirmation';
-            $order->payment_proof = $path;
-            $order->save();
+            $order->update([
+                'payment_status' => 'waiting_payment_confirmation',
+                'payment_proof_path' => $path,
+                'payment_submitted_at' => now(),
+                'payment_confirmed_at' => null,
+                'payment_confirmed_by' => null,
+                'payment_confirmation_note' => null,
+            ]);
 
             return response()->json(['success' => true, 'message' => 'Payment submitted successfully!']);
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            if ($path !== null) {
+                Storage::disk('public')->delete($path);
+            }
+
             return response()->json(['success' => false, 'message' => 'PHP Crash: ' . $e->getMessage()], 500);
         }
     }
     public function updatePaymentStatus(Request $request, $id)
     {
-        // 👉 Switched to CustomerOrderGroup!
-        $order = \App\Models\CustomerOrderGroup::find($id);
+        $validated = $request->validate([
+            'payment_status' => 'required|in:'.implode(',', CustomerOrderGroup::PAYMENT_STATUSES),
+        ]);
+
+        $order = CustomerOrderGroup::find($id);
         
         if (!$order) {
             return response()->json([
@@ -137,7 +158,7 @@ class OrderController extends Controller
         }
 
         $order->update([
-            'payment_status' => $request->payment_status
+            'payment_status' => $validated['payment_status'],
         ]);
 
         return response()->json(['success' => true]);

@@ -1,26 +1,25 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     /**
      * Run the migrations.
      */
-    public function up()
+    public function up(): void
     {
-        Schema::table('customer_order_groups', function (Blueprint $table) {
-            $table->string('payment_status')->default('Awaiting Payment')->after('status');
-            $table->string('payment_proof')->nullable()->after('payment_status');
-        });
+        // Intentionally left as a no-op.
+        //
+        // The canonical payment schema was introduced by:
+        // 2026_04_08_010000_add_payment_flow_columns_to_customer_order_groups_table
+        //
+        // Keeping this migration as a compatibility no-op prevents duplicate-column
+        // failures on environments where this file still exists in migration history.
     }
 
-    public function down()
+    public function down(): void
     {
-        Schema::table('customer_order_groups', function (Blueprint $table) {
-            $table->dropColumn(['payment_status', 'payment_proof']);
-        });
+        // No-op to mirror up().
     }
 };

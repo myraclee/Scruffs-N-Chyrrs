@@ -154,6 +154,42 @@ class OwnerOrderController extends Controller
         ]);
     }
 
+    public function updatePaymentStatus(Request $request, int $id): JsonResponse
+    {
+        $validated = $request->validate([
+            'payment_status' => 'required|in:'.implode(',', CustomerOrderGroup::PAYMENT_STATUSES),
+        ]);
+
+        $orderGroup = CustomerOrderGroup::query()
+            ->with([
+                'user:id,first_name,last_name,email,contact_number',
+                'orders.product:id,name',
+            ])
+            ->find($id);
+
+        if (! $orderGroup) {
+            return response()->json([
+                'success' => false,
+                'message' => "Order Group #{$id} not found.",
+            ], 404);
+        }
+
+        $orderGroup->update([
+            'payment_status' => $validated['payment_status'],
+        ]);
+
+        $orderGroup->refresh()->load([
+            'user:id,first_name,last_name,email,contact_number',
+            'orders.product:id,name',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Payment status updated successfully.',
+            'data' => $this->transformGroup($orderGroup),
+        ]);
+    }
+
     public function confirmPayment(Request $request, CustomerOrderGroup $orderGroup): JsonResponse
     {
         $validated = $request->validate([
