@@ -73,6 +73,7 @@
 /* Status Cards */
 .status_cards {
     display: flex;
+    flex-wrap: wrap;
     gap: 30px;
     margin-bottom: 40px;
     justify-content: center;
@@ -87,14 +88,37 @@
     min-width: 200px;
     border: 2px solid transparent;
     color: #682c7a;
-    transition:
-        border-color 0.25s ease,
-        box-shadow 0.25s ease,
-        background-color 0.25s ease,
-        color 0.25s ease;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease,
+        background-color 0.25s ease, color 0.25s ease, transform 0.2s ease;
+}
+
+.status_card {
+    cursor: pointer;
+}
+
+.status_card:hover {
+    transform: translateY(-3px);
+}
+
+.status_card.is_active {
+    border-color: #682c7a;
+    box-shadow: 0 0 0 3px rgba(104, 44, 122, 0.2),
+        2px 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 /* Dynamic Status Colors */
+.high_stock {
+    border: 2px solid #2f7d64;
+    color: #1f5d4b;
+    background: #eaf8f2;
+}
+
+.medium_stock {
+    border: 2px solid #d18a3b;
+    color: #7a4b10;
+    background: #fff3e2;
+}
+
 .low_stock {
     border: 2px solid #f3c642;
     color: #7a5a07;
@@ -107,6 +131,13 @@
 }
 
 .card.status_healthy {
+    border-color: #2f7d64;
+    color: #2f7d64;
+    background: #eaf8f2;
+    box-shadow: 2px 4px 10px rgba(47, 125, 100, 0.2);
+}
+
+.card.status_healthy.medium_stock {
     border-color: #2f7d64;
     color: #2f7d64;
     background: #eaf8f2;
@@ -150,16 +181,75 @@
     opacity: 0.75;
 }
 
+.inventory_controls {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) minmax(220px, 280px) auto;
+    gap: 14px;
+    align-items: end;
+    margin: 10px auto 12px;
+    max-width: 1100px;
+}
+
+.inventory_control {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.inventory_control label {
+    font-family: Coolvetica;
+    color: #682c7a;
+    font-size: 14px;
+}
+
+.inventory_select {
+    width: 100%;
+    height: 44px;
+    border-radius: 16px;
+}
+
+.action_control {
+    justify-content: flex-end;
+}
+
+.secondary_button {
+    background: #fff;
+    color: #682c7a;
+    border: 2px solid #682c7a;
+    font-family: Coolvetica;
+    font-size: 16px;
+    padding: 10px 18px;
+    border-radius: 16px;
+    cursor: pointer;
+    min-height: 44px;
+    transition: background 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+}
+
+.secondary_button:hover:not(:disabled) {
+    background: #682c7a;
+    color: #fff7ec;
+}
+
+.secondary_button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.inventory_filter_summary {
+    margin: 0 auto 16px;
+    max-width: 1100px;
+    font-family: Coolvetica;
+    color: #58246a;
+    font-size: 14px;
+}
+
 @keyframes statusGlowAmber {
     0%,
     100% {
-        box-shadow:
-            2px 4px 10px rgba(0, 0, 0, 0.1),
-            0 0 0 rgba(243, 198, 66, 0);
+        box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.1), 0 0 0 rgba(243, 198, 66, 0);
     }
     50% {
-        box-shadow:
-            2px 4px 10px rgba(0, 0, 0, 0.1),
+        box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.1),
             0 0 16px rgba(243, 198, 66, 0.45);
     }
 }
@@ -167,13 +257,10 @@
 @keyframes statusGlowRed {
     0%,
     100% {
-        box-shadow:
-            2px 4px 10px rgba(0, 0, 0, 0.1),
-            0 0 0 rgba(217, 72, 72, 0);
+        box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.1), 0 0 0 rgba(217, 72, 72, 0);
     }
     50% {
-        box-shadow:
-            2px 4px 10px rgba(0, 0, 0, 0.1),
+        box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.1),
             0 0 16px rgba(217, 72, 72, 0.4);
     }
 }
@@ -219,6 +306,52 @@
 .inventory_table tr:last-child td {
     border-bottom: none;
 }
+
+.stock_cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.stock_badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 98px;
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 13px;
+    line-height: 1;
+    border: 1px solid currentColor;
+}
+
+.stock_badge_high {
+    color: #1f5d4b;
+    background: #eaf8f2;
+}
+
+.stock_badge_medium {
+    color: #7a4b10;
+    background: #fff3e2;
+}
+
+.stock_badge_low {
+    color: #7a5a07;
+    background: #fff9e8;
+}
+
+.stock_badge_out_of_stock {
+    color: #9e2727;
+    background: #fff2f2;
+}
+
+.stock_meta {
+    color: #5c3a69;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+}
+
 .product_cell {
     display: flex;
     justify-content: space-between;
@@ -261,6 +394,7 @@
 
 .action_btn:focus-visible,
 .primary_button:focus-visible,
+.secondary_button:focus-visible,
 .cancel_btn:focus-visible,
 .save_btn:focus-visible,
 .cancel_delete_btn:focus-visible,
@@ -270,6 +404,12 @@
 .tiny_input:focus-visible,
 .status_more_btn:focus-visible {
     outline: none;
+}
+
+.status_card:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(104, 44, 122, 0.25),
+        2px 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 /* Add Button */
@@ -363,7 +503,8 @@
 .half_input {
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: center;
+    flex-wrap: wrap;
     margin-top: 20px;
     margin-bottom: 20px;
     gap: 15px;
@@ -377,11 +518,12 @@
     align-items: center;
     position: relative;
     flex: 1;
+    min-width: 130px;
 }
 
-.text_input[aria-invalid="true"],
-.number_input[aria-invalid="true"],
-.tiny_input[aria-invalid="true"] {
+.text_input[aria-invalid='true'],
+.number_input[aria-invalid='true'],
+.tiny_input[aria-invalid='true'] {
     border-color: #d94848;
     box-shadow: inset 0 2px 4px rgba(217, 72, 72, 0.18);
 }
@@ -526,7 +668,7 @@
 
 .cancel_btn,
 .save_btn {
-    font-family: "Coolvetica", sans-serif;
+    font-family: 'Coolvetica', sans-serif;
     font-size: 18px;
     padding: 12px 30px;
     border: none;
@@ -590,9 +732,7 @@
     font-family: Coolvetica;
     font-size: 15px;
     cursor: pointer;
-    transition:
-        transform 0.2s ease,
-        opacity 0.2s ease;
+    transition: transform 0.2s ease, opacity 0.2s ease;
     min-height: 40px;
     flex: 1;
     background: #c83333;
@@ -610,7 +750,7 @@
     transform: none;
 }
 
-.delete_confirmation_modal[aria-busy="true"] {
+.delete_confirmation_modal[aria-busy='true'] {
     pointer-events: none;
 }
 
@@ -627,11 +767,19 @@
         padding: 15px 20px;
         min-width: 150px;
     }
+
+    .inventory_controls {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .action_control {
+        grid-column: 1 / -1;
+        justify-content: flex-start;
+    }
 }
 
 /* Mobile Phones */
 @media (max-width: 768px) {
-
     /* THE FIX: Prevents stars from dropping down on mobile */
     .header_animation {
         justify-content: center;
@@ -652,6 +800,23 @@
         flex-direction: column;
         gap: 15px;
         padding: 0 15px;
+    }
+
+    .inventory_controls {
+        grid-template-columns: 1fr;
+        padding: 0 15px;
+    }
+
+    .inventory_filter_summary {
+        padding: 0 15px;
+    }
+
+    .action_control {
+        justify-content: stretch;
+    }
+
+    .secondary_button {
+        width: 100%;
     }
 
     /* Responsive Table Wrapper */
@@ -743,14 +908,40 @@
    PAGE LOAD SLIDE-UP ANIMATIONS
    ========================================= */
 @keyframes slideUpFade {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Status Cards Stagger */
-.status_cards .card:nth-child(1) { animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.1s; }
-.status_cards .card:nth-child(2) { animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.2s; }
+.status_cards .card:nth-child(1) {
+    animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.1s;
+}
+.status_cards .card:nth-child(2) {
+    animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.2s;
+}
+.status_cards .card:nth-child(3) {
+    animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.3s;
+}
+.status_cards .card:nth-child(4) {
+    animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.4s;
+}
 
 /* Table & Action Button */
-.table_wrapper { animation: slideUpFade 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.3s; }
-.action_container { animation: slideUpFade 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.4s; }
+.table_wrapper {
+    animation: slideUpFade 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.45s;
+}
+.action_container {
+    animation: slideUpFade 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.55s;
+}

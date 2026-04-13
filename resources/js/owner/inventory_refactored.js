@@ -16,21 +16,33 @@ const openAddModalBtn = document.getElementById("openAddModalBtn");
 
 const newMaterialInput = document.getElementById("newMaterialInput");
 const newUnitsInput = document.getElementById("newUnitsInput");
+const newMaxUnitsInput = document.getElementById("newMaxUnitsInput");
 const newThresholdInput = document.getElementById("newThresholdInput");
 const saveAddMaterialBtn = document.getElementById("saveSimulatedMaterialBtn");
 
 const editMaterialName = document.getElementById("editMaterialName");
 const editMaterialUnits = document.getElementById("editMaterialUnits");
+const editMaxUnitsInput = document.getElementById("editMaxUnitsInput");
 const editThresholdInput = document.getElementById("editThresholdInput");
 const saveEditMaterialBtn = document.getElementById("saveEditMaterialBtn");
 
 const inventoryTableBody = document.getElementById("inventoryTableBody");
 const emptyInventoryRow = document.getElementById("emptyInventoryRow");
 
+const statusCardsContainer = document.getElementById("statusCards");
+const highStockCard = document.getElementById("highStockCard");
+const mediumStockCard = document.getElementById("mediumStockCard");
 const lowStockCard = document.getElementById("lowStockCard");
 const outOfStockCard = document.getElementById("outOfStockCard");
+const highStockList = document.getElementById("highStockList");
+const mediumStockList = document.getElementById("mediumStockList");
 const lowStockList = document.getElementById("lowStockList");
 const outOfStockList = document.getElementById("outOfStockList");
+
+const inventorySearchInput = document.getElementById("inventorySearchInput");
+const inventorySortSelect = document.getElementById("inventorySortSelect");
+const clearInventoryFiltersBtn = document.getElementById("clearInventoryFiltersBtn");
+const inventoryFilterSummary = document.getElementById("inventoryFilterSummary");
 
 const deleteMaterialConfirmOverlay = document.getElementById(
     "deleteMaterialConfirmOverlay",
@@ -56,16 +68,31 @@ let currentRowBeingEdited = null;
 let isLoading = false;
 let isSaving = false;
 let lastFocusedElement = null;
-let showAllLowStockNames = false;
-let showAllOutOfStockNames = false;
+let activeStockFilter = "all";
+let inventorySearchTerm = "";
+let inventorySortMode = "name_asc";
+const expandedStatusLists = {
+    high: false,
+    medium: false,
+    low: false,
+    out_of_stock: false,
+};
 let pendingDeleteMaterialId = null;
 let pendingDeleteMaterialName = "";
 let deleteMaterialTriggerElement = null;
 let isDeletingMaterial = false;
 
 const DEFAULT_LOW_STOCK_THRESHOLD = 5;
+const DEFAULT_MIN_MAX_UNITS = 1;
 const STATUS_CARD_NAME_CAP = 3;
 const MAX_MATERIAL_NAME_LENGTH = 150;
+const STOCK_BAND_ORDER = ["high", "medium", "low", "out_of_stock"];
+const STOCK_BAND_LABELS = {
+    high: "High",
+    medium: "Medium",
+    low: "Low",
+    out_of_stock: "Out of Stock",
+};
 
 // ================= INITIALIZATION =================
 document.addEventListener("DOMContentLoaded", async () => {
@@ -77,12 +104,23 @@ document.addEventListener("DOMContentLoaded", async () => {
         !saveAddMaterialBtn ||
         !saveEditMaterialBtn ||
         !inventoryTableBody ||
+        !newMaxUnitsInput ||
+        !editMaxUnitsInput ||
         !newThresholdInput ||
         !editThresholdInput ||
+        !statusCardsContainer ||
+        !highStockCard ||
+        !mediumStockCard ||
         !lowStockCard ||
         !outOfStockCard ||
+        !highStockList ||
+        !mediumStockList ||
         !lowStockList ||
         !outOfStockList ||
+        !inventorySearchInput ||
+        !inventorySortSelect ||
+        !clearInventoryFiltersBtn ||
+        !inventoryFilterSummary ||
         !deleteMaterialConfirmOverlay ||
         !deleteMaterialConfirmModal ||
         !deleteMaterialConfirmMessage ||
@@ -138,6 +176,7 @@ async function loadMaterialsAndProducts() {
             renderMaterials();
             updateProductCheckboxes();
             updateStatusCards();
+            updateInventoryFilterSummary();
         } catch (error) {
             console.error("Error rendering inventory UI:", error);
             Toast.error("Failed to render inventory. Please refresh the page.");
@@ -157,8 +196,10 @@ async function loadMaterialsAndProducts() {
 function preventInvalidNumberInput() {
     const numberInputs = [
         newUnitsInput,
+        newMaxUnitsInput,
         newThresholdInput,
         editMaterialUnits,
+        editMaxUnitsInput,
         editThresholdInput,
     ];
 
@@ -240,23 +281,51 @@ function setupEventListeners() {
         await confirmDeleteMaterial();
     });
 
+    statusCardsContainer.addEventListener("click", handleStatusCardClick);
+    statusCardsContainer.addEventListener("keydown", handleStatusCardKeydown);
+
+    inventorySearchInput.addEventListener("input", (event) => {
+        inventorySearchTerm = event.target.value.trim().toLowerCase();
+        renderMaterials();
+        updateInventoryFilterSummary();
+    });
+
+    inventorySortSelect.addEventListener("change", (event) => {
+        inventorySortMode = event.target.value;
+        renderMaterials();
+        updateInventoryFilterSummary();
+    });
+
+    clearInventoryFiltersBtn.addEventListener("click", () => {
+        resetInventoryFilters();
+        renderMaterials();
+        updateInventoryFilterSummary();
+    });
+
     document.addEventListener("keydown", handleOverlayKeydown);
 
     // Clear field errors while user edits inputs
     [
         newMaterialInput,
         newUnitsInput,
+        newMaxUnitsInput,
         newThresholdInput,
         editMaterialName,
         editMaterialUnits,
+        editMaxUnitsInput,
         editThresholdInput,
     ].forEach((input) => {
         input?.addEventListener("input", () => clearFieldError(input));
     });
 
-    [lowStockList, outOfStockList].forEach((listEl) => {
-        listEl?.addEventListener("click", handleStatusToggleClick);
-    });
+    [highStockList, mediumStockList, lowStockList, outOfStockList].forEach(
+        (listEl) => {
+            listEl?.addEventListener("click", handleStatusToggleClick);
+        },
+    );
+
+    bindUnitsCapacityPair(newUnitsInput, newMaxUnitsInput);
+    bindUnitsCapacityPair(editMaterialUnits, editMaxUnitsInput);
 }
 
 /**
@@ -472,6 +541,7 @@ async function saveMaterial(mode) {
     const isAdd = mode === "add";
     const nameInput = isAdd ? newMaterialInput : editMaterialName;
     const unitsInput = isAdd ? newUnitsInput : editMaterialUnits;
+    const maxUnitsInput = isAdd ? newMaxUnitsInput : editMaxUnitsInput;
     const thresholdInput = isAdd ? newThresholdInput : editThresholdInput;
     const modal = isAdd ? addMaterialModal : editMaterialModal;
 
@@ -507,6 +577,40 @@ async function saveMaterial(mode) {
             errors.push({
                 input: unitsInput,
                 message: "Units must be a whole number 0 or greater",
+            });
+        }
+    }
+
+    // Validate max units (inventory capacity baseline)
+    const maxUnitsRaw = maxUnitsInput.value.trim();
+    if (!maxUnitsRaw) {
+        errors.push({
+            input: maxUnitsInput,
+            message: "Total Units is required",
+        });
+    } else if (!/^\d+$/.test(maxUnitsRaw)) {
+        errors.push({
+            input: maxUnitsInput,
+            message: "Total Units must be 1 or greater",
+        });
+    } else {
+        const maxUnits = Number(maxUnitsRaw);
+        if (!Number.isInteger(maxUnits) || maxUnits < 1) {
+            errors.push({
+                input: maxUnitsInput,
+                message: "Total Units must be 1 or greater",
+            });
+        }
+    }
+
+    if (/^\d+$/.test(unitsRaw) && /^\d+$/.test(maxUnitsRaw)) {
+        const unitsValue = Number(unitsRaw);
+        const maxUnitsValue = Number(maxUnitsRaw);
+
+        if (maxUnitsValue < unitsValue) {
+            errors.push({
+                input: maxUnitsInput,
+                message: "Total Units must be equal to or greater than Units",
             });
         }
     }
@@ -548,11 +652,11 @@ async function saveMaterial(mode) {
         const key = checkbox.getAttribute("data-consumption-key");
         const quantityInput = isAdd
             ? modal.querySelector(
-                  `.add_consumption_quantity[data-consumption-key="${key}"]`,
-              )
+                `.add_consumption_quantity[data-consumption-key="${key}"]`,
+            )
             : modal.querySelector(
-                  `.edit_consumption_quantity[data-consumption-key="${key}"]`,
-              );
+                `.edit_consumption_quantity[data-consumption-key="${key}"]`,
+            );
 
         if (!quantityInput) {
             return;
@@ -611,6 +715,7 @@ async function saveMaterial(mode) {
 
     // Get validated values
     const units = Number(unitsRaw);
+    const maxUnits = Number(maxUnitsRaw);
     const lowStockThreshold = Number(thresholdRaw);
 
     // Disable save button
@@ -623,6 +728,7 @@ async function saveMaterial(mode) {
         const data = {
             name,
             units: units,
+            max_units: maxUnits,
             low_stock_threshold: lowStockThreshold,
             consumptions,
         };
@@ -648,6 +754,10 @@ async function saveMaterial(mode) {
 
         if (error.errors?.units?.length) {
             setFieldError(unitsInput, error.errors.units[0]);
+        }
+
+        if (error.errors?.max_units?.length) {
+            setFieldError(maxUnitsInput, error.errors.max_units[0]);
         }
 
         if (error.errors?.low_stock_threshold?.length) {
@@ -688,6 +798,9 @@ async function openEditModal(btn, materialId) {
     clearModalErrors(editMaterialModal);
     editMaterialName.value = material.name;
     editMaterialUnits.value = material.units;
+    editMaxUnitsInput.value = String(
+        normalizeMaxUnits(material.max_units, material.units),
+    );
     editThresholdInput.value = String(
         normalizeLowStockThreshold(material.low_stock_threshold),
     );
@@ -876,56 +989,44 @@ window.openEditModal = openEditModal;
 function renderMaterials() {
     inventoryTableBody.innerHTML = "";
 
-    if (!materials_list || materials_list.length === 0) {
+    const materialsToRender = getFilteredAndSortedMaterials();
+    const hasInteractiveFilters =
+        activeStockFilter !== "all" ||
+        inventorySearchTerm.length > 0 ||
+        inventorySortMode !== "name_asc";
+
+    if (!materialsToRender || materialsToRender.length === 0) {
         const emptyRow = document.createElement("tr");
         emptyRow.id = "emptyInventoryRow";
         emptyRow.innerHTML = `
             <td colspan="5" class="text-center" style="padding: 60px; color: #682C7A; font-style: italic;">
-                No materials found. Start by adding new stock below!
+                ${hasInteractiveFilters
+                ? "No materials match your current filters."
+                : "No materials found. Start by adding new stock below!"}
             </td>
         `;
         inventoryTableBody.appendChild(emptyRow);
         return;
     }
 
-    materials_list.forEach((material) => {
+    materialsToRender.forEach((material) => {
         const row = document.createElement("tr");
         const safeMaterialName = escapeHtml(material.name);
-
-        // Get associated consumption rules display text
-        let productText = "None assigned";
-        if (
-            Array.isArray(material.consumptions) &&
-            material.consumptions.length > 0
-        ) {
-            productText = material.consumptions
-                .map((rule) => {
-                    const productName = escapeHtml(
-                        rule.product_name || "Unknown Product",
-                    );
-                    const optionLabel = rule.order_template_option_type_id
-                        ? escapeHtml(rule.option_type_name || "Unknown Option")
-                        : "Any Option";
-                    return `${productName} - ${optionLabel} (x${Number(rule.quantity || 0)})`;
-                })
-                .join(", ");
-        } else if (
-            Array.isArray(material.products) &&
-            material.products.length > 0
-        ) {
-            // Legacy fallback
-            productText = material.products
-                .map(
-                    (p) =>
-                        `${escapeHtml(p.name)} - Any Option (x${Number(p.pivot?.quantity || 0)})`,
-                )
-                .join(", ");
-        }
+        const usageText = buildMaterialUsageText(material);
+        const stockSnapshot = resolveMaterialStockSnapshot(material);
+        const stockBandLabel = STOCK_BAND_LABELS[stockSnapshot.stockBand] || "Unknown";
+        const stockPercentageText = formatStockPercentage(stockSnapshot.stockPercentage);
 
         row.innerHTML = `
     <td>${safeMaterialName}</td>
     <td class="text-center">${material.units}</td>
-    <td>${productText}</td>
+    <td class="text-center">
+        <div class="stock_cell">
+            <span class="stock_badge stock_badge_${stockSnapshot.stockBand}">${escapeHtml(stockBandLabel)}</span>
+            <small class="stock_meta">${stockPercentageText}% (${stockSnapshot.units}/${stockSnapshot.maxUnits})</small>
+        </div>
+    </td>
+    <td>${usageText}</td>
     <td class="text-center">
 
                 <div class="product_actions" style="justify-content: center;">
@@ -938,51 +1039,163 @@ function renderMaterials() {
     });
 }
 
+function getFilteredAndSortedMaterials() {
+    const list = Array.isArray(materials_list) ? [...materials_list] : [];
+    const filtered = list.filter((material) => {
+        if (activeStockFilter !== "all") {
+            const stockSnapshot = resolveMaterialStockSnapshot(material);
+            if (stockSnapshot.stockBand !== activeStockFilter) {
+                return false;
+            }
+        }
+
+        if (inventorySearchTerm.length > 0) {
+            return buildMaterialSearchText(material).includes(inventorySearchTerm);
+        }
+
+        return true;
+    });
+
+    return filtered.sort((left, right) => compareMaterials(left, right, inventorySortMode));
+}
+
+function compareMaterials(left, right, sortMode) {
+    const leftName = String(left.name || "").toLowerCase();
+    const rightName = String(right.name || "").toLowerCase();
+    const leftUnits = Number(left.units || 0);
+    const rightUnits = Number(right.units || 0);
+    const leftStock = resolveMaterialStockSnapshot(left);
+    const rightStock = resolveMaterialStockSnapshot(right);
+
+    switch (sortMode) {
+        case "name_desc":
+            return rightName.localeCompare(leftName);
+        case "units_asc":
+            return leftUnits - rightUnits || leftName.localeCompare(rightName);
+        case "units_desc":
+            return rightUnits - leftUnits || leftName.localeCompare(rightName);
+        case "percent_asc":
+            return (
+                leftStock.stockPercentage - rightStock.stockPercentage ||
+                leftName.localeCompare(rightName)
+            );
+        case "percent_desc":
+            return (
+                rightStock.stockPercentage - leftStock.stockPercentage ||
+                leftName.localeCompare(rightName)
+            );
+        case "name_asc":
+        default:
+            return leftName.localeCompare(rightName);
+    }
+}
+
+function buildMaterialUsageText(material) {
+    if (Array.isArray(material.consumptions) && material.consumptions.length > 0) {
+        return material.consumptions
+            .map((rule) => {
+                const productName = escapeHtml(rule.product_name || "Unknown Product");
+                const optionLabel = rule.order_template_option_type_id
+                    ? escapeHtml(rule.option_type_name || "Unknown Option")
+                    : "Any Option";
+
+                return `${productName} - ${optionLabel} (x${Number(rule.quantity || 0)})`;
+            })
+            .join(", ");
+    }
+
+    if (Array.isArray(material.products) && material.products.length > 0) {
+        return material.products
+            .map(
+                (product) =>
+                    `${escapeHtml(product.name)} - Any Option (x${Number(product.pivot?.quantity || 0)})`,
+            )
+            .join(", ");
+    }
+
+    return "None assigned";
+}
+
+function buildMaterialSearchText(material) {
+    const baseName = String(material.name || "").toLowerCase();
+    const usageText = buildMaterialUsageText(material)
+        .replace(/<[^>]*>/g, "")
+        .toLowerCase();
+
+    return `${baseName} ${usageText}`;
+}
+
 /**
  * Update status cards based on material data
  */
 function updateStatusCards() {
-    const lowStocks = [];
-    const outOfStocks = [];
+    const groupedNames = {
+        high: [],
+        medium: [],
+        low: [],
+        out_of_stock: [],
+    };
 
     materials_list.forEach((material) => {
-        const units = Number(material.units || 0);
-        const lowStockThreshold = normalizeLowStockThreshold(
-            material.low_stock_threshold,
-        );
+        const stockSnapshot = resolveMaterialStockSnapshot(material);
+        const stockBand = stockSnapshot.stockBand;
 
-        if (units === 0) {
-            outOfStocks.push(material.name);
-        } else if (units <= lowStockThreshold) {
-            lowStocks.push(material.name);
+        if (groupedNames[stockBand]) {
+            groupedNames[stockBand].push(material.name);
         }
     });
 
-    if (lowStocks.length <= STATUS_CARD_NAME_CAP) {
-        showAllLowStockNames = false;
-    }
+    STOCK_BAND_ORDER.forEach((band) => {
+        groupedNames[band].sort((a, b) =>
+            String(a || "").localeCompare(String(b || "")),
+        );
 
-    if (outOfStocks.length <= STATUS_CARD_NAME_CAP) {
-        showAllOutOfStockNames = false;
-    }
+        if (groupedNames[band].length <= STATUS_CARD_NAME_CAP) {
+            expandedStatusLists[band] = false;
+        }
+    });
+
+    renderStatusCard(
+        highStockCard,
+        highStockList,
+        groupedNames.high,
+        "No items above 70%",
+        "high",
+        expandedStatusLists.high,
+        false,
+    );
+
+    renderStatusCard(
+        mediumStockCard,
+        mediumStockList,
+        groupedNames.medium,
+        "No items between 30% and 70%",
+        "medium",
+        expandedStatusLists.medium,
+        true,
+    );
 
     renderStatusCard(
         lowStockCard,
         lowStockList,
-        lowStocks,
-        "Stock Items High",
+        groupedNames.low,
+        "No items below 29%",
         "low",
-        showAllLowStockNames,
+        expandedStatusLists.low,
+        true,
     );
 
     renderStatusCard(
         outOfStockCard,
         outOfStockList,
-        outOfStocks,
+        groupedNames.out_of_stock,
         "All Items In Stock",
-        "out",
-        showAllOutOfStockNames,
+        "out_of_stock",
+        expandedStatusLists.out_of_stock,
+        true,
     );
+
+    syncStatusCardFilterState();
 }
 
 function renderStatusCard(
@@ -992,12 +1205,16 @@ function renderStatusCard(
     healthyMessage,
     toggleType,
     isExpanded,
+    shouldPulseOnAlerts,
 ) {
     const hasAlerts = names.length > 0;
 
-    cardElement.classList.toggle("status_alert", hasAlerts);
-    cardElement.classList.toggle("status_healthy", !hasAlerts);
-    cardElement.classList.toggle("pulse_glow", hasAlerts);
+    cardElement.classList.toggle("status_alert", hasAlerts && shouldPulseOnAlerts);
+    cardElement.classList.toggle(
+        "status_healthy",
+        !hasAlerts || !shouldPulseOnAlerts,
+    );
+    cardElement.classList.toggle("pulse_glow", hasAlerts && shouldPulseOnAlerts);
 
     listElement.innerHTML = buildStatusListMarkup(
         names,
@@ -1038,15 +1255,115 @@ function handleStatusToggleClick(event) {
     }
 
     const toggleType = toggleButton.getAttribute("data-status-toggle");
-    if (toggleType === "low") {
-        showAllLowStockNames = !showAllLowStockNames;
+    if (!(toggleType in expandedStatusLists)) {
+        return;
     }
 
-    if (toggleType === "out") {
-        showAllOutOfStockNames = !showAllOutOfStockNames;
-    }
+    expandedStatusLists[toggleType] = !expandedStatusLists[toggleType];
 
     updateStatusCards();
+}
+
+function handleStatusCardClick(event) {
+    if (event.target.closest(".status_more_btn")) {
+        return;
+    }
+
+    const statusCard = event.target.closest(".status_card");
+    if (!statusCard) {
+        return;
+    }
+
+    const stockBand = statusCard.getAttribute("data-filter");
+    if (!stockBand) {
+        return;
+    }
+
+    activeStockFilter = activeStockFilter === stockBand ? "all" : stockBand;
+
+    syncStatusCardFilterState();
+    renderMaterials();
+    updateInventoryFilterSummary();
+}
+
+function handleStatusCardKeydown(event) {
+    if (event.key !== "Enter" && event.key !== " ") {
+        return;
+    }
+
+    const statusCard = event.target.closest(".status_card");
+    if (!statusCard) {
+        return;
+    }
+
+    event.preventDefault();
+
+    statusCard.click();
+}
+
+function syncStatusCardFilterState() {
+    statusCardsContainer
+        ?.querySelectorAll(".status_card[data-filter]")
+        .forEach((card) => {
+            const cardBand = card.getAttribute("data-filter");
+            const isActive = activeStockFilter === cardBand;
+
+            card.classList.toggle("is_active", isActive);
+            card.setAttribute("aria-pressed", isActive ? "true" : "false");
+        });
+}
+
+function updateInventoryFilterSummary() {
+    const summaryParts = [];
+
+    if (activeStockFilter !== "all") {
+        summaryParts.push(`Band: ${STOCK_BAND_LABELS[activeStockFilter]}`);
+    }
+
+    if (inventorySearchTerm.length > 0) {
+        summaryParts.push(`Search: "${inventorySearchTerm}"`);
+    }
+
+    if (inventorySortMode !== "name_asc") {
+        summaryParts.push(`Sort: ${getSortModeLabel(inventorySortMode)}`);
+    }
+
+    const hasActiveFilters = summaryParts.length > 0;
+
+    inventoryFilterSummary.textContent = hasActiveFilters
+        ? `Active filters - ${summaryParts.join(" | ")}`
+        : "Showing all materials";
+
+    clearInventoryFiltersBtn.disabled = !hasActiveFilters;
+}
+
+function getSortModeLabel(sortMode) {
+    switch (sortMode) {
+        case "name_desc":
+            return "Name Z-A";
+        case "units_asc":
+            return "Units Low-High";
+        case "units_desc":
+            return "Units High-Low";
+        case "percent_asc":
+            return "Stock % Low-High";
+        case "percent_desc":
+            return "Stock % High-Low";
+        case "name_asc":
+        default:
+            return "Name A-Z";
+    }
+}
+
+function resetInventoryFilters() {
+    activeStockFilter = "all";
+    inventorySearchTerm = "";
+    inventorySortMode = "name_asc";
+
+    inventorySearchInput.value = "";
+    inventorySortSelect.value = "name_asc";
+
+    syncStatusCardFilterState();
 }
 
 /**
@@ -1056,6 +1373,7 @@ function resetAddModal() {
     clearModalErrors(addMaterialModal);
     newMaterialInput.value = "";
     newUnitsInput.value = "";
+    newMaxUnitsInput.value = String(DEFAULT_MIN_MAX_UNITS);
     newThresholdInput.value = String(DEFAULT_LOW_STOCK_THRESHOLD);
 
     addMaterialModal
@@ -1075,6 +1393,7 @@ function resetEditModal() {
     clearModalErrors(editMaterialModal);
     editMaterialName.value = "";
     editMaterialUnits.value = "";
+    editMaxUnitsInput.value = String(DEFAULT_MIN_MAX_UNITS);
     editThresholdInput.value = String(DEFAULT_LOW_STOCK_THRESHOLD);
 
     editMaterialModal
@@ -1256,6 +1575,25 @@ function bindConsumedListEvents(list, checkboxSelector, quantitySelector) {
     });
 }
 
+function bindUnitsCapacityPair(unitsInput, maxUnitsInput) {
+    if (!unitsInput || !maxUnitsInput) {
+        return;
+    }
+
+    unitsInput.addEventListener("input", () => {
+        const unitsValue = Number(unitsInput.value || 0);
+        const maxUnitsValue = Number(maxUnitsInput.value || 0);
+
+        if (!Number.isInteger(unitsValue) || unitsValue < 0) {
+            return;
+        }
+
+        if (!Number.isInteger(maxUnitsValue) || maxUnitsValue < unitsValue) {
+            maxUnitsInput.value = String(Math.max(DEFAULT_MIN_MAX_UNITS, unitsValue));
+        }
+    });
+}
+
 function clearModalErrors(modal) {
     modal
         .querySelectorAll(".field_error")
@@ -1311,6 +1649,67 @@ function getErrorId(input) {
 
     const productId = input.getAttribute("data-product-id") || "unknown";
     return `${input.className.replace(/\s+/g, "_")}_${productId}_error`;
+}
+
+function resolveMaterialStockSnapshot(material) {
+    const units = Number(material.units || 0);
+    const maxUnits = normalizeMaxUnits(material.max_units, units);
+    const fallbackPercentage = (Math.max(0, units) / maxUnits) * 100;
+    const parsedStockPercentage = Number(material.stock_percentage);
+    const stockPercentage = Number.isFinite(parsedStockPercentage)
+        ? parsedStockPercentage
+        : fallbackPercentage;
+
+    const providedBand = String(material.stock_band || "").toLowerCase();
+    const stockBand = STOCK_BAND_ORDER.includes(providedBand)
+        ? providedBand
+        : resolveStockBand(units, stockPercentage);
+
+    return {
+        units: Math.max(0, Math.trunc(units)),
+        maxUnits,
+        stockPercentage: Number(stockPercentage.toFixed(2)),
+        stockBand,
+    };
+}
+
+function normalizeMaxUnits(maxUnits, units) {
+    const parsedUnits = Number(units || 0);
+    const safeUnits = Number.isFinite(parsedUnits)
+        ? Math.max(0, Math.trunc(parsedUnits))
+        : 0;
+
+    const parsedMaxUnits = Number(maxUnits || 0);
+    const safeMaxUnits = Number.isFinite(parsedMaxUnits)
+        ? Math.max(0, Math.trunc(parsedMaxUnits))
+        : 0;
+
+    return Math.max(DEFAULT_MIN_MAX_UNITS, safeUnits, safeMaxUnits);
+}
+
+function resolveStockBand(units, stockPercentage) {
+    if (units <= 0) {
+        return "out_of_stock";
+    }
+
+    if (stockPercentage <= 29) {
+        return "low";
+    }
+
+    if (stockPercentage <= 70) {
+        return "medium";
+    }
+
+    return "high";
+}
+
+function formatStockPercentage(value) {
+    const numericValue = Number(value);
+    if (!Number.isFinite(numericValue)) {
+        return "0.00";
+    }
+
+    return numericValue.toFixed(2);
 }
 
 function normalizeLowStockThreshold(value) {

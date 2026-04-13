@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Material;
 use App\Models\OrderTemplateOptionType;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
@@ -18,20 +19,44 @@ class MaterialController extends Controller
      * Get all materials with their associated products.
      * GET /api/materials
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
-            $materials = Material::with([
+            $filters = $this->validateIndexFilters($request);
+
+            $materialsQuery = Material::query()->with([
                 'consumptions.product:id,name',
                 'consumptions.optionType:id,type_name',
-            ])
-                ->orderBy('name')
-                ->get();
+            ]);
+
+            $this->applySearchFilter(
+                $materialsQuery,
+                $filters['search'] ?? null,
+            );
+
+            $this->applyStockBandFilter(
+                $materialsQuery,
+                $filters['stock_band'] ?? null,
+            );
+
+            $this->applySort(
+                $materialsQuery,
+                $filters['sort_by'] ?? 'name',
+                $filters['sort_direction'] ?? 'asc',
+            );
+
+            $materials = $materialsQuery->get();
 
             return response()->json([
                 'success' => true,
                 'data' => $materials->map(fn (Material $material) => $this->transformMaterial($material))->values(),
             ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -54,6 +79,7 @@ class MaterialController extends Controller
                 $material = Material::create([
                     'name' => $validated['name'],
                     'units' => $validated['units'],
+                    'max_units' => $validated['max_units'],
                     'low_stock_threshold' => $validated['low_stock_threshold'],
                     'description' => $validated['description'] ?? null,
                 ]);
@@ -126,6 +152,7 @@ class MaterialController extends Controller
                 $material->update([
                     'name' => $validated['name'],
                     'units' => $validated['units'],
+                    'max_units' => $validated['max_units'],
                     'low_stock_threshold' => $validated['low_stock_threshold'],
                     'description' => $validated['description'] ?? null,
                 ]);
@@ -196,6 +223,7 @@ class MaterialController extends Controller
                 Rule::unique('materials', 'name')->ignore($material?->id),
             ],
             'units' => 'required|integer|min:0',
+            'max_units' => 'nullable|integer|min:1|gte:units',
             'low_stock_threshold' => 'required|integer|min:1',
             'description' => 'nullable|string',
             'consumptions' => 'nullable|array',
@@ -203,6 +231,12 @@ class MaterialController extends Controller
             'consumptions.*.order_template_option_type_id' => 'nullable|integer|exists:order_template_option_types,id',
             'consumptions.*.quantity' => 'required|integer|min:1',
         ]);
+
+        $validated['max_units'] = $this->normalizeMaxUnits(
+            $validated['max_units'] ?? null,
+            (int) $validated['units'],
+            $material?->max_units,
+        );
 
         $normalizedConsumptions = $this->normalizeConsumptions($validated['consumptions'] ?? []);
 
@@ -214,6 +248,110 @@ class MaterialController extends Controller
         $validated['consumptions'] = $normalizedConsumptions;
 
         return $validated;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function validateIndexFilters(Request $request): array
+    {
+        return $request->validate([
+            'search' => 'nullable|string|max:255',
+            'stock_band' => ['nullable', Rule::in(['high', 'medium', 'low', 'out_of_stock'])],
+            'sort_by' => ['nullable', Rule::in(['name', 'units', 'max_units', 'low_stock_threshold', 'stock_percentage'])],
+            'sort_direction' => ['nullable', Rule::in(['asc', 'desc'])],
+        ]);
+    }
+
+    private function applySearchFilter(Builder $query, ?string $search): void
+    {
+        $searchTerm = trim((string) $search);
+
+        if ($searchTerm === '') {
+            return;
+        }
+
+        $likeSearchTerm = '%' . $searchTerm . '%';
+
+        $query->where(function (Builder $builder) use ($likeSearchTerm): void {
+            $builder
+                ->where('materials.name', 'like', $likeSearchTerm)
+                ->orWhereHas('consumptions.product', function (Builder $productBuilder) use ($likeSearchTerm): void {
+                    $productBuilder->where('name', 'like', $likeSearchTerm);
+                });
+        });
+    }
+
+    private function applyStockBandFilter(Builder $query, ?string $stockBand): void
+    {
+        if ($stockBand === null || $stockBand === '') {
+            return;
+        }
+
+        $stockPercentageSql = $this->stockPercentageSql();
+
+        if ($stockBand === 'out_of_stock') {
+            $query->where('materials.units', '<=', 0);
+
+            return;
+        }
+
+        if ($stockBand === 'low') {
+            $query
+                ->where('materials.units', '>', 0)
+                ->whereRaw("{$stockPercentageSql} <= 29");
+
+            return;
+        }
+
+        if ($stockBand === 'medium') {
+            $query
+                ->where('materials.units', '>', 0)
+                ->whereRaw("{$stockPercentageSql} > 29")
+                ->whereRaw("{$stockPercentageSql} <= 70");
+
+            return;
+        }
+
+        if ($stockBand === 'high') {
+            $query
+                ->where('materials.units', '>', 0)
+                ->whereRaw("{$stockPercentageSql} > 70");
+        }
+    }
+
+    private function applySort(Builder $query, string $sortBy, string $sortDirection): void
+    {
+        $direction = strtolower($sortDirection) === 'desc' ? 'desc' : 'asc';
+        $normalizedSortBy = strtolower($sortBy);
+        $stockPercentageSql = $this->stockPercentageSql();
+
+        if ($normalizedSortBy === 'stock_percentage') {
+            $query->orderByRaw("{$stockPercentageSql} {$direction}");
+            $query->orderBy('materials.name');
+
+            return;
+        }
+
+        $columnMap = [
+            'name' => 'materials.name',
+            'units' => 'materials.units',
+            'max_units' => 'materials.max_units',
+            'low_stock_threshold' => 'materials.low_stock_threshold',
+        ];
+
+        $sortColumn = $columnMap[$normalizedSortBy] ?? 'materials.name';
+
+        $query->orderBy($sortColumn, $direction);
+
+        if ($sortColumn !== 'materials.name') {
+            $query->orderBy('materials.name');
+        }
+    }
+
+    private function stockPercentageSql(): string
+    {
+        return '(materials.units * 100.0) / CASE WHEN materials.max_units > 0 THEN materials.max_units ELSE 1 END';
     }
 
     /**
@@ -316,6 +454,15 @@ class MaterialController extends Controller
      */
     private function transformMaterial(Material $material): array
     {
+        $units = max(0, (int) $material->units);
+        $maxUnits = $this->normalizeMaxUnits(
+            $material->max_units,
+            $units,
+            $material->max_units,
+        );
+        $stockBand = $this->resolveStockBand($units, $maxUnits);
+        $stockPercentage = $this->calculateStockPercentage($units, $maxUnits);
+
         $consumptions = $material->consumptions
             ->map(function (Model $consumption): array {
                 return [
@@ -351,13 +498,54 @@ class MaterialController extends Controller
         return [
             'id' => (int) $material->id,
             'name' => (string) $material->name,
-            'units' => (int) $material->units,
+            'units' => $units,
+            'max_units' => $maxUnits,
             'low_stock_threshold' => (int) $material->low_stock_threshold,
+            'stock_percentage' => $stockPercentage,
+            'stock_band' => $stockBand,
             'description' => $material->description,
             'created_at' => $material->created_at,
             'updated_at' => $material->updated_at,
             'products' => $legacyProducts,
             'consumptions' => $consumptions,
         ];
+    }
+
+    private function normalizeMaxUnits(?int $maxUnits, int $units, ?int $fallbackMaxUnits = null): int
+    {
+        $safeUnits = max(0, $units);
+        $candidateMaxUnits = max(0, (int) ($maxUnits ?? 0));
+
+        if ($candidateMaxUnits < 1) {
+            $candidateMaxUnits = max(0, (int) ($fallbackMaxUnits ?? 0));
+        }
+
+        return max(1, $safeUnits, $candidateMaxUnits);
+    }
+
+    private function calculateStockPercentage(int $units, int $maxUnits): float
+    {
+        $safeMaxUnits = max(1, $maxUnits);
+
+        return round(($units / $safeMaxUnits) * 100, 2);
+    }
+
+    private function resolveStockBand(int $units, int $maxUnits): string
+    {
+        if ($units <= 0) {
+            return 'out_of_stock';
+        }
+
+        $stockPercentage = $this->calculateStockPercentage($units, $maxUnits);
+
+        if ($stockPercentage <= 29.0) {
+            return 'low';
+        }
+
+        if ($stockPercentage <= 70.0) {
+            return 'medium';
+        }
+
+        return 'high';
     }
 }

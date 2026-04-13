@@ -74,12 +74,19 @@ class MaterialAPI {
 
   /**
    * Fetch all materials from database
+   * @param {Object} filters - Optional server-side filters
+   *   - search: string (search term for material/product name)
+   *   - stock_band: string (high|medium|low|out_of_stock)
+   *   - sort_by: string (name|units|max_units|low_stock_threshold|stock_percentage)
+   *   - sort_direction: string (asc|desc)
    * @returns {Promise<Array>} Array of material objects with products relation
    */
-  async getAllMaterials() {
+  async getAllMaterials(filters = {}) {
     try {
       this.isLoading = true;
-      const result = await this.request(this.baseUrl, { method: 'GET' });
+      const queryString = this.buildMaterialQueryString(filters);
+      const endpoint = queryString ? `${this.baseUrl}?${queryString}` : this.baseUrl;
+      const result = await this.request(endpoint, { method: 'GET' });
 
       if (result.success) {
         return result.data || [];
@@ -92,6 +99,35 @@ class MaterialAPI {
     } finally {
       this.isLoading = false;
     }
+  }
+
+  /**
+   * Build query string for material listing filters
+   * @param {Object} filters
+   * @returns {string}
+   */
+  buildMaterialQueryString(filters = {}) {
+    const queryParams = new URLSearchParams();
+
+    const appendParam = (key, value) => {
+      if (value === undefined || value === null) {
+        return;
+      }
+
+      const normalizedValue = String(value).trim();
+      if (!normalizedValue) {
+        return;
+      }
+
+      queryParams.set(key, normalizedValue);
+    };
+
+    appendParam('search', filters.search ?? filters.name);
+    appendParam('stock_band', filters.stock_band ?? filters.stockBand);
+    appendParam('sort_by', filters.sort_by ?? filters.sortBy);
+    appendParam('sort_direction', filters.sort_direction ?? filters.sortDirection);
+
+    return queryParams.toString();
   }
 
   /**
@@ -265,7 +301,12 @@ class MaterialAPI {
    */
   async searchMaterials(filters = {}) {
     try {
-      const allMaterials = await this.getAllMaterials();
+      const allMaterials = await this.getAllMaterials({
+        search: filters.name,
+        stock_band: filters.stock_band ?? filters.stockBand,
+        sort_by: filters.sort_by ?? filters.sortBy,
+        sort_direction: filters.sort_direction ?? filters.sortDirection,
+      });
 
       return allMaterials.filter(material => {
         // Filter by name

@@ -11,10 +11,18 @@ class InventoryUiContractTest extends TestCase
         $blade = file_get_contents(base_path('resources/views/owner/pages/inventory.blade.php'));
 
         $this->assertIsString($blade);
+        $this->assertStringContainsString('id="newMaxUnitsInput"', $blade);
+        $this->assertStringContainsString('id="editMaxUnitsInput"', $blade);
         $this->assertStringContainsString('id="newThresholdInput"', $blade);
         $this->assertStringContainsString('id="editThresholdInput"', $blade);
+        $this->assertStringContainsString('id="highStockCard"', $blade);
+        $this->assertStringContainsString('id="mediumStockCard"', $blade);
         $this->assertStringContainsString('id="lowStockCard"', $blade);
         $this->assertStringContainsString('id="outOfStockCard"', $blade);
+        $this->assertStringContainsString('id="inventorySearchInput"', $blade);
+        $this->assertStringContainsString('id="inventorySortSelect"', $blade);
+        $this->assertStringContainsString('id="clearInventoryFiltersBtn"', $blade);
+        $this->assertStringContainsString('id="inventoryFilterSummary"', $blade);
         $this->assertStringContainsString('id="deleteMaterialConfirmOverlay"', $blade);
         $this->assertStringContainsString('id="deleteMaterialConfirmModal"', $blade);
         $this->assertStringContainsString('id="deleteMaterialConfirmMessage"', $blade);
@@ -47,10 +55,14 @@ class InventoryUiContractTest extends TestCase
         $script = file_get_contents(base_path('resources/js/owner/inventory_refactored.js'));
 
         $this->assertIsString($script);
-        $this->assertStringContainsString('Stock Items High', $script);
+        $this->assertStringContainsString('No items above 70%', $script);
+        $this->assertStringContainsString('No items between 30% and 70%', $script);
+        $this->assertStringContainsString('No items below 29%', $script);
         $this->assertStringContainsString('All Items In Stock', $script);
         $this->assertStringContainsString('Show More', $script);
-        $this->assertStringContainsString('low_stock_threshold', $script);
+        $this->assertStringContainsString('activeStockFilter', $script);
+        $this->assertStringContainsString('inventorySearchTerm', $script);
+        $this->assertStringContainsString('inventorySortMode', $script);
     }
 
     public function test_inventory_script_supports_option_based_consumption_mappings(): void
@@ -69,9 +81,10 @@ class InventoryUiContractTest extends TestCase
         $script = file_get_contents(base_path('resources/js/owner/inventory_refactored.js'));
 
         $this->assertIsString($script);
-        $this->assertStringContainsString('let usageText = "-";', $script);
-        $this->assertStringContainsString('usageText = material.consumptions', $script);
-        $this->assertStringContainsString('<td class="text-center">${usageText}</td>', $script);
+        $this->assertStringContainsString('const usageText = buildMaterialUsageText(material);', $script);
+        $this->assertStringContainsString('const stockSnapshot = resolveMaterialStockSnapshot(material);', $script);
+        $this->assertStringContainsString('stock_badge_${stockSnapshot.stockBand}', $script);
+        $this->assertStringContainsString('<td>${usageText}</td>', $script);
     }
 
     public function test_inventory_save_flow_tracks_selected_consumption_and_blocks_invalid_inputs(): void
@@ -131,9 +144,26 @@ class InventoryUiContractTest extends TestCase
         $css = file_get_contents(base_path('resources/css/owner/pages/inventory.css'));
 
         $this->assertIsString($css);
+        $this->assertStringContainsString('.high_stock', $css);
+        $this->assertStringContainsString('.medium_stock', $css);
+        $this->assertStringContainsString('.status_card.is_active', $css);
         $this->assertStringContainsString('.card.status_healthy', $css);
         $this->assertStringContainsString('.card.status_alert.pulse_glow.low_stock', $css);
         $this->assertStringContainsString('.card.status_alert.pulse_glow.out_of_stock', $css);
+        $this->assertStringContainsString('.inventory_controls', $css);
+        $this->assertStringContainsString('.stock_badge_high', $css);
         $this->assertStringContainsString('.status_more_btn', $css);
+    }
+
+    public function test_material_api_client_supports_server_side_filter_query_strings(): void
+    {
+        $script = file_get_contents(base_path('resources/js/api/materialApi.js'));
+
+        $this->assertIsString($script);
+        $this->assertStringContainsString('buildMaterialQueryString', $script);
+        $this->assertStringContainsString("appendParam('search'", $script);
+        $this->assertStringContainsString("appendParam('stock_band'", $script);
+        $this->assertStringContainsString("appendParam('sort_by'", $script);
+        $this->assertStringContainsString("appendParam('sort_direction'", $script);
     }
 }

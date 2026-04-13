@@ -47,6 +47,93 @@ class InventoryMaterialSecurityAndStockFlowTest extends TestCase
             ->assertUnauthorized();
     }
 
+    public function test_guest_can_filter_and_sort_materials_via_index_query_params(): void
+    {
+        Material::create([
+            'name' => 'Card Stock '.uniqid(),
+            'units' => 8,
+            'max_units' => 10,
+        ]);
+
+        Material::create([
+            'name' => 'Calling Card Sheets '.uniqid(),
+            'units' => 6,
+            'max_units' => 10,
+        ]);
+
+        Material::create([
+            'name' => 'Sticker Paper '.uniqid(),
+            'units' => 20,
+            'max_units' => 20,
+        ]);
+
+        $response = $this->getJson('/api/materials?search=card&sort_by=units&sort_direction=desc');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonCount(2, 'data')
+            ->assertJsonPath('data.0.units', 8)
+            ->assertJsonPath('data.1.units', 6);
+    }
+
+    public function test_guest_can_filter_materials_by_stock_band_via_index_query_params(): void
+    {
+        Material::create([
+            'name' => 'High Film '.uniqid(),
+            'units' => 9,
+            'max_units' => 10,
+        ]);
+
+        Material::create([
+            'name' => 'Medium Film '.uniqid(),
+            'units' => 5,
+            'max_units' => 10,
+        ]);
+
+        Material::create([
+            'name' => 'Low Film '.uniqid(),
+            'units' => 2,
+            'max_units' => 10,
+        ]);
+
+        Material::create([
+            'name' => 'Out Film '.uniqid(),
+            'units' => 0,
+            'max_units' => 10,
+        ]);
+
+        $lowBandResponse = $this->getJson('/api/materials?stock_band=low');
+        $outBandResponse = $this->getJson('/api/materials?stock_band=out_of_stock');
+
+        $lowBandResponse
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.stock_band', 'low');
+
+        $outBandResponse
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.stock_band', 'out_of_stock');
+    }
+
+    public function test_material_index_rejects_invalid_filter_and_sort_query_params(): void
+    {
+        $this->getJson('/api/materials?stock_band=critical')
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('stock_band');
+
+        $this->getJson('/api/materials?sort_by=created_on')
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('sort_by');
+
+        $this->getJson('/api/materials?sort_direction=sideways')
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('sort_direction');
+    }
+
     public function test_non_owner_user_cannot_write_materials(): void
     {
         $customer = User::factory()->create([
@@ -131,6 +218,68 @@ class InventoryMaterialSecurityAndStockFlowTest extends TestCase
             ->assertCreated()
             ->assertJsonPath('success', true)
             ->assertJsonPath('data.low_stock_threshold', 3);
+    }
+
+    public function test_owner_can_create_material_with_custom_max_units_and_stock_band_metadata(): void
+    {
+        $owner = User::factory()->create([
+            'user_type' => 'owner',
+        ]);
+
+        $response = $this->actingAs($owner)
+            ->postJson('/api/materials', [
+                'name' => 'Capacity Aware '.uniqid(),
+                'units' => 14,
+                'max_units' => 20,
+                'low_stock_threshold' => 3,
+            ]);
+
+        $response
+            ->assertCreated()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.max_units', 20)
+            ->assertJsonPath('data.stock_band', 'medium');
+
+        $this->assertDatabaseHas('materials', [
+            'id' => (int) $response->json('data.id'),
+            'max_units' => 20,
+        ]);
+    }
+
+    public function test_owner_create_defaults_max_units_to_units_when_omitted(): void
+    {
+        $owner = User::factory()->create([
+            'user_type' => 'owner',
+        ]);
+
+        $response = $this->actingAs($owner)
+            ->postJson('/api/materials', [
+                'name' => 'Implicit Capacity '.uniqid(),
+                'units' => 11,
+                'low_stock_threshold' => 2,
+            ]);
+
+        $response
+            ->assertCreated()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.max_units', 11);
+    }
+
+    public function test_owner_cannot_create_material_when_max_units_is_below_units(): void
+    {
+        $owner = User::factory()->create([
+            'user_type' => 'owner',
+        ]);
+
+        $this->actingAs($owner)
+            ->postJson('/api/materials', [
+                'name' => 'Invalid Capacity '.uniqid(),
+                'units' => 12,
+                'max_units' => 5,
+                'low_stock_threshold' => 2,
+            ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('max_units');
     }
 
     public function test_owner_cannot_create_material_with_threshold_below_one(): void

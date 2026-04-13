@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $id
  * @property string $name
  * @property int $units
+ * @property int $max_units
  * @property int $low_stock_threshold
  * @property string|null $description
  * @property \Illuminate\Support\Carbon $created_at
@@ -29,6 +30,7 @@ class Material extends Model
     protected $fillable = [
         'name',
         'units',
+        'max_units',
         'low_stock_threshold',
         'description',
     ];
@@ -42,6 +44,7 @@ class Material extends Model
     {
         return [
             'units' => 'integer',
+            'max_units' => 'integer',
             'low_stock_threshold' => 'integer',
         ];
     }
