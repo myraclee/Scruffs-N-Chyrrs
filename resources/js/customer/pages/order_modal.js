@@ -18,6 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let product = null;
     let templatePayload = null;
     let cartPayload = null;
+    let inventoryConstraintRequestToken = 0;
 
     try {
         product = JSON.parse(productData);
@@ -38,6 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const grandTotalDisplay = document.getElementById("grandTotalDisplay");
     const grandTotalLabelText = document.getElementById("grandTotalLabelText");
     const modalTitle = document.getElementById("dynamicModalTitle");
+    const quantityHintElement = document.getElementById("itemQuantityHint");
 
     const formatMoney = (amount) =>
         new Intl.NumberFormat("en-PH", {
@@ -159,6 +161,87 @@ document.addEventListener("DOMContentLoaded", () => {
         return selected;
     }
 
+    function getSelectedOptionTypeIds() {
+        const selectedOptions = readSelectedOptions();
+        if (!selectedOptions) {
+            return [];
+        }
+
+        return Object.values(selectedOptions)
+            .map((value) => Number(value))
+            .filter((value) => Number.isInteger(value) && value > 0);
+    }
+
+    function applyInventoryConstraints(inventory = null) {
+        const maxOrderQuantity = Number(inventory?.max_order_quantity);
+        const hasMaxOrderQuantity =
+            Number.isInteger(maxOrderQuantity) && maxOrderQuantity >= 0;
+
+        if (!hasMaxOrderQuantity) {
+            quantityInput.removeAttribute("max");
+
+            if (quantityHintElement) {
+                quantityHintElement.textContent = "";
+                quantityHintElement.hidden = true;
+            }
+
+            return;
+        }
+
+        quantityInput.max = String(maxOrderQuantity);
+
+        if (quantityHintElement) {
+            quantityHintElement.textContent =
+                maxOrderQuantity === 0
+                    ? "This option set is currently unavailable due to inventory buffer limits."
+                    : `Maximum allowed quantity right now: ${maxOrderQuantity}.`;
+            quantityHintElement.hidden = false;
+        }
+
+        const currentQuantity = Number(quantityInput.value || 0);
+        if (maxOrderQuantity > 0 && currentQuantity > maxOrderQuantity) {
+            quantityInput.value = String(maxOrderQuantity);
+        }
+    }
+
+    async function refreshInventoryConstraintsFromSelection() {
+        const selectedOptionTypeIds = getSelectedOptionTypeIds();
+
+        if (!templatePayload || selectedOptionTypeIds.length === 0) {
+            applyInventoryConstraints(templatePayload?.inventory ?? null);
+            return;
+        }
+
+        const requestToken = ++inventoryConstraintRequestToken;
+
+        try {
+            const refreshedTemplatePayload = await CustomerOrderAPI.getOrderTemplate(
+                productId,
+                {
+                    selectedOptionTypeIds,
+                },
+            );
+
+            if (requestToken !== inventoryConstraintRequestToken) {
+                return;
+            }
+
+            templatePayload = {
+                ...templatePayload,
+                inventory: refreshedTemplatePayload?.inventory ?? null,
+            };
+
+            applyInventoryConstraints(templatePayload.inventory);
+        } catch (error) {
+            if (requestToken !== inventoryConstraintRequestToken) {
+                return;
+            }
+
+            console.error("Failed to refresh inventory constraints", error);
+            applyInventoryConstraints(templatePayload?.inventory ?? null);
+        }
+    }
+
     // 🚀 DYNAMIC RUSH FEE UPDATER 🚀
     function updateRushFeeDropdown(currentTotal) {
         if (!rushFeeSelect || !templatePayload?.rush_fees) return;
@@ -251,11 +334,13 @@ document.addEventListener("DOMContentLoaded", () => {
             optionsContainer.appendChild(wrapper);
 
             // Clear error styling when option is picked
-            select.addEventListener("change", () => {
+            select.addEventListener("change", async () => {
                 select.classList.remove("input_error");
                 if (select.nextElementSibling && select.nextElementSibling.classList.contains("field_validation_error")) {
                     select.nextElementSibling.hidden = true;
                 }
+
+                await refreshInventoryConstraintsFromSelection();
             });
         });
 
@@ -264,6 +349,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Initialize dropdown based on current cart value
         updateRushFeeDropdown(cartPayload?.totals?.total_price || 0);
+        applyInventoryConstraints(templatePayload?.inventory ?? null);
     }
 
     function renderCart() {
@@ -302,7 +388,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const currentTotal = cartPayload.totals.total_price;
         updateGrandTotalLabel(cartPayload.items);
         grandTotalDisplay.textContent = formatMoney(currentTotal);
-        
+
         // Update the rush dropdown whenever cart total changes
         updateRushFeeDropdown(currentTotal);
     }
@@ -348,6 +434,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         await ensureTemplateLoaded();
+        await refreshInventoryConstraintsFromSelection();
         await refreshCart();
     };
 
@@ -372,6 +459,14 @@ document.addEventListener("DOMContentLoaded", () => {
         quantityInput.classList.remove("input_error");
         const qtyErrorElement = document.getElementById("itemQuantityError");
         if (qtyErrorElement) qtyErrorElement.hidden = true;
+
+        const maxQty = Number(quantityInput.max);
+        if (Number.isInteger(maxQty) && maxQty > 0) {
+            const currentQty = Number(quantityInput.value || 0);
+            if (currentQty > maxQty) {
+                quantityInput.value = String(maxQty);
+            }
+        }
     });
 
     cartContainer.addEventListener("click", async (event) => {
@@ -424,9 +519,13 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
+        if (!hasError) {
+            await refreshInventoryConstraintsFromSelection();
+        }
+
         const filenameVal = notesInput.value.trim();
         let fnErrorElement = document.getElementById("itemFileNameError");
-        
+
         if (!fnErrorElement) {
             fnErrorElement = document.createElement("p");
             fnErrorElement.id = "itemFileNameError";
@@ -465,6 +564,19 @@ document.addEventListener("DOMContentLoaded", () => {
             qtyErrorElement.hidden = true;
         }
 
+        const maxQty = Number(quantityInput.max);
+        const hasMaxQty = Number.isInteger(maxQty) && maxQty >= 0;
+
+        if (hasMaxQty && quantity > maxQty) {
+            quantityInput.classList.add("input_error");
+            qtyErrorElement.textContent =
+                maxQty === 0
+                    ? "This option set is currently unavailable due to inventory buffer limits."
+                    : `Maximum quantity allowed right now is ${maxQty}.`;
+            qtyErrorElement.hidden = false;
+            hasError = true;
+        }
+
         if (hasError) return;
 
         if (!templatePayload) {
@@ -486,6 +598,39 @@ document.addEventListener("DOMContentLoaded", () => {
         setButtonLoading(addItemBtn, false);
 
         if (!result.success) {
+            if (Array.isArray(result.shortages) && result.shortages.length > 0) {
+                const maxOrderQuantity = Number.isInteger(result.max_order_quantity)
+                    ? result.max_order_quantity
+                    : null;
+
+                if (maxOrderQuantity !== null) {
+                    applyInventoryConstraints({
+                        max_order_quantity: maxOrderQuantity,
+                    });
+
+                    quantityInput.classList.add("input_error");
+                    qtyErrorElement.textContent =
+                        maxOrderQuantity === 0
+                            ? "This option set is currently unavailable due to inventory buffer limits."
+                            : `Maximum quantity allowed right now is ${maxOrderQuantity}.`;
+                    qtyErrorElement.hidden = false;
+                }
+
+                const firstShortage = result.shortages[0];
+                const materialLabel = firstShortage?.material_name
+                    ? ` (${firstShortage.material_name})`
+                    : "";
+                const quantityMessage =
+                    maxOrderQuantity === null
+                        ? "Requested quantity exceeds inventory buffer limits"
+                        : maxOrderQuantity === 0
+                            ? "No quantity is currently allowed for this option set"
+                            : `Maximum allowed quantity is ${maxOrderQuantity}`;
+
+                Toast.error(`${quantityMessage}${materialLabel}.`);
+                return;
+            }
+
             const firstError = result.errors ? Object.values(result.errors).flat()[0] : null;
             Toast.error(firstError || result.message || "Failed to add item.");
             return;

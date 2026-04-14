@@ -3,6 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\OrderTemplate;
+use App\Models\OrderTemplateOption;
+use App\Models\OrderTemplateOptionType;
+use App\Models\Material;
+use App\Models\MaterialConsumption;
 use App\Models\Product;
 use App\Models\RushFee;
 use App\Models\RushFeeTimeframe;
@@ -31,7 +35,9 @@ class CustomerOrderTemplateApiContractTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonPath('success', true)
-            ->assertJsonPath('data.product.id', $product->id);
+            ->assertJsonPath('data.product.id', $product->id)
+            ->assertJsonPath('data.inventory.buffer_rule', 'allow_at_threshold_block_below')
+            ->assertJsonPath('data.inventory.max_order_quantity', null);
     }
 
     public function test_returns_404_when_product_does_not_exist(): void
@@ -101,5 +107,55 @@ class CustomerOrderTemplateApiContractTest extends TestCase
         $this->assertNotNull($matchingRushFee);
         $this->assertArrayHasKey('max_price', $matchingRushFee);
         $this->assertNull($matchingRushFee['max_price']);
+    }
+
+    public function test_template_inventory_payload_returns_max_order_quantity_for_selected_option_context(): void
+    {
+        $product = Product::create([
+            'name' => 'Inventory Limit Product',
+            'slug' => 'inventory-limit-product',
+            'description' => 'Configured product with selected-option inventory limit.',
+            'cover_image_path' => 'products/covers/inventory-limit.jpg',
+        ]);
+
+        $template = OrderTemplate::create([
+            'product_id' => $product->id,
+        ]);
+
+        $option = OrderTemplateOption::create([
+            'order_template_id' => $template->id,
+            'label' => 'Finish',
+            'position' => 1,
+        ]);
+
+        $optionType = OrderTemplateOptionType::create([
+            'order_template_option_id' => $option->id,
+            'type_name' => 'Matte',
+            'is_available' => true,
+            'position' => 1,
+        ]);
+
+        $material = Material::create([
+            'name' => 'Inventory Limit Material '.uniqid(),
+            'units' => 55,
+            'low_stock_threshold' => 5,
+        ]);
+
+        MaterialConsumption::create([
+            'material_id' => $material->id,
+            'product_id' => $product->id,
+            'order_template_option_type_id' => $optionType->id,
+            'quantity' => 1,
+        ]);
+
+        $response = $this->getJson(
+            "/api/customer-orders/product/{$product->id}/template?selected_option_type_ids[]={$optionType->id}"
+        );
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.inventory.max_order_quantity', 50)
+            ->assertJsonPath('data.inventory.selected_option_type_ids.0', $optionType->id);
     }
 }

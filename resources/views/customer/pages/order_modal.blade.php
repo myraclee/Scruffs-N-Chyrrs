@@ -32,6 +32,7 @@
                         <label class="file_spec_label">Quantity <span class="label_required">*</span></label>
                         <input type="number" id="itemQuantity" class="file_spec_input quantity_input" min="1" value="1">
                         <p id="itemQuantityError" class="field_validation_error" hidden></p>
+                        <p id="itemQuantityHint" class="order_modal_drive_hint" hidden></p>
                     </div>
 
                     <div class="file_spec_field rush_field">

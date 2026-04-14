@@ -49,9 +49,17 @@ class CustomerOrderAPI {
         error_code: result.error_code || null,
         errors: result.errors || {},
         shortages: Array.isArray(result.shortages) ? result.shortages : [],
+        max_order_quantity:
+          Number.isInteger(result.max_order_quantity) && result.max_order_quantity >= 0
+            ? result.max_order_quantity
+            : null,
         configuration_issues: Array.isArray(result.configuration_issues)
           ? result.configuration_issues
           : [],
+        inventory:
+          result.inventory && typeof result.inventory === 'object'
+            ? result.inventory
+            : null,
       };
     }
 
@@ -64,9 +72,25 @@ class CustomerOrderAPI {
    * @param {number} productId - The product ID
    * @returns {Promise<Object>} Template data with product, options, pricings, discounts, rush fees
    */
-  async getOrderTemplate(productId) {
+  async getOrderTemplate(productId, options = {}) {
     try {
-      const response = await fetch(`${this.orderBaseUrl}/product/${productId}/template`, {
+      const queryParams = new URLSearchParams();
+      const selectedOptionTypeIds = Array.isArray(options.selectedOptionTypeIds)
+        ? options.selectedOptionTypeIds
+        : [];
+
+      selectedOptionTypeIds
+        .map((id) => Number(id))
+        .filter((id) => Number.isInteger(id) && id > 0)
+        .forEach((id) => {
+          queryParams.append('selected_option_type_ids[]', String(id));
+        });
+
+      const endpoint = queryParams.toString()
+        ? `${this.orderBaseUrl}/product/${productId}/template?${queryParams.toString()}`
+        : `${this.orderBaseUrl}/product/${productId}/template`;
+
+      const response = await fetch(endpoint, {
         method: 'GET',
         headers: {
           Accept: 'application/json',

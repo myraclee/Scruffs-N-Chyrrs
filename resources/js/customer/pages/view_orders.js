@@ -315,7 +315,20 @@ async function placeCartOrder() {
 
   if (!result.success) {
     if (Array.isArray(result.shortages) && result.shortages.length > 0) {
-      Toast.error("Inventory shortage detected. Please adjust your cart and try again.");
+      const firstShortage = result.shortages[0] || {};
+      const materialLabel = firstShortage.material_name
+        ? ` (${firstShortage.material_name})`
+        : "";
+      const safeAvailable = Number(firstShortage.safe_available);
+      const threshold = Number(firstShortage.low_stock_threshold);
+      const detailMessage =
+        Number.isInteger(safeAvailable) && Number.isInteger(threshold)
+          ? ` Safe stock after buffer is ${safeAvailable} (threshold ${threshold}).`
+          : "";
+
+      Toast.error(
+        `Inventory buffer limit reached${materialLabel}. Please adjust your cart and try again.${detailMessage}`,
+      );
       return false;
     }
 

@@ -529,9 +529,11 @@ class CustomerOrderController extends Controller
      *
      * Returns: template, options, pricings, discounts, min_order, layout_fee, rush_fees
      */
-    public function getProductOrderTemplate(int $productId): JsonResponse
+    public function getProductOrderTemplate(Request $request, int $productId): JsonResponse
     {
         try {
+            $selectedOptionTypeIds = $this->resolveSelectedOptionTypeIdsFromQuery($request);
+
             $product = Product::find($productId);
 
             if (! $product) {
@@ -566,6 +568,19 @@ class CustomerOrderController extends Controller
             ])
                 ->orderBy('min_price')
                 ->get();
+
+            $maxOrderQuantity = null;
+
+            if (! empty($selectedOptionTypeIds)) {
+                try {
+                    $maxOrderQuantity = $this->stockService->calculateMaxOrderQuantityForOrderLine([
+                        'product_id' => (int) $product->id,
+                        'selected_option_type_ids' => $selectedOptionTypeIds,
+                    ]);
+                } catch (InvalidInventoryConfigurationException) {
+                    $maxOrderQuantity = null;
+                }
+            }
 
             return response()->json([
                 'success' => true,
@@ -612,6 +627,11 @@ class CustomerOrderController extends Controller
                             'percentage' => (float)$tf->percentage,
                         ]),
                     ]),
+                    'inventory' => [
+                        'buffer_rule' => 'allow_at_threshold_block_below',
+                        'max_order_quantity' => $maxOrderQuantity,
+                        'selected_option_type_ids' => $selectedOptionTypeIds,
+                    ],
                 ],
             ]);
         } catch (QueryException $e) {
@@ -642,6 +662,25 @@ class CustomerOrderController extends Controller
                 'message' => 'Failed to fetch order template',
             ], 500);
         }
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    private function resolveSelectedOptionTypeIdsFromQuery(Request $request): array
+    {
+        $rawValue = $request->query('selected_option_type_ids', []);
+
+        if (! is_array($rawValue)) {
+            $rawValue = array_filter(array_map('trim', explode(',', (string) $rawValue)));
+        }
+
+        return collect($rawValue)
+            ->map(fn ($id): int => (int) $id)
+            ->filter(fn (int $id): bool => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
     }
 
     /**

@@ -438,7 +438,7 @@ class InventoryMaterialSecurityAndStockFlowTest extends TestCase
     public function test_checkout_blocks_when_material_stock_is_insufficient(): void
     {
         $customer = User::factory()->create(['user_type' => 'customer']);
-        $fixture = $this->createInventoryFixture(materialUnits: 1, pivotQuantity: 2);
+        $fixture = $this->createInventoryFixture(materialUnits: 3, pivotQuantity: 2);
 
         $this->actingAs($customer)
             ->postJson('/api/customer-cart/items', [
@@ -451,6 +451,10 @@ class InventoryMaterialSecurityAndStockFlowTest extends TestCase
             ])
             ->assertCreated();
 
+        $fixture['material']->update([
+            'units' => 1,
+        ]);
+
         $response = $this->actingAs($customer)
             ->postJson('/api/customer-cart/checkout', [
                 'general_drive_link' => 'https://drive.google.com/drive/folders/test-shortage',
@@ -462,12 +466,126 @@ class InventoryMaterialSecurityAndStockFlowTest extends TestCase
             ->assertJsonPath('shortages.0.material_id', $fixture['material']->id)
             ->assertJsonPath('shortages.0.required', 2)
             ->assertJsonPath('shortages.0.available', 1)
-            ->assertJsonPath('shortages.0.deficit', 1);
+            ->assertJsonPath('shortages.0.low_stock_threshold', 1)
+            ->assertJsonPath('shortages.0.safe_available', 0)
+            ->assertJsonPath('shortages.0.max_allowed_quantity', 0)
+            ->assertJsonPath('shortages.0.deficit', 2);
 
         $this->assertDatabaseCount('customer_order_groups', 0);
 
         $fixture['material']->refresh();
         $this->assertSame(1, (int) $fixture['material']->units);
+    }
+
+    public function test_cart_add_blocks_when_order_would_breach_low_stock_threshold(): void
+    {
+        $customer = User::factory()->create(['user_type' => 'customer']);
+        $fixture = $this->createInventoryFixture(
+            materialUnits: 55,
+            pivotQuantity: 1,
+            lowStockThreshold: 5,
+        );
+
+        $response = $this->actingAs($customer)
+            ->postJson('/api/customer-cart/items', [
+                'product_id' => $fixture['product']->id,
+                'order_template_id' => $fixture['template']->id,
+                'selected_options' => [
+                    (string) $fixture['option']->id => $fixture['optionType']->id,
+                ],
+                'quantity' => 51,
+            ]);
+
+        $response
+            ->assertStatus(422)
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('max_order_quantity', 50)
+            ->assertJsonPath('shortages.0.material_id', $fixture['material']->id)
+            ->assertJsonPath('shortages.0.required', 51)
+            ->assertJsonPath('shortages.0.available', 55)
+            ->assertJsonPath('shortages.0.low_stock_threshold', 5)
+            ->assertJsonPath('shortages.0.safe_available', 50)
+            ->assertJsonPath('shortages.0.max_allowed_quantity', 50)
+            ->assertJsonPath('shortages.0.deficit', 1);
+
+        $this->assertDatabaseCount('customer_cart_items', 0);
+    }
+
+    public function test_checkout_allows_order_when_resulting_units_equal_low_stock_threshold(): void
+    {
+        $customer = User::factory()->create(['user_type' => 'customer']);
+        $fixture = $this->createInventoryFixture(
+            materialUnits: 55,
+            pivotQuantity: 1,
+            lowStockThreshold: 5,
+        );
+
+        $this->actingAs($customer)
+            ->postJson('/api/customer-cart/items', [
+                'product_id' => $fixture['product']->id,
+                'order_template_id' => $fixture['template']->id,
+                'selected_options' => [
+                    (string) $fixture['option']->id => $fixture['optionType']->id,
+                ],
+                'quantity' => 50,
+            ])
+            ->assertCreated();
+
+        $this->actingAs($customer)
+            ->postJson('/api/customer-cart/checkout', [
+                'general_drive_link' => 'https://drive.google.com/drive/folders/threshold-equal-case',
+            ])
+            ->assertOk()
+            ->assertJsonPath('success', true);
+
+        $fixture['material']->refresh();
+        $this->assertSame(5, (int) $fixture['material']->units);
+    }
+
+    public function test_checkout_blocks_when_order_would_reduce_units_below_low_stock_threshold(): void
+    {
+        $customer = User::factory()->create(['user_type' => 'customer']);
+        $fixture = $this->createInventoryFixture(
+            materialUnits: 55,
+            pivotQuantity: 1,
+            lowStockThreshold: 5,
+        );
+
+        $this->actingAs($customer)
+            ->postJson('/api/customer-cart/items', [
+                'product_id' => $fixture['product']->id,
+                'order_template_id' => $fixture['template']->id,
+                'selected_options' => [
+                    (string) $fixture['option']->id => $fixture['optionType']->id,
+                ],
+                'quantity' => 50,
+            ])
+            ->assertCreated();
+
+        $fixture['material']->update([
+            'units' => 54,
+        ]);
+
+        $response = $this->actingAs($customer)
+            ->postJson('/api/customer-cart/checkout', [
+                'general_drive_link' => 'https://drive.google.com/drive/folders/threshold-below-case',
+            ]);
+
+        $response
+            ->assertStatus(422)
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('shortages.0.material_id', $fixture['material']->id)
+            ->assertJsonPath('shortages.0.required', 50)
+            ->assertJsonPath('shortages.0.available', 54)
+            ->assertJsonPath('shortages.0.low_stock_threshold', 5)
+            ->assertJsonPath('shortages.0.safe_available', 49)
+            ->assertJsonPath('shortages.0.max_allowed_quantity', 49)
+            ->assertJsonPath('shortages.0.deficit', 1);
+
+        $this->assertDatabaseCount('customer_order_groups', 0);
+
+        $fixture['material']->refresh();
+        $this->assertSame(54, (int) $fixture['material']->units);
     }
 
     public function test_cancellation_from_preparing_does_not_restore_stock(): void
@@ -599,7 +717,7 @@ class InventoryMaterialSecurityAndStockFlowTest extends TestCase
         $this->assertSame(26, (int) $fixture['material']->units);
     }
 
-    public function test_checkout_applies_fallback_rules_and_blocks_when_fallback_material_is_insufficient(): void
+    public function test_cart_add_blocks_when_fallback_material_is_insufficient(): void
     {
         $customer = User::factory()->create(['user_type' => 'customer']);
         $fixture = $this->createInventoryFixture(materialUnits: 10, pivotQuantity: 1);
@@ -623,7 +741,7 @@ class InventoryMaterialSecurityAndStockFlowTest extends TestCase
             'quantity' => 5,
         ]);
 
-        $this->actingAs($customer)
+        $response = $this->actingAs($customer)
             ->postJson('/api/customer-cart/items', [
                 'product_id' => $fixture['product']->id,
                 'order_template_id' => $fixture['template']->id,
@@ -631,21 +749,21 @@ class InventoryMaterialSecurityAndStockFlowTest extends TestCase
                     (string) $fixture['option']->id => $fixture['optionType']->id,
                 ],
                 'quantity' => 1,
-            ])
-            ->assertCreated();
-
-        $checkoutResponse = $this->actingAs($customer)
-            ->postJson('/api/customer-cart/checkout', [
-                'general_drive_link' => 'https://drive.google.com/drive/folders/selected-only-checkout',
             ]);
 
-        $checkoutResponse
+        $response
             ->assertStatus(422)
             ->assertJsonPath('success', false)
+            ->assertJsonPath('max_order_quantity', 0)
             ->assertJsonPath('shortages.0.material_id', $unrelatedFallbackMaterial->id)
             ->assertJsonPath('shortages.0.required', 5)
             ->assertJsonPath('shortages.0.available', 0)
+            ->assertJsonPath('shortages.0.low_stock_threshold', 5)
+            ->assertJsonPath('shortages.0.safe_available', 0)
+            ->assertJsonPath('shortages.0.max_allowed_quantity', 0)
             ->assertJsonPath('shortages.0.deficit', 5);
+
+        $this->assertDatabaseCount('customer_cart_items', 0);
 
         $fixture['material']->refresh();
         $unrelatedFallbackMaterial->refresh();
@@ -767,7 +885,7 @@ class InventoryMaterialSecurityAndStockFlowTest extends TestCase
         $this->assertSame(25, (int) $material->units);
     }
 
-    public function test_checkout_blocks_when_product_has_no_material_mapping_rows(): void
+    public function test_cart_add_blocks_when_product_has_no_material_mapping_rows(): void
     {
         $customer = User::factory()->create(['user_type' => 'customer']);
 
@@ -810,7 +928,7 @@ class InventoryMaterialSecurityAndStockFlowTest extends TestCase
             'fee_amount' => 0,
         ]);
 
-        $this->actingAs($customer)
+        $response = $this->actingAs($customer)
             ->postJson('/api/customer-cart/items', [
                 'product_id' => $product->id,
                 'order_template_id' => $template->id,
@@ -818,12 +936,6 @@ class InventoryMaterialSecurityAndStockFlowTest extends TestCase
                     (string) $option->id => $optionType->id,
                 ],
                 'quantity' => 2,
-            ])
-            ->assertCreated();
-
-        $response = $this->actingAs($customer)
-            ->postJson('/api/customer-cart/checkout', [
-                'general_drive_link' => 'https://drive.google.com/drive/folders/missing-mapping',
             ]);
 
         $response
@@ -832,6 +944,7 @@ class InventoryMaterialSecurityAndStockFlowTest extends TestCase
             ->assertJsonPath('configuration_issues.0.product_id', $product->id)
             ->assertJsonPath('configuration_issues.0.issue', 'missing_product_option_mappings');
 
+        $this->assertDatabaseCount('customer_cart_items', 0);
         $this->assertDatabaseCount('customer_order_groups', 0);
     }
 
@@ -904,7 +1017,7 @@ class InventoryMaterialSecurityAndStockFlowTest extends TestCase
     /**
      * @return array{product: Product, material: Material, template: OrderTemplate, option: OrderTemplateOption, optionType: OrderTemplateOptionType}
      */
-    private function createInventoryFixture(int $materialUnits, int $pivotQuantity): array
+    private function createInventoryFixture(int $materialUnits, int $pivotQuantity, int $lowStockThreshold = 1): array
     {
         $product = Product::create([
             'name' => 'Inventory Fixture Product '.uniqid(),
@@ -915,6 +1028,7 @@ class InventoryMaterialSecurityAndStockFlowTest extends TestCase
         $material = Material::create([
             'name' => 'Material '.uniqid(),
             'units' => $materialUnits,
+            'low_stock_threshold' => $lowStockThreshold,
         ]);
 
         MaterialConsumption::create([

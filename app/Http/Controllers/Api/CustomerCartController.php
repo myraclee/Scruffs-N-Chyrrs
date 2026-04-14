@@ -94,6 +94,16 @@ class CustomerCartController extends Controller
             $validated['selected_options']
         );
 
+        $inventoryValidationResponse = $this->validateOrderLineAgainstInventoryBuffer([
+            'product_id' => (int) $validated['product_id'],
+            'quantity' => (int) $validated['quantity'],
+            'selected_options' => $normalizedOptions,
+        ]);
+
+        if ($inventoryValidationResponse !== null) {
+            return $inventoryValidationResponse;
+        }
+
         CustomerCartItem::create([
             'customer_cart_id' => $cart->id,
             'product_id' => $validated['product_id'],
@@ -144,6 +154,16 @@ class CustomerCartController extends Controller
             $template,
             $updatedOptions
         );
+
+        $inventoryValidationResponse = $this->validateOrderLineAgainstInventoryBuffer([
+            'product_id' => (int) $cartItem->product_id,
+            'quantity' => (int) $updatedQuantity,
+            'selected_options' => $normalizedOptions,
+        ]);
+
+        if ($inventoryValidationResponse !== null) {
+            return $inventoryValidationResponse;
+        }
 
         $minOrder = $template->minOrder->min_quantity ?? 1;
         if ($updatedQuantity < $minOrder) {
@@ -377,6 +397,34 @@ class CustomerCartController extends Controller
         $request->merge([
             'general_drive_link' => GoogleDriveUrl::normalize($request->input('general_drive_link')),
         ]);
+    }
+
+    /**
+     * @param array{product_id:int, quantity:int, selected_options:array<int|string, int|string>} $orderLine
+     */
+    private function validateOrderLineAgainstInventoryBuffer(array $orderLine): ?JsonResponse
+    {
+        try {
+            $requirements = $this->stockService->calculateRequirements([$orderLine]);
+            $shortages = $this->stockService->previewShortagesFromRequirements($requirements);
+
+            if (empty($shortages)) {
+                return null;
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Requested quantity exceeds available inventory buffer.',
+                'shortages' => $shortages,
+                'max_order_quantity' => $this->stockService->calculateMaxOrderQuantityForOrderLine($orderLine),
+            ], 422);
+        } catch (InvalidInventoryConfigurationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'configuration_issues' => $e->issues,
+            ], 422);
+        }
     }
 
     private function transformCart(CustomerCart $cart): array

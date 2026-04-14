@@ -128,7 +128,7 @@
             <div class="input_group lowstock_input">
                 <label>Low Stock</label>
                 <input type="number" id="newThresholdInput" class="number_input" style="width: 150px;" min="1" step="1" inputmode="numeric" value="5">
-                <small class="field_hint">Warn at or below this level</small>
+                <small class="field_hint">Orders cannot reduce stock below this level</small>
             </div>
         </div>
 
@@ -173,7 +173,7 @@
             <div class="input_group lowstock_input">
                 <label>Low Stock</label>
                 <input type="number" id="editThresholdInput" class="number_input" style="width: 150px;" min="1" step="1" inputmode="numeric" value="5">
-                <small class="field_hint">Warn at or below this level</small>
+                <small class="field_hint">Orders cannot reduce stock below this level</small>
             </div>
         </div>
 

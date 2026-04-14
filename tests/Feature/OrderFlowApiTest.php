@@ -652,7 +652,10 @@ class OrderFlowApiTest extends TestCase
             ->assertJsonPath('shortages.0.material_id', $material->id)
             ->assertJsonPath('shortages.0.required', 3)
             ->assertJsonPath('shortages.0.available', 1)
-            ->assertJsonPath('shortages.0.deficit', 2);
+            ->assertJsonPath('shortages.0.low_stock_threshold', 5)
+            ->assertJsonPath('shortages.0.safe_available', 0)
+            ->assertJsonPath('shortages.0.max_allowed_quantity', 0)
+            ->assertJsonPath('shortages.0.deficit', 3);
 
         $this->assertDatabaseHas('customer_orders', [
             'id' => $order->id,

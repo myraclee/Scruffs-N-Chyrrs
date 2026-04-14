@@ -8,6 +8,7 @@ use App\Models\Material;
 use App\Models\MaterialConsumption;
 use App\Models\OrderTemplateOptionType;
 use App\Models\Product;
+use Illuminate\Support\Collection;
 
 class InventoryStockService
 {
@@ -294,37 +295,8 @@ class InventoryStockService
             return [];
         }
 
-        $materialIds = collect($requirements)
-            ->pluck('material_id')
-            ->map(fn ($id) => (int) $id)
-            ->unique()
-            ->values()
-            ->all();
-
-        $materials = Material::query()
-            ->whereIn('id', $materialIds)
-            ->lockForUpdate()
-            ->get()
-            ->keyBy('id');
-
-        $shortages = [];
-
-        foreach ($requirements as $requirement) {
-            $materialId = (int) $requirement['material_id'];
-            $required = (int) $requirement['required'];
-            $material = $materials->get($materialId);
-            $available = (int) ($material?->units ?? 0);
-
-            if (! $material || $available < $required) {
-                $shortages[] = [
-                    'material_id' => $materialId,
-                    'material_name' => (string) ($material?->name ?? $requirement['material_name']),
-                    'required' => $required,
-                    'available' => $available,
-                    'deficit' => max($required - $available, 0),
-                ];
-            }
-        }
+        $materials = $this->loadMaterialsForRequirements($requirements, true);
+        $shortages = $this->buildRequirementShortages($requirements, $materials);
 
         if (! empty($shortages)) {
             throw new InsufficientMaterialStockException($shortages);
@@ -341,6 +313,44 @@ class InventoryStockService
         }
 
         return $requirements;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $requirements
+     * @return array<int, array<string, int|string>>
+     */
+    public function previewShortagesFromRequirements(array $requirements): array
+    {
+        if (empty($requirements)) {
+            return [];
+        }
+
+        $materials = $this->loadMaterialsForRequirements($requirements);
+
+        return $this->buildRequirementShortages($requirements, $materials);
+    }
+
+    /**
+     * @param array{product_id:int, selected_options?:array<int|string, int|string>, selected_option_type_ids?:array<int, int>} $orderLine
+     */
+    public function calculateMaxOrderQuantityForOrderLine(array $orderLine): ?int
+    {
+        $requirements = $this->calculateRequirements([
+            [
+                'product_id' => (int) ($orderLine['product_id'] ?? 0),
+                'quantity' => 1,
+                'selected_options' => $orderLine['selected_options'] ?? [],
+                'selected_option_type_ids' => $orderLine['selected_option_type_ids'] ?? [],
+            ],
+        ]);
+
+        if (empty($requirements)) {
+            return null;
+        }
+
+        $materials = $this->loadMaterialsForRequirements($requirements);
+
+        return $this->calculateMaxOrderQuantityFromRequirements($requirements, $materials);
     }
 
     /**
@@ -393,5 +403,103 @@ class InventoryStockService
         $requirements = $this->calculateRequirements($orderLines);
 
         return $this->deductFromRequirements($requirements);
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $requirements
+     */
+    private function loadMaterialsForRequirements(array $requirements, bool $lockForUpdate = false): Collection
+    {
+        $materialIds = collect($requirements)
+            ->pluck('material_id')
+            ->map(fn ($id): int => (int) $id)
+            ->filter(fn (int $id): bool => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+
+        if (empty($materialIds)) {
+            return collect();
+        }
+
+        $materialsQuery = Material::query()->whereIn('id', $materialIds);
+
+        if ($lockForUpdate) {
+            $materialsQuery->lockForUpdate();
+        }
+
+        return $materialsQuery
+            ->get()
+            ->keyBy('id');
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $requirements
+     * @return array<int, array<string, int|string>>
+     */
+    private function buildRequirementShortages(array $requirements, Collection $materials): array
+    {
+        $shortages = [];
+
+        foreach ($requirements as $requirement) {
+            $materialId = (int) ($requirement['material_id'] ?? 0);
+            if ($materialId <= 0) {
+                continue;
+            }
+
+            $required = max(0, (int) ($requirement['required'] ?? 0));
+            $material = $materials->get($materialId);
+            $available = max(0, (int) ($material?->units ?? 0));
+            $lowStockThreshold = max(0, (int) ($material?->low_stock_threshold ?? 0));
+            $safeAvailable = max($available - $lowStockThreshold, 0);
+
+            if (! $material || $safeAvailable < $required) {
+                $shortages[] = [
+                    'material_id' => $materialId,
+                    'material_name' => (string) ($material?->name ?? ($requirement['material_name'] ?? 'Unknown Material')),
+                    'required' => $required,
+                    'available' => $available,
+                    'low_stock_threshold' => $lowStockThreshold,
+                    'safe_available' => $safeAvailable,
+                    'max_allowed_quantity' => $safeAvailable,
+                    'deficit' => max($required - $safeAvailable, 0),
+                ];
+            }
+        }
+
+        return $shortages;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $requirements
+     */
+    private function calculateMaxOrderQuantityFromRequirements(array $requirements, Collection $materials): ?int
+    {
+        $maxPerMaterial = [];
+
+        foreach ($requirements as $requirement) {
+            $materialId = (int) ($requirement['material_id'] ?? 0);
+            if ($materialId <= 0) {
+                continue;
+            }
+
+            $perUnitRequired = (int) ($requirement['required'] ?? 0);
+            if ($perUnitRequired <= 0) {
+                continue;
+            }
+
+            $material = $materials->get($materialId);
+            $available = max(0, (int) ($material?->units ?? 0));
+            $lowStockThreshold = max(0, (int) ($material?->low_stock_threshold ?? 0));
+            $safeAvailable = max($available - $lowStockThreshold, 0);
+
+            $maxPerMaterial[] = intdiv($safeAvailable, $perUnitRequired);
+        }
+
+        if (empty($maxPerMaterial)) {
+            return null;
+        }
+
+        return max(0, (int) min($maxPerMaterial));
     }
 }
