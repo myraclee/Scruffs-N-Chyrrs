@@ -16,6 +16,15 @@ const MONTH_LABELS = [
   "December",
 ];
 
+const PERIOD_LABELS = {
+  daily: "Daily",
+  weekly: "Weekly",
+  monthly: "Monthly",
+  yearly: "Yearly",
+};
+
+const PERIOD_VALUES = Object.keys(PERIOD_LABELS);
+
 const REVENUE_BAR_COLORS = [
   "#DCBAE6",
   "#9659A7",
@@ -34,8 +43,12 @@ const REVENUE_BAR_COLORS = [
 const PIE_COLORS = ["#9659A7", "#DCBAE6", "#FFF2D9", "#F4D6D2", "#CDBAA7", "#8CC6D7"];
 
 const elements = {
+  periodSelector: document.getElementById("periodSelector"),
+  salesPeriodSelector: document.getElementById("salesPeriodSelector"),
   yearSelector: document.getElementById("yearSelector"),
   monthSelector: document.getElementById("monthSelector"),
+  reportSectionTitle: document.getElementById("reportSectionTitle"),
+  salesSectionTitle: document.getElementById("salesSectionTitle"),
   revenueChartCanvas: document.getElementById("revenueChart"),
   salesChartCanvas: document.getElementById("salesChart"),
   revenueNoDataHint: document.getElementById("revenueNoDataHint"),
@@ -62,7 +75,9 @@ document.addEventListener("DOMContentLoaded", () => {
   dashboardState = normalizeDashboardData(readBootstrapData());
   syncSelectorValues();
   renderSummaryCards();
+  renderSectionTitles();
   renderNoDataHints();
+  persistPeriodsInQuery(dashboardState.selected_report_period, dashboardState.selected_sales_period);
 
   if (typeof window.Chart !== "function") {
     Toast.error("Chart library failed to load. Please refresh the page.");
@@ -75,6 +90,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function hasRequiredElements() {
   return (
+    elements.periodSelector &&
+    elements.salesPeriodSelector &&
     elements.yearSelector &&
     elements.monthSelector &&
     elements.revenueChartCanvas &&
@@ -83,6 +100,8 @@ function hasRequiredElements() {
 }
 
 function bindEvents() {
+  elements.periodSelector.addEventListener("change", handleReportPeriodChange);
+  elements.salesPeriodSelector.addEventListener("change", handleSalesPeriodChange);
   elements.yearSelector.addEventListener("change", handleYearChange);
   elements.monthSelector.addEventListener("change", handleMonthChange);
 }
@@ -93,11 +112,61 @@ async function handleYearChange() {
   }
 
   const selectedYear = Number(elements.yearSelector.value);
+
+  if (!Number.isInteger(selectedYear)) {
+    return;
+  }
+
+  await refreshDashboardMetrics();
+}
+
+async function handleReportPeriodChange() {
+  if (isFetching) {
+    return;
+  }
+
+  const selectedReportPeriod = normalizePeriodValue(elements.periodSelector.value);
+
+  if (!selectedReportPeriod) {
+    syncSelectorValues();
+    return;
+  }
+
+  await refreshDashboardMetrics({ report_period: selectedReportPeriod });
+}
+
+async function handleSalesPeriodChange() {
+  if (isFetching) {
+    return;
+  }
+
+  const selectedSalesPeriod = normalizePeriodValue(elements.salesPeriodSelector.value);
+
+  if (!selectedSalesPeriod) {
+    syncSelectorValues();
+    return;
+  }
+
+  await refreshDashboardMetrics({ sales_period: selectedSalesPeriod });
+}
+
+async function refreshDashboardMetrics(periodOverrides = {}) {
+  const selectedYear = Number(elements.yearSelector.value);
   const selectedMonth = Number(elements.monthSelector.value);
 
   if (!Number.isInteger(selectedYear)) {
     return;
   }
+
+  const selectedReportPeriod =
+    normalizePeriodValue(periodOverrides.report_period) ||
+    normalizePeriodValue(elements.periodSelector.value) ||
+    dashboardState.selected_report_period;
+
+  const selectedSalesPeriod =
+    normalizePeriodValue(periodOverrides.sales_period) ||
+    normalizePeriodValue(elements.salesPeriodSelector.value) ||
+    dashboardState.selected_sales_period;
 
   isFetching = true;
 
@@ -105,6 +174,8 @@ async function handleYearChange() {
     const response = await OwnerDashboardAPI.getMetrics({
       year: selectedYear,
       month: Number.isInteger(selectedMonth) ? selectedMonth : dashboardState.selected_month,
+      report_period: selectedReportPeriod,
+      sales_period: selectedSalesPeriod,
     });
 
     if (!response.success) {
@@ -116,8 +187,10 @@ async function handleYearChange() {
     dashboardState = normalizeDashboardData(response.data);
     syncSelectorValues();
     renderSummaryCards();
+    renderSectionTitles();
     renderNoDataHints();
     updateCharts();
+    persistPeriodsInQuery(dashboardState.selected_report_period, dashboardState.selected_sales_period);
   } finally {
     isFetching = false;
   }
@@ -166,6 +239,9 @@ function normalizeDashboardData(payload = {}) {
 
   const selectedYearCandidate = Number(payload.selected_year);
   const selectedMonthCandidate = Number(payload.selected_month);
+  const selectedReportPeriodCandidate = normalizePeriodValue(payload.selected_report_period);
+  const selectedSalesPeriodCandidate = normalizePeriodValue(payload.selected_sales_period);
+  const selectedPeriodCandidate = normalizePeriodValue(payload.selected_period);
 
   const selectedYear = availableYears.includes(selectedYearCandidate)
     ? selectedYearCandidate
@@ -177,6 +253,9 @@ function normalizeDashboardData(payload = {}) {
     Number.isInteger(selectedMonthCandidate) && selectedMonthCandidate >= 0 && selectedMonthCandidate <= 11
       ? selectedMonthCandidate
       : fallbackMonth;
+
+  const selectedReportPeriod = selectedReportPeriodCandidate || selectedPeriodCandidate || "weekly";
+  const selectedSalesPeriod = selectedSalesPeriodCandidate || selectedPeriodCandidate || "weekly";
 
   const monthlyRevenueRaw = Array.isArray(payload.charts?.monthly_revenue)
     ? payload.charts.monthly_revenue
@@ -243,6 +322,9 @@ function normalizeDashboardData(payload = {}) {
     available_years: availableYears.length > 0 ? availableYears : [fallbackYear],
     selected_year: selectedYear,
     selected_month: selectedMonth,
+    selected_period: selectedReportPeriod,
+    selected_report_period: selectedReportPeriod,
+    selected_sales_period: selectedSalesPeriod,
     weekly_report: weeklyReport,
     weekly_sales: weeklySales,
     charts: {
@@ -263,6 +345,8 @@ function normalizeDashboardData(payload = {}) {
 function syncSelectorValues() {
   elements.yearSelector.value = String(dashboardState.selected_year);
   elements.monthSelector.value = String(dashboardState.selected_month);
+  elements.periodSelector.value = dashboardState.selected_report_period;
+  elements.salesPeriodSelector.value = dashboardState.selected_sales_period;
 }
 
 function renderSummaryCards() {
@@ -299,6 +383,19 @@ function renderSummaryCards() {
     elements.weeklyCanceledOrders.textContent = String(
       Math.max(0, Math.trunc(dashboardState.weekly_sales.canceled_orders || 0)),
     );
+  }
+}
+
+function renderSectionTitles() {
+  const reportPeriodLabel = PERIOD_LABELS[dashboardState.selected_report_period] || PERIOD_LABELS.weekly;
+  const salesPeriodLabel = PERIOD_LABELS[dashboardState.selected_sales_period] || PERIOD_LABELS.weekly;
+
+  if (elements.reportSectionTitle) {
+    elements.reportSectionTitle.textContent = `${reportPeriodLabel} Report`;
+  }
+
+  if (elements.salesSectionTitle) {
+    elements.salesSectionTitle.textContent = `${salesPeriodLabel} Sales`;
   }
 }
 
@@ -443,6 +540,39 @@ function getSelectedMonthData() {
     labels,
     values,
   };
+}
+
+function normalizePeriodValue(value) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const normalized = value.trim().toLowerCase();
+
+  return PERIOD_VALUES.includes(normalized) ? normalized : null;
+}
+
+function persistPeriodsInQuery(reportPeriod, salesPeriod) {
+  const normalizedReportPeriod = normalizePeriodValue(reportPeriod);
+  const normalizedSalesPeriod = normalizePeriodValue(salesPeriod);
+
+  if (!normalizedReportPeriod || !normalizedSalesPeriod) {
+    return;
+  }
+
+  const currentUrl = new URL(window.location.href);
+  currentUrl.searchParams.set("report_period", normalizedReportPeriod);
+  currentUrl.searchParams.set("sales_period", normalizedSalesPeriod);
+
+  // Keep legacy period query in sync with report period for old links and fallback support.
+  currentUrl.searchParams.set("period", normalizedReportPeriod);
+
+  const queryString = currentUrl.searchParams.toString();
+  const nextUrl = queryString
+    ? `${currentUrl.pathname}?${queryString}`
+    : currentUrl.pathname;
+
+  window.history.replaceState({}, "", nextUrl);
 }
 
 function formatMoney(value) {

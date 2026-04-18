@@ -55,10 +55,26 @@ class OwnerDashboardAPI {
       query.set("month", String(filters.month));
     }
 
+    this.appendPeriodFilter(query, "report_period", filters.report_period);
+    this.appendPeriodFilter(query, "sales_period", filters.sales_period);
+    this.appendPeriodFilter(query, "period", filters.period);
+
     const queryString = query.toString();
     const url = queryString ? `${this.baseUrl}?${queryString}` : this.baseUrl;
 
     return this.request(url, { method: "GET" });
+  }
+
+  appendPeriodFilter(query, paramName, value) {
+    if (typeof value !== "string") {
+      return;
+    }
+
+    const normalizedPeriod = value.trim().toLowerCase();
+
+    if (["daily", "weekly", "monthly", "yearly"].includes(normalizedPeriod)) {
+      query.set(paramName, normalizedPeriod);
+    }
   }
 }
 

@@ -23,9 +23,9 @@
 
 /* Entrance animation */
 @keyframes letterIn {
-    to { 
-        opacity: 1; 
-        transform: scale(1) translateY(0); 
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
     }
 }
 
@@ -35,7 +35,7 @@
     font-size: 55px;
     color: #682c7a;
     margin-bottom: 40px;
-    text-align: left; 
+    text-align: left;
     font-weight: normal;
 }
 .welcome_name {
@@ -49,6 +49,45 @@
     text-align: center;
     margin-bottom: 20px;
     margin-top: 40px;
+}
+
+.summary_header_container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 40px;
+    margin-bottom: 20px;
+}
+
+.summary_header_container .section_title {
+    margin: 0;
+}
+
+.summary_period_controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.period_dropdown {
+    font-family: 'Coolvetica', sans-serif;
+    font-size: 18px;
+    color: #682c7a;
+    border: 2px solid #682c7a;
+    border-radius: 10px;
+    padding: 5px 12px;
+    background-color: #fff7ec;
+    cursor: pointer;
+    outline: none;
+    transition: 0.2s;
+}
+
+.period_dropdown:hover,
+.period_dropdown:focus {
+    border-color: #a15fb5;
+    background-color: #fff;
 }
 
 /* --- Weekly Report Grid --- */
@@ -108,17 +147,33 @@
 }
 
 /* Color Specific Rules for Sales Cards */
-.border-purple { border: 2px solid #682c7a; }
-.text-purple { color: #682c7a; }
+.border-purple {
+    border: 2px solid #682c7a;
+}
+.text-purple {
+    color: #682c7a;
+}
 
-.border-green { border: 2px solid #4caf50; }
-.text-green { color: #4caf50; }
+.border-green {
+    border: 2px solid #4caf50;
+}
+.text-green {
+    color: #4caf50;
+}
 
-.border-yellow { border: 2px solid #f4c430; }
-.text-yellow { color: #f4c430; }
+.border-yellow {
+    border: 2px solid #f4c430;
+}
+.text-yellow {
+    color: #f4c430;
+}
 
-.border-red { border: 2px solid #d94848; }
-.text-red { color: #d94848; }
+.border-red {
+    border: 2px solid #d94848;
+}
+.text-red {
+    color: #d94848;
+}
 
 /* Re-styling labels/values for the smaller cards */
 .sales_card .card_label {
@@ -174,11 +229,17 @@
 
 /* Responsive Adjustments */
 @media (max-width: 900px) {
-    .report_grid { grid-template-columns: 1fr; }
-    .sales_grid { grid-template-columns: repeat(2, 1fr); }
+    .report_grid {
+        grid-template-columns: 1fr;
+    }
+    .sales_grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 @media (max-width: 600px) {
-    .sales_grid { grid-template-columns: 1fr; }
+    .sales_grid {
+        grid-template-columns: 1fr;
+    }
 }
 /* --- Chart Scroll Area --- */
 .chart_scroll_area {
@@ -189,10 +250,20 @@
 }
 
 /* Custom Scrollbar for the Chart */
-.chart_scroll_area::-webkit-scrollbar { height: 8px; }
-.chart_scroll_area::-webkit-scrollbar-track { background: #fff7ec; border-radius: 10px; }
-.chart_scroll_area::-webkit-scrollbar-thumb { background: #dcbae6; border-radius: 10px; }
-.chart_scroll_area::-webkit-scrollbar-thumb:hover { background: #9659a7; }
+.chart_scroll_area::-webkit-scrollbar {
+    height: 8px;
+}
+.chart_scroll_area::-webkit-scrollbar-track {
+    background: #fff7ec;
+    border-radius: 10px;
+}
+.chart_scroll_area::-webkit-scrollbar-thumb {
+    background: #dcbae6;
+    border-radius: 10px;
+}
+.chart_scroll_area::-webkit-scrollbar-thumb:hover {
+    background: #9659a7;
+}
 
 /* --- Global Charts Header & Year Dropdown --- */
 .charts_header_container {
@@ -206,7 +277,7 @@
 
 .year_dropdown {
     font-family: 'Coolvetica', sans-serif;
-    font-size: 20px; 
+    font-size: 20px;
     color: #682c7a;
     border: 2px solid #682c7a;
     border-radius: 10px;
@@ -254,57 +325,113 @@
 /* --- DASHBOARD MEDIA QUERIES --- */
 
 @media (max-width: 1024px) {
-    .sales_grid { grid-template-columns: repeat(2, 1fr); }
-    .dashboard_container { padding: 20px; }
+    .sales_grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .dashboard_container {
+        padding: 20px;
+    }
 }
 
 /* Mobile Phones */
 @media (max-width: 768px) {
-    
     /* THE FIX: Allow long dynamic names to wrap naturally without cutting off */
     .welcome_header {
-        font-size: clamp(24px, 7vw, 36px); 
-        text-align: center; 
-        white-space: normal; 
-        line-height: 1.3; 
-        word-wrap: break-word; 
+        font-size: clamp(24px, 7vw, 36px);
+        text-align: center;
+        white-space: normal;
+        line-height: 1.3;
+        word-wrap: break-word;
     }
 
-    .report_grid { grid-template-columns: 1fr; }
-    .sales_grid { grid-template-columns: 1fr; }
+    .report_grid {
+        grid-template-columns: 1fr;
+    }
+    .sales_grid {
+        grid-template-columns: 1fr;
+    }
 
     .chart_header_row {
         flex-direction: column;
         gap: 15px;
     }
 
-    .chart_card { padding: 15px; }
+    .summary_header_container {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .chart_card {
+        padding: 15px;
+    }
 }
 
 /* =========================================
    PAGE LOAD SLIDE-UP ANIMATIONS
    ========================================= */
 @keyframes slideUpFade {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.section_title { animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.section_title:nth-of-type(1) { animation-delay: 0.1s; }
-.section_title:nth-of-type(2) { animation-delay: 0.3s; }
+.section_title {
+    animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.section_title:nth-of-type(1) {
+    animation-delay: 0.1s;
+}
+.section_title:nth-of-type(2) {
+    animation-delay: 0.3s;
+}
 
 /* Weekly Report Cards Stagger */
-.report_card:nth-child(1) { animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.15s; }
-.report_card:nth-child(2) { animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.20s; }
-.report_card:nth-child(3) { animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.25s; }
+.report_card:nth-child(1) {
+    animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.15s;
+}
+.report_card:nth-child(2) {
+    animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.2s;
+}
+.report_card:nth-child(3) {
+    animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.25s;
+}
 
 /* Weekly Sales Cards Stagger */
-.sales_card:nth-child(1) { animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.35s; }
-.sales_card:nth-child(2) { animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.40s; }
-.sales_card:nth-child(3) { animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.45s; }
-.sales_card:nth-child(4) { animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.50s; }
+.sales_card:nth-child(1) {
+    animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.35s;
+}
+.sales_card:nth-child(2) {
+    animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.4s;
+}
+.sales_card:nth-child(3) {
+    animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.45s;
+}
+.sales_card:nth-child(4) {
+    animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.5s;
+}
 
 /* Charts Stagger */
-.charts_header_container { animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.60s; }
-.chart_card:nth-child(1) { animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.65s; }
-.chart_card:nth-child(2) { animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0.70s; }
+.charts_header_container {
+    animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.6s;
+}
+.chart_card:nth-child(1) {
+    animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.65s;
+}
+.chart_card:nth-child(2) {
+    animation: slideUpFade 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.7s;
+}

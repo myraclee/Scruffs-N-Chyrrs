@@ -11,6 +11,12 @@ use Illuminate\Support\Facades\DB;
 class OwnerDashboardMetricsService
 {
     private const LAUNCH_YEAR = 2026;
+    private const DEFAULT_PERIOD = 'weekly';
+
+    /**
+     * @var list<string>
+     */
+    private const PERIODS = ['daily', 'weekly', 'monthly', 'yearly'];
 
     /**
      * @var list<string>
@@ -22,67 +28,34 @@ class OwnerDashboardMetricsService
      *
      * @return array<string, mixed>
      */
-    public function build(?int $requestedYear = null, ?int $requestedMonth = null): array
+    public function build(
+        ?int $requestedYear = null,
+        ?int $requestedMonth = null,
+        ?string $requestedReportPeriod = null,
+        ?string $requestedSalesPeriod = null,
+        ?string $requestedPeriod = null,
+    ): array
     {
-        $now = CarbonImmutable::now();
+        $timezone = (string) config('app.timezone', 'UTC');
+        $now = CarbonImmutable::now($timezone);
 
         $availableYears = $this->buildAvailableYears($now->year);
         $selectedYear = $this->resolveSelectedYear($requestedYear, $availableYears, $now->year);
         $selectedMonth = $this->resolveSelectedMonth($requestedMonth, $now->month - 1);
+        $selectedReportPeriod = $this->resolveSelectedPeriod($requestedReportPeriod ?? $requestedPeriod);
+        $selectedSalesPeriod = $this->resolveSelectedPeriod($requestedSalesPeriod ?? $requestedPeriod);
 
-        $weekStart = $now->startOfWeek(CarbonImmutable::MONDAY)->startOfDay();
-        $weekEnd = $now->endOfWeek(CarbonImmutable::SUNDAY)->endOfDay();
+        [$reportPeriodStart, $reportPeriodEnd] = $this->buildPeriodDateRange($selectedReportPeriod, $now);
+        [$salesPeriodStart, $salesPeriodEnd] = $this->buildPeriodDateRange($selectedSalesPeriod, $now);
 
-        $archivedWeekly = DB::table('dashboard_deleted_account_daily_metrics')
-            ->whereBetween('metric_date', [$weekStart->toDateString(), $weekEnd->toDateString()])
-            ->selectRaw('COALESCE(SUM(total_sales), 0) as total_sales')
-            ->selectRaw('COALESCE(SUM(items_sold), 0) as items_sold')
-            ->selectRaw('COALESCE(SUM(total_orders), 0) as total_orders')
-            ->selectRaw('COALESCE(SUM(received_payment), 0) as received_payment')
-            ->selectRaw('COALESCE(SUM(pending_payment), 0) as pending_payment')
-            ->selectRaw('COALESCE(SUM(canceled_orders), 0) as canceled_orders')
-            ->first();
-
-        $weeklyGroupsQuery = CustomerOrderGroup::query()
-            ->whereBetween('created_at', [$weekStart, $weekEnd]);
-
-        $weeklyLiveSales = (float) (clone $weeklyGroupsQuery)
-            ->where('status', '!=', 'cancelled')
-            ->sum('total_price');
-
-        $weeklyLiveItemsSold = (int) CustomerOrder::query()
-            ->whereHas('orderGroup', function ($query) use ($weekStart, $weekEnd): void {
-                $query->whereBetween('created_at', [$weekStart, $weekEnd])
-                    ->where('status', '!=', 'cancelled');
-            })
-            ->sum('quantity');
-
-        $weeklyTotalSales = $weeklyLiveSales + (float) ($archivedWeekly->total_sales ?? 0);
-        $weeklyItemsSold = $weeklyLiveItemsSold + (int) ($archivedWeekly->items_sold ?? 0);
+        $reportTotals = $this->buildSummaryTotalsForRange($reportPeriodStart, $reportPeriodEnd);
+        $salesTotals = $this->buildSummaryTotalsForRange($salesPeriodStart, $salesPeriodEnd);
 
         $lowStockItemName = Material::query()
             ->whereColumn('units', '<=', 'low_stock_threshold')
             ->orderBy('units')
             ->orderBy('name')
             ->value('name');
-
-        $weeklyLiveTotalOrders = (int) (clone $weeklyGroupsQuery)->count();
-        $weeklyLiveReceivedPayment = (int) (clone $weeklyGroupsQuery)
-            ->where('payment_status', 'payment_received')
-            ->count();
-
-        $weeklyLivePendingPayment = (int) (clone $weeklyGroupsQuery)
-            ->whereIn('payment_status', self::PENDING_PAYMENT_STATUSES)
-            ->count();
-
-        $weeklyLiveCanceledOrders = (int) (clone $weeklyGroupsQuery)
-            ->where('status', 'cancelled')
-            ->count();
-
-        $weeklyTotalOrders = $weeklyLiveTotalOrders + (int) ($archivedWeekly->total_orders ?? 0);
-        $weeklyReceivedPayment = $weeklyLiveReceivedPayment + (int) ($archivedWeekly->received_payment ?? 0);
-        $weeklyPendingPayment = $weeklyLivePendingPayment + (int) ($archivedWeekly->pending_payment ?? 0);
-        $weeklyCanceledOrders = $weeklyLiveCanceledOrders + (int) ($archivedWeekly->canceled_orders ?? 0);
 
         $monthlyRevenue = $this->buildMonthlyRevenue($selectedYear);
         $monthlySales = $this->buildMonthlySalesBreakdown($selectedYear);
@@ -91,16 +64,19 @@ class OwnerDashboardMetricsService
             'available_years' => $availableYears,
             'selected_year' => $selectedYear,
             'selected_month' => $selectedMonth,
+            'selected_period' => $selectedReportPeriod,
+            'selected_report_period' => $selectedReportPeriod,
+            'selected_sales_period' => $selectedSalesPeriod,
             'weekly_report' => [
-                'total_sales' => round($weeklyTotalSales, 2),
-                'items_sold' => $weeklyItemsSold,
+                'total_sales' => round($reportTotals['total_sales'], 2),
+                'items_sold' => $reportTotals['items_sold'],
                 'low_stock_item_name' => $lowStockItemName ?: null,
             ],
             'weekly_sales' => [
-                'total_orders' => $weeklyTotalOrders,
-                'received_payment' => $weeklyReceivedPayment,
-                'pending_payment' => $weeklyPendingPayment,
-                'canceled_orders' => $weeklyCanceledOrders,
+                'total_orders' => $salesTotals['total_orders'],
+                'received_payment' => $salesTotals['received_payment'],
+                'pending_payment' => $salesTotals['pending_payment'],
+                'canceled_orders' => $salesTotals['canceled_orders'],
             ],
             'charts' => [
                 'monthly_revenue' => $monthlyRevenue,
@@ -169,6 +145,95 @@ class OwnerDashboardMetricsService
         }
 
         return 0;
+    }
+
+    private function resolveSelectedPeriod(?string $requestedPeriod): string
+    {
+        if ($requestedPeriod === null) {
+            return self::DEFAULT_PERIOD;
+        }
+
+        $candidate = strtolower(trim($requestedPeriod));
+
+        if (in_array($candidate, self::PERIODS, true)) {
+            return $candidate;
+        }
+
+        return self::DEFAULT_PERIOD;
+    }
+
+    /**
+     * @return array{0: CarbonImmutable, 1: CarbonImmutable}
+     */
+    private function buildPeriodDateRange(string $selectedPeriod, CarbonImmutable $now): array
+    {
+        $periodEnd = $now->endOfDay();
+
+        return match ($selectedPeriod) {
+            'daily' => [$now->startOfDay(), $periodEnd],
+            'monthly' => [$now->startOfMonth()->startOfDay(), $periodEnd],
+            'yearly' => [$now->startOfYear()->startOfDay(), $periodEnd],
+            default => [$now->startOfWeek(CarbonImmutable::MONDAY)->startOfDay(), $periodEnd],
+        };
+    }
+
+    /**
+     * @return array{
+     *     total_sales: float,
+     *     items_sold: int,
+     *     total_orders: int,
+     *     received_payment: int,
+     *     pending_payment: int,
+     *     canceled_orders: int
+     * }
+     */
+    private function buildSummaryTotalsForRange(CarbonImmutable $periodStart, CarbonImmutable $periodEnd): array
+    {
+        $archivedTotals = DB::table('dashboard_deleted_account_daily_metrics')
+            ->whereBetween('metric_date', [$periodStart->toDateString(), $periodEnd->toDateString()])
+            ->selectRaw('COALESCE(SUM(total_sales), 0) as total_sales')
+            ->selectRaw('COALESCE(SUM(items_sold), 0) as items_sold')
+            ->selectRaw('COALESCE(SUM(total_orders), 0) as total_orders')
+            ->selectRaw('COALESCE(SUM(received_payment), 0) as received_payment')
+            ->selectRaw('COALESCE(SUM(pending_payment), 0) as pending_payment')
+            ->selectRaw('COALESCE(SUM(canceled_orders), 0) as canceled_orders')
+            ->first();
+
+        $periodGroupsQuery = CustomerOrderGroup::query()
+            ->whereBetween('created_at', [$periodStart, $periodEnd]);
+
+        $liveTotalSales = (float) (clone $periodGroupsQuery)
+            ->where('status', '!=', 'cancelled')
+            ->sum('total_price');
+
+        $liveItemsSold = (int) CustomerOrder::query()
+            ->whereHas('orderGroup', function ($query) use ($periodStart, $periodEnd): void {
+                $query->whereBetween('created_at', [$periodStart, $periodEnd])
+                    ->where('status', '!=', 'cancelled');
+            })
+            ->sum('quantity');
+
+        $liveTotalOrders = (int) (clone $periodGroupsQuery)->count();
+        $liveReceivedPayment = (int) (clone $periodGroupsQuery)
+            ->where('payment_status', 'payment_received')
+            ->count();
+
+        $livePendingPayment = (int) (clone $periodGroupsQuery)
+            ->whereIn('payment_status', self::PENDING_PAYMENT_STATUSES)
+            ->count();
+
+        $liveCanceledOrders = (int) (clone $periodGroupsQuery)
+            ->where('status', 'cancelled')
+            ->count();
+
+        return [
+            'total_sales' => $liveTotalSales + (float) ($archivedTotals->total_sales ?? 0),
+            'items_sold' => $liveItemsSold + (int) ($archivedTotals->items_sold ?? 0),
+            'total_orders' => $liveTotalOrders + (int) ($archivedTotals->total_orders ?? 0),
+            'received_payment' => $liveReceivedPayment + (int) ($archivedTotals->received_payment ?? 0),
+            'pending_payment' => $livePendingPayment + (int) ($archivedTotals->pending_payment ?? 0),
+            'canceled_orders' => $liveCanceledOrders + (int) ($archivedTotals->canceled_orders ?? 0),
+        ];
     }
 
     /**

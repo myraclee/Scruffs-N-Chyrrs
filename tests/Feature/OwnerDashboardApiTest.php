@@ -27,7 +27,7 @@ class OwnerDashboardApiTest extends TestCase
 
     public function test_owner_dashboard_metrics_api_returns_expected_weekly_and_chart_data(): void
     {
-        CarbonImmutable::setTestNow(CarbonImmutable::create(2026, 4, 7, 10, 0, 0));
+        CarbonImmutable::setTestNow(CarbonImmutable::create(2026, 4, 10, 10, 0, 0));
 
         $owner = User::factory()->create([
             'user_type' => 'owner',
@@ -127,6 +127,9 @@ class OwnerDashboardApiTest extends TestCase
             ->assertJsonPath('success', true)
             ->assertJsonPath('data.selected_year', 2026)
             ->assertJsonPath('data.selected_month', 3)
+            ->assertJsonPath('data.selected_period', 'weekly')
+            ->assertJsonPath('data.selected_report_period', 'weekly')
+            ->assertJsonPath('data.selected_sales_period', 'weekly')
             ->assertJsonPath('data.weekly_report.total_sales', 380)
             ->assertJsonPath('data.weekly_report.items_sold', 9)
             ->assertJsonPath('data.weekly_report.low_stock_item_name', 'Cardstock')
@@ -147,7 +150,7 @@ class OwnerDashboardApiTest extends TestCase
 
     public function test_owner_dashboard_metrics_api_includes_archived_deleted_account_contributions(): void
     {
-        CarbonImmutable::setTestNow(CarbonImmutable::create(2026, 4, 7, 10, 0, 0));
+        CarbonImmutable::setTestNow(CarbonImmutable::create(2026, 4, 10, 10, 0, 0));
 
         $owner = User::factory()->create([
             'user_type' => 'owner',
@@ -197,6 +200,9 @@ class OwnerDashboardApiTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonPath('success', true)
+            ->assertJsonPath('data.selected_period', 'weekly')
+            ->assertJsonPath('data.selected_report_period', 'weekly')
+            ->assertJsonPath('data.selected_sales_period', 'weekly')
             ->assertJsonPath('data.weekly_report.total_sales', 155)
             ->assertJsonPath('data.weekly_report.items_sold', 5)
             ->assertJsonPath('data.weekly_sales.total_orders', 3)
@@ -208,6 +214,271 @@ class OwnerDashboardApiTest extends TestCase
             ->assertJsonPath('data.charts.monthly_sales.values_by_month.3.0', 4)
             ->assertJsonPath('data.charts.monthly_sales.labels_by_month.3.1', 'Live Product')
             ->assertJsonPath('data.charts.monthly_sales.values_by_month.3.1', 2);
+    }
+
+    public function test_owner_dashboard_metrics_api_supports_period_selection_for_summary_sections(): void
+    {
+        CarbonImmutable::setTestNow(CarbonImmutable::create(2026, 4, 10, 10, 0, 0));
+
+        $owner = User::factory()->create([
+            'user_type' => 'owner',
+        ]);
+
+        $customer = User::factory()->create();
+
+        [$stickers, $stickersTemplate] = $this->createProductWithTemplate('Period Stickers');
+        [$posters, $postersTemplate] = $this->createProductWithTemplate('Period Posters');
+
+        Material::create([
+            'name' => 'Glossy Lamination',
+            'units' => 2,
+            'low_stock_threshold' => 5,
+        ]);
+
+        Material::create([
+            'name' => 'Cardstock',
+            'units' => 1,
+            'low_stock_threshold' => 5,
+        ]);
+
+        Material::create([
+            'name' => 'Ink',
+            'units' => 25,
+            'low_stock_threshold' => 5,
+        ]);
+
+        $this->createGroupedOrder(
+            customer: $customer,
+            product: $stickers,
+            template: $stickersTemplate,
+            status: 'completed',
+            totalPrice: 50,
+            quantity: 2,
+            createdAt: CarbonImmutable::parse('2026-04-10 09:00:00'),
+        );
+
+        $this->createGroupedOrder(
+            customer: $customer,
+            product: $posters,
+            template: $postersTemplate,
+            status: 'cancelled',
+            totalPrice: 25,
+            quantity: 5,
+            createdAt: CarbonImmutable::parse('2026-04-10 11:00:00'),
+        );
+
+        $this->createGroupedOrder(
+            customer: $customer,
+            product: $stickers,
+            template: $stickersTemplate,
+            status: 'completed',
+            totalPrice: 70,
+            quantity: 1,
+            createdAt: CarbonImmutable::parse('2026-04-09 09:00:00'),
+        );
+
+        $this->createGroupedOrder(
+            customer: $customer,
+            product: $posters,
+            template: $postersTemplate,
+            status: 'completed',
+            totalPrice: 30,
+            quantity: 1,
+            createdAt: CarbonImmutable::parse('2026-04-01 09:00:00'),
+        );
+
+        $this->createGroupedOrder(
+            customer: $customer,
+            product: $stickers,
+            template: $stickersTemplate,
+            status: 'completed',
+            totalPrice: 90,
+            quantity: 3,
+            createdAt: CarbonImmutable::parse('2026-03-20 09:00:00'),
+        );
+
+        $this->createGroupedOrder(
+            customer: $customer,
+            product: $posters,
+            template: $postersTemplate,
+            status: 'completed',
+            totalPrice: 40,
+            quantity: 2,
+            createdAt: CarbonImmutable::parse('2026-01-15 09:00:00'),
+        );
+
+        DB::table('dashboard_deleted_account_daily_metrics')->insert([
+            [
+                'metric_date' => '2026-04-10',
+                'total_sales' => 10,
+                'items_sold' => 1,
+                'total_orders' => 1,
+                'received_payment' => 1,
+                'pending_payment' => 0,
+                'canceled_orders' => 0,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'metric_date' => '2026-04-08',
+                'total_sales' => 20,
+                'items_sold' => 2,
+                'total_orders' => 1,
+                'received_payment' => 0,
+                'pending_payment' => 1,
+                'canceled_orders' => 0,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'metric_date' => '2026-04-05',
+                'total_sales' => 5,
+                'items_sold' => 1,
+                'total_orders' => 1,
+                'received_payment' => 0,
+                'pending_payment' => 1,
+                'canceled_orders' => 0,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'metric_date' => '2026-01-10',
+                'total_sales' => 15,
+                'items_sold' => 1,
+                'total_orders' => 1,
+                'received_payment' => 1,
+                'pending_payment' => 0,
+                'canceled_orders' => 0,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+
+        $dailyResponse = $this
+            ->actingAs($owner)
+            ->getJson('/api/owner/dashboard/metrics?period=daily&year=2026&month=3');
+
+        $dailyResponse
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.selected_period', 'daily')
+            ->assertJsonPath('data.selected_report_period', 'daily')
+            ->assertJsonPath('data.selected_sales_period', 'daily')
+            ->assertJsonPath('data.weekly_report.total_sales', 60)
+            ->assertJsonPath('data.weekly_report.items_sold', 3)
+            ->assertJsonPath('data.weekly_report.low_stock_item_name', 'Cardstock')
+            ->assertJsonPath('data.weekly_sales.total_orders', 3)
+            ->assertJsonPath('data.weekly_sales.received_payment', 2)
+            ->assertJsonPath('data.weekly_sales.pending_payment', 0)
+            ->assertJsonPath('data.weekly_sales.canceled_orders', 1);
+
+        $weeklyResponse = $this
+            ->actingAs($owner)
+            ->getJson('/api/owner/dashboard/metrics?period=weekly&year=2026&month=3');
+
+        $weeklyResponse
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.selected_period', 'weekly')
+            ->assertJsonPath('data.selected_report_period', 'weekly')
+            ->assertJsonPath('data.selected_sales_period', 'weekly')
+            ->assertJsonPath('data.weekly_report.total_sales', 150)
+            ->assertJsonPath('data.weekly_report.items_sold', 6)
+            ->assertJsonPath('data.weekly_report.low_stock_item_name', 'Cardstock')
+            ->assertJsonPath('data.weekly_sales.total_orders', 5)
+            ->assertJsonPath('data.weekly_sales.received_payment', 3)
+            ->assertJsonPath('data.weekly_sales.pending_payment', 1)
+            ->assertJsonPath('data.weekly_sales.canceled_orders', 1);
+
+        $monthlyResponse = $this
+            ->actingAs($owner)
+            ->getJson('/api/owner/dashboard/metrics?period=monthly&year=2026&month=3');
+
+        $monthlyResponse
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.selected_period', 'monthly')
+            ->assertJsonPath('data.selected_report_period', 'monthly')
+            ->assertJsonPath('data.selected_sales_period', 'monthly')
+            ->assertJsonPath('data.weekly_report.total_sales', 185)
+            ->assertJsonPath('data.weekly_report.items_sold', 8)
+            ->assertJsonPath('data.weekly_report.low_stock_item_name', 'Cardstock')
+            ->assertJsonPath('data.weekly_sales.total_orders', 7)
+            ->assertJsonPath('data.weekly_sales.received_payment', 4)
+            ->assertJsonPath('data.weekly_sales.pending_payment', 2)
+            ->assertJsonPath('data.weekly_sales.canceled_orders', 1);
+
+        $yearlyResponse = $this
+            ->actingAs($owner)
+            ->getJson('/api/owner/dashboard/metrics?period=yearly&year=2026&month=3');
+
+        $yearlyResponse
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.selected_period', 'yearly')
+            ->assertJsonPath('data.selected_report_period', 'yearly')
+            ->assertJsonPath('data.selected_sales_period', 'yearly')
+            ->assertJsonPath('data.weekly_report.total_sales', 330)
+            ->assertJsonPath('data.weekly_report.items_sold', 14)
+            ->assertJsonPath('data.weekly_report.low_stock_item_name', 'Cardstock')
+            ->assertJsonPath('data.weekly_sales.total_orders', 10)
+            ->assertJsonPath('data.weekly_sales.received_payment', 7)
+            ->assertJsonPath('data.weekly_sales.pending_payment', 2)
+            ->assertJsonPath('data.weekly_sales.canceled_orders', 1);
+
+        $splitResponse = $this
+            ->actingAs($owner)
+            ->getJson('/api/owner/dashboard/metrics?report_period=daily&sales_period=yearly&year=2026&month=3');
+
+        $splitResponse
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.selected_period', 'daily')
+            ->assertJsonPath('data.selected_report_period', 'daily')
+            ->assertJsonPath('data.selected_sales_period', 'yearly')
+            ->assertJsonPath('data.weekly_report.total_sales', 60)
+            ->assertJsonPath('data.weekly_report.items_sold', 3)
+            ->assertJsonPath('data.weekly_sales.total_orders', 10)
+            ->assertJsonPath('data.weekly_sales.received_payment', 7)
+            ->assertJsonPath('data.weekly_sales.pending_payment', 2)
+            ->assertJsonPath('data.weekly_sales.canceled_orders', 1);
+    }
+
+    public function test_owner_dashboard_metrics_api_falls_back_to_weekly_for_invalid_period(): void
+    {
+        CarbonImmutable::setTestNow(CarbonImmutable::create(2026, 4, 10, 10, 0, 0));
+
+        $owner = User::factory()->create([
+            'user_type' => 'owner',
+        ]);
+
+        $customer = User::factory()->create();
+
+        [$product, $template] = $this->createProductWithTemplate('Fallback Product');
+
+        $this->createGroupedOrder(
+            customer: $customer,
+            product: $product,
+            template: $template,
+            status: 'completed',
+            totalPrice: 120,
+            quantity: 2,
+            createdAt: CarbonImmutable::parse('2026-04-09 09:00:00'),
+        );
+
+        $response = $this
+            ->actingAs($owner)
+            ->getJson('/api/owner/dashboard/metrics?period=invalid&year=2026&month=3');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.selected_period', 'weekly')
+            ->assertJsonPath('data.selected_report_period', 'weekly')
+            ->assertJsonPath('data.selected_sales_period', 'weekly')
+            ->assertJsonPath('data.weekly_report.total_sales', 120)
+            ->assertJsonPath('data.weekly_sales.total_orders', 1)
+            ->assertJsonPath('data.weekly_sales.canceled_orders', 0);
     }
 
     public function test_non_owner_user_is_forbidden_from_dashboard_metrics_api(): void

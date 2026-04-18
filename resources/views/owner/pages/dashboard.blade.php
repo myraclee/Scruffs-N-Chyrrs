@@ -29,8 +29,31 @@
             'November',
             'December',
         ];
+        $periodOptions = [
+            'daily' => 'Daily',
+            'weekly' => 'Weekly',
+            'monthly' => 'Monthly',
+            'yearly' => 'Yearly',
+        ];
         $ownerFullName = trim((string) (auth()->user()?->first_name ?? '').' '.(string) (auth()->user()?->last_name ?? ''));
         $selectedMonthValue = (int) ($selectedMonth ?? (now()->month - 1));
+        $selectedReportPeriodValue = strtolower((string) (
+            $selectedReportPeriod
+            ?? $selectedPeriod
+            ?? data_get($dashboardData ?? [], 'selected_report_period', data_get($dashboardData ?? [], 'selected_period', 'weekly'))
+        ));
+        if (! array_key_exists($selectedReportPeriodValue, $periodOptions)) {
+            $selectedReportPeriodValue = 'weekly';
+        }
+        $selectedSalesPeriodValue = strtolower((string) (
+            $selectedSalesPeriod
+            ?? data_get($dashboardData ?? [], 'selected_sales_period', data_get($dashboardData ?? [], 'selected_period', 'weekly'))
+        ));
+        if (! array_key_exists($selectedSalesPeriodValue, $periodOptions)) {
+            $selectedSalesPeriodValue = 'weekly';
+        }
+        $selectedReportPeriodLabel = $periodOptions[$selectedReportPeriodValue];
+        $selectedSalesPeriodLabel = $periodOptions[$selectedSalesPeriodValue];
         $selectedMonthKey = (string) $selectedMonthValue;
         $initialSalesHasData = (bool) data_get($dashboardData ?? [], "charts.monthly_sales.has_data_by_month.$selectedMonthKey", false);
     @endphp
@@ -41,7 +64,19 @@
         <span class="welcome_name">{{ $ownerFullName !== '' ? $ownerFullName : 'Owner' }}!</span>
     </h1>
     
- <h2 class="section_title">Weekly Report</h2>
+    <div class="summary_header_container">
+        <h2 id="reportSectionTitle" class="section_title">{{ $selectedReportPeriodLabel }} Report</h2>
+        <div class="summary_period_controls">
+            <select id="periodSelector" class="period_dropdown">
+                @foreach($periodOptions as $periodValue => $periodLabel)
+                    <option value="{{ $periodValue }}" {{ $selectedReportPeriodValue === $periodValue ? 'selected' : '' }}>
+                        {{ $periodLabel }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+    </div>
+
     <div class="report_grid">
         <div class="report_card">
             <span class="card_label">Total Sales</span>
@@ -57,7 +92,19 @@
         </div>
     </div>
 
-    <h2 class="section_title">Weekly Sales</h2>
+    <div class="summary_header_container sales_header_container">
+        <h2 id="salesSectionTitle" class="section_title">{{ $selectedSalesPeriodLabel }} Sales</h2>
+        <div class="summary_period_controls">
+            <select id="salesPeriodSelector" class="period_dropdown">
+                @foreach($periodOptions as $periodValue => $periodLabel)
+                    <option value="{{ $periodValue }}" {{ $selectedSalesPeriodValue === $periodValue ? 'selected' : '' }}>
+                        {{ $periodLabel }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+    </div>
+
     <div class="sales_grid">
         <div class="sales_card border-purple">
             <span class="card_label text-purple">Total Orders</span>
