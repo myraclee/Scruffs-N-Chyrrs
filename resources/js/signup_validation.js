@@ -11,47 +11,46 @@ document.addEventListener("DOMContentLoaded", () => {
     const reqBox = document.getElementById("password_requirements");
     const matchMsg = document.getElementById("match_message");
 
-    // Track if form has been submitted
     let isFormSubmitted = false;
 
     if (!form) return;
 
-    // --- 1. NAME VALIDATION & SANITIZATION ---
+    // --- HELPER FUNCTIONS FOR ERROR UI ---
+    function showFieldError(field, message) {
+        const container = field.closest(".input_group");
+        if (!container) return;
+        let errorElement = container.querySelector(".client_error");
+        if (errorElement) {
+            errorElement.textContent = message;
+            errorElement.style.display = "block";
+            errorElement.classList.add("show_error");
+        }
+        field.style.setProperty("border-color", "#d93025", "important");
+        field.style.boxShadow = "0 0 5px rgba(217, 48, 37, 0.3)";
+    }
+
+    function clearFieldError(field) {
+        const container = field.closest(".input_group");
+        if (!container) return;
+        const errorElement = container.querySelector(".client_error");
+        if (errorElement) {
+            errorElement.style.display = "none";
+            errorElement.textContent = "";
+            errorElement.classList.remove("show_error");
+        }
+        field.style.setProperty("border-color", "#682c7a", "important");
+        field.style.boxShadow = "none";
+    }
+
+    // --- 1. NAME VALIDATION ---
     function sanitizeNameInput(value) {
         return value.replace(/[^A-Za-z\s]/g, "").replace(/^\s+/, "");
     }
-
-    function setupNameValidation(input) {
-        if (!input) return;
-
-        input.addEventListener("input", () => {
-            const cleaned = sanitizeNameInput(input.value);
-            if (input.value !== cleaned) {
-                input.value = cleaned;
-            }
-
-            // Only clear errors if form has been submitted
-            if (isFormSubmitted) {
-                validateNameField(input);
-            }
-        });
-
-        input.addEventListener("keypress", (e) => {
-            const char = String.fromCharCode(e.which);
-            if (!/[A-Za-z\s]/.test(char)) {
-                e.preventDefault();
-            }
-        });
-    }
-
-    setupNameValidation(firstNameInput);
-    setupNameValidation(lastNameInput);
 
     function validateNameField(input) {
         const value = input.value.trim();
         const fieldName =
             input.id === "first_name" ? "first name" : "last name";
-
         if (value === "") {
             showFieldError(input, `The ${fieldName} field is required.`);
             return false;
@@ -64,99 +63,75 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // --- 2. EMAIL VALIDATION & SANITIZATION ---
+    function setupNameValidation(input) {
+        if (!input) return;
+        input.addEventListener("input", () => {
+            const cleaned = sanitizeNameInput(input.value);
+            if (input.value !== cleaned) input.value = cleaned;
+            if (isFormSubmitted || input.value.length > 0) {
+                validateNameField(input);
+            }
+        });
+        input.addEventListener("keypress", (e) => {
+            if (!/[A-Za-z\s]/.test(String.fromCharCode(e.which)))
+                e.preventDefault();
+        });
+    }
+    setupNameValidation(firstNameInput);
+    setupNameValidation(lastNameInput);
+
+    // --- 2. EMAIL VALIDATION ---
     function sanitizeEmail(value) {
-        // Only allow lowercase letters, numbers, periods, and @.
         return value.replace(/[^a-z0-9.@]/gi, "").toLowerCase();
     }
 
     function validateEmailPolicy(email) {
-        if (email === "") {
-            return "The email field is required.";
-        }
-
-        if (!email.includes("@")) {
-            return "The email field format is invalid.";
-        }
-
+        if (email === "") return "The email field is required.";
+        if (!email.includes("@")) return "The email field format is invalid.";
         const parts = email.split("@");
-        if (parts.length !== 2) {
-            return "The email field format is invalid.";
-        }
-
+        if (parts.length !== 2) return "The email field format is invalid.";
         const [prefix, domain] = parts;
-
-        if (!prefix || !domain) {
-            return "The email field format is invalid.";
-        }
-
+        if (!prefix || !domain) return "The email field format is invalid.";
         if (domain !== "gmail.com" && domain !== "ust.edu.ph") {
             return "Only @gmail.com and @ust.edu.ph email domains are allowed.";
         }
-
         if (!/^[a-z0-9.]+$/.test(prefix)) {
-            return "The email prefix may only contain lowercase letters (a-z), numbers (0-9), and periods (.).";
+            return "Email prefix may only contain lowercase letters, numbers, and periods.";
         }
-
-        if (prefix.startsWith(".") || prefix.endsWith(".") || prefix.includes("..")) {
-            return "The email prefix cannot start or end with a period and cannot contain consecutive periods.";
+        if (
+            prefix.startsWith(".") ||
+            prefix.endsWith(".") ||
+            prefix.includes("..")
+        ) {
+            return "Email prefix cannot start/end with a period or contain consecutive periods.";
         }
-
         return null;
-    }
-
-    if (emailInput) {
-        emailInput.addEventListener("input", (e) => {
-            // Force lowercase and restrict characters
-            const cleaned = sanitizeEmail(e.target.value);
-            if (e.target.value !== cleaned) {
-                e.target.value = cleaned;
-            }
-
-            // Only validate if form has been submitted
-            if (isFormSubmitted) {
-                validateEmailField();
-            }
-        });
-
-        emailInput.addEventListener("keypress", (e) => {
-            const char = String.fromCharCode(e.which);
-            // Only allow letters, numbers, periods, and @.
-            if (!/[a-zA-Z0-9@.]/.test(char)) {
-                e.preventDefault();
-            }
-        });
     }
 
     function validateEmailField() {
         const email = emailInput.value.trim();
-
         const validationError = validateEmailPolicy(email);
         if (validationError) {
             showFieldError(emailInput, validationError);
             return false;
         }
-
         clearFieldError(emailInput);
         return true;
     }
 
-    // --- 3. CONTACT NUMBER VALIDATION ---
-    if (contactInput) {
-        contactInput.addEventListener("input", () => {
-            // Only allow numbers
-            contactInput.value = contactInput.value.replace(/[^0-9]/g, "");
-
-            // Only validate if form has been submitted
-            if (isFormSubmitted) {
-                validateContactField();
+    if (emailInput) {
+        emailInput.addEventListener("input", (e) => {
+            const cleaned = sanitizeEmail(e.target.value);
+            if (e.target.value !== cleaned) e.target.value = cleaned;
+            if (isFormSubmitted || emailInput.value.length > 0) {
+                validateEmailField();
             }
         });
     }
 
+    // --- 3. CONTACT NUMBER VALIDATION ---
     function validateContactField() {
         const phone = contactInput.value.trim();
-
         if (phone === "") {
             showFieldError(
                 contactInput,
@@ -175,18 +150,50 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // --- 4. PASSWORD VALIDATION (Real-time hints) ---
-    function validatePassword(password) {
-        const errors = [];
-        if (password.length < 8) errors.push("At least 8 characters");
-        if (!/[A-Z]/.test(password)) errors.push("At least 1 uppercase letter");
-        if (!/[a-z]/.test(password)) errors.push("At least 1 lowercase letter");
-        if (!/[0-9]/.test(password)) errors.push("At least 1 number");
-        if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password))
-            errors.push("At least 1 symbol");
-        return errors;
+    if (contactInput) {
+        contactInput.addEventListener("input", () => {
+            contactInput.value = contactInput.value.replace(/[^0-9]/g, "");
+            if (isFormSubmitted || contactInput.value.length > 0) {
+                validateContactField();
+            }
+        });
     }
 
+    // --- 4. PASSWORD VALIDATION (LIVE ERROR CLEARING) ---
+    function isPasswordValid(password) {
+        return (
+            password.length >= 8 &&
+            /[A-Z]/.test(password) &&
+            /[a-z]/.test(password) &&
+            /[0-9]/.test(password) &&
+            /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
+        );
+    }
+
+    function validatePasswordComplexity() {
+        const password = passwordInput.value;
+        if (password === "") {
+            if (isFormSubmitted)
+                showFieldError(
+                    passwordInput,
+                    "The password field is required.",
+                );
+            return false;
+        }
+        if (!isPasswordValid(password)) {
+            if (isFormSubmitted || password.length > 0) {
+                showFieldError(
+                    passwordInput,
+                    "Password must meet all requirements below.",
+                );
+            }
+            return false;
+        }
+        clearFieldError(passwordInput);
+        return true;
+    }
+
+    // Password hints UI
     const reqs = {
         length: {
             regex: /.{8,}/,
@@ -210,7 +217,7 @@ document.addEventListener("DOMContentLoaded", () => {
         },
     };
 
-    const updateHintsUI = (val) => {
+    function updateHintsUI(val) {
         for (const key in reqs) {
             if (reqs[key].element) {
                 const originalText = reqs[key].element.innerText.replace(
@@ -226,36 +233,54 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
         }
-    };
+    }
 
+    // Live password validation - THIS MAKES ERROR DISAPPEAR WHEN REQUIREMENTS ARE MET
     if (passwordInput && reqBox) {
         passwordInput.addEventListener("focus", () => {
             reqBox.style.display = "block";
             updateHintsUI(passwordInput.value);
         });
-
         passwordInput.addEventListener("input", (e) => {
             updateHintsUI(e.target.value);
+            validatePasswordComplexity(); // Clears error immediately when valid
             checkMatch();
         });
     }
 
+    // Confirm password match with live clearing
     function checkMatch() {
         if (!passwordInput || !confirmPasswordInput || !matchMsg) return;
-
-        if (confirmPasswordInput.value === "") {
+        const password = passwordInput.value;
+        const confirm = confirmPasswordInput.value;
+        if (confirm === "") {
             matchMsg.textContent = "";
-        } else if (passwordInput.value === confirmPasswordInput.value) {
+            if (isFormSubmitted)
+                showFieldError(
+                    confirmPasswordInput,
+                    "Please confirm your password.",
+                );
+            else clearFieldError(confirmPasswordInput);
+            return false;
+        }
+        if (password === confirm) {
             matchMsg.textContent = "✓ Passwords match!";
             matchMsg.style.color = "#4caf50";
+            clearFieldError(confirmPasswordInput);
+            return true;
         } else {
-            matchMsg.textContent = "✗ Passwords do not match.";
             matchMsg.style.color = "#d32f2f";
+            if (isFormSubmitted || confirm.length > 0) {
+                showFieldError(confirmPasswordInput, "Passwords do not match.");
+            }
+            return false;
         }
     }
 
     if (confirmPasswordInput) {
-        confirmPasswordInput.addEventListener("input", checkMatch);
+        confirmPasswordInput.addEventListener("input", () => {
+            checkMatch();
+        });
     }
 
     // --- 5. PASSWORD VISIBILITY TOGGLE ---
@@ -274,64 +299,43 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
     }
-
     setupEye("toggle_signup_password", "password");
     setupEye("toggle_signup_confirm", "password_confirmation");
 
-    // --- 6. FORM SUBMISSION VALIDATION ---
+    // --- 6. FORM SUBMISSION ---
     form.addEventListener("submit", (e) => {
         isFormSubmitted = true;
         let isValid = true;
 
-        // Validate First Name
-        if (!validateNameField(firstNameInput)) {
-            isValid = false;
-        }
+        if (!validateNameField(firstNameInput)) isValid = false;
+        if (!validateNameField(lastNameInput)) isValid = false;
+        if (!validateEmailField()) isValid = false;
+        if (!validateContactField()) isValid = false;
 
-        // Validate Last Name
-        if (!validateNameField(lastNameInput)) {
-            isValid = false;
-        }
-
-        // Validate Email
-        if (!validateEmailField()) {
-            isValid = false;
-        }
-
-        // Validate Contact Number
-        if (!validateContactField()) {
-            isValid = false;
-        }
-
-        // Validate Password
-        const password = passwordInput.value;
-        if (password === "") {
-            isValid = false;
+        // Password validation
+        if (passwordInput.value === "") {
             showFieldError(passwordInput, "The password field is required.");
+            isValid = false;
+        } else if (!isPasswordValid(passwordInput.value)) {
+            showFieldError(
+                passwordInput,
+                "Password must meet all requirements below.",
+            );
+            isValid = false;
         } else {
-            const passwordErrors = validatePassword(password);
-            if (passwordErrors.length > 0) {
-                isValid = false;
-                showFieldError(
-                    passwordInput,
-                    "Password must have: " + passwordErrors.join(", "),
-                );
-            } else {
-                clearFieldError(passwordInput);
-            }
+            clearFieldError(passwordInput);
         }
 
-        // Validate Confirm Password
-        const confirmPassword = confirmPasswordInput.value;
-        if (confirmPassword === "") {
-            isValid = false;
+        // Confirm password validation
+        if (confirmPasswordInput.value === "") {
             showFieldError(
                 confirmPasswordInput,
                 "Please confirm your password.",
             );
-        } else if (password !== confirmPassword) {
             isValid = false;
+        } else if (passwordInput.value !== confirmPasswordInput.value) {
             showFieldError(confirmPasswordInput, "Passwords do not match.");
+            isValid = false;
         } else {
             clearFieldError(confirmPasswordInput);
         }
@@ -341,39 +345,4 @@ document.addEventListener("DOMContentLoaded", () => {
             e.stopImmediatePropagation();
         }
     });
-
-    // --- 7. ERROR UI HELPERS ---
-    function showFieldError(field, message) {
-        const container = field.closest(".input_group");
-        if (!container) return;
-
-        let errorElement = container.querySelector(".client_error");
-
-        if (errorElement) {
-            errorElement.textContent = message;
-            errorElement.style.display = "block";
-            errorElement.classList.add("show_error");
-        }
-
-        // Apply red border to the input
-        field.style.setProperty("border-color", "#d93025", "important");
-        field.style.boxShadow = "0 0 5px rgba(217, 48, 37, 0.3)";
-    }
-
-    function clearFieldError(field) {
-        const container = field.closest(".input_group");
-        if (!container) return;
-
-        const errorElement = container.querySelector(".client_error");
-
-        if (errorElement) {
-            errorElement.style.display = "none";
-            errorElement.textContent = "";
-            errorElement.classList.remove("show_error");
-        }
-
-        // Reset to purple border
-        field.style.setProperty("border-color", "#682c7a", "important");
-        field.style.boxShadow = "none";
-    }
 });

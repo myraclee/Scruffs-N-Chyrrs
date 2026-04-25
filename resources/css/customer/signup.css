@@ -1,3 +1,4 @@
+/* --- GLOBAL RESET FOR WIDER INPUTS --- */
 .main_content {
     display: flex;
     flex-direction: column;
@@ -13,7 +14,34 @@
     margin-bottom: 25px;
 }
 
-/* FORM */
+/* Form container */
+form {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+
+/* Row layout - flex with equal columns */
+.row {
+    display: flex;
+    flex-direction: row;
+    gap: 30px;
+    margin-bottom: 30px;
+    width: 100%;
+}
+
+.row > .input_group {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Input group containers */
 .signup_firstname_container,
 .signup_lastname_container,
 .signup_email_container,
@@ -23,6 +51,7 @@
     display: flex;
     flex-direction: column;
     gap: 5px;
+    width: 100%;
 }
 
 label {
@@ -31,60 +60,51 @@ label {
     color: #682c7a;
 }
 
-/* CONSISTENT INPUT SIZING - ALL INPUTS SAME SIZE */
-.signup_textbox {
-    width: 350px;
+/* --- FORCE ALL INPUTS TO BE FULL WIDTH --- */
+.signup_textbox,
+#contact_number,
+.password_wrapper .signup_textbox,
+.contact_wrapper .signup_textbox {
+    width: 100% !important;
     height: 50px;
+    border: 2px solid #682c7a !important;
     border-radius: 30px;
-    border: 2px solid #682c7a;
-    box-shadow: 0 0 10px 1px rgba(0, 0, 0, 0.12);
-    padding-left: 20px;
-    padding-right: 20px;
-    font-size: 15px;
-    box-sizing: border-box;
+    outline: none;
     transition: all 0.2s ease;
+    padding-left: 20px;
+    padding-right: 50px; /* For eye icon */
+    font-size: 16px;
+    box-sizing: border-box;
+    background: white;
+    box-shadow: 0 0 10px 1px rgba(0, 0, 0, 0.12);
 }
 
 .signup_textbox::placeholder {
     color: #645868;
+    font-size: 15px;
 }
 
 .signup_textbox:focus {
-    border-color: #682c7a;
+    border-color: #682c7a !important;
     outline: none;
-    transition:
-        box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-        border-color 0.3s ease;
+    box-shadow: 0 0 8px rgba(104, 44, 122, 0.3);
 }
 
-form {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-.row {
-    display: flex;
-    flex-direction: row;
-    gap: 30px;
-    margin-bottom: 30px;
-}
-
-/* PASSWORD WRAPPER - Eye icon INSIDE input */
+/* Password wrapper */
 .password_wrapper {
     position: relative;
-    width: 350px;
+    width: 100%;
     display: flex;
     align-items: center;
 }
 
-.password_wrapper .signup_textbox {
-    width: 350px;
-    height: 50px;
-    padding-right: 50px; /* Space for eye icon */
+/* Contact wrapper */
+.contact_wrapper {
+    position: relative;
+    width: 100%;
 }
 
+/* SVG eye toggle */
 .toggle_password {
     position: absolute;
     right: 20px;
@@ -108,13 +128,86 @@ form {
     stroke: #682c7a !important;
 }
 
-/* Hide default browser password reveal */
+/* Hide browser default password reveal */
 input[type="password"]::-ms-reveal,
 input[type="password"]::-ms-clear {
     display: none;
 }
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-reveal {
+    display: none !important;
+}
 
-/* TERMS AND CONDITIONS */
+/* Contact prefix */
+.contact_prefix {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: Coolvetica, sans-serif;
+    font-size: 16px;
+    color: #333;
+    pointer-events: none;
+    z-index: 5;
+}
+
+#contact_number {
+    padding-left: 50px !important;
+}
+
+/* Error messages */
+.client_error,
+.server_error {
+    color: #d93025;
+    font-family: Coolvetica, sans-serif;
+    font-size: 14px;
+    margin-top: 6px;
+    margin-left: 10px;
+    display: block;
+}
+
+.client_error {
+    display: none;
+}
+
+.show_error {
+    display: block !important;
+}
+
+/* Password hints */
+#password_requirements {
+    margin-top: 10px;
+    margin-left: 10px;
+    background: #f9f3fc;
+    padding: 12px;
+    border-radius: 15px;
+    display: none;
+}
+
+.hint_label {
+    font-family: Coolvetica;
+    font-size: 14px;
+    color: #682c7a;
+    margin-bottom: 5px;
+}
+
+.hints_list {
+    font-family: sans-serif;
+    font-size: 12px;
+    color: #666;
+    list-style-type: none;
+    padding-left: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.hints_list li {
+    transition: all 0.2s ease;
+}
+
+/* Terms & Conditions */
 .tnc {
     margin-top: 20px;
     margin-bottom: 20px;
@@ -123,23 +216,17 @@ input[type="password"]::-ms-clear {
     font-size: 16px;
     color: #682c7a;
     display: flex;
-    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
     align-items: center;
     gap: 7px;
 }
 
-input[type="checkbox"] {
-    height: 15px;
-    width: 15px;
+.tnc input[type="checkbox"] {
+    height: 18px;
+    width: 18px;
     accent-color: #682c7a;
     cursor: pointer;
-    transition:
-        transform 0.2s ease-in-out,
-        accent-color 0.2s ease-in-out;
-}
-
-input[type="checkbox"]:checked {
-    transform: scale(1.1);
 }
 
 .tnc_open {
@@ -149,25 +236,23 @@ input[type="checkbox"]:checked {
 
 .tnc_open:hover {
     color: #0072d6;
-    transition: 0.2s;
     text-decoration: underline;
 }
 
-/* BUTTON */
+/* Submit button */
 .signup_submit {
-    height: 40px;
-    width: 150px;
+    height: 45px;
+    width: 180px;
     border: none;
     border-radius: 30px;
     box-shadow: 0 0 7px 4px rgba(0, 0, 0, 0.12);
     background-color: #cbcbcb;
     color: #fff0da;
     font-family: Coolvetica;
-    font-size: 17px;
+    font-size: 18px;
     cursor: not-allowed;
-    transition:
-        background-color 0.3s ease,
-        transform 0.2s ease;
+    transition: all 0.3s ease;
+    margin-top: 10px;
 }
 
 .signup_submit.active {
@@ -180,7 +265,7 @@ input[type="checkbox"]:checked {
     transform: scale(1.05);
 }
 
-/* ALREADY HAVE AN ACCOUNT? */
+/* Existing account */
 .existingaccount {
     margin-top: 20px;
     text-align: center;
@@ -196,127 +281,43 @@ input[type="checkbox"]:checked {
 
 .existingaccount a:hover {
     color: #0072d6;
-    transition: 0.2s;
     text-decoration: underline;
 }
 
-/* ERROR MESSAGES */
-.validation_error,
-.client_error,
-.server_error {
+#match_message {
+    font-family: Coolvetica;
     font-size: 14px;
-    color: #d93025;
-    font-family: "Coolvetica", sans-serif;
     margin-top: 6px;
     margin-left: 10px;
     display: block;
 }
 
-.client_error {
-    display: none;
-}
-
-.show_error {
-    display: block !important;
-}
-
-/* PASSWORD VALIDATION HINTS */
-.password_hints {
-    margin-top: 12px;
-    font-family: "Coolvetica", sans-serif;
-    font-size: 12px;
-}
-
-.hint_label {
-    color: #666;
-    margin: 0 0 8px 0;
-    font-weight: 600;
-    display: block;
-}
-
-.hint_success {
-    color: #4caf50;
-    margin: 0;
-    font-weight: 600;
-}
-
-.hints_list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.hints_list li {
-    padding: 4px 0;
-    font-size: 12px;
-}
-
-.hint_met {
-    color: #4caf50;
-    font-weight: 500;
-}
-
-.hint_unmet {
-    color: #d32f2f;
-    font-weight: 500;
-}
-
-/* MOBILE RESPONSIVENESS */
+/* Mobile */
 @media screen and (max-width: 768px) {
     .header_signup {
         font-size: 2.5rem;
-        margin-bottom: 20px;
+        text-align: center;
     }
-
     form {
-        max-width: 100%;
         padding: 0 15px;
-        box-sizing: border-box;
-        width: 100%;
     }
-
-    /* Stack columns vertically */
     .row {
         flex-direction: column;
-        gap: 15px;
-        margin-bottom: 15px;
-        width: 100%;
+        gap: 20px;
     }
-
-    /* Force all containers to fill screen */
-    .signup_firstname_container,
-    .signup_lastname_container,
-    .signup_email_container,
-    .signup_contact_container,
-    .signup_password_container,
-    .signup_confirmpassword_container {
-        width: 100%;
-    }
-
-    /* Responsive input sizing */
     .signup_textbox {
-        width: 100%;
-        box-sizing: border-box;
+        font-size: 15px;
+        height: 48px;
     }
-
-    .password_wrapper {
-        width: 100%;
+    label {
+        font-size: 18px;
     }
-
-    /* T&C text wrapping */
     .tnc {
         font-size: 14px;
-        flex-wrap: wrap;
-        justify-content: center;
-        padding: 0 10px;
     }
-
     .signup_submit {
-        width: 150px;
-        padding: 12px 20px;
-        box-sizing: border-box;
+        width: 160px;
+        height: 42px;
+        font-size: 16px;
     }
 }
